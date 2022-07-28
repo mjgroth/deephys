@@ -7,6 +7,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
+import matt.async.AccurateTimer
 import matt.async.date.sec
 import matt.async.every
 import matt.exec.app.appName
@@ -92,7 +93,7 @@ class Pref(val defaultValue: String? = null) {
 
 fun main() = GuiApp(decorated = true) {
 
-  every(60.sec) {
+  every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
 	checkVersion()
   }
 
