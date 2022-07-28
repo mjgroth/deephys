@@ -10,6 +10,7 @@ import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import matt.file.MFile
+import matt.file.commons.VERSION_TXT_FILE_NAME
 import matt.file.mFile
 import matt.file.toMFile
 import matt.fx.graphics.lang.actionbutton
@@ -27,9 +28,8 @@ import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.tornadofx.nodes.clear
 import matt.hurricanefx.wrapper.ChoiceBoxWrapper
 import matt.hurricanefx.wrapper.VBoxWrapper
-import matt.klib.lang.NOT_IMPLEMENTED
 import matt.klib.lang.err
-import matt.stream.first
+import matt.klib.lang.resourceTxt
 import java.net.URI
 import java.util.prefs.Preferences
 import kotlin.reflect.KProperty
@@ -60,13 +60,13 @@ data class Version(val first: Int, val second: Int, val third: Int): Comparable<
 	versionString.split(".")[0].toInt(), versionString.split(".")[1].toInt(), versionString.split(".")[2].toInt()
   )
 
-  operator fun compareTo(other: Version): Int {
+  override operator fun compareTo(other: Version): Int {
 	return (first.compareTo(other.first))
-	  .takeIf { it != 0 } ?: (second.compareTo(other.second).takeIf { it != 0 } ?: (third.compareTo(other.third))
+	  .takeIf { it != 0 } ?: ((second.compareTo(other.second)).takeIf { it != 0 } ?: (third.compareTo(other.third)))
   }
 }
 
-val myVersion: Version by lazy { NOT_IMPLEMENTED }
+val myVersion: Version by lazy { Version(resourceTxt(VERSION_TXT_FILE_NAME)!!) }
 
 fun checkVersion() {
   val json = URI("https://api.github.com/repos/mgroth0/deephy/tags").toURL().readText()
@@ -74,6 +74,8 @@ fun checkVersion() {
   if (releases.releases.any { it.version > myVersion }) {
 	val newest = releases.releases.maxBy { it.version }
 	err("need to download the $newest version")
+  } else {
+	println("version check passed")
   }
 }
 
