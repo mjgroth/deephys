@@ -7,6 +7,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
+import matt.async.date.sec
+import matt.async.every
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.GitHub
@@ -90,7 +92,10 @@ class Pref(val defaultValue: String? = null) {
 
 fun main() = GuiApp(decorated = true) {
 
-  checkVersion()
+  every(60.sec) {
+	checkVersion()
+  }
+
 
   var dataFolder by Pref()
   val dataFolderProperty = Prop<MFile>()
