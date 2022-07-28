@@ -7,6 +7,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import matt.file.MFile
 import matt.file.mFile
 import matt.file.toMFile
@@ -25,9 +27,55 @@ import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.tornadofx.nodes.clear
 import matt.hurricanefx.wrapper.ChoiceBoxWrapper
 import matt.hurricanefx.wrapper.VBoxWrapper
+import matt.klib.lang.NOT_IMPLEMENTED
+import matt.klib.lang.err
+import matt.stream.first
+import java.net.URI
 import java.util.prefs.Preferences
 import kotlin.reflect.KProperty
 
+@Serializable
+class Releases(val releases: List<Release>)
+
+@Serializable
+class Release(
+  val name: String,
+  val `zipball_url`: String,
+  val `tarball_url`: String,
+  val commit: Commit,
+  val `node_id`: String
+) {
+  val version by lazy { Version(name) }
+}
+
+@Serializable
+class Commit(
+  val sha: String,
+  val url: String
+)
+
+@Serializable
+data class Version(val first: Int, val second: Int, val third: Int): Comparable<Version> {
+  constructor(versionString: String): this(
+	versionString.split(".")[0].toInt(), versionString.split(".")[1].toInt(), versionString.split(".")[2].toInt()
+  )
+
+  operator fun compareTo(other: Version): Int {
+	return (first.compareTo(other.first))
+	  .takeIf { it != 0 } ?: (second.compareTo(other.second).takeIf { it != 0 } ?: (third.compareTo(other.third))
+  }
+}
+
+val myVersion: Version by lazy { NOT_IMPLEMENTED }
+
+fun checkVersion() {
+  val json = URI("https://api.github.com/repos/mgroth0/deephy/tags").toURL().readText()
+  val releases = Json.decodeFromString<Releases>(json)
+  if (releases.releases.any { it.version > myVersion }) {
+	val newest = releases.releases.maxBy { it.version }
+	err("need to download the $newest version")
+  }
+}
 
 @Serializable
 class Top(
@@ -73,8 +121,10 @@ class Pref(val defaultValue: String? = null) {
   }
 }
 
+
 fun main() = GuiApp(decorated = true) {
 
+  val releases = checkVersion()
 
   var dataFolder by Pref()
   val dataFolderProperty = Prop<MFile>()
