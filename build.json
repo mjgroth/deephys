@@ -1,0 +1,18 @@
+{
+    "modType": {
+        "type": "matt.klib.mod.APP"
+    },
+    "dependencies": [
+        {
+            "type": "matt.mstruct.BuildJsonProjectDependency",
+            "cfg": "implementation",
+            "path": ":k:gui"
+        },
+        {
+            "type": "matt.mstruct.BuildJsonLibDependency",
+            "cfg": "implementation",
+            "key": "kotlinx-serialization-cbor"
+        }
+    ],
+    "note": null
+}
