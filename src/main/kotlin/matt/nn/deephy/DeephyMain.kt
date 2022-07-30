@@ -115,7 +115,7 @@ fun main() = GuiApp(decorated = true) {
 
   val resultBox = VBoxWrapper()
 
-  rootVbox {
+  root<VBoxWrapper> {
 	label(dataFolderProperty.stringBinding {
 	  "data folder: $it"
 	})
