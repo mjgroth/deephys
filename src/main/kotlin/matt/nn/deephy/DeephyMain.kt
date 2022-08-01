@@ -14,7 +14,7 @@ import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.GitHub
 import matt.file.MFile
-import matt.file.mFile
+import matt.file.construct.mFile
 import matt.file.toMFile
 import matt.fx.graphics.lang.actionbutton
 import matt.fx.graphics.layout.hbox
