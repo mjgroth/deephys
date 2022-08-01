@@ -7,9 +7,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
-import matt.async.AccurateTimer
 import matt.async.date.sec
-import matt.async.every
+import matt.async.schedule.AccurateTimer
+import matt.async.schedule.every
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.GitHub
