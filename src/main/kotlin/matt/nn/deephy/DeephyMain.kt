@@ -17,8 +17,6 @@ import matt.file.MFile
 import matt.file.construct.mFile
 import matt.file.construct.toMFile
 import matt.fx.graphics.lang.actionbutton
-import matt.fx.graphics.layout.hbox
-import matt.fx.graphics.layout.vbox
 import matt.gui.app.GuiApp
 import matt.hurricanefx.eye.collect.toObservable
 import matt.hurricanefx.eye.lang.Prop
