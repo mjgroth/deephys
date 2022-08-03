@@ -27,6 +27,7 @@ import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.hurricanefx.wrapper.target.label
 import matt.klib.lang.err
 import java.util.prefs.Preferences
 import kotlin.reflect.KProperty
