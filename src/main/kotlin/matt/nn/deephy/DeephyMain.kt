@@ -24,7 +24,6 @@ import matt.hurricanefx.eye.lang.SProp
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.objectBinding
 import matt.hurricanefx.eye.prop.stringBinding
-import matt.hurricanefx.tornadofx.control.label
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
