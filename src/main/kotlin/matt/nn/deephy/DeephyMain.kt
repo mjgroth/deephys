@@ -146,7 +146,7 @@ fun main() = GuiApp(decorated = true) {
 			cb = choicebox(values = (0..top.num_Neurons).toList().toObservable())
 		  }
 		  vbox {
-			cb!!.valueProperty().onChange {
+			cb!!.valueProperty.onChange {
 			  clear()
 			  if (it != null) {
 				label(
