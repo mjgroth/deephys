@@ -90,6 +90,8 @@ class Pref(val defaultValue: String? = null) {
 
 fun main() = GuiApp(decorated = true) {
 
+  stage.title = appName
+
   every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
 	checkVersion()
   }
