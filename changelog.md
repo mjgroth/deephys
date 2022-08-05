@@ -1,10 +1,13 @@
+## Update Instructions:
+
+1. Close the app if it is currently running
+2. Download the .dmg file from the latest release
+3. Drag the .dmg file to your Applications folder
+4. When you try to open the app, you might get an error saying the app is broken. This is because I have not signed up as an "official Apple developer". For now, please type this into the terminal each time you update:
+
+`sudo xattr -cr /Applications/deephy.app`
+
 ### New Features
 
-- Name of app in title of window
-- Changelist to be updated in each release
-
-### Previous Release Features (since they had no changelist)
-
-- Integration with GitHub Releases so app can notify user if update is available
-- Allow user to change and store data folder
-- Loads and displays information from one small .cbor file
+- Added message at bottom if app needs updating
+- Trying to load the big data file (WIP)
