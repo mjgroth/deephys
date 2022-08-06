@@ -75,7 +75,7 @@ fun main() = GuiApp(decorated = true) {
 		statusProp.value = "${dataFile.value} does not exist"
 	  } else {
 		val top = Cbor.decodeFromByteArray<Top>(dataFileTop.value!!.readBytes())
-		val data = Cbor.decodeFromByteArray<Array<matt.nn.deephy.model.Image>>(dataFileTop.value!!.readBytes())
+		/*val data = Cbor.decodeFromByteArray<Array<matt.nn.deephy.model.Image>>(dataFileTop.value!!.readBytes())*/
 		resultBox.clear()
 		resultBox.apply {
 		  label("Layer ID: ${top.layer_ID}")
