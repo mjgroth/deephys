@@ -8,7 +8,7 @@ import matt.async.schedule.every
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.GitHub
-import matt.fx.graphics.async.runLaterReturn
+import matt.hurricanefx.async.runLaterReturn
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.hurricanefx.wrapper.textflow.TextFlowWrapper
