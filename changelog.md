@@ -10,4 +10,9 @@
 ### New Features
 
 - Added message at bottom if app needs updating
-- Trying to load the big data file (WIP)
+- Loaded new (v2) data files
+- Loaded data file from new python template class (`DeephyCborData`)
+
+### Bug Fixes
+
+- Rate limit exceptions from GitHub are better handled

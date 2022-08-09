@@ -12,7 +12,11 @@
             "type": "matt.mstruct.BuildJsonLibDependency",
             "cfg": "implementation",
             "key": "kotlinx-serialization-cbor"
+        },
+        {
+            "type": "matt.mstruct.BuildJsonLibDependency",
+            "cfg": "implementation",
+            "key": "slf4j-nop"
         }
-    ],
-    "note": null
+    ]
 }

@@ -8,10 +8,10 @@ import matt.async.schedule.every
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.GitHub
-import matt.hurricanefx.async.runLaterReturn
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.hurricanefx.wrapper.textflow.TextFlowWrapper
+import matt.klib.log.warn
 import matt.klib.release.Release
 import matt.klib.release.Version
 
@@ -21,9 +21,13 @@ object VersionChecker {
 	if (!checking) {
 	  every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
 		val releases = GitHub.releasesOf(appName)
-		val newest = releases.maxBy { it.version }
-		runLater {
-		  newestRelease.setIfDifferent(newest)
+		if (releases == null) {
+			warn("releases == null")
+		} else {
+		  val newest = releases.maxBy { it.version }
+		  runLater {
+			newestRelease.setIfDifferent(newest)
+		  }
 		}
 	  }
 	}
