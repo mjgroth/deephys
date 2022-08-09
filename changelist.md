@@ -6,8 +6,12 @@
 
 ### New Features
 
-- 
+- Added version to window title
+- Cosmetic improvements
+- "load" button disabled until data folder is chosen
 
 ### Bug Fixes
 
 - App should now be "signed" so it can opened on Macs without additional steps
+- App no longer prompts you to update if your version is newer than the one on GitHub
+- Fixed neuron choice box index (1-50 instead of 0-50) 

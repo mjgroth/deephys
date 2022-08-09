@@ -41,11 +41,13 @@ object VersionChecker {
 	  fun update(new: Release?) {
 		clear()
 		if (new == null) text("checking for updates...")
-		else if (new.version != myVersion) {
+		else if (new.version > myVersion) {
 		  text("Version ${new.version} Available: ")
 		  hyperlink("Click here to update") {
 			opens(GitHub.releasesPageOf(appName).jURL.toURI())
 		  }
+		} else if (new.version < myVersion) {
+		  text("developing unreleased version (last pushed was ${new.version})")
 		}
 	  }
 	  update(newestRelease.value)

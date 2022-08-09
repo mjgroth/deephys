@@ -1,6 +1,41 @@
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
+import matt.file.MFile
+import matt.file.cbor
+import matt.file.construct.mFile
+import matt.hurricanefx.eye.lang.Prop
+import matt.hurricanefx.eye.lib.onChange
+import matt.hurricanefx.eye.prop.relFileBinding
+import matt.nn.deephy.pref.Pref
+
+object DeephyDataManager {
+  private var dataFolder by Pref()
+  val dataFolderProperty by lazy {
+	Prop<MFile?>(dataFolder?.let { mFile(it) }).apply {
+	  onChange {
+		dataFolder = it?.abspath
+	  }
+	}
+  }
+  val dataFile = dataFolderProperty.relFileBinding("CIFAR10_test".cbor)
+  val dataFileV2 = dataFolderProperty.relFileBinding("CIFAR10_test_v2".cbor)
+  val dataFileTop = dataFolderProperty.relFileBinding("CIFAR10_test_top".cbor)
+  val dataFileTopV2 = dataFolderProperty.relFileBinding("CIFAR10_test_top_v2".cbor)
+  val deephyDataFile = dataFolderProperty.relFileBinding("deephyData0".cbor)
+
+  @Suppress("UNUSED_VARIABLE")
+  fun load(): Pair<TopV2, ImageV2> {
+	//		val top = Cbor.decodeFromByteArray<Top>(dataFileTop.value!!.readBytes())
+	//		val data = Cbor.decodeFromByteArray<Image>(dataFile.value!!.readBytes())
+	val top = Cbor.decodeFromByteArray<TopV2>(dataFileTopV2.value!!.readBytes())
+	val image = Cbor.decodeFromByteArray<ImageV2>(dataFileV2.value!!.readBytes())
+	val deephyData = Cbor.decodeFromByteArray<DeephyData>(deephyDataFile.value!!.readBytes())
+	return top to image
+  }
+}
 
 @Serializable
 class Top(
