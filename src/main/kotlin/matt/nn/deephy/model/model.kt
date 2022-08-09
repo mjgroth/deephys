@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE")
+
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
