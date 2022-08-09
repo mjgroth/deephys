@@ -9,6 +9,7 @@
 - Added version to window title
 - Cosmetic improvements
 - "load" button disabled until data folder is chosen
+- "display the first top image for each neuron"
 
 ### Bug Fixes
 
