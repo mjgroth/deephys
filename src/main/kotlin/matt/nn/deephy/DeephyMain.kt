@@ -9,15 +9,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.construct.toMFile
+import matt.fx.graphics.FXColor
 import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
-import matt.hurricanefx.eye.bind.toStringConverter
 import matt.hurricanefx.eye.collect.toObservable
 import matt.hurricanefx.eye.lang.SProp
 import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
-import matt.hurricanefx.wrapper.label.LabelWrapper
 import matt.hurricanefx.wrapper.node.enableWhen
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.label
@@ -25,7 +24,10 @@ import matt.nn.deephy.model.DeephyDataManager
 import matt.nn.deephy.model.DeephyDataManager.dataFile
 import matt.nn.deephy.model.DeephyDataManager.dataFileTop
 import matt.nn.deephy.model.DeephyDataManager.dataFolderProperty
+import matt.nn.deephy.model.GoodImage
+import matt.nn.deephy.model.Neuron
 import matt.nn.deephy.version.VersionChecker
+import kotlin.math.roundToInt
 
 fun main(): Unit = GuiApp(decorated = true) {
 
@@ -58,25 +60,69 @@ fun main(): Unit = GuiApp(decorated = true) {
 		  else if (dataFile.value!!.doesNotExist) "${dataFile.value} does not exist"
 		  else {
 			val (top, image) = DeephyDataManager.load()
+			println("image.category.size=${image.category.size}")
+
+			val images = (0 until image.category.size).associate {
+			  image.file_ID[it] to GoodImage(
+				fileID = image.file_ID[it],
+				fileType = image.file_type[it],
+				category = image.category[it],
+				matrix = image.file[it].let {
+				  val newRows = mutableListOf<MutableList<MutableList<Double>>>()
+
+				  it.mapIndexed { colorIndex, singleColorMatrix ->
+					singleColorMatrix.mapIndexed { rowIndex, row ->
+					  val newRow =
+						if (colorIndex == 0) mutableListOf<MutableList<Double>>().also { newRows += it } else newRows[rowIndex]
+
+					  row.mapIndexed { colIndex, pixel ->
+						val newCol =
+						  if (colorIndex == 0) mutableListOf<Double>().also { newRow += it } else newRow[colIndex]
+						newCol += pixel
+					  }
+					}
+					//					it.map { it.map { it.toDoubleArray() } }
+				  }
+				  newRows
+				}
+
+
+			  )
+			}
+
+			val neurons = (0 until top.numNeurons).map {
+			  Neuron(
+				index = it,
+				top100 = top.top100[it].map { images[it]!! }
+			  )
+			}.toObservable()
 			resultBox.clear()
 			resultBox.apply {
 			  label("Layer ID: ${top.layerID}")
 			  label("Layer Name: ${top.layerName}")
 			  label("Num Neurons: ${top.numNeurons}")
-			  var cb: ChoiceBoxWrapper<Int>? = null
+			  var cb: ChoiceBoxWrapper<Neuron>? = null
 			  hbox {
 				label("choose neuron: ")
-				cb = choicebox(values = (0 until top.numNeurons).toList().toObservable()) {
-				  converter = toStringConverter { (it?.plus(1)).toString() }
-				}
+				cb = choicebox(values = neurons)
 			  }
 			  swapper(cb!!.valueProperty) {
-				LabelWrapper(
-				  "top images of unit ${it}: " + top.top100[this].joinToString(
-					prefix = "[", postfix = "]", separator = ","
-				  ),
-				).apply {
-				  isWrapText = true
+				VBoxWrapper().apply {
+				  val im = top100[0]
+				  canvas(width = im.matrix[0].size.toDouble(), height = im.matrix.size.toDouble()) {
+					val pw = graphicsContext2D.pixelWriter
+					im.matrix.forEachIndexed { y, row ->
+					  row.forEachIndexed { x, pix ->
+						val r = maxOf(minOf((pix[0] + 1)/2, 1.0), 0.0)
+						val g = maxOf(minOf((pix[1] + 1)/2, 1.0), 0.0)
+						val b = maxOf(minOf((pix[2] + 1)/2, 1.0), 0.0)
+						pw.setColor(
+						  x, y, FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())
+						)
+					  }
+					}
+				  }
+				  vgrow = ALWAYS
 				}
 			  }
 			}

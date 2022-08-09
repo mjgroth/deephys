@@ -83,6 +83,24 @@ class ImageV2(
   val file: Array<Array<Array<Array<Double>>>>
 )
 
+@Serializable
+class GoodImage(
+  val fileID: Int,
+  val fileType: String,
+  val category: Int,
+  val matrix: List<List<List<Double>>>
+)
+
+@Serializable
+class Neuron(
+  val index: Int,
+  val top100: List<GoodImage>,
+) {
+  override fun toString(): String {
+	return "neuron $index"
+  }
+}
+
 
 /* https://www.rfc-editor.org/rfc/rfc8949.html */
 @Serializable
