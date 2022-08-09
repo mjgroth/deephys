@@ -12,13 +12,12 @@ import matt.file.construct.toMFile
 import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
 import matt.hurricanefx.eye.bind.toStringConverter
-import matt.hurricanefx.eye.collect.bind
 import matt.hurricanefx.eye.collect.toObservable
 import matt.hurricanefx.eye.lang.SProp
-import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
+import matt.hurricanefx.wrapper.label.LabelWrapper
 import matt.hurricanefx.wrapper.node.enableWhen
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.label
@@ -71,23 +70,13 @@ fun main(): Unit = GuiApp(decorated = true) {
 				  converter = toStringConverter { (it?.plus(1)).toString() }
 				}
 			  }
-			  anchorpane {
-
-			  }
-			  vbox {
-				children.bind(cb!!.valueProperty) {
-
-				}
-				cb!!.valueProperty.onChange {
-				  clear()
-				  if (it != null) {
-					label(
-					  "top images of unit ${it}: " + top.top100[it].joinToString(
-						prefix = "[", postfix = "]", separator = ","
-					  ),
-					  wrap = true
-					)
-				  }
+			  swapper(cb!!.valueProperty) {
+				LabelWrapper(
+				  "top images of unit ${it}: " + top.top100[this].joinToString(
+					prefix = "[", postfix = "]", separator = ","
+				  ),
+				).apply {
+				  isWrapText = true
 				}
 			  }
 			}
