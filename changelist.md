@@ -10,5 +10,5 @@
 - Show all 100 images for each neuron
 
 ### Bug Fixes
-- Additionally signed with "Developer ID Installer" certificate. Hopefully this prevents the "malicious software" warning
+- Switched from `.dmg` to `.app` to hopefully bypass "malicious software" issue
 - Fixed crash at startup when running on other Macs
