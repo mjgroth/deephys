@@ -7,8 +7,7 @@
 
 ### New Features
 
-- Show all 100 images for each neuron
+none
 
 ### Bug Fixes
-- Switched from `.dmg` to `.app` to hopefully bypass "malicious software" issue
-- Fixed crash at startup when running on other Macs
+- Fixed `.zip` file (attributes or something were not copied so `.app` inside did not work 
