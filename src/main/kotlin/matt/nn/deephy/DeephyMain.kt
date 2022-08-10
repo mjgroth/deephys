@@ -18,6 +18,7 @@ import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
 import matt.hurricanefx.wrapper.node.enableWhen
+import matt.hurricanefx.wrapper.pane.flow.FlowPaneWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.label
 import matt.nn.deephy.model.DeephyDataManager
@@ -107,18 +108,20 @@ fun main(): Unit = GuiApp(decorated = true) {
 				cb = choicebox(values = neurons)
 			  }
 			  swapper(cb!!.valueProperty) {
-				VBoxWrapper().apply {
-				  val im = top100[0]
-				  canvas(width = im.matrix[0].size.toDouble(), height = im.matrix.size.toDouble()) {
-					val pw = graphicsContext2D.pixelWriter
-					im.matrix.forEachIndexed { y, row ->
-					  row.forEachIndexed { x, pix ->
-						val r = maxOf(minOf((pix[0] + 1)/2, 1.0), 0.0)
-						val g = maxOf(minOf((pix[1] + 1)/2, 1.0), 0.0)
-						val b = maxOf(minOf((pix[2] + 1)/2, 1.0), 0.0)
-						pw.setColor(
-						  x, y, FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())
-						)
+				FlowPaneWrapper().apply {
+				  (0 until 100).forEach { imIndex ->
+					val im = top100[imIndex]
+					canvas(width = im.matrix[0].size.toDouble(), height = im.matrix.size.toDouble()) {
+					  val pw = graphicsContext2D.pixelWriter
+					  im.matrix.forEachIndexed { y, row ->
+						row.forEachIndexed { x, pix ->
+						  val r = maxOf(minOf((pix[0] + 1)/2, 1.0), 0.0)
+						  val g = maxOf(minOf((pix[1] + 1)/2, 1.0), 0.0)
+						  val b = maxOf(minOf((pix[2] + 1)/2, 1.0), 0.0)
+						  pw.setColor(
+							x, y, FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())
+						  )
+						}
 					  }
 					}
 				  }
