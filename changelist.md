@@ -10,4 +10,4 @@
 none
 
 ### Bug Fixes
-- Fixed `.zip` file (attributes or something were not copied so `.app` inside did not work 
+- Switched from `zip` to `ditto` to hopefully make the `.zip` work on other macs 
