@@ -11,3 +11,4 @@
 
 ### Bug Fixes
 - Additionally signed with "Developer ID Installer" certificate. Hopefully this prevents the "malicious software" warning
+- Fixed crash at startup when running on other Macs
