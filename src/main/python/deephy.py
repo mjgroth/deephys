@@ -26,7 +26,7 @@ class Layer:
 
 
 @dataclass
-class DeephyCborData:
+class DeephyData:
   datasetName: str #CIFAR10 #CIFAR10V2
   suffix: Optional[str]
   images: List[ImageFile]
