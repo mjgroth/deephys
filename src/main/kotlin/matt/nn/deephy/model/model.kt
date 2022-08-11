@@ -31,6 +31,8 @@ object DeephyDataManager {
   val dataV2File = dataFolderProperty.relFileBinding("CIFAR10v2".cbor)
   val dataV2FileTop = dataFolderProperty.relFileBinding("CIFAR10v2_top".cbor)
 
+  val cifarV1Test = dataFolderProperty.relFileBinding("CIFARV1_test".cbor)
+
   @Suppress("UNUSED_VARIABLE")
   fun load(): Pair<TopV2, ImageV2> {
 	//		val top = Cbor.decodeFromByteArray<Top>(dataFileTop.value!!.readBytes())
@@ -46,6 +48,8 @@ object DeephyDataManager {
 	val image = Cbor.decodeFromByteArray<ImageV2>(dataV2File.value!!.readBytes())
 	return top to image
   }
+
+  fun load3(): DeephyDataV2 = Cbor.decodeFromByteArray<DeephyDataV2>(cifarV1Test.value!!.readBytes())
 }
 
 @Serializable
@@ -132,7 +136,25 @@ class Neuron(
   }
 }
 
+@Serializable
+class NeuronV2(
+  val activations: List<Double>
+)
 
+@Serializable
+class ImageV3(
+  val imageID: Int,
+  val cateogoryID: Int,
+  val data: List<List<List<Double>>>
+)
+
+@Serializable
+class Layer(
+  val layerID: String,
+  val neurons: List<NeuronV2>
+)
+
+/*../../../../../../python/deephy.py*/
 /* https://www.rfc-editor.org/rfc/rfc8949.html */
 @Serializable
 class DeephyData(
@@ -144,4 +166,13 @@ class DeephyData(
   val fileTypes: List<Int>,
   val categories: List<Int>,
   val files: List<List<List<List<Double>>>>
+)
+
+
+@Serializable
+class DeephyDataV2(
+  val datasetName: String,
+  val suffix: String?,
+  val images: List<ImageV3>,
+  val layers: List<Layer>,
 )

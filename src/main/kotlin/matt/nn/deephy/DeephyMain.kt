@@ -65,6 +65,9 @@ fun main(): Unit = GuiApp(decorated = true) {
 		  else {
 			val (top, image) = DeephyDataManager.load()
 			val (top2, image2) = DeephyDataManager.load2()
+
+			val newData = DeephyDataManager.load3()
+
 			println("image.category.size=${image.category.size}")
 
 			val images = (0 until image.category.size).associate {
