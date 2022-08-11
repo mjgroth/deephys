@@ -17,12 +17,11 @@ class DeephyCborData:
   images: List[ImageFile]
 
 
-
   def save(self):
 
-    if self.suffix == ""
+    if self.suffix == "":
       fileName = self.datasetName + '.cbor'
-    else
+    else:
       fileName = self.datasetName + "_" + self.suffix + '.cbor'
 
     with open(fileName, 'wb') as fp:
