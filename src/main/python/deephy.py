@@ -34,7 +34,7 @@ class DeephyData:
 
   def save(self):
 
-    if self.suffix == "":
+    if self.suffix == None:
       fileName = self.datasetName + '.cbor'
     else:
       fileName = self.datasetName + "_" + self.suffix + '.cbor'
