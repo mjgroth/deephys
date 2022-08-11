@@ -22,7 +22,6 @@ class Neuron:
 @dataclass
 class Layer:
   layerID: str
-  name: str
   neurons: List[Neuron] # 50 neurons
 
 
