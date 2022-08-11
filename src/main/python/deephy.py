@@ -17,6 +17,7 @@ class ImageFile:
 
 @dataclass
 class Neuron:
+  neuronID: str
   activations: List[float] # one float per image (10000 length)
 
 @dataclass
