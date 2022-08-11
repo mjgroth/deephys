@@ -6,7 +6,7 @@ I have already tested that the data correctly loads into kotlin.
 # https://www.rfc-editor.org/rfc/rfc8949.html
 from cbor2 import dump
 from dataclasses import dataclass, asdict
-from typing import List
+from typing import List, Optional
 
 @dataclass
 class ImageFile:
@@ -29,11 +29,9 @@ class Layer:
 @dataclass
 class DeephyCborData:
   datasetName: str #CIFAR10 #CIFAR10V2
-  suffix: str = ""
-
-  layers: List[Layer]
+  suffix: Optional[str]
   images: List[ImageFile]
-
+  layers: List[Layer]
 
   def save(self):
 
