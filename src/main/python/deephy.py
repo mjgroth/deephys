@@ -9,6 +9,24 @@ from dataclasses import dataclass, asdict
 from typing import List
 
 @dataclass
+class ImageFile:
+  id: int
+  categoryID: int
+  category: str
+  data: List[List[List[float]]]
+
+@dataclass
+class Layer:
+  id: str
+  name: str
+  neurons: List[Neuron] # 50 neurons
+
+@dataclass
+class Neuron:
+  activations: List[float] # one float per image (10000 length)
+
+
+  @dataclass
 class DeephyCborData:
   datasetName: str #CIFAR10 #CIFAR10V2
   suffix: str = ""
@@ -28,20 +46,3 @@ class DeephyCborData:
       dump(asdict(self), fp)
 
       #CIFAR10.cbor
-
-@dataclass
-class ImageFile:
-  id: int
-  categoryID: int
-  category: str
-  data: List[List[List[float]]]
-
-@dataclass
-class Layer:
-  id: str
-  name: str
-  neurons: List[Neuron] # 50 neurons
-
-@dataclass
-class Neuron:
-  activations: List[float] # one float per image (10000 length)
