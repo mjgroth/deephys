@@ -26,7 +26,7 @@ class Neuron:
   activations: List[float] # one float per image (10000 length)
 
 
-  @dataclass
+@dataclass
 class DeephyCborData:
   datasetName: str #CIFAR10 #CIFAR10V2
   suffix: str = ""
