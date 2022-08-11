@@ -30,18 +30,18 @@ class DeephyCborData:
       #CIFAR10.cbor
 
 @dataclass
-class ImageFile
+class ImageFile:
   id: int
   categoryID: int
   category: str
   data: List[List[List[float]]]
 
 @dataclass
-class Layer
+class Layer:
   id: str
   name: str
   neurons: List[Neuron] # 50 neurons
 
 @dataclass
-class Neuron
+class Neuron:
   activations: List[float] # one float per image (10000 length)
