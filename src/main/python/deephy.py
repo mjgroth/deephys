@@ -10,7 +10,7 @@ from typing import List, Optional
 
 @dataclass
 class ImageFile:
-  id: int
+  imageID: int
   categoryID: int
   category: str
   data: List[List[List[float]]]
@@ -21,7 +21,7 @@ class Neuron:
 
 @dataclass
 class Layer:
-  id: str
+  layerID: str
   name: str
   neurons: List[Neuron] # 50 neurons
 
