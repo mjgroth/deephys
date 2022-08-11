@@ -1,13 +1,10 @@
-## Update Instructions:
-
-1. Close the app if it is currently running
-2. Download the .zip file from the latest release
-3. Open the .zip
-4. Drag the .app file to your Applications folder and overwrite if prompted
-
 ### New Features
 
-none
+- Moved update instructions to `README.md` 
+- Visualize 2 datasets side by side
+- Increased window size
+- Set minimum window size
 
 ### Bug Fixes
-- notarized app and fixed codesign issues to avoid "malicious software" warning
+
+none

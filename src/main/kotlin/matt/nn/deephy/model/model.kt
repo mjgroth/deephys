@@ -28,6 +28,9 @@ object DeephyDataManager {
   val dataFileTopV2 = dataFolderProperty.relFileBinding("CIFAR10_test_top_v2".cbor)
   val deephyDataFile = dataFolderProperty.relFileBinding("deephyData0".cbor)
 
+  val dataV2File = dataFolderProperty.relFileBinding("CIFAR10v2".cbor)
+  val dataV2FileTop = dataFolderProperty.relFileBinding("CIFAR10v2_top".cbor)
+
   @Suppress("UNUSED_VARIABLE")
   fun load(): Pair<TopV2, ImageV2> {
 	//		val top = Cbor.decodeFromByteArray<Top>(dataFileTop.value!!.readBytes())
@@ -35,6 +38,12 @@ object DeephyDataManager {
 	val top = Cbor.decodeFromByteArray<TopV2>(dataFileTopV2.value!!.readBytes())
 	val image = Cbor.decodeFromByteArray<ImageV2>(dataFileV2.value!!.readBytes())
 	val deephyData = Cbor.decodeFromByteArray<DeephyData>(deephyDataFile.value!!.readBytes())
+	return top to image
+  }
+
+  fun load2(): Pair<TopV2, ImageV2> {
+	val top = Cbor.decodeFromByteArray<TopV2>(dataV2FileTop.value!!.readBytes())
+	val image = Cbor.decodeFromByteArray<ImageV2>(dataV2File.value!!.readBytes())
 	return top to image
   }
 }
@@ -89,7 +98,29 @@ class GoodImage(
   val fileType: String,
   val category: Int,
   val matrix: List<List<List<Double>>>
-)
+) {
+  constructor(image: ImageV2, index: Int): this(
+	fileID = image.file_ID[index],
+	fileType = image.file_type[index],
+	category = image.category[index],
+	matrix = image.file[index].let {
+	  val newRows = mutableListOf<MutableList<MutableList<Double>>>()
+	  it.mapIndexed { colorIndex, singleColorMatrix ->
+		singleColorMatrix.mapIndexed { rowIndex, row ->
+		  val newRow =
+			if (colorIndex == 0) mutableListOf<MutableList<Double>>().also { newRows += it } else newRows[rowIndex]
+
+		  row.mapIndexed { colIndex, pixel ->
+			val newCol =
+			  if (colorIndex == 0) mutableListOf<Double>().also { newRow += it } else newRow[colIndex]
+			newCol += pixel
+		  }
+		}
+	  }
+	  newRows
+	}
+  )
+}
 
 @Serializable
 class Neuron(

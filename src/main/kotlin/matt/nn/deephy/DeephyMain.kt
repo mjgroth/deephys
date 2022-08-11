@@ -9,7 +9,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.construct.toMFile
-import matt.fx.graphics.FXColor
 import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
 import matt.hurricanefx.eye.collect.toObservable
@@ -18,9 +17,9 @@ import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
 import matt.hurricanefx.wrapper.node.enableWhen
-import matt.hurricanefx.wrapper.pane.flow.FlowPaneWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.label
+import matt.nn.deephy.gui.draw
 import matt.nn.deephy.model.DeephyDataManager
 import matt.nn.deephy.model.DeephyDataManager.dataFile
 import matt.nn.deephy.model.DeephyDataManager.dataFileTop
@@ -28,11 +27,15 @@ import matt.nn.deephy.model.DeephyDataManager.dataFolderProperty
 import matt.nn.deephy.model.GoodImage
 import matt.nn.deephy.model.Neuron
 import matt.nn.deephy.version.VersionChecker
-import kotlin.math.roundToInt
 
 fun main(): Unit = GuiApp(decorated = true) {
 
   stage.title = "$appName $myVersion"
+  stage.node.minWidth = 600.0
+  stage.node.minHeight = 600.0
+  stage.width = 600.0
+  stage.height = 600.0
+
 
   val statusProp = SProp("")
 
@@ -61,40 +64,27 @@ fun main(): Unit = GuiApp(decorated = true) {
 		  else if (dataFile.value!!.doesNotExist) "${dataFile.value} does not exist"
 		  else {
 			val (top, image) = DeephyDataManager.load()
+			val (top2, image2) = DeephyDataManager.load2()
 			println("image.category.size=${image.category.size}")
 
 			val images = (0 until image.category.size).associate {
-			  image.file_ID[it] to GoodImage(
-				fileID = image.file_ID[it],
-				fileType = image.file_type[it],
-				category = image.category[it],
-				matrix = image.file[it].let {
-				  val newRows = mutableListOf<MutableList<MutableList<Double>>>()
+			  image.file_ID[it] to GoodImage(image, it)
+			}
 
-				  it.mapIndexed { colorIndex, singleColorMatrix ->
-					singleColorMatrix.mapIndexed { rowIndex, row ->
-					  val newRow =
-						if (colorIndex == 0) mutableListOf<MutableList<Double>>().also { newRows += it } else newRows[rowIndex]
-
-					  row.mapIndexed { colIndex, pixel ->
-						val newCol =
-						  if (colorIndex == 0) mutableListOf<Double>().also { newRow += it } else newRow[colIndex]
-						newCol += pixel
-					  }
-					}
-					//					it.map { it.map { it.toDoubleArray() } }
-				  }
-				  newRows
-				}
-
-
-			  )
+			val images2 = (0 until image2.category.size).associate {
+			  image2.file_ID[it] to GoodImage(image2, it)
 			}
 
 			val neurons = (0 until top.numNeurons).map {
 			  Neuron(
 				index = it,
 				top100 = top.top100[it].map { images[it]!! }
+			  )
+			}.toObservable()
+			val neurons2 = (0 until top2.numNeurons).map {
+			  Neuron(
+				index = it,
+				top100 = top2.top100[it].map { images2[it]!! }
 			  )
 			}.toObservable()
 			resultBox.clear()
@@ -108,25 +98,29 @@ fun main(): Unit = GuiApp(decorated = true) {
 				cb = choicebox(values = neurons)
 			  }
 			  swapper(cb!!.valueProperty) {
-				FlowPaneWrapper().apply {
-				  (0 until 100).forEach { imIndex ->
-					val im = top100[imIndex]
-					canvas(width = im.matrix[0].size.toDouble(), height = im.matrix.size.toDouble()) {
-					  val pw = graphicsContext2D.pixelWriter
-					  im.matrix.forEachIndexed { y, row ->
-						row.forEachIndexed { x, pix ->
-						  val r = maxOf(minOf((pix[0] + 1)/2, 1.0), 0.0)
-						  val g = maxOf(minOf((pix[1] + 1)/2, 1.0), 0.0)
-						  val b = maxOf(minOf((pix[2] + 1)/2, 1.0), 0.0)
-						  pw.setColor(
-							x, y, FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())
-						  )
-						}
+				VBoxWrapper().apply {
+				  text("dataset 1")
+				  flowpane {
+					(0 until 100).forEach { imIndex ->
+					  val im = top100[imIndex]
+					  canvas() {
+						draw(im)
 					  }
 					}
+					vgrow = ALWAYS
 				  }
-				  vgrow = ALWAYS
+				  text("dataset 2")
+				  flowpane {
+					(0 until 100).forEach { imIndex ->
+					  val im = neurons2[index].top100[imIndex]
+					  canvas() {
+						draw(im)
+					  }
+					}
+					vgrow = ALWAYS
+				  }
 				}
+
 			  }
 			}
 			"got data"
