@@ -16,14 +16,14 @@ class ImageFile:
   data: List[List[List[float]]]
 
 @dataclass
+class Neuron:
+  activations: List[float] # one float per image (10000 length)
+
+@dataclass
 class Layer:
   id: str
   name: str
   neurons: List[Neuron] # 50 neurons
-
-@dataclass
-class Neuron:
-  activations: List[float] # one float per image (10000 length)
 
 
 @dataclass
