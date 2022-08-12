@@ -1,12 +1,11 @@
 ### New Features
 
-- New data unified structure supported by python code
-- Changed update link to main github page since instructions are now there
+none
 
 ### Bug Fixes
 
-none
+(WIP) hopefully fixing whatever bug they had
 
 ### Notes
 
-- Temporarily disabled ability to see two datasets
+- (FROM LAST .. UNDO THIS) Temporarily disabled ability to see two datasets
