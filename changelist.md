@@ -1,10 +1,11 @@
 ### New Features
 
-- Moved update instructions to `README.md` 
-- Visualize 2 datasets side by side
-- Increased window size
-- Set minimum window size
+- New data unified structure supported by python code 
 
 ### Bug Fixes
 
 none
+
+### Notes
+
+- Temporarily disabled ability to see two datasets

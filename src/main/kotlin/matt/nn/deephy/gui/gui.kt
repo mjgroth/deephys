@@ -2,10 +2,10 @@ package matt.nn.deephy.gui
 
 import matt.fx.graphics.FXColor
 import matt.hurricanefx.wrapper.canvas.CanvasWrapper
-import matt.nn.deephy.model.GoodImage
+import matt.nn.deephy.model.DeephyImage
 import kotlin.math.roundToInt
 
-fun CanvasWrapper.draw(image: GoodImage) {
+fun CanvasWrapper.draw(image: DeephyImage) {
   node.width = image.matrix[0].size.toDouble()
   node.height = image.matrix.size.toDouble()
   val pw = graphicsContext2D.pixelWriter
