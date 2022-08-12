@@ -3,11 +3,6 @@
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
-import matt.file.MFile
-import matt.file.construct.mFile
-import matt.hurricanefx.eye.lang.Prop
-import matt.hurricanefx.eye.lib.onChange
-import matt.nn.deephy.pref.Pref
 
 //object DeephyDataManager {
 //  private var dataFolder by Pref()
@@ -59,7 +54,9 @@ class DeephyImage(
 class Layer(
   val layerID: String,
   val neurons: List<Neuron>
-)
+) {
+  override fun toString() = layerID
+}
 
 
 /*../../../../../../python/deephy.py*/

@@ -1,10 +1,7 @@
 package matt.nn.deephy.gui
 
-import javafx.collections.ObservableList
-import javafx.scene.control.Accordion
 import javafx.scene.control.ContentDisplay.LEFT
-import javafx.scene.control.TitledPane
-import javafx.scene.layout.Priority.ALWAYS
+import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import kotlinx.serialization.cbor.Cbor
@@ -16,15 +13,12 @@ import matt.hurricanefx.eye.bind.toStringConverter
 import matt.hurricanefx.eye.lang.Prop
 import matt.hurricanefx.eye.prop.objectBinding
 import matt.hurricanefx.eye.prop.stringBinding
+import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.canvas.CanvasWrapper
-import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
-import matt.hurricanefx.wrapper.node.enableWhen
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
-import matt.hurricanefx.wrapper.parent.parent
 import matt.nn.deephy.model.DeephyData
 import matt.nn.deephy.model.DeephyImage
-import matt.nn.deephy.model.Neuron
 import kotlin.math.roundToInt
 
 //val dataFolderNode by lazy {
@@ -46,7 +40,7 @@ import kotlin.math.roundToInt
 //  }
 //}
 
-class DatasetViewer(val container: ObservableList<TitledPane>): TitledPaneWrapper() {
+class DatasetViewer: TitledPaneWrapper() {
   val fileProp = Prop<MFile?>()
   val dataBinding = fileProp.objectBinding {
 	it?.let { Cbor.decodeFromByteArray<DeephyData>(it.readBytes()) }
@@ -61,7 +55,7 @@ class DatasetViewer(val container: ObservableList<TitledPane>): TitledPaneWrappe
 	  button("remove dataset") {
 		tooltip("remove this dataset viewer")
 		setOnAction {
-		  this@DatasetViewer.container.remove(this@DatasetViewer.node)
+		  this@DatasetViewer.removeFromParent()
 		}
 	  }
 	  button("select dataset") {
@@ -79,50 +73,38 @@ class DatasetViewer(val container: ObservableList<TitledPane>): TitledPaneWrappe
 		}
 	  }
 	}
-	content = hbox {
-	  button("load data") {
-		//		enableWhen { dataFolderProperty.isNotNull }
-		//		setOnAction {
-		//
-		//		  statusProp.value = if (dataFolderProperty.value == null) "please select data folder"
-		//		  else if (cifarV1Test.value!!.doesNotExist) "${cifarV1Test.value} does not exist"
-		//		  else {
-		//
-		//			val newData = DeephyDataManager.load3()
-		//
-		//			val theLayer = newData.layers[0]
-		//
-		//			resultBox.clear()
-		//			resultBox.apply {
-		//			  label("Layer ID: ${theLayer.layerID}")
-		//			  label("Num Neurons: ${theLayer.neurons.size}")
-		//			  var cb: ChoiceBoxWrapper<IndexedValue<Neuron>>? = null
-		//			  hbox {
-		//				label("choose neuron: ")
-		//				cb = choicebox(values = theLayer.neurons.withIndex().toList()) {
-		//				  converter = toStringConverter { "neuron ${it?.index}" }
-		//				}
-		//			  }
-		//			  swapper(cb!!.valueProperty) {
-		//				VBoxWrapper().apply {
-		//				  text("dataset 1")
-		//				  flowpane {
-		//					(0 until 100).forEach { imIndex ->
-		//					  val im = newData.images[value.activationIndexesHighToLow[imIndex]]
-		//					  canvas {
-		//						draw(im)
-		//					  }
-		//					}
-		//					vgrow = ALWAYS
-		//				  }
-		//				}
-		//
-		//			  }
-		//			}
-		//			"got data"
-		//		  }
-		//		}
-		//	  }
+	content = swapper(dataBinding, nullMessage = "select a dataset to view it") {
+	  VBoxWrapper().apply {
+		val layerCB = choicebox(values = layers)
+		hbox {
+		  text("layer: ")
+		  +layerCB
+		}
+		swapper(layerCB.valueProperty, nullMessage = "select a layer") {
+		  VBoxWrapper().apply {
+			val neuronCB = choicebox(values = neurons.withIndex().toList()) {
+			  converter = toStringConverter { "neuron ${it?.index}" }
+			}
+			hbox {
+			  text("neuron: ")
+			  +neuronCB
+			}
+			swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
+			  VBoxWrapper().apply {
+				flowpane {
+				  (0 until 100).forEach { imIndex ->
+					val im = images[value.activationIndexesHighToLow[imIndex]]
+					canvas {
+					  draw(im)
+					}
+					vgrow = Priority.ALWAYS
+				  }
+				}
+
+			  }
+			}
+		  }
+		}
 	  }
 	}.node
   }

@@ -14,21 +14,27 @@ import matt.hurricanefx.wrapper.textflow.TextFlowWrapper
 import matt.klib.log.warn
 import matt.klib.release.Release
 import matt.klib.release.Version
+import java.net.ConnectException
 
 object VersionChecker {
   private var checking = false
   fun checkForUpdatesInBackground() {
 	if (!checking) {
 	  every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
-		val releases = GitHub.releasesOf(appName)
-		if (releases == null) {
+		try {
+		  val releases = GitHub.releasesOf(appName)
+		  if (releases == null) {
 			warn("releases == null")
-		} else {
-		  val newest = releases.maxBy { it.version }
-		  runLater {
-			newestRelease.setIfDifferent(newest)
+		  } else {
+			val newest = releases.maxBy { it.version }
+			runLater {
+			  newestRelease.setIfDifferent(newest)
+			}
 		  }
+		} catch (e: ConnectException) {
+		  println("no internet to check version")
 		}
+
 	  }
 	}
 	checking = true
