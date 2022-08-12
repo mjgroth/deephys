@@ -1,11 +1,12 @@
 [project]
 name = "deephy"
-version = "0.2.6"
+version = "0.2.8"
 authors = [
     { name = "Matt Groth", email = "mjgroth@mit.edu" },
 ]
 dependencies = [
-    'cbor2'
+    'cbor2',
+    'numpy'
 ]
 [project.urls]
 "Homepage" = "https://github.com/mgroth0/deephy"

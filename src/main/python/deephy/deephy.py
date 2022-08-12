@@ -4,6 +4,7 @@ https://www.rfc-editor.org/rfc/rfc8949.html
 from cbor2 import dump
 from dataclasses import dataclass, asdict
 from typing import List, Optional
+import numpy
 
 @dataclass
 class ImageFile:
@@ -11,6 +12,15 @@ class ImageFile:
   categoryID: int
   category: str
   data: List[List[List[float]]]
+
+  def __post_init__(self):
+    n = numpy.array(self.data)
+    theMax = numpy.max(n)
+    if theMax > 1.0:
+      raise Exception("image pixel values should be between 0.0 and 1.0, but a value of " + str(theMax) + " was recieved")
+    theMin = numpy.min(n)
+    if theMin < 0.0:
+      raise Exception("image pixel values should be between 0.0 and 1.0, but a value of " + str(theMin) + " was recieved")
 
 @dataclass
 class Neuron:

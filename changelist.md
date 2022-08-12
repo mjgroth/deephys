@@ -1,11 +1,10 @@
 ### New Features
 
-none
+- (WIP) See two datasets again
+- (WIP) Select any two files
 
 ### Bug Fixes
 
-(WIP) hopefully fixing whatever bug they had
+- Fixed "white-out" issue by fixing the pixel range (now it is from 0.0 to 1.0, and the python package asserts that)
 
 ### Notes
-
-- (FROM LAST .. UNDO THIS) Temporarily disabled ability to see two datasets

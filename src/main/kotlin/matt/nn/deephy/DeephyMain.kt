@@ -4,21 +4,18 @@ package matt.nn.deephy
 
 import javafx.geometry.Pos
 import javafx.scene.layout.Priority.ALWAYS
-import javafx.stage.DirectoryChooser
 import kotlinx.serialization.ExperimentalSerializationApi
 import matt.exec.app.appName
 import matt.exec.app.myVersion
-import matt.file.construct.toMFile
-import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
 import matt.hurricanefx.eye.bind.toStringConverter
 import matt.hurricanefx.eye.lang.SProp
-import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
 import matt.hurricanefx.wrapper.node.enableWhen
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.label
+import matt.nn.deephy.gui.dataFolderNode
 import matt.nn.deephy.gui.draw
 import matt.nn.deephy.model.DeephyDataManager
 import matt.nn.deephy.model.DeephyDataManager.cifarV1Test
@@ -42,26 +39,19 @@ fun main(): Unit = GuiApp(decorated = true) {
   val resultBox = VBoxWrapper()
 
   root<VBoxWrapper> {
-	label(dataFolderProperty.stringBinding { "data folder: $it" })
+
+	alignment = Pos.TOP_CENTER
+
+	+dataFolderNode
 
 	hbox {
-	  actionbutton("choose data folder") {
-		val f = DirectoryChooser().apply {
-		  title = "choose data folder"
-		}.showDialog(stage)
-
-		if (f != null) {
-		  dataFolderProperty.value = f.toMFile()
-		}
-	  }
 	  button("load data") {
 		enableWhen { dataFolderProperty.isNotNull }
 		setOnAction {
 
 		  statusProp.value = if (dataFolderProperty.value == null) "please select data folder"
 		  else if (cifarV1Test.value!!.doesNotExist) "${cifarV1Test.value} does not exist"
-		  else {
-			//			val (top, image) = DeephyDataManager.load()
+		  else {            //			val (top, image) = DeephyDataManager.load()
 			//			val (top2, image2) = DeephyDataManager.load2()
 
 			val newData = DeephyDataManager.load3()
@@ -93,8 +83,7 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 			resultBox.clear()
 			resultBox.apply {
-			  label("Layer ID: ${theLayer.layerID}")
-			  //			  label("Layer Name: ${top.layerName}")
+			  label("Layer ID: ${theLayer.layerID}")            //			  label("Layer Name: ${top.layerName}")
 			  label("Num Neurons: ${theLayer.neurons.size}")
 			  var cb: ChoiceBoxWrapper<IndexedValue<Neuron>>? = null
 			  hbox {
@@ -117,8 +106,7 @@ fun main(): Unit = GuiApp(decorated = true) {
 					  }
 					}
 					vgrow = ALWAYS
-				  }
-				  /*  text("dataset 2")
+				  }                /*  text("dataset 2")
 					flowpane {
 					  (0 until 100).forEach { imIndex ->
 						val im = neurons2[index].top100[imIndex]
