@@ -1,6 +1,7 @@
 ### New Features
 
-- New data unified structure supported by python code 
+- New data unified structure supported by python code
+- Changed update link to main github page since instructions are now there
 
 ### Bug Fixes
 

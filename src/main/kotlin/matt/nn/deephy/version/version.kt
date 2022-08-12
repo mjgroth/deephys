@@ -44,7 +44,7 @@ object VersionChecker {
 		else if (new.version > myVersion) {
 		  text("Version ${new.version} Available: ")
 		  hyperlink("Click here to update") {
-			opens(GitHub.releasesPageOf(appName).jURL.toURI())
+			opens(GitHub.mainPageOf(appName).jURL.toURI())
 		  }
 		} else if (new.version < myVersion) {
 		  text("developing unreleased version (last pushed was ${new.version})")

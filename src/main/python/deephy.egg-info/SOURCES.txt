@@ -1,0 +1,8 @@
+pyproject.toml
+deephy/__init__.py
+deephy/deephy.py
+deephy.egg-info/PKG-INFO
+deephy.egg-info/SOURCES.txt
+deephy.egg-info/dependency_links.txt
+deephy.egg-info/requires.txt
+deephy.egg-info/top_level.txt
