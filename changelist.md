@@ -1,7 +1,8 @@
 ### New Features
 
-- (WIP) See two datasets again
-- (WIP) Select any two files
+- eliminated the "data folder". Now you can use files from anywhere.
+- (WIP) Select any number of dataset files
+- Cosmetic Improvements
 
 ### Bug Fixes
 

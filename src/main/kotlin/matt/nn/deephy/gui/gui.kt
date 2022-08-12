@@ -1,35 +1,136 @@
 package matt.nn.deephy.gui
 
+import javafx.collections.ObservableList
+import javafx.scene.control.Accordion
 import javafx.scene.control.ContentDisplay.LEFT
-import javafx.stage.DirectoryChooser
+import javafx.scene.control.TitledPane
+import javafx.scene.layout.Priority.ALWAYS
+import javafx.stage.FileChooser
+import javafx.stage.FileChooser.ExtensionFilter
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
+import matt.file.MFile
 import matt.file.construct.toMFile
 import matt.fx.graphics.FXColor
+import matt.hurricanefx.eye.bind.toStringConverter
+import matt.hurricanefx.eye.lang.Prop
+import matt.hurricanefx.eye.prop.objectBinding
 import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.wrapper.canvas.CanvasWrapper
-import matt.hurricanefx.wrapper.pane.hbox.HBoxWrapper
-import matt.hurricanefx.wrapper.target.label
-import matt.nn.deephy.model.DeephyDataManager
+import matt.hurricanefx.wrapper.control.choice.ChoiceBoxWrapper
+import matt.hurricanefx.wrapper.node.enableWhen
+import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
+import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.hurricanefx.wrapper.parent.parent
+import matt.nn.deephy.model.DeephyData
 import matt.nn.deephy.model.DeephyImage
+import matt.nn.deephy.model.Neuron
 import kotlin.math.roundToInt
 
-val dataFolderNode by lazy {
-  HBoxWrapper().apply {
-	label(DeephyDataManager.dataFolderProperty.stringBinding { "data folder: ${it?.tildeString()}" }) {
-	  contentDisplay = LEFT
-	  graphic = button("▼") {
-		tooltip("choose data folder")
+//val dataFolderNode by lazy {
+//  LabelWrapper().apply {
+//	textProperty().bind(DeephyDataManager.dataFolderProperty.stringBinding { "data folder: ${it?.tildeString()}" })
+//	contentDisplay = LEFT
+//	graphic = button("▼") {
+//	  tooltip("choose data folder")
+//	  setOnAction {
+//		val f = DirectoryChooser().apply {
+//		  title = "choose data folder"
+//		}.showDialog(stage)
+//
+//		if (f != null) {
+//		  DeephyDataManager.dataFolderProperty.value = f.toMFile()
+//		}
+//	  }
+//	}
+//  }
+//}
+
+class DatasetViewer(val container: ObservableList<TitledPane>): TitledPaneWrapper() {
+  val fileProp = Prop<MFile?>()
+  val dataBinding = fileProp.objectBinding {
+	it?.let { Cbor.decodeFromByteArray<DeephyData>(it.readBytes()) }
+  }
+
+  init {
+	contentDisplay = LEFT
+	titleProperty.bind(
+	  fileProp.stringBinding { it?.nameWithoutExtension }
+	)
+	graphic = hbox {
+	  button("remove dataset") {
+		tooltip("remove this dataset viewer")
 		setOnAction {
-		  val f = DirectoryChooser().apply {
+		  this@DatasetViewer.container.remove(this@DatasetViewer.node)
+		}
+	  }
+	  button("select dataset") {
+		tooltip("choose dataset file")
+		setOnAction {
+
+		  val f = FileChooser().apply {
 			title = "choose data folder"
-		  }.showDialog(stage)
+			this.extensionFilters.setAll(ExtensionFilter("cbor", "*.cbor"))
+		  }.showOpenDialog(stage)
 
 		  if (f != null) {
-			DeephyDataManager.dataFolderProperty.value = f.toMFile()
+			this@DatasetViewer.fileProp.value = f.toMFile()
 		  }
 		}
 	  }
 	}
+	content = hbox {
+	  button("load data") {
+		//		enableWhen { dataFolderProperty.isNotNull }
+		//		setOnAction {
+		//
+		//		  statusProp.value = if (dataFolderProperty.value == null) "please select data folder"
+		//		  else if (cifarV1Test.value!!.doesNotExist) "${cifarV1Test.value} does not exist"
+		//		  else {
+		//
+		//			val newData = DeephyDataManager.load3()
+		//
+		//			val theLayer = newData.layers[0]
+		//
+		//			resultBox.clear()
+		//			resultBox.apply {
+		//			  label("Layer ID: ${theLayer.layerID}")
+		//			  label("Num Neurons: ${theLayer.neurons.size}")
+		//			  var cb: ChoiceBoxWrapper<IndexedValue<Neuron>>? = null
+		//			  hbox {
+		//				label("choose neuron: ")
+		//				cb = choicebox(values = theLayer.neurons.withIndex().toList()) {
+		//				  converter = toStringConverter { "neuron ${it?.index}" }
+		//				}
+		//			  }
+		//			  swapper(cb!!.valueProperty) {
+		//				VBoxWrapper().apply {
+		//				  text("dataset 1")
+		//				  flowpane {
+		//					(0 until 100).forEach { imIndex ->
+		//					  val im = newData.images[value.activationIndexesHighToLow[imIndex]]
+		//					  canvas {
+		//						draw(im)
+		//					  }
+		//					}
+		//					vgrow = ALWAYS
+		//				  }
+		//				}
+		//
+		//			  }
+		//			}
+		//			"got data"
+		//		  }
+		//		}
+		//	  }
+	  }
+	}.node
   }
+}
+
+fun datasetTilePane() = TitledPaneWrapper().apply {
+  val fileProp = Prop<MFile?>()
+  label()
 }
 
 fun CanvasWrapper.draw(image: DeephyImage) {

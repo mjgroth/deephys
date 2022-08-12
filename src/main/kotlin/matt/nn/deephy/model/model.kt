@@ -3,30 +3,22 @@
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
 import matt.file.MFile
-import matt.file.cbor
 import matt.file.construct.mFile
 import matt.hurricanefx.eye.lang.Prop
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.prop.relFileBinding
 import matt.nn.deephy.pref.Pref
 
-object DeephyDataManager {
-  private var dataFolder by Pref()
-  val dataFolderProperty by lazy {
-	Prop<MFile?>(dataFolder?.let { mFile(it) }).apply {
-	  onChange {
-		dataFolder = it?.abspath
-	  }
-	}
-  }
-
-  val cifarV1Test = dataFolderProperty.relFileBinding("CIFARV1_test".cbor)
-
-  fun load3(): DeephyData = Cbor.decodeFromByteArray(cifarV1Test.value!!.readBytes())
-}
+//object DeephyDataManager {
+//  private var dataFolder by Pref()
+//  val dataFolderProperty by lazy {
+//	Prop<MFile?>(dataFolder?.let { mFile(it) }).apply {
+//	  onChange {
+//		dataFolder = it?.abspath
+//	  }
+//	}
+//  }
+//}
 
 @Serializable
 class Neuron(
