@@ -13,93 +13,92 @@ import kotlin.math.roundToInt
 /*class DSetViewsVBox: VBoxWrapper{}*/
 //
 class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
-  //  val fileProp: Prop<CborFile?> = Prop<CborFile?>(initialFile).apply {
-  //	onChange {
-  //	  DeephyState.datasets.value = parent!!.getChildList()!!
-  //		.map { it as DatasetViewer }
-  //		.mapNotNull { it.fileProp.value?.toSFile() }
-  //	}
-  //  }
-  //  val dataBinding = fileProp.objectBinding {
-  //	if (it != null && it.doesNotExist) FileNotFound
-  //	else {
-  //	  it?.let {
-  //		Cbor.decodeFromByteArray<DeephyData>(it.readBytes())
-  //	  }
-  //	}
-  //  }
-  //
-  //  init {
-  //
-  //
-  //
-  //	contentDisplay = LEFT
-  //	isExpanded = true
-  //	titleProperty.bind(
-  //	  fileProp.stringBinding { it?.nameWithoutExtension }
-  //	)
-  //	graphic = hbox {
-  //	  button("remove dataset") {
-  //		tooltip("remove this dataset viewer")
-  //		setOnAction {
-  //		  this@DatasetViewer.removeFromParent()
-  //		}
-  //	  }
-  //	  button("select dataset") {
-  //		tooltip("choose dataset file")
-  //		setOnAction {
-  //
-  //		  val f = FileChooser().apply {
-  //			title = "choose data folder"
-  //			this.extensionFilters.setAll(ExtensionFilter("cbor", "*.cbor"))
-  //		  }.showOpenDialog(stage)
-  //
-  //		  if (f != null) {
-  //			this@DatasetViewer.fileProp.value = f.toMFile() as CborFile
-  //		  }
-  //		}
-  //	  }
-  //	}
-  //	content = swapper(dataBinding, nullMessage = "select a dataset to view it") {
-  //	  when (this) {
-  //		is FileNotFound -> TextWrapper("${fileProp.value} not found")
-  //		is ParseError -> TextWrapper("parse error")
-  //		is DeephyData -> VBoxWrapper().apply {
-  //		  val layerCB = choicebox(values = layers)
-  //		  hbox {
-  //			text("layer: ")
-  //			+layerCB
-  //		  }
-  //		  swapper(layerCB.valueProperty, nullMessage = "select a layer") {
-  //			VBoxWrapper().apply {
-  //			  val neuronCB = choicebox(values = neurons.withIndex().toList()) {
-  //				converter = toStringConverter { "neuron ${it?.index}" }
-  //			  }
-  //			  hbox {
-  //				text("neuron: ")
-  //				+neuronCB
-  //			  }
-  //			  swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
-  //				VBoxWrapper().apply {
-  //				  flowpane {
-  //					(0 until 100).forEach { imIndex ->
-  //					  val im = images[value.activationIndexesHighToLow[imIndex]]
-  //					  canvas {
-  //						draw(im)
-  //					  }
-  //					  vgrow = Priority.ALWAYS
-  //					}
-  //				  }
-  //
-  //				}
-  //			  }
-  //			}
-  //		  }
-  //		}
-  //	  }
-  //
-  //	}.node
-  //  }
+  val fileProp: Prop<CborFile?> = Prop<CborFile?>(initialFile).apply {
+	onChange {
+	  DeephyState.datasets.value = parent!!.getChildList()!!
+		.map { it as DatasetViewer }
+		.mapNotNull { it.fileProp.value?.toSFile() }
+	}
+  }
+  val dataBinding = fileProp.objectBinding {
+	if (it != null && it.doesNotExist) FileNotFound
+	else {
+	  it?.let {
+		Cbor.decodeFromByteArray<DeephyData>(it.readBytes())
+	  }
+	}
+  }
+
+  init {
+
+
+	contentDisplay = LEFT
+	isExpanded = true
+	titleProperty.bind(
+	  fileProp.stringBinding { it?.nameWithoutExtension }
+	)
+	graphic = hbox {
+	  button("remove dataset") {
+		tooltip("remove this dataset viewer")
+		setOnAction {
+		  this@DatasetViewer.removeFromParent()
+		}
+	  }
+	  button("select dataset") {
+		tooltip("choose dataset file")
+		setOnAction {
+
+		  val f = FileChooser().apply {
+			title = "choose data folder"
+			this.extensionFilters.setAll(ExtensionFilter("cbor", "*.cbor"))
+		  }.showOpenDialog(stage)
+
+		  if (f != null) {
+			this@DatasetViewer.fileProp.value = f.toMFile() as CborFile
+		  }
+		}
+	  }
+	}
+	content = swapper(dataBinding, nullMessage = "select a dataset to view it") {
+	  when (this) {
+		is FileNotFound -> TextWrapper("${fileProp.value} not found")
+		is ParseError   -> TextWrapper("parse error")
+		is DeephyData   -> VBoxWrapper().apply {
+		  val layerCB = choicebox(values = layers)
+		  hbox {
+			text("layer: ")
+			+layerCB
+		  }
+		  swapper(layerCB.valueProperty, nullMessage = "select a layer") {
+			VBoxWrapper().apply {
+			  val neuronCB = choicebox(values = neurons.withIndex().toList()) {
+				converter = toStringConverter { "neuron ${it?.index}" }
+			  }
+			  hbox {
+				text("neuron: ")
+				+neuronCB
+			  }
+			  swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
+				VBoxWrapper().apply {
+				  flowpane {
+					(0 until 100).forEach { imIndex ->
+					  val im = images[value.activationIndexesHighToLow[imIndex]]
+					  canvas {
+						draw(im)
+					  }
+					  vgrow = Priority.ALWAYS
+					}
+				  }
+
+				}
+			  }
+			}
+		  }
+		}
+	  }
+
+	}.node
+  }
 }
 
 fun CanvasWrapper.draw(image: DeephyImage) {
