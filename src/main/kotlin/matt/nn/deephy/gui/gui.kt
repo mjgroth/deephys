@@ -2,12 +2,33 @@
 
 package matt.nn.deephy.gui
 
+import javafx.scene.control.ContentDisplay
+import javafx.scene.layout.Priority
+import javafx.stage.FileChooser
+import javafx.stage.FileChooser.ExtensionFilter
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
 import matt.file.CborFile
+import matt.file.construct.toMFile
+import matt.file.toSFile
 import matt.fx.graphics.FXColor
+import matt.hurricanefx.eye.bind.toStringConverter
+import matt.hurricanefx.eye.lang.Prop
+import matt.hurricanefx.eye.lib.onChange
+import matt.hurricanefx.eye.prop.objectBinding
+import matt.hurricanefx.eye.prop.stringBinding
+import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.canvas.CanvasWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
+import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.hurricanefx.wrapper.parent.parent
+import matt.hurricanefx.wrapper.text.TextWrapper
+import matt.nn.deephy.model.DeephyData
 import matt.nn.deephy.model.DeephyImage
+import matt.nn.deephy.model.FileNotFound
+import matt.nn.deephy.model.ParseError
+import matt.nn.deephy.state.DeephyState
 import kotlin.math.roundToInt
 
 /*class DSetViewsVBox: VBoxWrapper{}*/
@@ -32,7 +53,7 @@ class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
   init {
 
 
-	contentDisplay = LEFT
+	contentDisplay = ContentDisplay.LEFT
 	isExpanded = true
 	titleProperty.bind(
 	  fileProp.stringBinding { it?.nameWithoutExtension }
