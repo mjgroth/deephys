@@ -1,9 +1,11 @@
+@file:OptIn(ExperimentalSerializationApi::class)
 package matt.nn.deephy.gui
 
 import javafx.scene.control.ContentDisplay.LEFT
 import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import matt.file.CborFile
@@ -32,7 +34,7 @@ import matt.file.toSFile
 /*class DSetViewsVBox: VBoxWrapper{}*/
 
 class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
-  val fileProp: Prop<CborFile?> = Prop<CborFile?>().apply {
+  val fileProp: Prop<CborFile?> = Prop<CborFile?>(initialFile).apply {
 	onChange {
 	  DeephyState.datasets.value = parent!!.getChildList()!!
 		.map { it as DatasetViewer }
