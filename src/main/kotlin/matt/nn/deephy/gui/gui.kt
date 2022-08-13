@@ -123,11 +123,6 @@ class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
   }
 }
 
-fun datasetTilePane() = TitledPaneWrapper().apply {
-  val fileProp = Prop<MFile?>()
-  label()
-}
-
 fun CanvasWrapper.draw(image: DeephyImage) {
   node.width = image.matrix[0].size.toDouble()
   node.height = image.matrix.size.toDouble()
