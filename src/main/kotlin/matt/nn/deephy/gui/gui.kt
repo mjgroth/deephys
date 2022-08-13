@@ -24,6 +24,7 @@ import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.parent.parent
 import matt.hurricanefx.wrapper.text.TextWrapper
+import matt.hurricanefx.wrapper.wrapped
 import matt.nn.deephy.model.DeephyData
 import matt.nn.deephy.model.DeephyImage
 import matt.nn.deephy.model.FileNotFound
@@ -37,7 +38,7 @@ class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
   val fileProp: Prop<CborFile?> = Prop<CborFile?>(initialFile).apply {
 	onChange {
 	  DeephyState.datasets.value = parent!!.getChildList()!!
-		.map { it as DatasetViewer }
+		.map { it.wrapped() as DatasetViewer }
 		.mapNotNull { it.fileProp.value?.toSFile() }
 	}
   }
