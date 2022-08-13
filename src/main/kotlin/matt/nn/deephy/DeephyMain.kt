@@ -7,11 +7,13 @@ import javafx.scene.layout.Priority.ALWAYS
 import kotlinx.serialization.ExperimentalSerializationApi
 import matt.exec.app.appName
 import matt.exec.app.myVersion
+import matt.file.CborFile
+import matt.file.toMFile
 import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
-import matt.hurricanefx.runLater
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.nn.deephy.gui.DatasetViewer
+import matt.nn.deephy.state.DeephyState
 import matt.nn.deephy.version.VersionChecker
 
 fun main(): Unit = GuiApp(decorated = true) {
@@ -22,28 +24,19 @@ fun main(): Unit = GuiApp(decorated = true) {
   stage.width = 600.0
   stage.height = 850.0
 
-
-//  val statusProp = SProp("")
-
   VersionChecker.checkForUpdatesInBackground()
-
-  //  val resultBox = VBoxWrapper()
 
   root<VBoxWrapper> {
 
 	alignment = Pos.TOP_CENTER
 
-	//	+dataFolderNode
-
 	val multiAcc = vbox {
-
+	  DeephyState.datasets.value?.forEach {
+		+DatasetViewer(it.toMFile() as CborFile)
+	  }
 	}
 	actionbutton("add dataset") {
-	  multiAcc += DatasetViewer().apply {
-		runLater {
-		  isExpanded = true
-		}
-	  }
+	  multiAcc += DatasetViewer()
 	}
 
 	vbox {
@@ -52,7 +45,6 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 	vbox {
 	  alignment = Pos.BOTTOM_LEFT
-//	  label(statusProp)
 	  +VersionChecker.statusNode
 	}
   }

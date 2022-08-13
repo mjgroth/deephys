@@ -6,48 +6,54 @@ import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
+import matt.file.CborFile
 import matt.file.MFile
 import matt.file.construct.toMFile
 import matt.fx.graphics.FXColor
 import matt.hurricanefx.eye.bind.toStringConverter
 import matt.hurricanefx.eye.lang.Prop
+import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.objectBinding
 import matt.hurricanefx.eye.prop.stringBinding
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.canvas.CanvasWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.hurricanefx.wrapper.parent.parent
+import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.nn.deephy.model.DeephyData
 import matt.nn.deephy.model.DeephyImage
+import matt.nn.deephy.model.FileNotFound
+import matt.nn.deephy.model.ParseError
+import matt.nn.deephy.state.DeephyState
 import kotlin.math.roundToInt
+import matt.file.toSFile
 
-//val dataFolderNode by lazy {
-//  LabelWrapper().apply {
-//	textProperty().bind(DeephyDataManager.dataFolderProperty.stringBinding { "data folder: ${it?.tildeString()}" })
-//	contentDisplay = LEFT
-//	graphic = button("▼") {
-//	  tooltip("choose data folder")
-//	  setOnAction {
-//		val f = DirectoryChooser().apply {
-//		  title = "choose data folder"
-//		}.showDialog(stage)
-//
-//		if (f != null) {
-//		  DeephyDataManager.dataFolderProperty.value = f.toMFile()
-//		}
-//	  }
-//	}
-//  }
-//}
+/*class DSetViewsVBox: VBoxWrapper{}*/
 
-class DatasetViewer: TitledPaneWrapper() {
-  val fileProp = Prop<MFile?>()
+class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
+  val fileProp: Prop<CborFile?> = Prop<CborFile?>().apply {
+	onChange {
+	  DeephyState.datasets.value = parent!!.getChildList()!!
+		.map { it as DatasetViewer }
+		.mapNotNull { it.fileProp.value?.toSFile() }
+	}
+  }
   val dataBinding = fileProp.objectBinding {
-	it?.let { Cbor.decodeFromByteArray<DeephyData>(it.readBytes()) }
+	if (it != null && it.doesNotExist) FileNotFound
+	else {
+	  it?.let {
+		Cbor.decodeFromByteArray<DeephyData>(it.readBytes())
+	  }
+	}
   }
 
   init {
+
+
+
 	contentDisplay = LEFT
+	isExpanded = true
 	titleProperty.bind(
 	  fileProp.stringBinding { it?.nameWithoutExtension }
 	)
@@ -68,44 +74,49 @@ class DatasetViewer: TitledPaneWrapper() {
 		  }.showOpenDialog(stage)
 
 		  if (f != null) {
-			this@DatasetViewer.fileProp.value = f.toMFile()
+			this@DatasetViewer.fileProp.value = f.toMFile() as CborFile
 		  }
 		}
 	  }
 	}
 	content = swapper(dataBinding, nullMessage = "select a dataset to view it") {
-	  VBoxWrapper().apply {
-		val layerCB = choicebox(values = layers)
-		hbox {
-		  text("layer: ")
-		  +layerCB
-		}
-		swapper(layerCB.valueProperty, nullMessage = "select a layer") {
-		  VBoxWrapper().apply {
-			val neuronCB = choicebox(values = neurons.withIndex().toList()) {
-			  converter = toStringConverter { "neuron ${it?.index}" }
-			}
-			hbox {
-			  text("neuron: ")
-			  +neuronCB
-			}
-			swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
-			  VBoxWrapper().apply {
-				flowpane {
-				  (0 until 100).forEach { imIndex ->
-					val im = images[value.activationIndexesHighToLow[imIndex]]
-					canvas {
-					  draw(im)
+	  when (this) {
+		is FileNotFound -> TextWrapper("${fileProp.value} not found")
+		is ParseError -> TextWrapper("parse error")
+		is DeephyData -> VBoxWrapper().apply {
+		  val layerCB = choicebox(values = layers)
+		  hbox {
+			text("layer: ")
+			+layerCB
+		  }
+		  swapper(layerCB.valueProperty, nullMessage = "select a layer") {
+			VBoxWrapper().apply {
+			  val neuronCB = choicebox(values = neurons.withIndex().toList()) {
+				converter = toStringConverter { "neuron ${it?.index}" }
+			  }
+			  hbox {
+				text("neuron: ")
+				+neuronCB
+			  }
+			  swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
+				VBoxWrapper().apply {
+				  flowpane {
+					(0 until 100).forEach { imIndex ->
+					  val im = images[value.activationIndexesHighToLow[imIndex]]
+					  canvas {
+						draw(im)
+					  }
+					  vgrow = Priority.ALWAYS
 					}
-					vgrow = Priority.ALWAYS
 				  }
-				}
 
+				}
 			  }
 			}
 		  }
 		}
 	  }
+
 	}.node
   }
 }

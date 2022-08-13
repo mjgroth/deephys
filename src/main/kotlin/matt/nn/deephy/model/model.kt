@@ -67,4 +67,9 @@ class DeephyData(
   val suffix: String?,
   val images: List<DeephyImage>,
   val layers: List<Layer>,
-)
+): CborLoadResult
+
+object FileNotFound: CborLoadResult
+object ParseError: CborLoadResult
+
+sealed interface CborLoadResult
