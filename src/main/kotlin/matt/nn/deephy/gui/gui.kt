@@ -7,6 +7,7 @@ import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import matt.file.CborFile
@@ -31,18 +32,25 @@ import matt.nn.deephy.model.FileNotFound
 import matt.nn.deephy.model.ParseError
 import matt.nn.deephy.state.DeephyState
 import kotlin.math.roundToInt
+import matt.stream.message.FileList
 
-/*class DSetViewsVBox: VBoxWrapper{}*/
-//
+
+
+class DSetViewsVBox: VBoxWrapper() {
+
+}
+
+@InternalSerializationApi
 class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
-  val fileProp: Prop<CborFile?> = Prop<CborFile?>(initialFile).apply {
+  private val fileProp: Prop<CborFile?> = Prop(initialFile).apply {
 	onChange {
 	  DeephyState.datasets.value = parent!!.getChildList()!!
 		.map { it.wrapped() as DatasetViewer }
-		.mapNotNull { it.fileProp.value?.toSFile() }
+		.mapNotNull { it.fileProp.value?.toSFile() }.let { FileList(it) }
+	  println("DeephyState.datasets=${DeephyState.datasets.value}")
 	}
   }
-  val dataBinding = fileProp.objectBinding {
+  private val dataBinding = fileProp.objectBinding {
 	if (it != null && it.doesNotExist) FileNotFound
 	else {
 	  it?.let {
@@ -80,6 +88,7 @@ class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
 		  }
 		}
 	  }
+
 	}
 	content = swapper(dataBinding, nullMessage = "select a dataset to view it") {
 	  when (this) {
