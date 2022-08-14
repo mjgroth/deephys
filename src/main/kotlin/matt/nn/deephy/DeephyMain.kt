@@ -12,6 +12,7 @@ import matt.file.CborFile
 import matt.file.toMFile
 import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
+import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.DatasetViewer
@@ -29,7 +30,7 @@ fun main(): Unit = GuiApp(decorated = true) {
 
   VersionChecker.checkForUpdatesInBackground()
 
-  root<VBoxWrapper> {
+  root<VBoxWrapper<NodeWrapper>> {
 
 	alignment = Pos.TOP_CENTER
 
