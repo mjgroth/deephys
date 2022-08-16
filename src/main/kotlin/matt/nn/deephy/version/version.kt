@@ -10,6 +10,7 @@ import matt.exec.app.myVersion
 import matt.file.GitHub
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.setIfDifferent
+import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.textflow.TextFlowWrapper
 import matt.klib.log.warn
 import matt.klib.release.Release
@@ -43,7 +44,7 @@ object VersionChecker {
   private val newestRelease = SimpleObjectProperty<Release>()
 
   val statusNode by lazy {
-	TextFlowWrapper().apply {
+	TextFlowWrapper<NodeWrapper>().apply {
 	  fun update(new: Release?) {
 		clear()
 		if (new == null) text("checking for updates...")

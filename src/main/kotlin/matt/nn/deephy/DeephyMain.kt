@@ -14,6 +14,7 @@ import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.klib.str.taball
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.DatasetViewer
 import matt.nn.deephy.state.DeephyState
@@ -36,18 +37,20 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 	val multiAcc = DSetViewsVBox().apply {
 	  DeephyState.datasets.value?.forEach {
-		+DatasetViewer(it.toMFile() as CborFile)
+		this += (it.toMFile() as CborFile)
 	  }
 	}
+	+multiAcc
 	actionbutton("add dataset") {
-	  multiAcc += DatasetViewer()
+	  multiAcc += DatasetViewer(null, multiAcc)
+	  taball("children of multAcc:", multiAcc.node.children)
 	}
 
-	vbox {
+	vbox<NodeWrapper> {
 	  vgrow = ALWAYS
 	}
 
-	vbox {
+	vbox<NodeWrapper> {
 	  alignment = Pos.BOTTOM_LEFT
 	  +VersionChecker.statusNode
 	}

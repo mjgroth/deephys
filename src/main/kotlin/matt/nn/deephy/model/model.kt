@@ -20,6 +20,7 @@ class Neuron(
   val activations: List<Double>
 ) {
   val activationIndexesHighToLow by lazy {
+	require(activations.all { it >= 0.0 })
 	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
   }
 }
@@ -56,13 +57,15 @@ class Layer(
   val neurons: List<Neuron>
 ) {
   override fun toString() = layerID
+
+
 }
 
 
 /*../../../../../../python/deephy.py*/
 /* https://www.rfc-editor.org/rfc/rfc8949.html */
 @Serializable
-class DeephyData(
+class Dataset(
   val datasetName: String,
   val suffix: String?,
   val images: List<DeephyImage>,

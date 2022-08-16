@@ -1,170 +1,179 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package matt.nn.deephy.gui
 
 import javafx.scene.control.ContentDisplay
-import javafx.scene.layout.Priority
+import javafx.scene.control.ToggleGroup
+import javafx.scene.paint.Color.YELLOW
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import matt.file.CborFile
 import matt.file.construct.toMFile
 import matt.file.toSFile
-import matt.fx.graphics.FXColor
-import matt.hurricanefx.eye.bind.toStringConverter
+import matt.hurricanefx.backgroundColor
+import matt.hurricanefx.eye.lang.BProp
 import matt.hurricanefx.eye.lang.Prop
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.prop.objectBinding
-import matt.hurricanefx.eye.prop.stringBinding
-import matt.hurricanefx.tornadofx.item.choicebox
-import matt.hurricanefx.wrapper.canvas.CanvasWrapper
+import matt.hurricanefx.eye.mtofx.toFXProp
+import matt.hurricanefx.eye.prop.objectBindingN
+import matt.hurricanefx.eye.prop.stringBindingN
+import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
+import matt.hurricanefx.tornadofx.control.selectedValueProperty
+import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
-import matt.hurricanefx.wrapper.parent.parent
 import matt.hurricanefx.wrapper.text.TextWrapper
-import matt.hurricanefx.wrapper.wrapped
-import matt.nn.deephy.model.DeephyData
+import matt.nn.deephy.gui.dataset.DatasetNode
+import matt.nn.deephy.model.Dataset
 import matt.nn.deephy.model.DeephyImage
 import matt.nn.deephy.model.FileNotFound
+import matt.nn.deephy.model.Layer
+import matt.nn.deephy.model.Neuron
 import matt.nn.deephy.model.ParseError
 import matt.nn.deephy.state.DeephyState
-import kotlin.math.roundToInt
 import matt.stream.message.FileList
 
 
+class DSetViewsVBox: VBoxWrapper<DatasetViewer>() {
+  operator fun plusAssign(file: CborFile) {
+	this += DatasetViewer(file, this)
+  }
 
-class DSetViewsVBox: VBoxWrapper() {
+  fun save() {
+	DeephyState.datasets.value = FileList(children.mapNotNull { it.fileProp.value?.toSFile() })
+  }
+
+  private val layerSelection = Prop<String>()
+  private val neuronSelection = Prop<Int>()
+
+  val myToggleGroup = ToggleGroup().apply {
+
+	fun refreshBind(selected: DatasetViewer?) {
+	  layerSelection.unbind()
+	  neuronSelection.unbind()
+
+	  if (selected == null) {
+		children.forEach {
+		  it.layerSelection.unbind()
+		  it.neuronSelection.unbind()
+		  it.bound.value = false
+		}
+	  } else {
+		selected.apply {
+		  layerSelection.unbind()
+		  neuronSelection.unbind()
+		  bound.value = false
+		}
+
+		val notSelected = children.filter { it != selected }
+		notSelected.forEach {
+		  val ns = it
+		  val dataFXProp = ns.dataBinding.toFXProp()
+		  ns.layerSelection.bind(layerSelection.objectBindingN(dataFXProp) { layerID ->
+			(ns.dataBinding.value as? Dataset)?.layers?.firstOrNull { it.layerID == layerID }
+		  })
+		  ns.neuronSelection.bind(neuronSelection.objectBindingN(dataFXProp, ns.layerSelection) { index ->
+			ns.layerSelection.value?.neurons?.withIndex()?.firstOrNull { it.index == index }
+		  })
+		  ns.bound.value = true
+		}
+
+		layerSelection.bind(selected.layerSelection.stringBindingN { it?.layerID })
+		neuronSelection.bind(selected.neuronSelection.objectBindingN { it?.index })
+
+	  }
+
+
+	}
+
+	val selProp = selectedValueProperty<DatasetViewer>()
+	selProp.onChange { selected ->
+	  refreshBind(selected)
+	}
+	children.onChange {
+	  if (selProp.value !in children) {
+		refreshBind(null)
+	  } else {
+		refreshBind(selProp.value)
+	  }
+
+	}
+
+  }
 
 }
 
-@InternalSerializationApi
-class DatasetViewer(initialFile: CborFile? = null): TitledPaneWrapper() {
-  private val fileProp: Prop<CborFile?> = Prop(initialFile).apply {
+class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
+  //  val siblings get() = outerBox.children.filter { it != this }
+  val fileProp: Prop<CborFile?> = Prop(initialFile).apply {
 	onChange {
-	  DeephyState.datasets.value = parent!!.getChildList()!!
-		.map { it.wrapped() as DatasetViewer }
-		.mapNotNull { it.fileProp.value?.toSFile() }.let { FileList(it) }
-	  println("DeephyState.datasets=${DeephyState.datasets.value}")
+	  outerBox.save()
 	}
   }
-  private val dataBinding = fileProp.objectBinding {
+  val dataBinding = fileProp.objectBindingN {
 	if (it != null && it.doesNotExist) FileNotFound
 	else {
 	  it?.let {
-		Cbor.decodeFromByteArray<DeephyData>(it.readBytes())
+		Cbor.decodeFromByteArray<Dataset>(it.readBytes())
+	  }
+	}
+  }.toNullableROProp()
+
+  val bound = BProp(false)
+  val layerSelection = Prop<Layer>()
+  val neuronSelection = Prop<IndexedValue<Neuron>>().apply {
+	layerSelection.onChange {
+	  if (!bound.value) {
+		value = it?.neurons?.withIndex()?.firstOrNull { it.index == value?.index }
 	  }
 	}
   }
+  val imageSelection = Prop<DeephyImage>()
+
 
   init {
-
-
 	contentDisplay = ContentDisplay.LEFT
 	isExpanded = true
-	titleProperty.bind(
-	  fileProp.stringBinding { it?.nameWithoutExtension }
-	)
-	graphic = hbox {
+	titleProperty.bind(fileProp.stringBindingN { it?.nameWithoutExtension })
+	graphic = hbox<NodeWrapper> {
 	  button("remove dataset") {
 		tooltip("remove this dataset viewer")
 		setOnAction {
 		  this@DatasetViewer.removeFromParent()
+		  this@DatasetViewer.outerBox.save()
 		}
 	  }
 	  button("select dataset") {
 		tooltip("choose dataset file")
 		setOnAction {
-
 		  val f = FileChooser().apply {
 			title = "choose data folder"
 			this.extensionFilters.setAll(ExtensionFilter("cbor", "*.cbor"))
 		  }.showOpenDialog(stage)
-
 		  if (f != null) {
 			this@DatasetViewer.fileProp.value = f.toMFile() as CborFile
 		  }
 		}
 	  }
-
+	  togglebutton("bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer) {
+		backgroundProperty.bind(selectedProperty.objectBindingN {
+		  if (it == true) backgroundColor(YELLOW) else null
+		})
+	  }
 	}
 	content = swapper(dataBinding, nullMessage = "select a dataset to view it") {
 	  when (this) {
 		is FileNotFound -> TextWrapper("${fileProp.value} not found")
 		is ParseError   -> TextWrapper("parse error")
-		is DeephyData   -> VBoxWrapper().apply {
-		  val layerCB = choicebox(values = layers)
-		  hbox {
-			text("layer: ")
-			+layerCB
+		is Dataset      -> {
+		  if (!bound.value) {
+			layerSelection.value = null
+			neuronSelection.value = null
 		  }
-		  swapper(layerCB.valueProperty, nullMessage = "select a layer") {
-			VBoxWrapper().apply {
-			  val neuronCB = choicebox(values = neurons.withIndex().toList()) {
-				converter = toStringConverter { "neuron ${it?.index}" }
-			  }
-			  hbox {
-				text("neuron: ")
-				+neuronCB
-			  }
-			  swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
-				VBoxWrapper().apply {
-				  flowpane {
-					(0 until 100).forEach { imIndex ->
-					  val im = images[value.activationIndexesHighToLow[imIndex]]
-					  canvas {
-						draw(im)
-					  }
-					  vgrow = Priority.ALWAYS
-					}
-				  }
-
-				}
-			  }
-			}
-		  }
+		  DatasetNode(this, this@DatasetViewer)
 		}
 	  }
-
 	}.node
   }
 }
 
-fun CanvasWrapper.draw(image: DeephyImage) {
-  node.width = image.matrix[0].size.toDouble()
-  node.height = image.matrix.size.toDouble()
-  val pw = graphicsContext2D.pixelWriter
-  image.matrix.forEachIndexed { y, row ->
-	row.forEachIndexed { x, pix ->
-	  val r = pix[0]
-	  val g = pix[1]
-	  val b = pix[2]
-	  pw.setColor(
-		x, y, FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())
-	  )
-	}
-  }
-}
-
-@Deprecated(
-  "this was for when pixel values were at weird values like -2.0 to 2.0 which Anirban confimed happens in some datasets (one of the CIFARs). It is buggy, obviously."
-) fun CanvasWrapper.drawOld(image: DeephyImage) {
-  node.width = image.matrix[0].size.toDouble()
-  node.height = image.matrix.size.toDouble()
-  val pw = graphicsContext2D.pixelWriter
-  image.matrix.forEachIndexed { y, row ->
-	row.forEachIndexed { x, pix ->
-	  val r: Double = maxOf(minOf((pix[0] + 1)/2, 1.0), 0.0)
-	  val g: Double = maxOf(minOf((pix[1] + 1)/2, 1.0), 0.0)
-	  val b: Double = maxOf(minOf((pix[2] + 1)/2, 1.0), 0.0)
-
-	  val fxColor = FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())
-
-	  pw.setColor(
-		x, y, fxColor
-	  )
-	}
-  }
-}
