@@ -5,22 +5,20 @@ import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
-import matt.nn.deephy.gui.DatasetViewer
-import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.layer.LayerView
+import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.Dataset
 
 class ByNeuronView(
   dataset: Dataset,
-  viewer: DatasetViewer,
-  dsNode: DatasetNode
+  viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
-	val layerCB = choicebox(property = viewer.layerSelection, values = dataset.layers)
+	val layerCB = choicebox(property = viewer.layerSelection, values = dataset.resolvedLayers)
 	hbox<NodeWrapper> {
 	  text("layer: ")
 	  +layerCB
-	  visibleAndManagedProp().bind(viewer.bound.not())
+	  visibleAndManagedProp().bind(viewer.boundTo.isNull)
 	}
 	viewer.layerSelection.onChange {
 	  println("viewer(of ${dataset.datasetName}).layerSelection=${it}")
@@ -29,7 +27,7 @@ class ByNeuronView(
 	  println("layerCB(of ${dataset.datasetName}).value=${it}")
 	}
 	swapper(layerCB.valueProperty, nullMessage = "select a layer") {
-	  LayerView(this, dataset.images, viewer, dsNode)
+	  LayerView(this, dataset.resolvedImages, viewer)
 	}
   }
 }

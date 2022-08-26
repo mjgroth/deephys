@@ -8,91 +8,77 @@ import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.node.onHover
 import matt.hurricanefx.wrapper.node.onLeftClick
 import matt.hurricanefx.wrapper.pane.hbox.HBoxWrapper
+import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
 import matt.hurricanefx.wrapper.pane.spacer
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
-import matt.nn.deephy.gui.DatasetViewer
-import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.neuron.NeuronView
+import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.Dataset
-import matt.nn.deephy.model.Neuron
 
-class TopNeuron(
-  val neuron: Neuron,
-  val index: Int,
-  val activation: Double
-)
 
 class ByImageView(
   dataset: Dataset,
-  viewer: DatasetViewer,
-  dsNode: DatasetNode
+  viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
+
 	swapper(viewer.imageSelection.toNullableProp(), "no image selected") {
 	  VBoxWrapper<NodeWrapper>().apply {
-		+DeephyImView(this@swapper, viewer, dsNode).apply {
+		+DeephyImView(this@swapper, viewer).apply {
 		  scale.value = 4.0
 		}
-		val imIndex = dataset.images.indexOf(this@swapper)
-		val topNeurons = dataset
-		  .layers
-		  .flatMap { it.neurons }
-		  .withIndex()
-		  .toList()
-		  .map {
-			TopNeuron(
-			  neuron = it.value,
-			  index = it.index,
-			  activation = it.value.activations[imIndex]
-			)
-		  }
-		  .sortedBy { it.activation }
-		  .reversed()
-		scrollpane(HBoxWrapper<NodeWrapper>()) {
-		  hbarPolicy = AS_NEEDED
-		  vbarPolicy = AS_NEEDED
-		  isFitToHeight = true
+	  }
+	}.apply {
+	  visibleAndManagedProp().bind(viewer.boundTo.isNull)
+	}
 
-		  val size = 150.0
+	swapper(viewer.topNeurons.toNullableProp(), "no top neurons") {
+	  ScrollPaneWrapper<HBoxWrapper<NodeWrapper>>().apply {
+		hbarPolicy = AS_NEEDED
+		vbarPolicy = AS_NEEDED
+		isFitToHeight = true
 
-		  prefHeight = size
+		val size = 150.0
 
-		  content.apply {
-			topNeurons.take(25).forEach {
-			  val neuron = it.neuron
-			  val neuronIndex = it.index
-			  vbox {
-				text("neuron $neuronIndex") {
-				  onHover {
-					fill = when {
-					  it                                    -> Color.YELLOW
-					  DarkModeController.darkModeProp.value -> Color.WHITE
-					  else                                  -> Color.BLACK
-					}
-				  }
-				  onLeftClick {
-					if (viewer.bound.value) {
-					  viewer.outerBox.myToggleGroup.selectToggle(null)
-					}
-					viewer.neuronSelection.value = null
-					viewer.layerSelection.value = dataset.layers.first { neuron in it.neurons }
-					viewer.neuronSelection.value = IndexedValue(index = neuronIndex, value = neuron)
-					dsNode.view.value = ByNeuron
+		prefHeight = size
+
+		content = HBoxWrapper<NodeWrapper>().apply {
+		  this@swapper.forEach {
+			val neuron = it
+			val neuronIndex = it.index
+			vbox {
+			  text("neuron $neuronIndex") {
+				onHover {
+				  fill = when {
+					it                                    -> Color.YELLOW
+					DarkModeController.darkModeProp.value -> Color.WHITE
+					else                                  -> Color.BLACK
 				  }
 				}
-				+NeuronView(
-				  neuron, numImages = 9, images = dataset.images, viewer = viewer, dsNode = dsNode
-				).apply {
-				  prefWrapLength = size
-				  hgap = 10.0
-				  vgap = 10.0
+				onLeftClick {
+
+				  val viewerToChange = viewer.boundTo.value ?: viewer
+				  viewerToChange.neuronSelection.value = null
+				  viewerToChange.layerSelection.value = neuron.layer
+				  viewerToChange.neuronSelection.value = neuron
+				  viewerToChange.view.value = ByNeuron
 				}
-				spacer() /*space for the hbar*/
-				prefWidth = size
 			  }
+			  +NeuronView(
+				neuron,
+				numImages = 9,
+				images = dataset.resolvedImages,
+				viewer = viewer
+			  ).apply {
+				prefWrapLength = size
+				hgap = 10.0
+				vgap = 10.0
+			  }
+			  spacer() /*space for the hbar*/
+			  prefWidth = size
 			}
 		  }
 		}

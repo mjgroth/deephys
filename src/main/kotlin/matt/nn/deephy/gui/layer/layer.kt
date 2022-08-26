@@ -5,29 +5,27 @@ import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
-import matt.nn.deephy.gui.DatasetViewer
-import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.neuron.NeuronView
-import matt.nn.deephy.model.DeephyImage
-import matt.nn.deephy.model.Layer
+import matt.nn.deephy.gui.viewer.DatasetViewer
+import matt.nn.deephy.model.ResolvedDeephyImage
+import matt.nn.deephy.model.ResolvedLayer
 
 class LayerView(
-  layer: Layer,
-  images: List<DeephyImage>,
-  viewer: DatasetViewer,
-  dsNode: DatasetNode
+  layer: ResolvedLayer,
+  images: List<ResolvedDeephyImage>,
+  viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
-	val neuronCB = choicebox(property = viewer.neuronSelection, values = layer.neurons.withIndex().toList()) {
+	val neuronCB = choicebox(property = viewer.neuronSelection, values = layer.neurons) {
 	  converter = toStringConverter { "neuron ${it?.index}" }
 	}
 	hbox<NodeWrapper> {
 	  text("neuron: ")
 	  +neuronCB
-	  visibleAndManagedProp().bind(viewer.bound.not())
+	  visibleAndManagedProp().bind(viewer.boundTo.isNull)
 	}
 	swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
-	  NeuronView(value, images = images, viewer = viewer, dsNode = dsNode)
+	  NeuronView(this, images = images, viewer = viewer)
 	}
   }
 }
