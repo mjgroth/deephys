@@ -12,11 +12,13 @@ import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
 import matt.hurricanefx.wrapper.pane.spacer
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
+import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.Dataset
+import matt.nn.deephy.model.NeuronWithActivation
 
 
 class ByImageView(
@@ -50,23 +52,29 @@ class ByImageView(
 			val neuron = it
 			val neuronIndex = it.index
 			vbox {
-			  text("neuron $neuronIndex") {
-				onHover {
-				  fill = when {
-					it                                    -> Color.YELLOW
-					DarkModeController.darkModeProp.value -> Color.WHITE
-					else                                  -> Color.BLACK
+			  textflow<TextWrapper> {
+				text("neuron $neuronIndex") {
+				  onHover {
+					fill = when {
+					  it                                    -> Color.YELLOW
+					  DarkModeController.darkModeProp.value -> Color.WHITE
+					  else                                  -> Color.BLACK
+					}
+				  }
+				  onLeftClick {
+
+					val viewerToChange = viewer.boundTo.value ?: viewer
+					viewerToChange.neuronSelection.value = null
+					viewerToChange.layerSelection.value = neuron.layer
+					viewerToChange.neuronSelection.value = neuron
+					viewerToChange.view.value = ByNeuron
 				  }
 				}
-				onLeftClick {
-
-				  val viewerToChange = viewer.boundTo.value ?: viewer
-				  viewerToChange.neuronSelection.value = null
-				  viewerToChange.layerSelection.value = neuron.layer
-				  viewerToChange.neuronSelection.value = neuron
-				  viewerToChange.view.value = ByNeuron
+				if (it is NeuronWithActivation) {
+				  text(" (${it.activation})")
 				}
 			  }
+
 			  +NeuronView(
 				neuron,
 				numImages = 9,
