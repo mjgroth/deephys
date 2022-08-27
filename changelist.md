@@ -6,6 +6,8 @@ Compatible pip package version: [0.2.8](https://pypi.org/project/deephy/0.2.8/) 
 
  - mirror ByImage view on top and bottom if "bind" is enabled
  - show neuron activation in ByImage view
+ - allow user to select random image if they get stuck
+ - sync scrolling on bound and mirrored ByImage views
 
 [//]: # (### Bug Fixes)
 [//]: # (### Notes)

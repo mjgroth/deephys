@@ -1,5 +1,6 @@
 package matt.nn.deephy.gui.viewer
 
+import javafx.beans.property.DoubleProperty
 import javafx.beans.property.ObjectProperty
 import javafx.scene.control.ContentDisplay
 import javafx.scene.paint.Color
@@ -35,6 +36,8 @@ import matt.nn.deephy.model.ResolvedDeephyImage
 import matt.obs.prop.BindableProperty
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
+
+  val siblings get() = outerBox.children.filter { it!=this }
 
   override fun toString() = toStringBuilder("current file" to fileProp.value?.fname)
 
@@ -130,6 +133,36 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  }
 	}
   }
+
+  var currentByImageHScroll: DoubleProperty? = null
+//
+//
+//
+//  fun reBindByImageHScrolls() {
+//	currentByImageHScrollProp.value?.go { p ->
+//
+//
+//
+//	  boundTo.onChange { b ->
+//		if (b != null) {
+//		  bindLater(b.topNeurons.objectBindingN(dataBinding.toFXProp()) { neurons ->
+//			neurons?.let { ns ->
+//			  ns.mapNotNull { n ->
+//				(dataBinding.value as? Dataset)?.neurons?.first {
+//				  it.layer.layerID == n.layer.layerID
+//					  && it.index == n.index
+//				}
+//			  }
+//			}
+//		  })
+//
+//		} else {
+//		  unbind()
+//		  bindLater(imageSelection.objectBindingN { it?.topNeurons() })
+//		}
+//	  }
+//	}
+//  }
 
 
   init {
