@@ -1,7 +1,7 @@
 package matt.nn.deephy.gui.draw
 
-import matt.fx.graphics.FXColor
 import matt.hurricanefx.wrapper.canvas.Canv
+import matt.hurricanefx.wrapper.style.FXColor
 import matt.nn.deephy.model.DeephyImageData
 import kotlin.math.roundToInt
 
