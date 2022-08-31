@@ -1,7 +1,6 @@
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
-import matt.klib.lang.NOT_IMPLEMENTED
 
 //object DeephyDataManager {
 //  private var dataFolder by Pref()
@@ -14,42 +13,76 @@ import matt.klib.lang.NOT_IMPLEMENTED
 //  }
 //}
 
-sealed interface NeuronLike {
-  val activations: List<Double>
-  val index: Int
-  val layer: LayerLike
-  val activationIndexesHighToLow: List<Int>
+
+sealed interface NeuronRef {
+  val neuron: Neuron
+  //  val activations: List<Double>
+  //  val index: Int
+  //  val layer: LayerLike
+  //  val activationIndexesHighToLow: List<Int>
 }
 
 
 @Serializable class Neuron(
-  override val activations: List<Double>
-): NeuronLike {
-  override val activationIndexesHighToLow by lazy {
-	require(activations.all { it >= 0.0 })
-	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
-  }
-  override val index get() = NOT_IMPLEMENTED
-  override val layer get() = NOT_IMPLEMENTED
+  //  override val activations: List<Double>
+): NeuronRef {
+
+  //  override val index get() = NOT_IMPLEMENTED
+  //  override val layer get() = NOT_IMPLEMENTED
+  override val neuron get() = this
 }
 
 
+
+
+class NeuronTestResults(
+  override val neuron: Neuron,
+  val activations: List<Double>
+): NeuronRef {
+
+
+
+  init {
+	println("NeuronTestResults.acitvations.size=${activations.size}")
+  }
+
+  val activationIndexesHighToLow by lazy {
+	require(activations.all { it >= 0.0 })
+	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
+  }
+}
+
+interface ResolvedNeuronLike: NeuronRef {
+  val index: Int
+  val layer: ResolvedLayer
+}
+
 class ResolvedNeuron(
-  neuron: Neuron,
+  override val neuron: Neuron,
   override val index: Int,
   override val layer: ResolvedLayer,
-): NeuronLike by neuron
+): ResolvedNeuronLike
 
 
-class NeuronWithActivation(val neuron: ResolvedNeuron, val activation: Double): NeuronLike by neuron
+class NeuronWithActivation(val rNeuron: ResolvedNeuron, val activation: Double): ResolvedNeuronLike by rNeuron
 
 interface DeephyImageData {
   val data: List<List<List<Double>>>
   val matrix: List<List<List<Double>>>
+  val activations: ModelState
 }
 
+@Serializable
+class ModelState(
+  val activations: List<List<Double>>
+)
+
 @Serializable class DeephyImage(
-  val imageID: Int, val categoryID: Int, val category: String, override val data: List<List<List<Double>>>
+  val imageID: Int,
+  val categoryID: Int,
+  val category: String,
+  override val data: List<List<List<Double>>>,
+  override val activations: ModelState
 ): DeephyImageData {
 
   override val matrix by lazy {
@@ -70,41 +103,51 @@ interface DeephyImageData {
 }
 
 class ResolvedDeephyImage(
-  image: DeephyImage, val index: Int, val dataset: Dataset
+  image: DeephyImage,
+  val index: Int,
+  val test: Test,
+  val model: Model
 ): DeephyImageData {
   val imageID = image.imageID
   val categoryID = image.categoryID
   val category = image.category
   override val data = image.data
   override val matrix by lazy { image.matrix }
+  override val activations by lazy { image.activations }
 
 
-  fun topNeurons() = dataset
-	.neurons
-	.map {
-	  NeuronWithActivation(it, it.activations[index])
-	}
-	.sortedBy { it.activation }
-	.reversed()
-	.take(25)
+  fun topNeurons(): List<NeuronWithActivation> =
+	activations.activations
+	  .flatMapIndexed { layerIndex, layer ->
+		val rLay = model.resolvedLayers[layerIndex]
+		layer.mapIndexed { neuronIndex, a ->
+		  NeuronWithActivation(rLay.neurons[neuronIndex], a)
+		}
+	  }
+	  .sortedBy { it.activation }
+	  .reversed()
+	  .take(25)
 }
 
 interface LayerLike {
   val layerID: String
-  val neurons: List<NeuronLike>
+  val neurons: List<NeuronRef>
   override fun toString(): String
 }
 
 @Serializable class Layer(
-  override val layerID: String, override val neurons: List<Neuron>
+  override val layerID: String,
+  override val neurons: List<Neuron>
 ): LayerLike {
   override fun toString() = layerID
 }
 
 class ResolvedLayer(
-  layer: Layer, val dataset: Dataset
+  layer: Layer,
+  val model: Model,
+  val index: Int
 ): LayerLike by layer {
-  override val neurons = layer.neurons.mapIndexed { index, neuron ->
+  override val neurons: List<ResolvedNeuron> = layer.neurons.mapIndexed { index, neuron ->
 	ResolvedNeuron(
 	  neuron = neuron, index = index, layer = this@ResolvedLayer
 	)
@@ -112,19 +155,37 @@ class ResolvedLayer(
 }
 
 
-/*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
-@Serializable class Dataset(
-  val datasetName: String,
-  val suffix: String?,
-  val images: List<DeephyImage>,
-  val layers: List<Layer>,
-): CborLoadResult {
-  val resolvedLayers by lazy { layers.map { ResolvedLayer(it, this@Dataset) } }
-  val neurons by lazy { resolvedLayers.flatMap { it.neurons } }
-  val resolvedImages by lazy { images.mapIndexed { index, im -> ResolvedDeephyImage(im, index, this@Dataset) } }
+interface DeephyObject {
+  val name: String
+  val suffix: String?
 }
 
-object FileNotFound: CborLoadResult
-object ParseError: CborLoadResult
+@Serializable class Model(
+  override val name: String,
+  override val suffix: String?,
+  val layers: List<Layer>,
+): DeephyObject {
+  val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
+  val neurons: List<ResolvedNeuron> by lazy { resolvedLayers.flatMap { it.neurons } }
+}
 
-sealed interface CborLoadResult
+/*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
+@Serializable class Test(
+  override val name: String,
+  override val suffix: String?,
+  val images: List<DeephyImage>,
+): CborTestLoadResult, DeephyObject {
+
+
+  var model: Model? = null
+	get() = field
+	set(value) {
+	  field = value
+	}
+  val resolvedImages by lazy { images.mapIndexed { index, im -> ResolvedDeephyImage(im, index, this@Test, model!!) } }
+}
+
+object FileNotFound: CborTestLoadResult
+object ParseError: CborTestLoadResult
+
+sealed interface CborTestLoadResult

@@ -21,12 +21,13 @@ import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
-import matt.nn.deephy.model.Dataset
 import matt.nn.deephy.model.NeuronWithActivation
+import matt.nn.deephy.model.Test
+import matt.nn.deephy.state.DeephyState
 
 
 class ByImageView(
-  dataset: Dataset,
+  dataset: Test,
   viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
@@ -55,10 +56,20 @@ class ByImageView(
 		hbarPolicy = AS_NEEDED
 		vbarPolicy = AS_NEEDED
 		isFitToHeight = true
+		vmax = 0.0
 
-		val size = 150.0
+//
+//
+//		addEventFilter(ScrollEvent.SCROLL) {
+//
+//		  it.consume()
+//		}
 
-		prefHeight = size
+
+		val myWidth = 150.0
+		@Suppress("UNUSED_VARIABLE") val myHeight = 150.0
+
+		//		prefHeight = myHeight
 
 
 		viewer.currentByImageHScroll = hValueProp
@@ -84,7 +95,8 @@ class ByImageView(
 				  val viewerToChange = viewer.boundTo.value ?: viewer
 				  viewerToChange.neuronSelection.value = null
 				  viewerToChange.layerSelection.value = neuron.layer
-				  viewerToChange.neuronSelection.value = neuron
+				  viewerToChange.neuronSelection.value =
+					viewerToChange.model.neurons.first { it.neuron == neuron.neuron }
 				  viewerToChange.view.value = ByNeuron
 				}
 				if (it is NeuronWithActivation) {
@@ -93,17 +105,17 @@ class ByImageView(
 			  }
 
 			  +NeuronView(
-				neuron,
-				numImages = 9,
+				viewer.model.neurons.first { it.neuron == neuron.neuron },
+				numImages = DeephyState.numImagesPerNeuronInByImage,
 				images = dataset.resolvedImages,
 				viewer = viewer
 			  ).apply {
-				prefWrapLength = size
+				prefWrapLength = myWidth
 				hgap = 10.0
 				vgap = 10.0
 			  }
 			  spacer() /*space for the hbar*/
-			  prefWidth = size
+			  prefWidth = myWidth
 			}
 		  }
 		}

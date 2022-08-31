@@ -7,11 +7,11 @@ import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
-import matt.nn.deephy.model.LayerLike
 import matt.nn.deephy.model.ResolvedDeephyImage
+import matt.nn.deephy.model.ResolvedLayer
 
 class LayerView(
-  layer: LayerLike,
+  layer: ResolvedLayer,
   images: List<ResolvedDeephyImage>,
   viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {

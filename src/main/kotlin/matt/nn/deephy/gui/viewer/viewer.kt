@@ -9,7 +9,6 @@ import javafx.stage.FileChooser.ExtensionFilter
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import matt.file.CborFile
-import matt.file.construct.toMFile
 import matt.hurricanefx.async.bindLater
 import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.lang.Prop
@@ -27,17 +26,20 @@ import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
-import matt.nn.deephy.model.Dataset
 import matt.nn.deephy.model.FileNotFound
-import matt.nn.deephy.model.LayerLike
-import matt.nn.deephy.model.NeuronLike
 import matt.nn.deephy.model.ParseError
 import matt.nn.deephy.model.ResolvedDeephyImage
+import matt.nn.deephy.model.ResolvedLayer
+import matt.nn.deephy.model.ResolvedNeuron
+import matt.nn.deephy.model.ResolvedNeuronLike
+import matt.nn.deephy.model.Test
 import matt.obs.prop.BindableProperty
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
-  val siblings get() = outerBox.children.filter { it!=this }
+  val model get() = outerBox.model
+
+  val siblings get() = outerBox.children.filter { it != this }
 
   override fun toString() = toStringBuilder("current file" to fileProp.value?.fname)
 
@@ -50,7 +52,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	if (it != null && it.doesNotExist) FileNotFound
 	else {
 	  it?.let {
-		Cbor.decodeFromByteArray<Dataset>(it.readBytes())
+		Cbor.decodeFromByteArray<Test>(it.readBytes()).also {
+		  it.model = model
+		}
 	  }
 	}
   }.toNullableROProp()
@@ -71,12 +75,12 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	}
   }
 
-  val layerSelection: ObjectProperty<LayerLike> = Prop<LayerLike>().apply {
+  val layerSelection: ObjectProperty<ResolvedLayer> = Prop<ResolvedLayer>().apply {
 	boundTo.onChange { b ->
 	  if (b != null) {
 		bindLater(
 		  b.layerSelection.objectBindingN(dataBinding.toFXProp()) { layer ->
-			(dataBinding.value as? Dataset)?.resolvedLayers?.firstOrNull { it.layerID == layer?.layerID }
+			model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
 		  }
 		)
 	  } else unbind()
@@ -87,7 +91,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  }
 	}
   }
-  val neuronSelection: ObjectProperty<NeuronLike> = Prop<NeuronLike>().apply {
+  val neuronSelection: ObjectProperty<ResolvedNeuron> = Prop<ResolvedNeuron>().apply {
 
 	boundTo.onChange { b ->
 	  if (b != null) {
@@ -110,7 +114,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   val imageSelection = Prop<ResolvedDeephyImage>()
 
 
-  val topNeurons: ObjectProperty<List<NeuronLike>?> = PropN<List<NeuronLike>?>().apply {
+  val topNeurons: ObjectProperty<List<ResolvedNeuronLike>?> = PropN<List<ResolvedNeuronLike>?>().apply {
 	if (!isBound) {
 	  bindLater(imageSelection.objectBindingN(dataBinding.toFXProp()) { it?.topNeurons() })
 	}
@@ -119,10 +123,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		bindLater(b.topNeurons.objectBindingN(dataBinding.toFXProp()) { neurons ->
 		  neurons?.let { ns ->
 			ns.mapNotNull { n ->
-			  (dataBinding.value as? Dataset)?.neurons?.first {
-				it.layer.layerID == n.layer.layerID
-					&& it.index == n.index
-			  }
+			  model.neurons.first { it.neuron == n.neuron }
 			}
 		  }
 		})
@@ -135,34 +136,34 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   var currentByImageHScroll: DoubleProperty? = null
-//
-//
-//
-//  fun reBindByImageHScrolls() {
-//	currentByImageHScrollProp.value?.go { p ->
-//
-//
-//
-//	  boundTo.onChange { b ->
-//		if (b != null) {
-//		  bindLater(b.topNeurons.objectBindingN(dataBinding.toFXProp()) { neurons ->
-//			neurons?.let { ns ->
-//			  ns.mapNotNull { n ->
-//				(dataBinding.value as? Dataset)?.neurons?.first {
-//				  it.layer.layerID == n.layer.layerID
-//					  && it.index == n.index
-//				}
-//			  }
-//			}
-//		  })
-//
-//		} else {
-//		  unbind()
-//		  bindLater(imageSelection.objectBindingN { it?.topNeurons() })
-//		}
-//	  }
-//	}
-//  }
+  //
+  //
+  //
+  //  fun reBindByImageHScrolls() {
+  //	currentByImageHScrollProp.value?.go { p ->
+  //
+  //
+  //
+  //	  boundTo.onChange { b ->
+  //		if (b != null) {
+  //		  bindLater(b.topNeurons.objectBindingN(dataBinding.toFXProp()) { neurons ->
+  //			neurons?.let { ns ->
+  //			  ns.mapNotNull { n ->
+  //				(dataBinding.value as? Dataset)?.neurons?.first {
+  //				  it.layer.layerID == n.layer.layerID
+  //					  && it.index == n.index
+  //				}
+  //			  }
+  //			}
+  //		  })
+  //
+  //		} else {
+  //		  unbind()
+  //		  bindLater(imageSelection.objectBindingN { it?.topNeurons() })
+  //		}
+  //	  }
+  //	}
+  //  }
 
 
   init {
@@ -180,15 +181,16 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  this@DatasetViewer.outerBox.save()
 		}
 	  }
-	  button("select dataset") {
-		tooltip("choose dataset file")
+	  button("select test") {
+		tooltip("choose test file")
 		setOnAction {
 		  val f = FileChooser().apply {
-			title = "choose data folder"
-			this.extensionFilters.setAll(ExtensionFilter("cbor", "*.cbor"))
+			title = "choose test data"
+			this.extensionFilters.setAll(ExtensionFilter("tests", "*.test"))
 		  }.showOpenDialog(stage)
+
 		  if (f != null) {
-			this@DatasetViewer.fileProp.value = f.toMFile() as CborFile
+			this@DatasetViewer.fileProp.value = CborFile(f.path)
 		  }
 		}
 	  }
@@ -202,7 +204,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  when (this) {
 		is FileNotFound -> TextWrapper("${fileProp.value} not found")
 		is ParseError   -> TextWrapper("parse error")
-		is Dataset      -> DatasetNode(this, this@DatasetViewer)
+		is Test         -> DatasetNode(this, this@DatasetViewer)
 	  }
 	}.node
   }

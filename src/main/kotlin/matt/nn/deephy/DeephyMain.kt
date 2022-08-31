@@ -1,16 +1,31 @@
 package matt.nn.deephy
 
 import javafx.geometry.Pos
+import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
+import javafx.stage.FileChooser
+import javafx.stage.FileChooser.ExtensionFilter
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
 import matt.auto.myPid
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.CborFile
+import matt.file.MFile
+import matt.file.construct.toMFile
 import matt.file.toMFile
+import matt.file.toSFile
 import matt.fx.graphics.lang.actionbutton
+import matt.fx.graphics.win.interact.openInNewWindow
+import matt.fx.graphics.win.stage.ShowMode.SHOW_AND_WAIT
+import matt.fx.graphics.win.stage.WMode.CLOSE
 import matt.gui.app.GuiApp
+import matt.hurricanefx.eye.lib.onChange
+import matt.hurricanefx.tornadofx.item.spinner
+import matt.hurricanefx.wrapper.imageview.ImageViewWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.klib.lang.resourceStream
 import matt.klib.str.taball
 import matt.klib.weak.MemReport
 import matt.nn.deephy.gui.DSetViewsVBox
@@ -36,15 +51,49 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 	alignment = Pos.TOP_CENTER
 
-	val multiAcc = DSetViewsVBox().apply {
-	  DeephyState.datasets.value?.forEach {
-		this += (it.toMFile() as CborFile)
+	hbox<NodeWrapper> {
+	  actionbutton("choose model file") {
+		val f = FileChooser().apply {
+		  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
+		}.showOpenDialog(stage)?.toMFile()?.toSFile()
+		if (f != null) {
+		  DeephyState.tests.value = null
+		  DeephyState.model.value = f
+		}
 	  }
+
+	  actionbutton(graphic = ImageViewWrapper(Image(resourceStream("gear.png"))).apply {
+		isPreserveRatio = true
+		fitWidth = 25.0
+	  }.node) {
+
+		VBoxWrapper<NodeWrapper>().apply {
+		  spinner(min = 9, max = 18, initialValue = DeephyState.numImagesPerNeuronInByImage.value) {
+			valueProperty().onChange {
+			  require(it != null)
+			  DeephyState.numImagesPerNeuronInByImage.value = it
+			}
+		  }
+		}.openInNewWindow(
+		  SHOW_AND_WAIT, CLOSE, EscClosable = true, decorated = true, title = "Deephy Options"
+		)
+	  }
+
 	}
-	+multiAcc
-	actionbutton("add dataset") {
-	  multiAcc += DatasetViewer(null, multiAcc)
-	  taball("children of multAcc:", multiAcc.node.children)
+
+	swapper(DeephyState.model) {
+	  VBoxWrapper<NodeWrapper>().apply {
+		val multiAcc = DSetViewsVBox(this@swapper.toMFile().loadCbor()).apply {
+		  DeephyState.tests.value?.forEach {
+			this += (CborFile(it.path))
+		  }
+		}
+		+multiAcc
+		actionbutton("add dataset") {
+		  multiAcc += DatasetViewer(null, multiAcc)
+		  taball("children of multAcc:", multiAcc.node.children)
+		}
+	  }
 	}
 
 	vbox<NodeWrapper> {
@@ -59,4 +108,4 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 }.start()
 
-
+inline fun <reified T: Any> MFile.loadCbor(): T = Cbor.decodeFromByteArray(readBytes())
