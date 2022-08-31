@@ -1,6 +1,7 @@
 package matt.nn.deephy
 
 import javafx.geometry.Pos
+import javafx.scene.control.ContentDisplay.RIGHT
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
@@ -68,12 +69,18 @@ fun main(): Unit = GuiApp(decorated = true) {
 	  }.node) {
 
 		VBoxWrapper<NodeWrapper>().apply {
-		  spinner(min = 9, max = 18, initialValue = DeephyState.numImagesPerNeuronInByImage.value) {
-			valueProperty().onChange {
-			  require(it != null)
-			  DeephyState.numImagesPerNeuronInByImage.value = it
+		  label {
+			text = "Number of images per neuron in image view"
+			contentDisplay = RIGHT
+			graphic = spinner(min = 9, max = 18, initialValue = DeephyState.numImagesPerNeuronInByImage.value) {
+			  prefWidth = 55.0
+			  valueProperty().onChange {
+				require(it != null)
+				DeephyState.numImagesPerNeuronInByImage.value = it
+			  }
 			}
 		  }
+
 		}.openInNewWindow(
 		  SHOW_AND_WAIT, CLOSE, EscClosable = true, decorated = true, title = "Deephy Options"
 		)
