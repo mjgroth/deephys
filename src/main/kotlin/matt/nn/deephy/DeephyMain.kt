@@ -95,8 +95,10 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 
 	loadSwapper(modelDataBinding, nullMessage = "Select a .model file to begin") {
+	  val model = this@loadSwapper
 	  VBoxWrapper<NodeWrapper>().apply {
-		val multiAcc = DSetViewsVBox(this@loadSwapper).apply {
+		text("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
+		val multiAcc = DSetViewsVBox(model).apply {
 		  DeephyState.tests.value?.forEach {
 			this += (CborFile(it.path))
 		  }
