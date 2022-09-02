@@ -194,7 +194,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  }
 		}
 	  }
-	  togglebutton("bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer) {
+	  togglebutton("matt.hurricanefx.eye.collect.collectbind.bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer) {
 		backgroundProperty.bind(selectedProperty.objectBindingN {
 		  if (it == true) backgroundColor(Color.YELLOW) else null
 		})
