@@ -6,13 +6,10 @@ import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
 import matt.auto.myPid
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.CborFile
-import matt.file.MFile
 import matt.file.construct.toMFile
 import matt.file.toMFile
 import matt.file.toSFile
@@ -31,8 +28,12 @@ import matt.klib.str.taball
 import matt.klib.weak.MemReport
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.viewer.DatasetViewer
+import matt.nn.deephy.model.Model
+import matt.nn.deephy.model.loadCbor
+import matt.nn.deephy.model.loadSwapper
 import matt.nn.deephy.state.DeephyState
 import matt.nn.deephy.version.VersionChecker
+import matt.obs.bind.binding
 
 fun main(): Unit = GuiApp(decorated = true) {
 
@@ -88,9 +89,14 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 	}
 
-	swapper(DeephyState.model) {
+	val modelDataBinding = DeephyState.model.binding { f ->
+	  f?.toMFile()?.loadCbor<Model>()
+	}
+
+
+	loadSwapper(modelDataBinding, nullMessage = "Select a .model file to begin") {
 	  VBoxWrapper<NodeWrapper>().apply {
-		val multiAcc = DSetViewsVBox(this@swapper.toMFile().loadCbor()).apply {
+		val multiAcc = DSetViewsVBox(this@loadSwapper).apply {
 		  DeephyState.tests.value?.forEach {
 			this += (CborFile(it.path))
 		  }
@@ -115,4 +121,4 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 }.start()
 
-inline fun <reified T: Any> MFile.loadCbor(): T = Cbor.decodeFromByteArray(readBytes())
+

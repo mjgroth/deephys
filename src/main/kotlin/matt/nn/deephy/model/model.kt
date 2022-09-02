@@ -1,6 +1,14 @@
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
+import matt.file.MFile
+import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.hurricanefx.wrapper.target.EventTargetWrapper
+import matt.hurricanefx.wrapper.text.TextWrapper
+import matt.obs.MObservableROValBase
 
 //object DeephyDataManager {
 //  private var dataFolder by Pref()
@@ -31,8 +39,6 @@ sealed interface NeuronRef {
   //  override val layer get() = NOT_IMPLEMENTED
   override val neuron get() = this
 }
-
-
 
 
 class NeuronTestResults(
@@ -174,7 +180,7 @@ interface DeephyObject {
   override val name: String,
   override val suffix: String?,
   val images: List<DeephyImage>,
-): CborTestLoadResult, DeephyObject {
+): DeephyObject {
 
 
   var model: Model? = null
@@ -185,7 +191,26 @@ interface DeephyObject {
   val resolvedImages by lazy { images.mapIndexed { index, im -> ResolvedDeephyImage(im, index, this@Test, model!!) } }
 }
 
-object FileNotFound: CborTestLoadResult
-object ParseError: CborTestLoadResult
+class FileNotFound<T>(val f: MFile): CborTestLoadResult<T>
+class ParseError<T>(val message: String?): CborTestLoadResult<T>
+class Loaded<T>(val data: T): CborTestLoadResult<T>
 
-sealed interface CborTestLoadResult
+sealed interface CborTestLoadResult<T>
+
+inline fun <reified T: Any> MFile.loadCbor(): CborTestLoadResult<T> = if (doesNotExist) FileNotFound(this) else try {
+  Loaded(Cbor.decodeFromByteArray(readBytes()))
+} catch (e: SerializationException) {
+  ParseError(e.message)
+}
+
+fun <T> EventTargetWrapper.loadSwapper(
+  prop: MObservableROValBase<CborTestLoadResult<T>?>,
+  nullMessage: String = "please select a file",
+  op: T.()->NodeWrapper
+) = swapper(prop, nullMessage) {
+  when (this) {
+	is FileNotFound -> TextWrapper("$f not found")
+	is ParseError   -> TextWrapper("parse error: $message")
+	is Loaded<T>    -> op(this.data)
+  }
+}

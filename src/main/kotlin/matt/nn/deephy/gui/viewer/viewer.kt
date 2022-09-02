@@ -6,8 +6,6 @@ import javafx.scene.control.ContentDisplay
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
 import matt.file.CborFile
 import matt.hurricanefx.async.bindLater
 import matt.hurricanefx.backgroundColor
@@ -20,19 +18,19 @@ import matt.hurricanefx.eye.prop.stringBindingN
 import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
-import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.klib.lang.toStringBuilder
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
-import matt.nn.deephy.model.FileNotFound
-import matt.nn.deephy.model.ParseError
+import matt.nn.deephy.model.Loaded
 import matt.nn.deephy.model.ResolvedDeephyImage
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.ResolvedNeuronLike
 import matt.nn.deephy.model.Test
+import matt.nn.deephy.model.loadCbor
+import matt.nn.deephy.model.loadSwapper
 import matt.obs.prop.BindableProperty
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
@@ -48,13 +46,10 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  outerBox.save()
 	}
   }
-  private val dataBinding = fileProp.objectBindingN {
-	if (it != null && it.doesNotExist) FileNotFound
-	else {
-	  it?.let {
-		Cbor.decodeFromByteArray<Test>(it.readBytes()).also {
-		  it.model = model
-		}
+  private val dataBinding = fileProp.objectBindingN { f ->
+	f?.run {
+	  loadCbor<Test>().also {
+		(it as? Loaded<Test>)?.data?.model = model
 	  }
 	}
   }.toNullableROProp()
@@ -171,8 +166,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	isExpanded = true
 	titleProperty.bind(fileProp.stringBindingN { it?.nameWithoutExtension })
 	graphic = hbox<NodeWrapper> {
-	  button("remove dataset") {
-		tooltip("remove this dataset viewer")
+	  button("remove test") {
+		tooltip("remove this test viewer")
 		setOnAction {
 		  if (this@DatasetViewer.outerBox.bound.value == this@DatasetViewer) {
 			this@DatasetViewer.outerBox.bound.value = null
@@ -194,19 +189,20 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  }
 		}
 	  }
-	  togglebutton("matt.hurricanefx.eye.collect.collectbind.bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer) {
+	  togglebutton(
+		"bind", group = this@DatasetViewer.outerBox.myToggleGroup,
+		value = this@DatasetViewer
+	  ) {
 		backgroundProperty.bind(selectedProperty.objectBindingN {
 		  if (it == true) backgroundColor(Color.YELLOW) else null
 		})
 	  }
 	}
-	content = swapper(dataBinding, nullMessage = "select a dataset to view it") {
-	  when (this) {
-		is FileNotFound -> TextWrapper("${fileProp.value} not found")
-		is ParseError   -> TextWrapper("parse error")
-		is Test         -> DatasetNode(this, this@DatasetViewer)
-	  }
+	content = loadSwapper(dataBinding, nullMessage = "select a test to view it") {
+	  DatasetNode(this, this@DatasetViewer)
 	}.node
   }
 }
+
+
 
