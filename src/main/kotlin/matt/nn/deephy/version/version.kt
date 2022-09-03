@@ -2,19 +2,19 @@ package matt.nn.deephy.version
 
 import javafx.application.Platform.runLater
 import javafx.beans.property.SimpleObjectProperty
-import matt.time.dur.sec
 import matt.async.schedule.AccurateTimer
 import matt.async.schedule.every
 import matt.exec.app.appName
 import matt.exec.app.myVersion
-import matt.file.GitHub
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.textflow.TextFlowWrapper
+import matt.kjlib.git.hub.GitHub
 import matt.log.warn
-import matt.klib.release.Release
-import matt.klib.release.Version
+import matt.model.release.Release
+import matt.model.release.Version
+import matt.time.dur.sec
 import java.net.ConnectException
 
 object VersionChecker {

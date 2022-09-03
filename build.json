@@ -20,6 +20,16 @@
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
 	  "path" :  ":k:kjlib:jmath"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "implementation",
+	  "path" :  ":k:model"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "implementation",
+	  "path" :  ":k:kjlib:git"
 	}
   ]
 }
