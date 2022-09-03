@@ -2,7 +2,7 @@ package matt.nn.deephy.version
 
 import javafx.application.Platform.runLater
 import javafx.beans.property.SimpleObjectProperty
-import matt.async.date.sec
+import matt.time.dur.sec
 import matt.async.schedule.AccurateTimer
 import matt.async.schedule.every
 import matt.exec.app.appName
