@@ -24,7 +24,7 @@ import matt.hurricanefx.wrapper.imageview.ImageViewWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.lang.resourceStream
-import matt.prim.str.taball
+import matt.log.taball
 import matt.klib.weak.MemReport
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.viewer.DatasetViewer
