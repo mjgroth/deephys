@@ -18,7 +18,7 @@ import matt.hurricanefx.eye.prop.stringBindingN
 import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
-import matt.klib.lang.toStringBuilder
+import matt.lang.toStringBuilder
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView

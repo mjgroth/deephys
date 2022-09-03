@@ -16,7 +16,7 @@ import matt.hurricanefx.wrapper.region.RegionWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.kjlib.jmath.sigFigs
-import matt.klib.lang.go
+import matt.lang.go
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.neuron.NeuronView
