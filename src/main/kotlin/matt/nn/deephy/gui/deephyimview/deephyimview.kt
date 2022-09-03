@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.deephyimview
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.wrapper.node.onLeftClick
-import matt.klib.todoOnce
+import matt.log.todoOnce
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.draw.draw
 import matt.nn.deephy.gui.viewer.DatasetViewer
