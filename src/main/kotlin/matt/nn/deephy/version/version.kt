@@ -12,7 +12,7 @@ import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.textflow.TextFlowWrapper
-import matt.klib.log.warn
+import matt.log.warn
 import matt.klib.release.Release
 import matt.klib.release.Version
 import java.net.ConnectException
