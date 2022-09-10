@@ -1,6 +1,5 @@
 package matt.nn.deephy.gui.dataset.byneuron
 
-import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
@@ -18,7 +17,7 @@ class ByNeuronView(
 	hbox<NodeWrapper> {
 	  text("layer: ")
 	  +layerCB
-	  visibleAndManagedProp().bind(viewer.boundTo.isNull)
+	  visibleAndManagedProp().bind(viewer.boundToDSet.isNull)
 	}
 	viewer.layerSelection.onChange {
 	  println("viewer(of ${dataset.name}).layerSelection=${it}")

@@ -31,6 +31,7 @@ import matt.nn.deephy.model.ResolvedNeuronLike
 import matt.nn.deephy.model.Test
 import matt.nn.deephy.model.loadCbor
 import matt.nn.deephy.model.loadSwapper
+import matt.obs.bind.binding
 import matt.obs.prop.BindableProperty
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
@@ -54,27 +55,27 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	}
   }.toNullableROProp()
 
-  val boundTo: ObjectProperty<DatasetViewer?> = PropN<DatasetViewer?>().apply {
+  val boundToDSet: ObjectProperty<DatasetViewer?> = PropN<DatasetViewer?>().apply {
 	bind(outerBox.bound.objectBindingN {
 	  if (it != this@DatasetViewer) it else null
 	})
   }
-  val isBound get() = boundTo.value != null
+  val isBound get() = boundToDSet.value != null
 
   val view: BindableProperty<DatasetNodeView> = BindableProperty(
-	boundTo.value?.view?.value ?: ByNeuron
+	boundToDSet.value?.view?.value ?: ByNeuron
   ).apply {
-	this@DatasetViewer.boundTo.onChange {
+	this@DatasetViewer.boundToDSet.onChange {
 	  if (it != null) bindLater(it.view)
 	  else unbind()
 	}
   }
 
-  val layerSelection: ObjectProperty<ResolvedLayer> = Prop<ResolvedLayer>().apply {
-	boundTo.onChange { b ->
+  val layerSelection: BindableProperty<ResolvedLayer?> = BindableProperty<ResolvedLayer?>(null).apply {
+	this@DatasetViewer.boundToDSet.onChange { b ->
 	  if (b != null) {
 		bindLater(
-		  b.layerSelection.objectBindingN(dataBinding.createROFXPropWrapper()) { layer ->
+		  b.layerSelection.binding(dataBinding) { layer ->
 			model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
 		  }
 		)
@@ -86,12 +87,12 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  }
 	}
   }
-  val neuronSelection: ObjectProperty<ResolvedNeuron> = Prop<ResolvedNeuron>().apply {
+  val neuronSelection: BindableProperty<ResolvedNeuron?> = BindableProperty<ResolvedNeuron?>(null).apply {
 
-	boundTo.onChange { b ->
+	boundToDSet.onChange { b ->
 	  if (b != null) {
 		bindLater(
-		  b.neuronSelection.objectBindingN(dataBinding.createROFXPropWrapper(), layerSelection) { n ->
+		  b.neuronSelection.binding(dataBinding, layerSelection) { n ->
 			layerSelection.value?.neurons?.firstOrNull { it.index == n?.index }
 		  }
 		)
@@ -113,7 +114,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	if (!isBound) {
 	  bindLater(imageSelection.objectBindingN(dataBinding.createROFXPropWrapper()) { it?.topNeurons() })
 	}
-	boundTo.onChange { b ->
+	boundToDSet.onChange { b ->
 	  if (b != null) {
 		bindLater(b.topNeurons.objectBindingN(dataBinding.createROFXPropWrapper()) { neurons ->
 		  neurons?.let { ns ->

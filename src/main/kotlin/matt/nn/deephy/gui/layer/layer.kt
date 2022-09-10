@@ -22,7 +22,7 @@ class LayerView(
 	hbox<NodeWrapper> {
 	  text("neuron: ")
 	  +neuronCB
-	  visibleAndManagedProp().bind(viewer.boundTo.isNull)
+	  visibleAndManagedProp().bind(viewer.boundToDSet.isNull)
 	}
 	swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
 	  NeuronView(this, images = images, viewer = viewer)

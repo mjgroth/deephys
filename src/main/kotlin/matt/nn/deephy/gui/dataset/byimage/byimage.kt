@@ -48,7 +48,7 @@ class ByImageView(
 		}
 	  }
 	}.apply {
-	  visibleAndManagedProp().bind(viewer.boundTo.isNull)
+	  visibleAndManagedProp().bind(viewer.boundToDSet.isNull)
 	}
 
 	swapper(viewer.topNeurons.toNullableProp(), "no top neurons") {
@@ -73,14 +73,14 @@ class ByImageView(
 
 
 		viewer.currentByImageHScroll = hValueProp
-		viewer.boundTo.value?.currentByImageHScroll?.value?.go { hvalue = it }
+		viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
 		hValueProp.onChange { h ->
 		  if (viewer.outerBox.bound.value != null) {
 			viewer.siblings.forEach { it.currentByImageHScroll?.value = h }
 		  }
 		}
-		viewer.boundTo.onChange {
-		  viewer.boundTo.value?.currentByImageHScroll?.value?.go { hvalue = it }
+		viewer.boundToDSet.onChange {
+		  viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
 		}
 
 
@@ -92,7 +92,7 @@ class ByImageView(
 			vbox {
 			  textflow<TextWrapper> {
 				actionText("neuron $neuronIndex") {
-				  val viewerToChange = viewer.boundTo.value ?: viewer
+				  val viewerToChange = viewer.boundToDSet.value ?: viewer
 				  viewerToChange.neuronSelection.value = null
 				  viewerToChange.layerSelection.value = neuron.layer
 				  viewerToChange.neuronSelection.value =
