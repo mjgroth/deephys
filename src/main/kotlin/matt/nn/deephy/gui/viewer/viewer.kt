@@ -12,7 +12,7 @@ import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.lang.Prop
 import matt.hurricanefx.eye.lang.PropN
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.mtofx.toFXProp
+import matt.hurricanefx.eye.mtofx.createROFXPropWrapper
 import matt.hurricanefx.eye.prop.objectBindingN
 import matt.hurricanefx.eye.prop.stringBindingN
 import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
@@ -74,7 +74,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	boundTo.onChange { b ->
 	  if (b != null) {
 		bindLater(
-		  b.layerSelection.objectBindingN(dataBinding.toFXProp()) { layer ->
+		  b.layerSelection.objectBindingN(dataBinding.createROFXPropWrapper()) { layer ->
 			model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
 		  }
 		)
@@ -91,7 +91,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	boundTo.onChange { b ->
 	  if (b != null) {
 		bindLater(
-		  b.neuronSelection.objectBindingN(dataBinding.toFXProp(), layerSelection) { n ->
+		  b.neuronSelection.objectBindingN(dataBinding.createROFXPropWrapper(), layerSelection) { n ->
 			layerSelection.value?.neurons?.firstOrNull { it.index == n?.index }
 		  }
 		)
@@ -111,11 +111,11 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
   val topNeurons: ObjectProperty<List<ResolvedNeuronLike>?> = PropN<List<ResolvedNeuronLike>?>().apply {
 	if (!isBound) {
-	  bindLater(imageSelection.objectBindingN(dataBinding.toFXProp()) { it?.topNeurons() })
+	  bindLater(imageSelection.objectBindingN(dataBinding.createROFXPropWrapper()) { it?.topNeurons() })
 	}
 	boundTo.onChange { b ->
 	  if (b != null) {
-		bindLater(b.topNeurons.objectBindingN(dataBinding.toFXProp()) { neurons ->
+		bindLater(b.topNeurons.objectBindingN(dataBinding.createROFXPropWrapper()) { neurons ->
 		  neurons?.let { ns ->
 			ns.mapNotNull { n ->
 			  model.neurons.first { it.neuron == n.neuron }
