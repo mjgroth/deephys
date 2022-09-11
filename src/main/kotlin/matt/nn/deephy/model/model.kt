@@ -8,7 +8,7 @@ import matt.file.MFile
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
-import matt.obs.MObservableROValBase
+import matt.obs.prop.MObservableROValBase
 
 //object DeephyDataManager {
 //  private var dataFolder by Pref()
