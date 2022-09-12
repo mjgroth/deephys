@@ -8,11 +8,7 @@ import javafx.stage.FileChooser.ExtensionFilter
 import matt.file.CborFile
 import matt.hurricanefx.async.bindLater
 import matt.hurricanefx.backgroundColor
-import matt.hurricanefx.eye.lang.Prop
-import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.objectBindingN
-import matt.hurricanefx.eye.prop.stringBindingN
-import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.lang.toStringBuilder
@@ -30,6 +26,7 @@ import matt.nn.deephy.model.loadCbor
 import matt.nn.deephy.model.loadSwapper
 import matt.obs.bind.binding
 import matt.obs.prop.BindableProperty
+import matt.obs.prop.VarProp
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
@@ -39,18 +36,18 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
   override fun toString() = toStringBuilder("current file" to fileProp.value?.fname)
 
-  val fileProp: Prop<CborFile?> = Prop(initialFile).apply {
+  val fileProp: VarProp<CborFile?> = VarProp(initialFile).apply {
 	onChange {
 	  outerBox.save()
 	}
   }
-  private val dataBinding = fileProp.objectBindingN { f ->
+  private val dataBinding = fileProp.binding { f ->
 	f?.run {
 	  loadCbor<Test>().also {
 		(it as? Loaded<Test>)?.data?.model = model
 	  }
 	}
-  }.toNullableROProp()
+  }
 
   val boundToDSet: BindableProperty<DatasetViewer?> = BindableProperty<DatasetViewer?>(null).apply {
 	bind(outerBox.bound.binding {
@@ -163,7 +160,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   init {
 	contentDisplay = ContentDisplay.LEFT
 	isExpanded = true
-	titleProperty.bind(fileProp.stringBindingN { it?.nameWithoutExtension })
+	titleProperty.bind(fileProp.binding { it?.nameWithoutExtension })
 	graphic = hbox<NodeWrapper> {
 	  button("remove test") {
 		tooltip("remove this test viewer")
