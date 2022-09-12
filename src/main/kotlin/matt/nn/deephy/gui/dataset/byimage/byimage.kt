@@ -4,7 +4,6 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
 import javafx.scene.paint.Color
 import matt.fx.graphics.style.DarkModeController
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.node.onHover
 import matt.hurricanefx.wrapper.node.onLeftClick
@@ -15,8 +14,8 @@ import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
-import matt.math.jmath.sigFigs
 import matt.lang.go
+import matt.math.jmath.sigFigs
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.neuron.NeuronView
@@ -24,6 +23,7 @@ import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.NeuronWithActivation
 import matt.nn.deephy.model.Test
 import matt.nn.deephy.state.DeephyState
+import matt.obs.bindings.bool.and
 
 
 class ByImageView(
@@ -41,7 +41,7 @@ class ByImageView(
 	  )
 	}
 
-	swapper(viewer.imageSelection.toNullableProp(), "no image selected") {
+	swapper(viewer.imageSelection, "no image selected") {
 	  VBoxWrapper<NodeWrapper>().apply {
 		+DeephyImView(this@swapper, viewer).apply {
 		  scale.value = 4.0
@@ -51,7 +51,7 @@ class ByImageView(
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 
-	swapper(viewer.topNeurons.toNullableProp(), "no top neurons") {
+	swapper(viewer.topNeurons, "no top neurons") {
 	  ScrollPaneWrapper<HBoxWrapper<NodeWrapper>>().apply {
 		hbarPolicy = AS_NEEDED
 		vbarPolicy = AS_NEEDED
