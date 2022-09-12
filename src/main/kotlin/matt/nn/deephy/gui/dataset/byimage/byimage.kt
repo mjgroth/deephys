@@ -36,7 +36,7 @@ class ByImageView(
 	  setOnAction {
 		viewer.imageSelection.value = dataset.resolvedImages.random()
 	  }
-	  visibleAndManagedProp().bind(
+	  visibleAndManagedProp.bind(
 		viewer.imageSelection.isNull.and(viewer.topNeurons.isNull)
 	  )
 	}
@@ -48,7 +48,7 @@ class ByImageView(
 		}
 	  }
 	}.apply {
-	  visibleAndManagedProp().bind(viewer.boundToDSet.isNull)
+	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 
 	swapper(viewer.topNeurons.toNullableProp(), "no top neurons") {
