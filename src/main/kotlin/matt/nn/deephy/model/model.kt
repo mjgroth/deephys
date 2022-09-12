@@ -8,7 +8,7 @@ import matt.file.MFile
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
-import matt.obs.prop.MObservableROValBase
+import matt.obs.prop.MObservableROPropBase
 
 //object DeephyDataManager {
 //  private var dataFolder by Pref()
@@ -204,7 +204,7 @@ inline fun <reified T: Any> MFile.loadCbor(): CborTestLoadResult<T> = if (doesNo
 }
 
 fun <T> EventTargetWrapper.loadSwapper(
-  prop: MObservableROValBase<CborTestLoadResult<T>?>,
+  prop: MObservableROPropBase<CborTestLoadResult<T>?>,
   nullMessage: String = "please select a file",
   op: T.()->NodeWrapper
 ) = swapper(prop, nullMessage) {
