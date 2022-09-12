@@ -3,6 +3,8 @@ package matt.nn.deephy.gui
 import javafx.scene.control.ToggleGroup
 import matt.file.CborFile
 import matt.file.toSFile
+import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
+import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
 import matt.hurricanefx.tornadofx.control.selectedValueProperty
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.nn.deephy.gui.viewer.DatasetViewer
@@ -23,7 +25,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapper<DatasetViewer>() {
 
   val myToggleGroup = ToggleGroup()
 
-  val bound = myToggleGroup.selectedValueProperty<DatasetViewer>()
+  val bound = myToggleGroup.selectedValueProperty<DatasetViewer>().toNullableProp()
 
 }
 

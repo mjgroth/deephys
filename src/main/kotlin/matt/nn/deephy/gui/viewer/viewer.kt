@@ -1,7 +1,6 @@
 package matt.nn.deephy.gui.viewer
 
 import javafx.beans.property.DoubleProperty
-import javafx.beans.property.ObjectProperty
 import javafx.scene.control.ContentDisplay
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
@@ -10,9 +9,7 @@ import matt.file.CborFile
 import matt.hurricanefx.async.bindLater
 import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.lang.Prop
-import matt.hurricanefx.eye.lang.PropN
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.mtofx.createROFXPropWrapper
 import matt.hurricanefx.eye.prop.objectBindingN
 import matt.hurricanefx.eye.prop.stringBindingN
 import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
@@ -55,8 +52,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	}
   }.toNullableROProp()
 
-  val boundToDSet: ObjectProperty<DatasetViewer?> = PropN<DatasetViewer?>().apply {
-	bind(outerBox.bound.objectBindingN {
+  val boundToDSet: BindableProperty<DatasetViewer?> = BindableProperty<DatasetViewer?>(null).apply {
+	bind(outerBox.bound.binding {
 	  if (it != this@DatasetViewer) it else null
 	})
   }
@@ -107,29 +104,30 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  if (!isBound) value = null
 	}
   }
-  val imageSelection = Prop<ResolvedDeephyImage>()
+  val imageSelection = BindableProperty<ResolvedDeephyImage?>(null)
 
 
-  val topNeurons: ObjectProperty<List<ResolvedNeuronLike>?> = PropN<List<ResolvedNeuronLike>?>().apply {
-	if (!isBound) {
-	  bindLater(imageSelection.objectBindingN(dataBinding.createROFXPropWrapper()) { it?.topNeurons() })
-	}
-	boundToDSet.onChange { b ->
-	  if (b != null) {
-		bindLater(b.topNeurons.objectBindingN(dataBinding.createROFXPropWrapper()) { neurons ->
-		  neurons?.let { ns ->
-			ns.mapNotNull { n ->
-			  model.neurons.first { it.neuron == n.neuron }
+  val topNeurons: BindableProperty<List<ResolvedNeuronLike>?> =
+	BindableProperty<List<ResolvedNeuronLike>?>(null).apply {
+	  if (!isBound) {
+		bindLater(imageSelection.binding(dataBinding) { it?.topNeurons() })
+	  }
+	  boundToDSet.onChange { b ->
+		if (b != null) {
+		  bindLater(b.topNeurons.binding(dataBinding) { neurons ->
+			neurons?.let { ns ->
+			  ns.mapNotNull { n ->
+				model.neurons.first { it.neuron == n.neuron }
+			  }
 			}
-		  }
-		})
+		  })
 
-	  } else {
-		unbind()
-		bindLater(imageSelection.objectBindingN { it?.topNeurons() })
+		} else {
+		  unbind()
+		  bindLater(imageSelection.binding { it?.topNeurons() })
+		}
 	  }
 	}
-  }
 
   var currentByImageHScroll: DoubleProperty? = null
   //

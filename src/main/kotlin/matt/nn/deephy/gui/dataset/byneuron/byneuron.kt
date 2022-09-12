@@ -17,7 +17,7 @@ class ByNeuronView(
 	hbox<NodeWrapper> {
 	  text("layer: ")
 	  +layerCB
-	  visibleAndManagedProp().bind(viewer.boundToDSet.isNull)
+	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 	viewer.layerSelection.onChange {
 	  println("viewer(of ${dataset.name}).layerSelection=${it}")
