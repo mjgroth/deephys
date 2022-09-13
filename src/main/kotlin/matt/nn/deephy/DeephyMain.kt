@@ -33,7 +33,6 @@ import matt.nn.deephy.model.loadCbor
 import matt.nn.deephy.model.loadSwapper
 import matt.nn.deephy.state.DeephyState
 import matt.nn.deephy.version.VersionChecker
-import matt.obs.bind.binding
 
 fun main(): Unit = GuiApp(decorated = true) {
 

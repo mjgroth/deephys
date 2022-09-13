@@ -24,7 +24,6 @@ import matt.nn.deephy.model.ResolvedNeuronLike
 import matt.nn.deephy.model.Test
 import matt.nn.deephy.model.loadCbor
 import matt.nn.deephy.model.loadSwapper
-import matt.obs.bind.binding
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.VarProp
 
