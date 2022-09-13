@@ -18,6 +18,7 @@ import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.model.Loaded
 import matt.nn.deephy.model.ResolvedDeephyImage
+import matt.obs.bind.binding
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.ResolvedNeuronLike

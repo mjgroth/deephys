@@ -8,6 +8,7 @@ import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.auto.myPid
 import matt.exec.app.appName
+import matt.obs.bind.binding
 import matt.exec.app.myVersion
 import matt.file.CborFile
 import matt.file.construct.toMFile
