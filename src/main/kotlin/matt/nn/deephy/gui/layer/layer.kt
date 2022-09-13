@@ -5,7 +5,7 @@ import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
-import matt.model.toStringConverter
+import matt.model.convert.toStringConverter
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.ResolvedDeephyImage
