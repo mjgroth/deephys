@@ -8,7 +8,6 @@ import matt.file.MFile
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
-import matt.obs.prop.MObservableROPropBase
 import matt.obs.prop.ObsVal
 
 //object DeephyDataManager {
