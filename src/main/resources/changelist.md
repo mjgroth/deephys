@@ -9,7 +9,7 @@ Compatible pip package version: [0.4.0](https://pypi.org/project/deephy/0.4.0/) 
 [//]: # (### New Features)
 
 ### Cosmetic Changes
-- Added label at top with model name
+- Added label at top**** with model name
 
 ### Bug Fixes
 - User will no longer run into bugs related to files not being found
