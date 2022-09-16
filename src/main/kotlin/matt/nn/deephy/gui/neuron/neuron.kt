@@ -29,8 +29,8 @@ class NeuronView(
 		NeuronTestResults(neuron.neuron, images.map { it.activations.activations[neuron.layer.index][neuron.index] })
 
 	  (0 until realNumImages).forEach { imIndex ->
-		println("imIndex=${imIndex}")
-		println("another index= ${testResults.activationIndexesHighToLow[imIndex]}")
+//		println("imIndex=${imIndex}")
+//		println("another index= ${testResults.activationIndexesHighToLow[imIndex]}")
 		val im = images[testResults.activationIndexesHighToLow[imIndex]]
 		+DeephyImView(im, viewer)
 		vgrow = Priority.ALWAYS

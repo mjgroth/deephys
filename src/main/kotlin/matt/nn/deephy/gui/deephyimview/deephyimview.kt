@@ -18,7 +18,7 @@ class DeephyImView(im: ResolvedDeephyImage, viewer: DatasetViewer): ScaledCanvas
 	  else draw(im)
 	}
 	onLeftClick {
-	  if (viewer.isBound) viewer.outerBox.myToggleGroup.selectToggle(null)
+	  if (viewer.isBoundToDSet.value) viewer.outerBox.myToggleGroup.selectToggle(null)
 	  viewer.imageSelection.value = im
 	  viewer.view.value = ByImage
 	}

@@ -4,12 +4,12 @@ import javafx.scene.control.ToggleGroup
 import matt.file.CborFile
 import matt.file.toSFile
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
-import matt.hurricanefx.eye.wrapper.obs.obsval.toNullableROProp
 import matt.hurricanefx.tornadofx.control.selectedValueProperty
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.Model
 import matt.nn.deephy.state.DeephyState
+import matt.obs.prop.Var
 import matt.stream.message.FileList
 
 
@@ -24,8 +24,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapper<DatasetViewer>() {
 
 
   val myToggleGroup = ToggleGroup()
-
-  val bound = myToggleGroup.selectedValueProperty<DatasetViewer>().toNullableProp()
+  val bound: Var<DatasetViewer?> = myToggleGroup.selectedValueProperty<DatasetViewer>().toNullableProp()
 
 }
 

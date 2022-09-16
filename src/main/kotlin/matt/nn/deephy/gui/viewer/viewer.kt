@@ -6,7 +6,6 @@ import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.file.CborFile
-import matt.hurricanefx.async.bindLater
 import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.prop.objectBindingN
 import matt.hurricanefx.wrapper.node.NodeWrapper
@@ -18,28 +17,30 @@ import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.model.Loaded
 import matt.nn.deephy.model.ResolvedDeephyImage
-import matt.obs.bind.binding
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.ResolvedNeuronLike
 import matt.nn.deephy.model.Test
 import matt.nn.deephy.model.loadCbor
 import matt.nn.deephy.model.loadSwapper
-import matt.obs.prop.BindableProperty
+import matt.obs.bind.binding
+import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
+import matt.obs.bindings.bool.not
 import matt.obs.prop.VarProp
+import matt.obs.prop.withChangeListener
+import matt.obs.prop.withNonNullUpdatesFrom
+import matt.obs.prop.withUpdatesFrom
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
-  val model get() = outerBox.model
+  val model by lazy { outerBox.model }
 
-  val siblings get() = outerBox.children.filter { it != this }
+  val siblings by lazy { outerBox.children.filtered { it != this } }
 
   override fun toString() = toStringBuilder("current file" to fileProp.value?.fname)
 
-  val fileProp: VarProp<CborFile?> = VarProp(initialFile).apply {
-	onChange {
-	  outerBox.save()
-	}
+  val fileProp: VarProp<CborFile?> = VarProp(initialFile).withChangeListener {
+	outerBox.save()
   }
   private val dataBinding = fileProp.binding { f ->
 	f?.run {
@@ -49,113 +50,79 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	}
   }
 
-  val boundToDSet: BindableProperty<DatasetViewer?> = BindableProperty<DatasetViewer?>(null).apply {
-	bind(outerBox.bound.binding {
+  val boundToDSet by lazy {
+	outerBox.bound.binding {
 	  if (it != this@DatasetViewer) it else null
-	})
+	}
   }
-  val isBound get() = boundToDSet.value != null
+  val isBoundToDSet by lazy { boundToDSet.notNull }
+  val isUnboundToDSet by lazy { isBoundToDSet.not() }
 
-  val view: BindableProperty<DatasetNodeView> = BindableProperty(
-	boundToDSet.value?.view?.value ?: ByNeuron
+
+  private val boundView by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.view } }
+  val view: VarProp<DatasetNodeView> = VarProp(
+	boundView.value ?: ByNeuron
+  ).withNonNullUpdatesFrom(boundView)
+
+  private val boundLayer by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.layerSelection } }
+  private val boundLayerConversion by lazy {
+	boundLayer.binding(
+	  dataBinding /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+	) { layer ->
+
+	  model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
+	}
+  }
+
+  val layerSelection: VarProp<ResolvedLayer?> = VarProp(
+	boundLayer.value
+  ).withNonNullUpdatesFrom(boundLayerConversion)
+
+  private val boundNeuron = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
+	it?.neuronSelection
+  }
+
+  private fun ResolvedLayer.neuronThatMatches(n: ResolvedNeuron?) = neurons.firstOrNull {
+	it.index == n?.index
+  }
+
+  private val boundNeuronConversion = boundNeuron.binding(
+	dataBinding, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+	layerSelection
+  ) { neuron ->
+	layerSelection.value?.neuronThatMatches(neuron)
+  }
+
+
+  val neuronSelection: VarProp<ResolvedNeuron?> = VarProp<ResolvedNeuron?>(
+	boundNeuronConversion.value
   ).apply {
-	this@DatasetViewer.boundToDSet.onChange {
-	  if (it != null) bindLater(it.view)
-	  else unbind()
-	}
-  }
-
-  val layerSelection: BindableProperty<ResolvedLayer?> = BindableProperty<ResolvedLayer?>(null).apply {
-	this@DatasetViewer.boundToDSet.onChange { b ->
-	  if (b != null) {
-		bindLater(
-		  b.layerSelection.binding(dataBinding) { layer ->
-			model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
-		  }
-		)
-	  } else unbind()
-	}
-	dataBinding.onChange {
-	  if (!isBound) {
-		value = null
-	  }
-	}
-  }
-  val neuronSelection: BindableProperty<ResolvedNeuron?> = BindableProperty<ResolvedNeuron?>(null).apply {
-
-	boundToDSet.onChange { b ->
-	  if (b != null) {
-		bindLater(
-		  b.neuronSelection.binding(dataBinding, layerSelection) { n ->
-			layerSelection.value?.neurons?.firstOrNull { it.index == n?.index }
-		  }
-		)
-	  } else unbind()
-	}
-
+	withNonNullUpdatesFrom(boundNeuronConversion)
 	layerSelection.onChange { l ->
-	  if (!isBound) value = l?.neurons?.firstOrNull { it.index == value?.index }
-	}
-
-	dataBinding.onChange {
-	  if (!isBound) value = null
+	  if (!isBoundToDSet.value) value = l?.neuronThatMatches(value)
 	}
   }
-  val imageSelection = BindableProperty<ResolvedDeephyImage?>(null)
+  val imageSelection = VarProp<ResolvedDeephyImage?>(null)
+  private val topNeuronsFromMyImage = imageSelection.binding(dataBinding) {
+	it?.topNeurons()
+  }
+  private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
+	it?.topNeurons
+  }
+  private val boundTopNeuronConversion = boundTopNeurons.binding(dataBinding) { ns->
+	ns?.map { n ->
+	  model.neurons.first { it.neuron == n.neuron }
+	}
+  }
 
 
-  val topNeurons: BindableProperty<List<ResolvedNeuronLike>?> =
-	BindableProperty<List<ResolvedNeuronLike>?>(null).apply {
-	  if (!isBound) {
-		bindLater(imageSelection.binding(dataBinding) { it?.topNeurons() })
-	  }
-	  boundToDSet.onChange { b ->
-		if (b != null) {
-		  bindLater(b.topNeurons.binding(dataBinding) { neurons ->
-			neurons?.let { ns ->
-			  ns.mapNotNull { n ->
-				model.neurons.first { it.neuron == n.neuron }
-			  }
-			}
-		  })
-
-		} else {
-		  unbind()
-		  bindLater(imageSelection.binding { it?.topNeurons() })
-		}
-	  }
+  val topNeurons: VarProp<List<ResolvedNeuronLike>?> =
+	VarProp<List<ResolvedNeuronLike>?>(boundTopNeuronConversion.value).apply {
+	  withUpdatesFrom(topNeuronsFromMyImage)
+	  withNonNullUpdatesFrom(boundTopNeuronConversion)
 	}
 
   var currentByImageHScroll: DoubleProperty? = null
-  //
-  //
-  //
-  //  fun reBindByImageHScrolls() {
-  //	currentByImageHScrollProp.value?.go { p ->
-  //
-  //
-  //
-  //	  boundTo.onChange { b ->
-  //		if (b != null) {
-  //		  bindLater(b.topNeurons.objectBindingN(dataBinding.toFXProp()) { neurons ->
-  //			neurons?.let { ns ->
-  //			  ns.mapNotNull { n ->
-  //				(dataBinding.value as? Dataset)?.neurons?.first {
-  //				  it.layer.layerID == n.layer.layerID
-  //					  && it.index == n.index
-  //				}
-  //			  }
-  //			}
-  //		  })
-  //
-  //		} else {
-  //		  unbind()
-  //		  bindLater(imageSelection.objectBindingN { it?.topNeurons() })
-  //		}
-  //	  }
-  //	}
-  //  }
-
 
   init {
 	contentDisplay = ContentDisplay.LEFT
@@ -186,8 +153,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		}
 	  }
 	  togglebutton(
-		"bind", group = this@DatasetViewer.outerBox.myToggleGroup,
-		value = this@DatasetViewer
+		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
 	  ) {
 		backgroundProperty.bind(selectedProperty.objectBindingN {
 		  if (it == true) backgroundColor(Color.YELLOW) else null

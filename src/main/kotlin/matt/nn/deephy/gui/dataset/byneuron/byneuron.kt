@@ -13,11 +13,15 @@ class ByNeuronView(
   viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
-	val layerCB = choicebox(property = viewer.layerSelection, values = viewer.model.resolvedLayers)
+	val layerCB = choicebox(property = viewer.layerSelection, values = viewer.model.resolvedLayers) {
+	  valueProperty.onChange {
+		println("layerCB value changed to $it")
+	  }
+	}
 	hbox<NodeWrapper> {
 	  text("layer: ")
 	  +layerCB
-	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
+	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
 	}
 	viewer.layerSelection.onChange {
 	  println("viewer(of ${dataset.name}).layerSelection=${it}")
@@ -26,6 +30,7 @@ class ByNeuronView(
 	  println("layerCB(of ${dataset.name}).value=${it}")
 	}
 	swapper(layerCB.valueProperty, nullMessage = "select a layer") {
+	  println("making LayerView")
 	  LayerView(this, dataset.resolvedImages, viewer)
 	}
   }
