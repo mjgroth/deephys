@@ -28,6 +28,8 @@ import matt.log.profile.MemReport
 import matt.log.taball
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.viewer.DatasetViewer
+import matt.nn.deephy.load.loadCbor
+import matt.nn.deephy.load.loadSwapper
 import matt.nn.deephy.model.Model
 import matt.nn.deephy.state.DeephyState
 import matt.nn.deephy.version.VersionChecker

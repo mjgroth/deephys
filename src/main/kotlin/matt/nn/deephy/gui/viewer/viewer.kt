@@ -15,14 +15,14 @@ import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
-import matt.nn.deephy.model.Loaded
+import matt.nn.deephy.load.Loaded
+import matt.nn.deephy.load.loadCbor
+import matt.nn.deephy.load.loadSwapper
 import matt.nn.deephy.model.ResolvedDeephyImage
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.ResolvedNeuronLike
 import matt.nn.deephy.model.Test
-import matt.nn.deephy.model.loadCbor
-import matt.nn.deephy.model.loadSwapper
 import matt.obs.bind.binding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
