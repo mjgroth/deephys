@@ -10,7 +10,7 @@ import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.prop.objectBindingN
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
-import matt.lang.toStringBuilder
+import matt.model.tostringbuilder.toStringBuilder
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
