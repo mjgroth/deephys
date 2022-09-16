@@ -1,30 +1,15 @@
 package matt.nn.deephy
 
-import com.google.iot.cbor.CborReader
 import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay.RIGHT
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromHexString
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
-import kotlinx.serialization.json.decodeToSequence
 import matt.auto.myPid
 import matt.exec.app.appName
-import matt.obs.bind.binding
 import matt.exec.app.myVersion
 import matt.file.CborFile
-import matt.file.construct.mFile
 import matt.file.construct.toMFile
 import matt.file.toMFile
 import matt.file.toSFile
@@ -39,48 +24,15 @@ import matt.hurricanefx.wrapper.imageview.ImageViewWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.lang.resourceStream
-import matt.log.taball
 import matt.log.profile.MemReport
+import matt.log.taball
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.Model
-import matt.nn.deephy.model.loadCbor
-import matt.nn.deephy.model.loadSwapper
 import matt.nn.deephy.state.DeephyState
 import matt.nn.deephy.version.VersionChecker
-import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
+import matt.obs.bind.binding
 
-
-/*cls used to be qname: String, but this is much less typesafe*/
-class MyCborSerializer<T: Any> constructor(cls: KClass<*>): KSerializer<T> {
-
-  private val cls = cls
-
-  override val descriptor: SerialDescriptor =
-	buildClassSerialDescriptor(cls.qualifiedName!!) /*I don't understand why ths is necessary but I think it is.*/
-
-  override fun deserialize(decoder: Decoder): T {
-
-	return deserialize(jsonElement = (decoder as JsonDecoder).decodeJsonElement())
-  }
-
-  override fun serialize(encoder: Encoder, value: T) {
-	(encoder as JsonEncoder).encodeJsonElement(serialize(value))
-  }
-
-  abstract fun deserialize(jsonElement: JsonElement): T
-  abstract fun serialize(value: T): JsonElement
-
-
-  fun canSerialize(value: Any) = value::class.isSubclassOf(cls)
-  fun castAndSerialize(value: Any): JsonElement {
-	@Suppress("UNCHECKED_CAST")
-	return serialize(value as T)
-  }
-
-
-}
 
 fun main(): Unit = GuiApp(decorated = true) {
 
