@@ -58,19 +58,9 @@ class ByImageView(
 		isFitToHeight = true
 		vmax = 0.0
 
-//
-//
-//		addEventFilter(ScrollEvent.SCROLL) {
-//
-//		  it.consume()
-//		}
-
 
 		val myWidth = 150.0
 		@Suppress("UNUSED_VARIABLE") val myHeight = 150.0
-
-		//		prefHeight = myHeight
-
 
 		viewer.currentByImageHScroll = hValueProp
 		viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
