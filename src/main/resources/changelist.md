@@ -10,6 +10,7 @@ Compatible pip package version: [0.4.0](https://pypi.org/project/deephy/0.4.0/) 
 - Ground truth labels in the ByImage view
 - Allow selecting layer in ByImage view
 - Top Neurons now are calculated for a specific layer
+- Option to normalize activations in ByImage view
 
 [//]: # (### Cosmetic Changes)
 
