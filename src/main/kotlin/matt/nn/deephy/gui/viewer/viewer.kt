@@ -103,13 +103,14 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	}
   }
   val imageSelection = VarProp<ResolvedDeephyImage?>(null)
-  private val topNeuronsFromMyImage = imageSelection.binding(dataBinding) {
-	it?.topNeurons()
+  private val topNeuronsFromMyImage = imageSelection.binding(dataBinding, layerSelection) { im ->
+	layerSelection.value?.let { im?.topNeurons(it) }
+
   }
   private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
 	it?.topNeurons
   }
-  private val boundTopNeuronConversion = boundTopNeurons.binding(dataBinding) { ns->
+  private val boundTopNeuronConversion = boundTopNeurons.binding(dataBinding) { ns ->
 	ns?.map { n ->
 	  model.neurons.first { it.neuron == n.neuron }
 	}

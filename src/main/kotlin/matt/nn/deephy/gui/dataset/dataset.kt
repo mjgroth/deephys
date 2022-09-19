@@ -1,6 +1,9 @@
 package matt.nn.deephy.gui.dataset
 
+import matt.hurricanefx.tornadofx.item.choicebox
+import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.anchor.swapper.Swapper
+import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
@@ -23,10 +26,25 @@ class DatasetNode(
 
   init {
 	setupSwapping(viewer.view) {
-	  when (this) {
-		ByNeuron -> byNeuronView
-		ByImage  -> byImageView
+	  VBoxWrapper<NodeWrapper>().apply {
+		val layerCB = choicebox(property = viewer.layerSelection, values = viewer.model.resolvedLayers) {
+		  valueProperty.onChange {
+			println("layerCB value changed to $it")
+		  }
+		}
+		hbox<NodeWrapper> {
+		  text("layer: ")
+		  +layerCB
+		  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
+		}
+		add(
+		  when (this@setupSwapping) {
+			ByNeuron -> this@DatasetNode.byNeuronView
+			ByImage  -> this@DatasetNode.byImageView
+		  }
+		)
 	  }
+
 	}
   }
 }

@@ -1,18 +1,14 @@
 package matt.nn.deephy.gui.dataset.byimage
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
-import javafx.scene.paint.Color
-import matt.fx.graphics.style.DarkModeController
+import matt.fx.graphics.node.actionText
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.node.onHover
-import matt.hurricanefx.wrapper.node.onLeftClick
 import matt.hurricanefx.wrapper.pane.hbox.HBoxWrapper
 import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
 import matt.hurricanefx.wrapper.pane.spacer
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
-import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.lang.go
 import matt.math.jmath.sigFigs
@@ -42,9 +38,13 @@ class ByImageView(
 	}
 
 	swapper(viewer.imageSelection, "no image selected") {
-	  VBoxWrapper<NodeWrapper>().apply {
+	  HBoxWrapper<NodeWrapper>().apply {
 		+DeephyImView(this@swapper, viewer).apply {
 		  scale.value = 4.0
+		}
+		vbox<NodeWrapper> {
+		  spacer(10.0)
+		  text("ground truth: " + this@swapper.category)
 		}
 	  }
 	}.apply {
@@ -114,15 +114,3 @@ class ByImageView(
   }
 }
 
-fun EventTargetWrapper.actionText(text: String, action: ()->Unit) = text(text) {
-  onHover {
-	fill = when {
-	  it                                    -> Color.YELLOW
-	  DarkModeController.darkModeProp.value -> Color.WHITE
-	  else                                  -> Color.BLACK
-	}
-  }
-  onLeftClick {
-	action()
-  }
-}

@@ -15,4 +15,5 @@ object DeephyState: FXPrefNode(
   val model by obj<SFile>()
   val tests by obj<FileList>()
   val numImagesPerNeuronInByImage by int(9)
+  val normalizeTopNeuronActivations by boolean(9)
 }

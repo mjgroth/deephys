@@ -15,11 +15,10 @@ sealed interface NeuronRef {
 
 class NeuronTestResults(
   override val neuron: Neuron,
-  val activations: List<Double>
+  private val activations: List<Double>
 ): NeuronRef {
 
   val activationIndexesHighToLow by lazy {
-	require(activations.all { it >= 0.0 })
 	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
   }
 }
@@ -88,13 +87,10 @@ class ResolvedDeephyImage(
   override val activations by lazy { image.activations }
 
 
-  fun topNeurons(): List<NeuronWithActivation> =
-	activations.activations
-	  .flatMapIndexed { layerIndex, layer ->
-		val rLay = model.resolvedLayers[layerIndex]
-		layer.mapIndexed { neuronIndex, a ->
-		  NeuronWithActivation(rLay.neurons[neuronIndex], a)
-		}
+  fun topNeurons(rLayer: ResolvedLayer): List<NeuronWithActivation> =
+	activations.activations[rLayer.index]
+	  .mapIndexed { neuronIndex, a ->
+		NeuronWithActivation(rLayer.neurons[neuronIndex], a)
 	  }
 	  .sortedBy { it.activation }
 	  .reversed()
