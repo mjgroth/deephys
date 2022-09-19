@@ -24,11 +24,11 @@ import matt.nn.deephy.model.Test
 import matt.nn.deephy.state.DeephyState
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
+import kotlin.math.exp
 
 
 class ByImageView(
-  test: Test,
-  viewer: DatasetViewer
+  test: Test, viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
 
@@ -62,9 +62,11 @@ class ByImageView(
 		  test.model?.classificationLayer?.go {
 			text("predictions:")
 			val preds = this@swapper.activationsFor(it)
-			val mx = preds.max()
+			val softMaxDenom = preds.sumOf { exp(it) }
 			preds.withIndex().sortedBy { it.value }.reversed().take(5).forEach {
-			  text("\t${test.category(it.index)} (${(it.value/mx).sigFigs(3)})")
+			  val exactPred = (exp(it.value)/softMaxDenom)
+			  println("exactPred=$exactPred")
+			  text("\t${test.category(it.index)} (${exactPred.sigFigs(3)})")
 			}
 		  }
 		}
@@ -116,11 +118,9 @@ class ByImageView(
 				}
 				if (it is NeuronWithActivation) {
 				  val n = it
-				  text(
-					DeephyState.normalizeTopNeuronActivations.binding {
-					  " (${(if (it!!) n.normalizedActivation else n.activation).sigFigs(3)})"
-					}
-				  ) {
+				  text(DeephyState.normalizeTopNeuronActivations.binding {
+					" (${(if (it!!) n.normalizedActivation else n.activation).sigFigs(3)})"
+				  }) {
 					font = DEEPHY_FONT
 				  }
 				}
@@ -128,9 +128,7 @@ class ByImageView(
 
 			  +NeuronView(
 				viewer.model.neurons.first { it.neuron == neuron.neuron },
-				numImages = DeephyState.numImagesPerNeuronInByImage,
-				images = test.resolvedImages,
-				viewer = viewer
+				numImages = DeephyState.numImagesPerNeuronInByImage, images = test.resolvedImages, viewer = viewer
 			  ).apply {
 				prefWrapLength = myWidth
 				hgap = 10.0
