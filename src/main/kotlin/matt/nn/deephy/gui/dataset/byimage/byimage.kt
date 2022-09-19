@@ -19,6 +19,7 @@ import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.NeuronWithActivation
 import matt.nn.deephy.model.Test
 import matt.nn.deephy.state.DeephyState
+import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
 
 
@@ -90,7 +91,12 @@ class ByImageView(
 				  viewerToChange.view.value = ByNeuron
 				}
 				if (it is NeuronWithActivation) {
-				  text(" (${it.activation.sigFigs(3)})")
+				  val n = it
+				  text(
+					DeephyState.normalizeTopNeuronActivations.binding {
+					  " (${(if (it!!) n.normalizedActivation else n.activation).sigFigs(3)})"
+					}
+				  )
 				}
 			  }
 

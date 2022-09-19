@@ -46,5 +46,14 @@ object SettingsPane: VBoxWrapper<NodeWrapper>() {
 		}
 	  }
 	}
+	checkbox(
+	  "Normalize activations of top neurons",
+	) {
+	  isSelected = DeephyState.normalizeTopNeuronActivations.value!!
+	  //	  prefWidth = 55.0
+	  selectedProperty.onChange {
+		DeephyState.normalizeTopNeuronActivations.value = it
+	  }
+	}
   }
 }

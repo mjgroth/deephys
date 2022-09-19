@@ -35,7 +35,11 @@ class ResolvedNeuron(
 ): ResolvedNeuronLike
 
 
-class NeuronWithActivation(val rNeuron: ResolvedNeuron, val activation: Double): ResolvedNeuronLike by rNeuron
+class NeuronWithActivation(
+  private val rNeuron: ResolvedNeuron,
+  val activation: Double,
+  val normalizedActivation: Double
+): ResolvedNeuronLike by rNeuron
 
 interface DeephyImageData {
   val data: List<List<List<Double>>>
@@ -88,13 +92,16 @@ class ResolvedDeephyImage(
 
 
   fun topNeurons(rLayer: ResolvedLayer): List<NeuronWithActivation> =
-	activations.activations[rLayer.index]
-	  .mapIndexed { neuronIndex, a ->
-		NeuronWithActivation(rLayer.neurons[neuronIndex], a)
+	activations.activations[rLayer.index].run {
+	  val mx = max()
+	  mapIndexed { neuronIndex, a ->
+		NeuronWithActivation(rLayer.neurons[neuronIndex], a, normalizedActivation = a/mx)
 	  }
-	  .sortedBy { it.activation }
-	  .reversed()
-	  .take(25)
+		.sortedBy { it.activation }
+		.reversed()
+		.take(25)
+	}
+
 }
 
 interface LayerLike {
