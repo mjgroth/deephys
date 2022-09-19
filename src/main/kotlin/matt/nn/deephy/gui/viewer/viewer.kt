@@ -56,7 +56,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  if (it != this@DatasetViewer) it else null
 	}
   }
-  val isBoundToDSet by lazy { boundToDSet.notNull }
+  val isBoundToDSet by lazy { boundToDSet.isNotNull }
   val isUnboundToDSet by lazy { isBoundToDSet.not() }
 
 
