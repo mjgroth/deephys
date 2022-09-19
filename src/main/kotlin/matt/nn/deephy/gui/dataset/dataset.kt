@@ -5,6 +5,7 @@ import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.anchor.swapper.Swapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
+import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.dataset.byimage.ByImageView
@@ -33,7 +34,9 @@ class DatasetNode(
 		  }
 		}
 		hbox<NodeWrapper> {
-		  text("layer: ")
+		  text("layer: ") {
+			font = DEEPHY_FONT
+		  }
 		  +layerCB
 		  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
 		}

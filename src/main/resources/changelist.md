@@ -11,8 +11,10 @@ Compatible pip package version: [0.4.0](https://pypi.org/project/deephy/0.4.0/) 
 - Allow selecting layer in ByImage view
 - Top Neurons now are calculated for a specific layer
 - Option to normalize activations in ByImage view
+- Prediction info in ByImage view
 
-[//]: # (### Cosmetic Changes)
+### Cosmetic Changes
+- New font in certain places to allow for bold text
 
 ### Bug Fixes
 - Changing a test file will appropriately bind it on load

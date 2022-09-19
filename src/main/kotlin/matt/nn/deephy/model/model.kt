@@ -90,9 +90,10 @@ class ResolvedDeephyImage(
   override val matrix by lazy { image.matrix }
   override val activations by lazy { image.activations }
 
+  fun activationsFor(rLayer: ResolvedLayer) = activations.activations[rLayer.index]
 
   fun topNeurons(rLayer: ResolvedLayer): List<NeuronWithActivation> =
-	activations.activations[rLayer.index].run {
+	activationsFor(rLayer).run {
 	  val mx = max()
 	  mapIndexed { neuronIndex, a ->
 		NeuronWithActivation(rLayer.neurons[neuronIndex], a, normalizedActivation = a/mx)
@@ -108,6 +109,7 @@ interface LayerLike {
   val layerID: String
   val neurons: List<NeuronRef>
   override fun toString(): String
+  val isClassification get() = layerID == "classification"
 }
 
 @Serializable class Layer(
@@ -142,6 +144,10 @@ interface DeephyObject {
 ): DeephyObject {
   val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
   val neurons: List<ResolvedNeuron> by lazy { resolvedLayers.flatMap { it.neurons } }
+  val classificationLayer by lazy {
+	resolvedLayers.firstOrNull { it.isClassification }
+  }
+
 }
 
 /*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
@@ -158,4 +164,8 @@ interface DeephyObject {
 	  field = value
 	}
   val resolvedImages by lazy { images.mapIndexed { index, im -> ResolvedDeephyImage(im, index, this@Test, model!!) } }
+
+  fun category(id: Int) = images.find { it.categoryID == id }!!.category
+
+
 }

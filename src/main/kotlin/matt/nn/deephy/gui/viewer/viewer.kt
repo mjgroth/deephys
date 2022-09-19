@@ -11,6 +11,7 @@ import matt.hurricanefx.eye.prop.objectBindingN
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.model.tostringbuilder.toStringBuilder
+import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
@@ -131,7 +132,10 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	titleProperty.bind(fileProp.binding { it?.nameWithoutExtension })
 	graphic = hbox<NodeWrapper> {
 	  button("remove test") {
-		tooltip("remove this test viewer")
+		font = DEEPHY_FONT
+		tooltip("remove this test viewer") {
+		  font = DEEPHY_FONT
+		}
 		setOnAction {
 		  if (this@DatasetViewer.outerBox.bound.value == this@DatasetViewer) {
 			this@DatasetViewer.outerBox.bound.value = null
@@ -141,7 +145,10 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		}
 	  }
 	  button("select test") {
-		tooltip("choose test file")
+		font = DEEPHY_FONT
+		tooltip("choose test file") {
+		  font = DEEPHY_FONT
+		}
 		setOnAction {
 		  val f = FileChooser().apply {
 			title = "choose test data"
@@ -156,6 +163,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  togglebutton(
 		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
 	  ) {
+		font = DEEPHY_FONT
 		backgroundProperty.bind(selectedProperty.objectBindingN {
 		  if (it == true) backgroundColor(Color.YELLOW) else null
 		})

@@ -6,6 +6,7 @@ import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
 import matt.model.convert.toStringConverter
+import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.ResolvedDeephyImage
@@ -22,7 +23,9 @@ class LayerView(
 	  converter = toStringConverter<ResolvedNeuron?> { "neuron ${it?.index}" }.toFXConverter()
 	}
 	hbox<NodeWrapper> {
-	  text("neuron: ")
+	  text("neuron: ") {
+		font = DEEPHY_FONT
+	  }
 	  +neuronCB
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}

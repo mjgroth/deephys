@@ -1,6 +1,7 @@
 package matt.nn.deephy.gui
 
 import javafx.scene.control.ToggleGroup
+import javafx.scene.text.Font
 import matt.file.CborFile
 import matt.file.toSFile
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
@@ -12,6 +13,7 @@ import matt.nn.deephy.state.DeephyState
 import matt.obs.prop.Var
 import matt.stream.message.FileList
 
+val DEEPHY_FONT = Font.font("Georgia")
 
 class DSetViewsVBox(val model: Model): VBoxWrapper<DatasetViewer>() {
   operator fun plusAssign(file: CborFile) {
