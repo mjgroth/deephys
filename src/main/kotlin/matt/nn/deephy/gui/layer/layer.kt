@@ -9,13 +9,13 @@ import matt.model.convert.toStringConverter
 import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
-import matt.nn.deephy.model.ResolvedDeephyImage
+import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 
 class LayerView(
   layer: ResolvedLayer,
-  images: List<ResolvedDeephyImage>,
+  testLoader: TestLoader,
   viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
@@ -30,7 +30,7 @@ class LayerView(
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 	swapper(neuronCB.valueProperty, nullMessage = "select a neuron") {
-	  NeuronView(this, images = images, viewer = viewer)
+	  NeuronView(this, testLoader = testLoader, viewer = viewer)
 	}
   }
 }

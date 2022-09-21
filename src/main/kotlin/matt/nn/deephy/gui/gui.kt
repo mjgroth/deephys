@@ -13,7 +13,7 @@ import matt.nn.deephy.state.DeephyState
 import matt.obs.prop.Var
 import matt.stream.message.FileList
 
-val DEEPHY_FONT = Font.font("Georgia")
+val DEEPHY_FONT: Font = Font.font("Georgia")
 
 class DSetViewsVBox(val model: Model): VBoxWrapper<DatasetViewer>() {
   operator fun plusAssign(file: CborFile) {
@@ -21,7 +21,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapper<DatasetViewer>() {
   }
 
   fun save() {
-	DeephyState.tests.value = FileList(children.mapNotNull { it.fileProp.value?.toSFile() })
+	DeephyState.tests.value = FileList(children.mapNotNull { it.file.value?.toSFile() })
   }
 
 

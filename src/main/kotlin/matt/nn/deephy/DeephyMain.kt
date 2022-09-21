@@ -4,6 +4,7 @@ import javafx.geometry.Pos
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
+import matt.async.thread.daemon
 import matt.auto.myPid
 import matt.exec.app.appName
 import matt.exec.app.myVersion
@@ -27,19 +28,27 @@ import matt.nn.deephy.model.Model
 import matt.nn.deephy.state.DeephyState
 import matt.nn.deephy.version.VersionChecker
 import matt.obs.bind.binding
+import java.lang.Thread.sleep
+import kotlin.time.Duration.Companion.minutes
 
 
 fun main(): Unit = GuiApp(decorated = true) {
 
 
   println("my pid = $myPid")
-  println(MemReport())
+  daemon {
+	while (true) {
+	  println(MemReport())
+	  sleep(1.minutes.inWholeMilliseconds)
+	}
+  }
+
 
 
   stage.title = "$appName $myVersion"
-  stage.node.minWidth = 600.0
+  stage.node.minWidth = 1000.0
   stage.node.minHeight = 850.0
-  stage.width = 600.0
+  stage.width = 1000.0
   stage.height = 850.0
 
   VersionChecker.checkForUpdatesInBackground()

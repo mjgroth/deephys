@@ -7,6 +7,11 @@
 	  "path" : ":k:gui"
 	},
 	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "implementation",
+	  "path" : ":k:cbor"
+	},
+	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
 	  "cfg" :  "implementation",
 	  "key" :  "kotlinx-serialization-cbor"
@@ -15,6 +20,11 @@
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
 	  "cfg" :  "implementation",
 	  "key" :  "slf4j-nop"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "cfg" :  "implementation",
+	  "key" :  "kotlinx-multik-default"
 	},
 
 	{

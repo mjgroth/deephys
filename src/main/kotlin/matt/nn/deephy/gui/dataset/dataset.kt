@@ -11,14 +11,14 @@ import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.dataset.byimage.ByImageView
 import matt.nn.deephy.gui.dataset.byneuron.ByNeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
-import matt.nn.deephy.model.Test
+import matt.nn.deephy.load.test.TestLoader
 
 enum class DatasetNodeView {
   ByNeuron, ByImage
 }
 
 class DatasetNode(
-  dataset: Test, viewer: DatasetViewer
+  dataset: TestLoader, viewer: DatasetViewer
 ): Swapper<DatasetNodeView, RegionWrapper<*>>() {
 
 

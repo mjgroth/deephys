@@ -10,27 +10,28 @@ import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.prop.objectBindingN
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
+import matt.log.profile.stopwatch
+import matt.log.profile.tic
 import matt.model.tostringbuilder.toStringBuilder
 import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
-import matt.nn.deephy.load.Loaded
-import matt.nn.deephy.load.loadCbor
-import matt.nn.deephy.load.loadSwapper
-import matt.nn.deephy.model.ResolvedDeephyImage
+import matt.nn.deephy.load.asyncLoadSwapper
+import matt.nn.deephy.load.test.TestLoader
+import matt.nn.deephy.model.DeephyImage
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.ResolvedNeuronLike
-import matt.nn.deephy.model.Test
+import matt.nn.deephy.state.DeephyState
 import matt.obs.bind.binding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
 import matt.obs.prop.VarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
-import matt.obs.prop.withUpdatesFrom
+import matt.obs.prop.withUpdatesFromWhen
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
@@ -38,17 +39,23 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
   val siblings by lazy { outerBox.children.filtered { it != this } }
 
-  override fun toString() = toStringBuilder("current file" to fileProp.value?.fname)
+  override fun toString() = toStringBuilder("current file" to file.value?.fname)
 
-  val fileProp: VarProp<CborFile?> = VarProp(initialFile).withChangeListener {
+  val file: VarProp<CborFile?> = VarProp(initialFile).withChangeListener {
 	outerBox.save()
   }
-  private val dataBinding = fileProp.binding { f ->
+  private val testData = file.binding { f ->
+	val t = tic(prefix = "dataBinding2")
+	t.toc("start")
 	f?.run {
-	  loadCbor<Test>().also {
-		(it as? Loaded<Test>)?.data?.model = model
-	  }
+	  val loader = TestLoader(f, model)
+	  t.toc("got loader")
+	  loader.start()
+	  t.toc("started loader")
+	  loader
 	}
+  }.apply {
+	stopwatch = "dataBinding"
   }
 
   val boundToDSet by lazy {
@@ -68,7 +75,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   private val boundLayer by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.layerSelection } }
   private val boundLayerConversion by lazy {
 	boundLayer.binding(
-	  dataBinding /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+	  testData /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
 	) { layer ->
 
 	  model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
@@ -88,7 +95,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   private val boundNeuronConversion = boundNeuron.binding(
-	dataBinding, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+	testData, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
 	layerSelection
   ) { neuron ->
 	layerSelection.value?.neuronThatMatches(neuron)
@@ -103,15 +110,16 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  if (!isBoundToDSet.value) value = l?.neuronThatMatches(value)
 	}
   }
-  val imageSelection = VarProp<ResolvedDeephyImage?>(null)
-  private val topNeuronsFromMyImage = imageSelection.binding(dataBinding, layerSelection) { im ->
-	layerSelection.value?.let { im?.topNeurons(it) }
+  val imageSelection = VarProp<DeephyImage?>(null)
+  private val topNeuronsFromMyImage =
+	imageSelection.binding(testData, layerSelection, DeephyState.normalizeTopNeuronActivations) { im ->
+	  layerSelection.value?.let { im?.topNeurons(it) }
 
-  }
+	}
   private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
 	it?.topNeurons
   }
-  private val boundTopNeuronConversion = boundTopNeurons.binding(dataBinding) { ns ->
+  private val boundTopNeuronConversion = boundTopNeurons.binding(testData) { ns ->
 	ns?.map { n ->
 	  model.neurons.first { it.neuron == n.neuron }
 	}
@@ -120,7 +128,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
   val topNeurons: VarProp<List<ResolvedNeuronLike>?> =
 	VarProp<List<ResolvedNeuronLike>?>(boundTopNeuronConversion.value).apply {
-	  withUpdatesFrom(topNeuronsFromMyImage)
+	  withUpdatesFromWhen(topNeuronsFromMyImage) { !isBoundToDSet.value }
 	  withNonNullUpdatesFrom(boundTopNeuronConversion)
 	}
 
@@ -129,7 +137,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   init {
 	contentDisplay = ContentDisplay.LEFT
 	isExpanded = true
-	titleProperty.bind(fileProp.binding { it?.nameWithoutExtension })
+	titleProperty.bind(file.binding { it?.nameWithoutExtension })
 	graphic = hbox<NodeWrapper> {
 	  button("remove test") {
 		font = DEEPHY_FONT
@@ -156,7 +164,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  }.showOpenDialog(stage)
 
 		  if (f != null) {
-			this@DatasetViewer.fileProp.value = CborFile(f.path)
+			stopwatch("set fileProp") {
+			  this@DatasetViewer.file.value = CborFile(f.path)
+			}
 		  }
 		}
 	  }
@@ -169,7 +179,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		})
 	  }
 	}
-	content = loadSwapper(dataBinding, nullMessage = "select a test to view it") {
+	content = asyncLoadSwapper(testData, nullMessage = "select a test to view it") {
 	  DatasetNode(this, this@DatasetViewer)
 	}.node
   }

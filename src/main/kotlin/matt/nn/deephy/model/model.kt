@@ -1,6 +1,16 @@
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
+import matt.collect.map.lazyMap
+import matt.log.profile.tic
+import matt.model.latch.asyncloaded.AsyncLoadingValue
+import matt.nn.deephy.state.DeephyState
+import org.jetbrains.kotlinx.multik.api.toNDArray
+import org.jetbrains.kotlinx.multik.ndarray.data.D1
+import org.jetbrains.kotlinx.multik.ndarray.data.D2
+import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
+import org.jetbrains.kotlinx.multik.ndarray.data.slice
+import org.jetbrains.kotlinx.multik.ndarray.operations.max
 
 
 sealed interface NeuronRef {
@@ -15,7 +25,7 @@ sealed interface NeuronRef {
 
 class NeuronTestResults(
   override val neuron: Neuron,
-  private val activations: List<Double>
+  private val activations: List<Float>
 ): NeuronRef {
 
   val activationIndexesHighToLow by lazy {
@@ -37,73 +47,96 @@ class ResolvedNeuron(
 
 class NeuronWithActivation(
   private val rNeuron: ResolvedNeuron,
-  val activation: Double,
-  val normalizedActivation: Double
+  val activation: Float,
+  val normalizedActivation: Float
 ): ResolvedNeuronLike by rNeuron
+//
+//interface DeephyImageData {
+//  val data: List<List<List<Double>>>
+//  val matrix: List<List<List<Double>>>
+//  val activations: ModelState
+//}
 
-interface DeephyImageData {
-  val data: List<List<List<Double>>>
-  val matrix: List<List<List<Double>>>
-  val activations: ModelState
+
+class ModelState(
+
+) {
+  val activations = AsyncLoadingValue<List<List<Float>>>()
 }
 
-@Serializable
-class ModelState(
-  val activations: List<List<Double>>
-)
 
-@Serializable class DeephyImage(
+class DeephyImage(
   val imageID: Int,
   val categoryID: Int,
   val category: String,
-  override val data: List<List<List<Double>>>,
-  override val activations: ModelState
-): DeephyImageData {
+  //  override val data: List<List<List<Double>>>,
+  val activations: ModelState
+) {
 
-  override val matrix by lazy {
-	val newRows = mutableListOf<MutableList<MutableList<Double>>>()
-	data.mapIndexed { colorIndex, singleColorMatrix ->
+
+  val matrix by lazy {
+	val newRows = mutableListOf<MutableList<MutableList<Float>>>()
+	data.await().mapIndexed { colorIndex, singleColorMatrix ->
 	  singleColorMatrix.mapIndexed { rowIndex, row ->
 		val newRow =
-		  if (colorIndex == 0) mutableListOf<MutableList<Double>>().also { newRows += it } else newRows[rowIndex]
+		  if (colorIndex == 0) mutableListOf<MutableList<Float>>().also { newRows += it } else newRows[rowIndex]
 
 		row.mapIndexed { colIndex, pixel ->
-		  val newCol = if (colorIndex == 0) mutableListOf<Double>().also { newRow += it } else newRow[colIndex]
+		  val newCol = if (colorIndex == 0) mutableListOf<Float>().also { newRow += it } else newRow[colIndex]
 		  newCol += pixel
 		}
 	  }
 	}
 	newRows
   }
-}
 
-class ResolvedDeephyImage(
-  image: DeephyImage,
-  val index: Int,
-  val test: Test,
-  val model: Model
-): DeephyImageData {
-  val imageID = image.imageID
-  val categoryID = image.categoryID
-  val category = image.category
-  override val data = image.data
-  override val matrix by lazy { image.matrix }
-  override val activations by lazy { image.activations }
+  internal val goodActivations by lazy {
+	activations.activations.await()
+  }
 
-  fun activationsFor(rLayer: ResolvedLayer) = activations.activations[rLayer.index]
+  fun activationsFor(rLayer: ResolvedLayer): List<Float> = goodActivations[rLayer.index]
+  fun activationFor(neuron: ResolvedNeuron) = goodActivations[neuron.layer.index][neuron.index]
 
-  fun topNeurons(rLayer: ResolvedLayer): List<NeuronWithActivation> =
-	activationsFor(rLayer).run {
-	  val mx = max()
+  val test = AsyncLoadingValue<Test>()
+  val index = AsyncLoadingValue<Int>()
+  val model = AsyncLoadingValue<Model>()
+  val data = AsyncLoadingValue<List<List<List<Float>>>>()
+
+  fun topNeurons(rLayer: ResolvedLayer): List<NeuronWithActivation> {
+	val t = tic("topNeurons")
+	t.toc("1")
+	val r = activationsFor(rLayer).run {
+	  t.toc("2")
+
+	  val tst = test.await()
+
+	  /*val mx = max()*/
 	  mapIndexed { neuronIndex, a ->
-		NeuronWithActivation(rLayer.neurons[neuronIndex], a, normalizedActivation = a/mx)
+//		val sub = tic("top neurons sub")
+//		sub.toc("1")
+		val neuron = rLayer.neurons[neuronIndex]
+//		sub.toc("2")
+
+		val maxActivationForAllImagesForThisNeuron = tst.maxActivations[neuron]
+//		sub.toc("3")
+		val rr = NeuronWithActivation(
+		  rLayer.neurons[neuronIndex],
+		  a,
+		  normalizedActivation = a/maxActivationForAllImagesForThisNeuron /*mx*/
+		)
+//		sub.toc("4")
+		rr
 	  }
-		.sortedBy { it.activation }
+		.sortedBy { if (DeephyState.normalizeTopNeuronActivations.value!!) it.normalizedActivation else (it.activation) }
 		.reversed()
 		.take(25)
 	}
+	t.toc("3")
+	return r
+  }
 
 }
+
 
 interface LayerLike {
   val layerID: String
@@ -151,7 +184,7 @@ interface DeephyObject {
 }
 
 /*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
-@Serializable class Test(
+class Test(
   override val name: String,
   override val suffix: String?,
   val images: List<DeephyImage>,
@@ -159,13 +192,41 @@ interface DeephyObject {
 
 
   var model: Model? = null
-	get() = field
-	set(value) {
-	  field = value
-	}
-  val resolvedImages by lazy { images.mapIndexed { index, im -> ResolvedDeephyImage(im, index, this@Test, model!!) } }
+
 
   fun category(id: Int) = images.find { it.categoryID == id }!!.category
+
+  val activationsMatByLayerIndex = lazyMap<Int, D2Array<Float>> { lay ->
+	val t = tic("activationsMat")
+	t.toc("1")
+	val r = images.map { it.goodActivations[lay] }.toNDArray()
+	//	var r: D3Array<Float>? = null
+	//	for (i in images) {
+	//	  val a = i.activations.activations.await()
+	//	  if (r == null) {
+	//		r = a.toNDArray().asD3Array()
+	//		println("first r shape = ${r!!.shape.joinToString(",")}")
+	//	  } else r = r!!.cat(a.toNDArray().asD3Array().also {
+	//		println("first trying to add to it shape = ${it.shape.joinToString(",")}")
+	//	  })
+	//	}
+	t.toc("2")
+	r
+  }
+
+  val maxActivations = lazyMap<ResolvedNeuron, Float> { neuron ->
+	//	val t = tic("maxActivations")
+	//	t.toc("1")
+	//	val allActives = images.map { it.activationFor(neuron) }
+	//	t.toc("2 (${allActives.size})")
+	activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!
+
+	/*val layerActs = activationsMatByLayerIndex[neuron.layer.index]*/
+	/*val r = *//*layerActs[0 until layerActs.shape[0]][neuron.index].max()!!*/
+	//	t.toc("3")
+	//	r!!
+
+  }
 
 
 }

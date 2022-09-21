@@ -5,24 +5,29 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import matt.file.MFile
 import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
+import matt.nn.deephy.load.async.AsyncLoader
+import matt.obs.bind.binding
 import matt.obs.prop.ObsVal
 
-class FileNotFound<T>(val f: MFile): CborTestLoadResult<T>
-class ParseError<T>(val message: String?): CborTestLoadResult<T>
-class Loaded<T>(val data: T): CborTestLoadResult<T>
+sealed interface CborSyncLoadResult<T>
 
-sealed interface CborTestLoadResult<T>
+class FileNotFound<T>(val f: MFile): CborSyncLoadResult<T>
+class ParseError<T>(val message: String?): CborSyncLoadResult<T>
+class Loaded<T>(val data: T): CborSyncLoadResult<T>
 
-inline fun <reified T: Any> MFile.loadCbor(): CborTestLoadResult<T> = if (doesNotExist) FileNotFound(this) else try {
-  Loaded(Cbor.decodeFromByteArray(readBytes()))
-} catch (e: SerializationException) {
-  ParseError(e.message)
-}
+inline fun <reified T: Any> MFile.loadCbor(): CborSyncLoadResult<T> =
+  if (doesNotExist) FileNotFound(this) else try {
+	val bytes = readBytes()
+	Loaded(Cbor.decodeFromByteArray(bytes))
+  } catch (e: SerializationException) {
+	ParseError(e.message)
+  }
 
 fun <T> EventTargetWrapper.loadSwapper(
-  prop: ObsVal<CborTestLoadResult<T>?>,
+  prop: ObsVal<CborSyncLoadResult<T>?>,
   nullMessage: String = "please select a file",
   op: T.()->NodeWrapper
 ) = swapper(prop, nullMessage) {
@@ -30,5 +35,22 @@ fun <T> EventTargetWrapper.loadSwapper(
 	is FileNotFound -> TextWrapper("$f not found")
 	is ParseError   -> TextWrapper("parse error: $message")
 	is Loaded<T>    -> op(this.data)
+  }
+}
+
+fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
+  loader: ObsVal<T?>,
+  nullMessage: String = "please select a file",
+  op: T.()->NodeWrapper
+) = swapper(loader, nullMessage) {
+  VBoxWrapper<NodeWrapper>().also {
+	it.swapper(fileFound.binding(streamOk) { this }) {
+	  when {
+		!fileFound.value -> TextWrapper("file not found")
+		!streamOk.value  -> TextWrapper("file loading stream broken. Was the file moved?")
+		parseError.value -> TextWrapper("parse error loading file")
+		else             -> op(this)
+	  }
+	}
   }
 }
