@@ -21,21 +21,24 @@ class NeuronView(
   init {
 
 	fun update() {
+//	  val t = tic("neuron view update")
+//	  t.toc(1)
 	  clear()
+//	  t.toc(2)
 	  val realNumImages = min(numImages.value!!, testLoader.numImages.await())
-
+//	  t.toc(3)
 	  val testResults = NeuronTestResults(
 		neuron.neuron,
-		testLoader.awaitFinishedTest().images.map { it.activations.activations.await()[neuron.layer.index][neuron.index] }
+		testLoader.awaitFinishedTest().activationsByNeuron[neuron]
+		//		testLoader.awaitFinishedTest().images.map { it.activations.activations.await()[neuron.layer.index][neuron.index] }
 	  )
-
+//	  t.toc(4)
 	  (0 until realNumImages).forEach { imIndex ->
-		//		println("imIndex=${imIndex}")
-		//		println("another index= ${testResults.activationIndexesHighToLow[imIndex]}")
 		val im = testLoader.awaitImage(testResults.activationIndexesHighToLow[imIndex])
 		+DeephyImView(im, viewer)
 		vgrow = Priority.ALWAYS
 	  }
+//	  t.toc(5)
 	}
 	update()
 	numImages.onChange {

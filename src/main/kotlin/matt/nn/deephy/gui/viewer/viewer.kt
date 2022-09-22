@@ -17,6 +17,7 @@ import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
+import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.load.asyncLoadSwapper
 import matt.nn.deephy.load.test.TestLoader
@@ -28,6 +29,8 @@ import matt.nn.deephy.state.DeephyState
 import matt.obs.bind.binding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
+import matt.obs.col.olist.basicMutableObservableListOf
+import matt.obs.prop.BindableProperty
 import matt.obs.prop.VarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
@@ -44,7 +47,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   val file: VarProp<CborFile?> = VarProp(initialFile).withChangeListener {
 	outerBox.save()
   }
-  private val testData = file.binding { f ->
+  val testData = file.binding { f ->
 	val t = tic(prefix = "dataBinding2")
 	t.toc("start")
 	f?.run {
@@ -134,6 +137,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
   var currentByImageHScroll: DoubleProperty? = null
 
+  val history = basicMutableObservableListOf<TestViewerAction>()
+  val historyIndex = BindableProperty(-1)
+
   init {
 	contentDisplay = ContentDisplay.LEFT
 	isExpanded = true
@@ -170,6 +176,35 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  }
 		}
 	  }
+
+
+	  button("back") {
+		enableProperty.bind(
+		  this@DatasetViewer.history.binding(
+			this@DatasetViewer.historyIndex, this@DatasetViewer.view, this@DatasetViewer.boundToDSet
+		  ) {
+			this@DatasetViewer.isUnboundToDSet.value && this@DatasetViewer.view.value == ByImage && it.isNotEmpty() && this@DatasetViewer.historyIndex.value > 0
+		  })
+		setOnAction {
+		  this@DatasetViewer.historyIndex.value -= 1
+		  val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
+		  this@DatasetViewer.imageSelection.value = (action as SelectImage).image
+		}
+
+	  }
+	  button("forward") {
+		enableProperty.bind(
+		  this@DatasetViewer.history.binding(
+			this@DatasetViewer.historyIndex, this@DatasetViewer.view, this@DatasetViewer.boundToDSet
+		  ) {
+			this@DatasetViewer.isUnboundToDSet.value && this@DatasetViewer.view.value == ByImage && it.isNotEmpty() && this@DatasetViewer.historyIndex.value < it.size - 1
+		  })
+		setOnAction {
+		  this@DatasetViewer.historyIndex.value += 1
+		  val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
+		  this@DatasetViewer.imageSelection.value = (action as SelectImage).image
+		}
+	  }
 	  togglebutton(
 		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
 	  ) {
@@ -186,4 +221,5 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 }
 
 
-
+sealed interface TestViewerAction
+class SelectImage(val image: DeephyImage): TestViewerAction

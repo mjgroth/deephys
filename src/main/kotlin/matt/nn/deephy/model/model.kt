@@ -2,15 +2,16 @@ package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
 import matt.collect.map.lazyMap
-import matt.log.profile.tic
 import matt.model.latch.asyncloaded.AsyncLoadingValue
 import matt.nn.deephy.state.DeephyState
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
+import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.slice
 import org.jetbrains.kotlinx.multik.ndarray.operations.max
+import org.jetbrains.kotlinx.multik.ndarray.operations.toList
 
 
 sealed interface NeuronRef {
@@ -46,7 +47,7 @@ class ResolvedNeuron(
 
 
 class NeuronWithActivation(
-  private val rNeuron: ResolvedNeuron,
+  val rNeuron: ResolvedNeuron,
   val activation: Float,
   val normalizedActivation: Float
 ): ResolvedNeuronLike by rNeuron
@@ -103,35 +104,35 @@ class DeephyImage(
   val data = AsyncLoadingValue<List<List<List<Float>>>>()
 
   fun topNeurons(rLayer: ResolvedLayer): List<NeuronWithActivation> {
-	val t = tic("topNeurons")
-	t.toc("1")
+//	val t = tic("topNeurons")
+//	t.toc("1")
 	val r = activationsFor(rLayer).run {
-	  t.toc("2")
+//	  t.toc("2")
 
 	  val tst = test.await()
 
 	  /*val mx = max()*/
 	  mapIndexed { neuronIndex, a ->
-//		val sub = tic("top neurons sub")
-//		sub.toc("1")
+		//		val sub = tic("top neurons sub")
+		//		sub.toc("1")
 		val neuron = rLayer.neurons[neuronIndex]
-//		sub.toc("2")
+		//		sub.toc("2")
 
 		val maxActivationForAllImagesForThisNeuron = tst.maxActivations[neuron]
-//		sub.toc("3")
+		//		sub.toc("3")
 		val rr = NeuronWithActivation(
 		  rLayer.neurons[neuronIndex],
 		  a,
 		  normalizedActivation = a/maxActivationForAllImagesForThisNeuron /*mx*/
 		)
-//		sub.toc("4")
+		//		sub.toc("4")
 		rr
 	  }
 		.sortedBy { if (DeephyState.normalizeTopNeuronActivations.value!!) it.normalizedActivation else (it.activation) }
 		.reversed()
 		.take(25)
 	}
-	t.toc("3")
+//	t.toc("3")
 	return r
   }
 
@@ -197,8 +198,8 @@ class Test(
   fun category(id: Int) = images.find { it.categoryID == id }!!.category
 
   val activationsMatByLayerIndex = lazyMap<Int, D2Array<Float>> { lay ->
-	val t = tic("activationsMat")
-	t.toc("1")
+//	val t = tic("activationsMat")
+//	t.toc("1")
 	val r = images.map { it.goodActivations[lay] }.toNDArray()
 	//	var r: D3Array<Float>? = null
 	//	for (i in images) {
@@ -210,9 +211,18 @@ class Test(
 	//		println("first trying to add to it shape = ${it.shape.joinToString(",")}")
 	//	  })
 	//	}
-	t.toc("2")
+//	t.toc("2")
 	r
   }
+
+  val activationsByNeuron = lazyMap<ResolvedNeuron, List<Float>> {
+	activationsMatByLayerIndex[it.layer.index][it.index].toList()
+	//	val layerIndex = it.first
+	//	val neuronIndex = it.second
+	//	images.map { it.activations.activations.await()[layerIndex][neuronIndex] }
+
+  }
+
 
   val maxActivations = lazyMap<ResolvedNeuron, Float> { neuron ->
 	//	val t = tic("maxActivations")
