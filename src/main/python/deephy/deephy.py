@@ -86,6 +86,7 @@ class ImageFile:
             )
 
 
+@dataclass
 class Test(DeephyData):
     images: List[ImageFile]
 
