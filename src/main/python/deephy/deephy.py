@@ -55,9 +55,9 @@ class Model(DeephyData):
         ms = self.ModelState(activations)
         return ms
 
-        @dataclass
-        class ModelState:
-            activations: List[List[float]]
+    @dataclass
+    class ModelState:
+        activations: List[List[float]]
 
 
 @dataclass
