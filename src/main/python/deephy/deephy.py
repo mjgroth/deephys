@@ -25,7 +25,7 @@ class DeephyData:
         if self.suffix == None:
             fileName = self.name + "." + self.extension
         else:
-            self.name = self.name + "_" + self.suffix + "." + self.extension
+            fileName = self.name + "_" + self.suffix + "." + self.extension
         with open(fileName, "wb") as fp:
             dump(asdict(self), fp)
 
