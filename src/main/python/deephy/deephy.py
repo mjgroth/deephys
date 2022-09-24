@@ -58,7 +58,7 @@ class Model(DeephyData):
         activations: List[List[float]]
 
 
-def import_torch_dataset(self, name, dataset, classes, state):
+def import_torch_dataset(name, dataset, classes, state):
     imageList = []
     for i in range(len(dataset)):
         image, target = dataset[i]
