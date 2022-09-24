@@ -64,15 +64,14 @@ def import_torch_dataset(name, dataset, classes, state):
         image, target = dataset[i]
         mn = torch.min(image)
         mx = torch.max(image)
-        if mx > 1.0:
+        if mx > 255:
             raise Exception(
-                f"image pixel values should be between 0.0 and 1.0, but a value of {mx} was received"
+                f"image pixel values should be integers between 0 and 255, but a value of {mx} was received"
             )
-        if mn < 0.0:
+        if mn < 0:
             raise Exception(
-                f"image pixel values should be between 0.0 and 1.0, but a value of {mn} was received"
+                f"image pixel values should be integers between 0 and 255, but a value of {mn} was received"
             )
-        image1 = ((image - mn) / (mx - mn)) * 255
         chan_to_byte = lambda chan: int(chan)
         px_to_bytes = lambda px: bytes(list(map(chan_to_byte, px)))
         row_to_bytes = lambda row: [b for px in row for b in px_to_bytes(px)]
