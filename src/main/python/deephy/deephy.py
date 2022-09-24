@@ -24,9 +24,9 @@ class DeephyData:
 
     def save(self):
         if self.suffix == None:
-            fileName = self.name + "." + self.extension
+            fileName = f"{self.name}.{self.extension}"
         else:
-            fileName = self.name + "_" + self.suffix + "." + self.extension
+            fileName = f"{self.name}_{self.suffix}.{self.extension}"
         with open(fileName, "wb") as fp:
             dump(asdict(self), fp)
 
@@ -36,15 +36,12 @@ class Model(DeephyData):
     layers: List[Layer]
 
     def __post_init__(self):
-        self.extension = "model"
+        self.extension = f"model"
 
     def state(self, activations):
         if len(activations) != len(self.layers):
             raise Exception(
-                "expected activations data with length of "
-                + str(len(self.layers))
-                + " (number of layers) but got "
-                + str(len(activations))
+                f"expected activations data with length of {len(self.layers)} (number of layers) but got {len(activations)}"
             )
         for index, sub in enumerate(activations):
             subLen = len(sub)
@@ -61,6 +58,39 @@ class Model(DeephyData):
         activations: List[List[float]]
 
 
+def import_torch_dataset(self, name, dataset, classes, state):
+    imageList = []
+    for i in range(len(dataset)):
+        image, target = dataset[i]
+        mn = torch.min(image)
+        mx = torch.max(image)
+        if mx > 1.0:
+            raise Exception(
+                f"image pixel values should be between 0.0 and 1.0, but a value of {mx} was received"
+            )
+        if mn < 0.0:
+            raise Exception(
+                f"image pixel values should be between 0.0 and 1.0, but a value of {mn} was received"
+            )
+        image1 = ((image - mn) / (mx - mn)) * 255
+        chan_to_byte = lambda chan: int(chan)
+        px_to_bytes = lambda px: bytes(list(map(chan_to_byte, px)))
+        row_to_bytes = lambda row: [b for px in row for b in px_to_bytes(px)]
+        im_to_bytes = lambda im: list(map(row_to_bytes, im))
+        im_as_list = image1.numpy().tolist()
+        imageList.append(
+            ImageFile(
+                imageID=i,
+                categoryID=target,
+                category=classes[target],
+                data=im_to_bytes(im_as_list),
+                activations=state,
+            )
+        )
+    test = Test(name=name, suffix=None, images=imageList)
+    return test
+
+
 @dataclass
 class ImageFile:
     imageID: int
@@ -74,16 +104,12 @@ class ImageFile:
         theMax = numpy.max(n)
         if theMax > 1.0:
             raise Exception(
-                "image pixel values should be between 0.0 and 1.0, but a value of "
-                + str(theMax)
-                + " was received"
+                f"image pixel values should be between 0.0 and 1.0, but a value of {theMax} was received"
             )
         theMin = numpy.min(n)
         if theMin < 0.0:
             raise Exception(
-                "image pixel values should be between 0.0 and 1.0, but a value of "
-                + str(theMin)
-                + " was received"
+                f"image pixel values should be between 0.0 and 1.0, but a value of {theMin} was received"
             )
 
 
@@ -92,4 +118,4 @@ class Test(DeephyData):
     images: List[ImageFile]
 
     def __post_init__(self):
-        self.extension = "test"
+        self.extension = f"test"
