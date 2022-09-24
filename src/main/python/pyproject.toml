@@ -6,7 +6,8 @@ authors = [
 ]
 dependencies = [
     'cbor2',
-    'numpy'
+    'numpy',
+    'torch'
 ]
 [project.urls]
 "Homepage" = "https://github.com/mgroth0/deephy"
