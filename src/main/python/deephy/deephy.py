@@ -3,6 +3,7 @@ from dataclasses import dataclass, asdict
 from typing import List, Optional
 from typing import List, Optional
 import numpy
+import torch
 
 
 @dataclass
@@ -65,7 +66,7 @@ class ImageFile:
     imageID: int
     categoryID: int
     category: str
-    data: List[List[List[float]]]
+    data: List[bytearray]
     activations: Model.ModelState
 
     def __post_init__(self):
