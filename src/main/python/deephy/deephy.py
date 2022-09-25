@@ -8,7 +8,7 @@ import torch
 import struct
 
 # library already optimizes writes of int8
-cbor.dumps_float = lambda val: struct.pack("!Bf", cbor.CBOR_FLOAT32, val)
+float32 = lambda val: struct.pack("!f", val)
 
 
 @dataclass
@@ -60,7 +60,7 @@ class Model(DeephyData):
 
     @dataclass
     class ModelState:
-        activations: List[List[float]]
+        activations: List[bytearray]  # float32
 
 
 def import_torch_dataset(name, dataset, classes, state):
@@ -81,13 +81,17 @@ def import_torch_dataset(name, dataset, classes, state):
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
         im_as_list = image.numpy().astype(np.uint8).tolist()
+        im_activations = list(map(lambda x: x[i, :].tolist(), state))
         imageList.append(
             ImageFile(
                 imageID=i,
                 categoryID=target,
                 category=classes[target],
                 data=im_to_bytes(im_as_list),
-                activations=state,
+                # python cbor package has no way to make float32, also bytearray is smaller/faster
+                activations=model.state(
+                    list(map(lambda layer: [float32(a) for a in layer], im_activations))
+                ),
             )
         )
     test = Test(name=name, suffix=None, images=imageList)
@@ -99,7 +103,7 @@ class ImageFile:
     imageID: int
     categoryID: int
     category: str
-    data: List[bytearray]
+    data: List[bytearray]  # R8G8B8
     activations: Model.ModelState
 
 
