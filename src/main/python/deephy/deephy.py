@@ -4,6 +4,10 @@ from typing import List, Optional
 from typing import List, Optional
 import numpy
 import torch
+import struct
+import cbor
+
+cbor.dumps_float = lambda val: struct.pack("!Bf", cbor.CBOR_FLOAT64, val)
 
 
 @dataclass
