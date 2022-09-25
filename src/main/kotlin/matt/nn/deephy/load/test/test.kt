@@ -5,6 +5,7 @@ import matt.cbor.CborArrayReader
 import matt.cbor.CborMapReader
 import matt.cbor.CborParseException
 import matt.cbor.CborStreamReader
+import matt.cbor.numCborBytesFor
 import matt.file.CborFile
 import matt.lang.sync
 import matt.log.profile.tic
@@ -31,7 +32,7 @@ private val dataLoaderDispatcher = Executors.newCachedThreadPool {
 	var lastReported = ""
 	while (true) {
 	  val report = "$loadJobFinishedCount/$loadJobStartedCount jobs finished"
-	  if (report!=lastReported) {
+	  if (report != lastReported) {
 		println(report)
 		lastReported = report
 	  }
@@ -118,6 +119,7 @@ private var loadJobFinishedCount = 0
 
 			(nextValue(requireKeyIs = "images") as CborArrayReader).apply {
 			  numImages.putLoadedValue(length!!)
+			  println("numImages=$length")
 			  forEachElement {
 
 				//				val imageLoadingStopwatch = tic("loading image")
@@ -151,15 +153,48 @@ private var loadJobFinishedCount = 0
 				  val r = dataReader.mapElements {
 					it as CborArrayReader
 
+
 					willBeNumHeaderBytes += it.numHeaderBytes
 
 					require(it.length != null)
+
+
+
+
 					it.mapElements {
 
-					  it as CborArrayReader
-					  require(it.length != null)
-					  willBeNumHeaderBytes += it.numBytesIfListOfDoublesIncludingHeader()
-					  it.readSetSizeDoubleArray().map { it.toFloat() }
+					  require(length != null)
+
+					  it as ByteArray
+
+
+					  //					  val r = IntArray(it.size)
+
+
+					  //					  ByteBuffer.wrap(it).asIntBuffer().get(r)
+
+					  //					  it as CborArrayReader
+					  //					  require(it.length != null)
+
+
+					  willBeNumHeaderBytes += numCborBytesFor(it)
+
+
+					  //					  willBeNumHeaderBytes += it.numBytesIfListOfBytesIncludingHeader()
+					  //					  it.readSetSizeByteArrayAsInt8s()
+
+
+					  //					  return numHeaderBytes + length
+
+					  //					  it.map { it.toUInt() }
+
+					  val r = IntArray(it.size)
+					  for ((i, b) in it.withIndex()) {
+						//						r[i] = b.toUInt()
+						r[i] = b.toInt() and 0xff
+					  }
+					  r
+
 					}
 
 
@@ -197,10 +232,10 @@ private var loadJobFinishedCount = 0
 
 					it as CborArrayReader
 
-					willBeNumHeaderBytes += it.numBytesIfListOfDoublesIncludingHeader()
+					willBeNumHeaderBytes += it.numBytesIfListOfFloat32sIncludingHeader()
 
 
-					it.readSetSizeDoubleArray().map { it.toFloat() }
+					it.readSetSizeFloat32Array()
 
 
 				  }
@@ -235,7 +270,7 @@ private var loadJobFinishedCount = 0
 						  val theData = actsReader.mapElements {
 							it as CborArrayReader
 							require(it.length != null)
-							it.readSetSizeDoubleArray().map { it.toFloat() }
+							it.readSetSizeFloat32Array()
 						  }
 						  activations.putLoadedValue(theData)
 						  loadJobFinishedCount += 1
@@ -248,7 +283,7 @@ private var loadJobFinishedCount = 0
 				  index.putLoadedValue(finishedImages.size)
 
 				  when (imageData) {
-					is List<*> -> data.putLoadedValue(imageData as List<List<List<Float>>>)
+					is List<*> -> data.putLoadedValue(imageData as List<List<IntArray>>)
 					else       -> {
 					  dataLoaderDispatcher.execute {
 						loadJobStartedCount += 1
@@ -260,9 +295,28 @@ private var loadJobFinishedCount = 0
 						  it as CborArrayReader
 						  require(it.length != null)
 						  it.mapElements {
-							it as CborArrayReader
-							require(it.length != null)
-							it.readSetSizeDoubleArray().map { it.toFloat() }
+							it as ByteArray
+							//							it as CborArrayReader
+							//							require(it.length != null)
+
+							//							it.readSetSizeByteArrayAsInt8s()
+
+							//							val r = IntArray(it.size)
+
+
+							//							ByteBuffer.wrap(it).asIntBuffer().get(r)
+							//							r
+							val r = IntArray(it.size)
+							for ((i, b) in it.withIndex()) {
+							  r[i] = b.toInt() and 0xff
+							  //							  b shr 8
+							  //							  r[i] = /b.toUInt()
+							  //							  require(r[i] >= 0.toUInt())
+							  //							  require(r[i] <= 255.toUInt()) {
+							  //								"r[i]=${r[i]}, int = ${b.toInt()}, byte = ${b}"
+							  //							  }
+							}
+							r
 						  }
 						}
 						data.putLoadedValue(theData)

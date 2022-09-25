@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package matt.nn.deephy.model
 
 import kotlinx.serialization.Serializable
 import matt.collect.map.lazyMap
+import matt.hurricanefx.wrapper.style.FXColor
 import matt.model.latch.asyncloaded.AsyncLoadingValue
 import matt.nn.deephy.state.DeephyState
 import org.jetbrains.kotlinx.multik.api.toNDArray
@@ -28,6 +31,8 @@ class NeuronTestResults(
   override val neuron: Neuron,
   private val activations: List<Float>
 ): NeuronRef {
+
+
 
   val activationIndexesHighToLow by lazy {
 	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
@@ -76,20 +81,46 @@ class DeephyImage(
 
 
   val matrix by lazy {
-	val newRows = mutableListOf<MutableList<MutableList<Float>>>()
-	data.await().mapIndexed { colorIndex, singleColorMatrix ->
-	  singleColorMatrix.mapIndexed { rowIndex, row ->
-		val newRow =
-		  if (colorIndex == 0) mutableListOf<MutableList<Float>>().also { newRows += it } else newRows[rowIndex]
 
-		row.mapIndexed { colIndex, pixel ->
-		  val newCol = if (colorIndex == 0) mutableListOf<Float>().also { newRow += it } else newRow[colIndex]
-		  newCol += pixel
-		}
+
+	//	val newRows = mutableListOf<MutableList<FXColor>>()
+
+
+	val d = data.await()
+	val numRows = d[0].size
+	val numCols = d[0][0].size
+
+	val r = (0 until numRows).map { index1 ->
+	  MutableList<FXColor>(numCols) { index2 ->
+		FXColor.rgb(d[0][index1][index2].toInt(), d[1][index1][index2].toInt(), d[2][index1][index2].toInt())
 	  }
 	}
-	newRows
+
+	r
+	//
+	//
+	//	data.await().mapIndexed { colorIndex, singleColorMatrix ->
+	//
+	//
+	//	  singleColorMatrix.mapIndexed { rowIndex, row ->
+	//
+	//
+	//		val newRow =
+	//		  if (colorIndex == 0) mutableListOf<FXColor>().also { newRows += it } else newRows[rowIndex]
+	//
+	//		row.mapIndexed { colIndex, pixel ->
+	//
+	//
+	//		  val newCol = if (colorIndex == 0) mutableListOf<FXColor>().also { newRow += it } else newRow[colIndex]
+	//		  newCol += pixel.toInt()
+	//		}
+	//	  }
+	//
+	//
+	//	}
+	//	newRows
   }
+
 
   internal val goodActivations by lazy {
 	activations.activations.await()
@@ -101,13 +132,13 @@ class DeephyImage(
   val test = AsyncLoadingValue<Test>()
   val index = AsyncLoadingValue<Int>()
   val model = AsyncLoadingValue<Model>()
-  val data = AsyncLoadingValue<List<List<List<Float>>>>()
+  val data = AsyncLoadingValue<List<List<IntArray>>>()
 
   fun topNeurons(rLayer: ResolvedLayer): List<NeuronWithActivation> {
-//	val t = tic("topNeurons")
-//	t.toc("1")
+	//	val t = tic("topNeurons")
+	//	t.toc("1")
 	val r = activationsFor(rLayer).run {
-//	  t.toc("2")
+	  //	  t.toc("2")
 
 	  val tst = test.await()
 
@@ -132,7 +163,7 @@ class DeephyImage(
 		.reversed()
 		.take(25)
 	}
-//	t.toc("3")
+	//	t.toc("3")
 	return r
   }
 
@@ -198,8 +229,8 @@ class Test(
   fun category(id: Int) = images.find { it.categoryID == id }!!.category
 
   val activationsMatByLayerIndex = lazyMap<Int, D2Array<Float>> { lay ->
-//	val t = tic("activationsMat")
-//	t.toc("1")
+	//	val t = tic("activationsMat")
+	//	t.toc("1")
 	val r = images.map { it.goodActivations[lay] }.toNDArray()
 	//	var r: D3Array<Float>? = null
 	//	for (i in images) {
@@ -211,7 +242,7 @@ class Test(
 	//		println("first trying to add to it shape = ${it.shape.joinToString(",")}")
 	//	  })
 	//	}
-//	t.toc("2")
+	//	t.toc("2")
 	r
   }
 
