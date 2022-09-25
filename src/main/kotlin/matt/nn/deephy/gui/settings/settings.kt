@@ -21,7 +21,7 @@ val settingsButton by lazy {
   actionbutton(graphic = ImageViewWrapper(Image(resourceStream("gear.png"))).apply {
 	isPreserveRatio = true
 	fitWidth = 25.0
-  }.node) {
+  }) {
 	settingsWindow.show()
   }
 }
