@@ -1,11 +1,11 @@
 from cbor import dump
+from cbor import cbor
 from dataclasses import dataclass, asdict
 from typing import List, Optional
 from typing import List, Optional
 import numpy
 import torch
 import struct
-import cbor
 
 # library already optimizes writes of int8
 cbor.dumps_float = lambda val: struct.pack("!Bf", cbor.CBOR_FLOAT32, val)
