@@ -7,6 +7,7 @@ import torch
 import struct
 import cbor
 
+# library already optimizes writes of int8
 cbor.dumps_float = lambda val: struct.pack("!Bf", cbor.CBOR_FLOAT64, val)
 
 
@@ -66,6 +67,7 @@ def import_torch_dataset(name, dataset, classes, state):
     imageList = []
     for i in range(len(dataset)):
         image, target = dataset[i]
+        image = image * 255
         mn = torch.min(image)
         mx = torch.max(image)
         if mx > 255:
@@ -76,11 +78,9 @@ def import_torch_dataset(name, dataset, classes, state):
             raise Exception(
                 f"image pixel values should be integers between 0 and 255, but a value of {mn} was received"
             )
-        chan_to_byte = lambda chan: int(chan)
-        px_to_bytes = lambda px: bytes(list(map(chan_to_byte, px)))
-        row_to_bytes = lambda row: [b for px in row for b in px_to_bytes(px)]
-        im_to_bytes = lambda im: list(map(row_to_bytes, im))
-        im_as_list = image.numpy().tolist()
+        chan_to_bytes = lambda chan: [bytes(row) for row in chan]
+        im_to_bytes = lambda im: list(map(chan_to_bytes, im))
+        im_as_list = image.numpy().astype(np.uint8).tolist()
         imageList.append(
             ImageFile(
                 imageID=i,
@@ -101,19 +101,6 @@ class ImageFile:
     category: str
     data: List[bytearray]
     activations: Model.ModelState
-
-    def __post_init__(self):
-        n = numpy.array(self.data)
-        theMax = numpy.max(n)
-        if theMax > 1.0:
-            raise Exception(
-                f"image pixel values should be between 0.0 and 1.0, but a value of {theMax} was received"
-            )
-        theMin = numpy.min(n)
-        if theMin < 0.0:
-            raise Exception(
-                f"image pixel values should be between 0.0 and 1.0, but a value of {theMin} was received"
-            )
 
 
 @dataclass
