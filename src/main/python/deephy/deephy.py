@@ -8,7 +8,7 @@ import struct
 import cbor
 
 # library already optimizes writes of int8
-cbor.dumps_float = lambda val: struct.pack("!Bf", cbor.CBOR_FLOAT64, val)
+cbor.dumps_float = lambda val: struct.pack("!Bf", cbor.CBOR_FLOAT32, val)
 
 
 @dataclass
