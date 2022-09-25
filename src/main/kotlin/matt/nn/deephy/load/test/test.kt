@@ -230,12 +230,30 @@ private var loadJobFinishedCount = 0
 
 				  val activations = activationsReader.mapElements {
 
+
+//					println("DEBUG:")
+//					reader.nextDataItem()
+//					println("DEBUG:")
+//					reader.nextDataItem()
+//					println("DEBUG:")
+//					reader.nextDataItem()
+//					println("DEBUG:")
+//					reader.nextDataItem()
+//					println("DEBUG:")
+//					reader.nextDataItem()
+
+
 					it as CborArrayReader
 
+//					println("getting num")
 					willBeNumHeaderBytes += it.numBytesIfListOfFloat32sIncludingHeader()
 
 
-					it.readSetSizeFloat32Array()
+//					println("reading float array")
+					it.readSetSizeFloat32Array()/*.onEachIndexed { idx,f ->
+					  println("got float($idx): ${f}")
+					}*/
+//					println("read float array")
 
 
 				  }
