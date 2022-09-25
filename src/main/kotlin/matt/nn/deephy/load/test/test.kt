@@ -20,6 +20,7 @@ import matt.nn.deephy.model.ModelState
 import matt.nn.deephy.model.Test
 import java.io.IOException
 import java.lang.Thread.sleep
+import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
 
@@ -243,18 +244,24 @@ private var loadJobFinishedCount = 0
 //					reader.nextDataItem()
 
 
-					it as CborArrayReader
+
 
 //					println("getting num")
-					willBeNumHeaderBytes += it.numBytesIfListOfFloat32sIncludingHeader()
+//					willBeNumHeaderBytes += it.numBytesIfListOfFloat32sIncludingHeader()
+
 
 
 //					println("reading float array")
-					it.readSetSizeFloat32Array()/*.onEachIndexed { idx,f ->
+					/*it.readSetSizeFloat32Array()*//*.onEachIndexed { idx,f ->
 					  println("got float($idx): ${f}")
 					}*/
 //					println("read float array")
 
+					it as ByteArray
+					willBeNumHeaderBytes += numCborBytesFor(it)
+					val r = FloatArray(it.size)
+					ByteBuffer.wrap(it).asFloatBuffer().get(r)
+					r
 
 				  }
 
@@ -277,7 +284,7 @@ private var loadJobFinishedCount = 0
 				  imageID = imageID as Int, categoryID = categoryID as Int, category = category as String,
 				  activations = ModelState().apply {
 					when (activationsThing) {
-					  is List<*> -> activations.putLoadedValue(activationsThing as List<List<Float>>)
+					  is List<*> -> activations.putLoadedValue(activationsThing as List<FloatArray>)
 					  else       -> {
 						dataLoaderDispatcher.execute {
 						  loadJobStartedCount += 1
@@ -286,9 +293,16 @@ private var loadJobFinishedCount = 0
 						  val actsReader = workerCborReader.nextDataItem() as CborArrayReader
 						  require(actsReader.length != null)
 						  val theData = actsReader.mapElements {
-							it as CborArrayReader
-							require(it.length != null)
-							it.readSetSizeFloat32Array()
+//							it as CborArrayReader
+//							require(it.length != null)
+//							it.readSetSizeFloat32Array()
+
+							it as ByteArray
+//							willBeNumHeaderBytes += numCborBytesFor(it)
+							val r = FloatArray(it.size)
+							ByteBuffer.wrap(it).asFloatBuffer().get(r)
+							r
+
 						  }
 						  activations.putLoadedValue(theData)
 						  loadJobFinishedCount += 1

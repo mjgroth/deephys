@@ -67,7 +67,7 @@ class NeuronWithActivation(
 class ModelState(
 
 ) {
-  val activations = AsyncLoadingValue<List<List<Float>>>()
+  val activations = AsyncLoadingValue<List<FloatArray>>()
 }
 
 
