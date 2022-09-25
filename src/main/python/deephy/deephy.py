@@ -80,7 +80,7 @@ def import_torch_dataset(name, dataset, classes, state):
         px_to_bytes = lambda px: bytes(list(map(chan_to_byte, px)))
         row_to_bytes = lambda row: [b for px in row for b in px_to_bytes(px)]
         im_to_bytes = lambda im: list(map(row_to_bytes, im))
-        im_as_list = image1.numpy().tolist()
+        im_as_list = image.numpy().tolist()
         imageList.append(
             ImageFile(
                 imageID=i,
