@@ -33,7 +33,6 @@ class NeuronTestResults(
 ): NeuronRef {
 
 
-
   val activationIndexesHighToLow by lazy {
 	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
   }
@@ -126,7 +125,7 @@ class DeephyImage(
 	activations.activations.await()
   }
 
-  fun activationsFor(rLayer: ResolvedLayer): List<Float> = goodActivations[rLayer.index]
+  fun activationsFor(rLayer: ResolvedLayer): FloatArray = goodActivations[rLayer.index]
   fun activationFor(neuron: ResolvedNeuron) = goodActivations[neuron.layer.index][neuron.index]
 
   val test = AsyncLoadingValue<Test>()
@@ -231,7 +230,7 @@ class Test(
   val activationsMatByLayerIndex = lazyMap<Int, D2Array<Float>> { lay ->
 	//	val t = tic("activationsMat")
 	//	t.toc("1")
-	val r = images.map { it.goodActivations[lay] }.toNDArray()
+	val r = images.map { it.goodActivations[lay].toList() }.toNDArray()
 	//	var r: D3Array<Float>? = null
 	//	for (i in images) {
 	//	  val a = i.activations.activations.await()

@@ -4,8 +4,9 @@ import matt.async.thread.daemon
 import matt.cbor.CborArrayReader
 import matt.cbor.CborMapReader
 import matt.cbor.CborParseException
-import matt.cbor.CborStreamReader
+import matt.cbor.CborItemReader
 import matt.cbor.numCborBytesFor
+import matt.cbor.read.streamman.cborReader
 import matt.file.CborFile
 import matt.lang.sync
 import matt.log.profile.tic
@@ -107,7 +108,8 @@ private var loadJobFinishedCount = 0
 		val stream = file.inputStream()
 		t.toc("got stream")
 		try {
-		  val reader = CborStreamReader(stream)
+
+		  val reader = stream.cborReader()
 
 		  reader.streamMap {
 			if (length != 3) {
@@ -204,7 +206,7 @@ private var loadJobFinishedCount = 0
 				  numDataBytes = willBeNumHeaderBytes
 				  r
 				} else {
-				  val key = reader.nextDataItem()
+				  val key = reader.next()
 				  require(key == "data")
 				  reader.stream.readNBytes(numDataBytes!!)
 				}
@@ -270,7 +272,7 @@ private var loadJobFinishedCount = 0
 				  println("numActivationBytes=$numActivationBytes")
 				  activations
 				} else {
-				  val key = reader.nextDataItem()
+				  val key = reader.next()
 				  require(key == "activations")
 				  reader.stream.readNBytes(numActivationBytes!!)
 				  //				  println("skipped!")
@@ -289,8 +291,8 @@ private var loadJobFinishedCount = 0
 						dataLoaderDispatcher.execute {
 						  loadJobStartedCount += 1
 						  val workerReader = (activationsThing as ByteArray).inputStream().buffered()
-						  val workerCborReader = CborStreamReader(workerReader)
-						  val actsReader = workerCborReader.nextDataItem() as CborArrayReader
+						  val workerCborReader = CborItemReader(workerReader)
+						  val actsReader = workerCborReader.next() as CborArrayReader
 						  require(actsReader.length != null)
 						  val theData = actsReader.mapElements {
 //							it as CborArrayReader
@@ -320,8 +322,8 @@ private var loadJobFinishedCount = 0
 					  dataLoaderDispatcher.execute {
 						loadJobStartedCount += 1
 						val workerReader = (imageData as ByteArray).inputStream().buffered()
-						val workerCborReader = CborStreamReader(workerReader)
-						val dataReader = workerCborReader.nextDataItem() as CborArrayReader
+						val workerCborReader = CborItemReader(workerReader)
+						val dataReader = workerCborReader.next() as CborArrayReader
 						require(dataReader.length != null)
 						val theData = dataReader.mapElements {
 						  it as CborArrayReader
