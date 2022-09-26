@@ -71,7 +71,7 @@ class ByImageView(
 			val softMaxDenom = preds.sumOf { exp(it) }
 			val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
 			val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
-			hbox {
+			hbox<NodeWrapper> {
 			  +predNamesBox
 			  spacer()
 			  +predValuesBox
