@@ -1,5 +1,6 @@
 package matt.nn.deephy.gui.global
 
+import javafx.scene.control.ToggleGroup
 import javafx.scene.control.Tooltip
 import javafx.scene.text.Font
 import javafx.util.Duration
@@ -44,7 +45,12 @@ fun NodeWrapper.deephyButton(s: String = "", op: ButtonWrapper.()->Unit = {}) = 
   font = DEEPHY_FONT
   op()
 }
-fun NodeWrapper.deephyToggleButton(s: String = "", op: ToggleButtonWrapper.()->Unit = {}) = togglebutton(s) {
+fun <V> NodeWrapper.deephyToggleButton(
+  s: String = "",
+  value: V,
+  group: ToggleGroup,
+  op: ToggleButtonWrapper.()->Unit = {}
+) = togglebutton(s,value=value,group=group) {
   font = DEEPHY_FONT
   op()
 }

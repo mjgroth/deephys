@@ -19,6 +19,9 @@ import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.global.DEEPHY_FONT
+import matt.nn.deephy.gui.global.deephyButton
+import matt.nn.deephy.gui.global.deephyToggleButton
+import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.load.asyncLoadSwapper
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.DeephyImage
