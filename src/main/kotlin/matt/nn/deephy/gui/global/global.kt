@@ -54,9 +54,9 @@ fun NodeWrapper.deephyCheckbox(s: String = "", op: CheckBoxWrapper.()->Unit = {}
   op()
 }
 
-fun NodeWrapper.deephyButton(s: String = "", op: ButtonWrapper.()->Unit = {}) = button(s) {
+fun NodeWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = button(s) {
   font = DEEPHY_FONT
-  op()
+  theOp()
 }
 
 fun <V> NodeWrapper.deephyToggleButton(
@@ -69,8 +69,8 @@ fun <V> NodeWrapper.deephyToggleButton(
   op()
 }
 
-fun NodeWrapper.deephyActionButton(s: String = "", op: ButtonWrapper.()->Unit = {}) = actionbutton(s) {
-  op()
+fun NodeWrapper.deephyActionButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = actionbutton(s) {
+  theOp()
 }.apply {
   font = DEEPHY_FONT
 }
