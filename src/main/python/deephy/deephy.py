@@ -68,6 +68,8 @@ def import_torch_dataset(name, dataset, classes, state):
     imageList = []
     for i in range(len(dataset)):
         image, target = dataset[i]
+        if torch.is_tensor(target):
+            target = target.item()
         image = image * 255
         mn = torch.min(image)
         mx = torch.max(image)
