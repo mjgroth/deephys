@@ -14,6 +14,7 @@ import matt.kjlib.git.hub.GitHub
 import matt.log.warn
 import matt.model.release.Release
 import matt.model.release.Version
+import matt.nn.deephy.gui.global.deephyHyperlink
 import matt.nn.deephy.gui.global.deephyText
 import matt.time.dur.sec
 import java.net.ConnectException

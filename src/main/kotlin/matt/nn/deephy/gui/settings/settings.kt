@@ -12,6 +12,9 @@ import matt.hurricanefx.wrapper.imageview.ImageViewWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.lang.resourceStream
+import matt.nn.deephy.gui.global.deephyCheckbox
+import matt.nn.deephy.gui.global.deephyLabel
+import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.state.BoolSetting
 import matt.nn.deephy.state.DeephySettings
 import matt.nn.deephy.state.IntSetting

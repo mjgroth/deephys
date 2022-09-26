@@ -18,7 +18,6 @@ import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
-import matt.nn.deephy.gui.global.DEEPHY_FONT
 import matt.nn.deephy.gui.global.deephyButton
 import matt.nn.deephy.gui.global.deephyToggleButton
 import matt.nn.deephy.gui.global.deephyTooltip
