@@ -15,7 +15,6 @@ import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.lang.go
 import matt.math.jmath.sigFigs
 import matt.math.sumOf
-import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.global.DEEPHY_FONT
