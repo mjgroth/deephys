@@ -7,7 +7,7 @@ Compatible pip package
 version: [0.5.0](https://pypi.org/project/deephy/0.4.0/) ([instructions](https://colab.research.google.com/drive/1PNiGD26uBsktq64fqPg76yoN-ruixavj))
 
 ### PIP Python Package Updated to 0.5.0
-- Added Stopwatch helper function
+- Added `Stopwatch` helper class
 - Updated from `cbor` pip package to `cbor2` which is much better
 - Saves in the new formats described below
 - Added convenience function `import_torch_dataset` to pip package (see instructions above)
