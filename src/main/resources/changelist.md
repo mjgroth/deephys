@@ -20,7 +20,7 @@ version: [0.5.0](https://pypi.org/project/deephy/0.4.0/) ([instructions](https:/
 
 - Changed pixel format from float64 to int8
 - Changed activation format from float64 to float32
-- Saving `Test`data from using the pip package should be 6 times faster
+- Saving `Test`data from using the pip package should be 6-10 times faster
 - `.test` files should be 7-8 times smaller
 - Loading tests in app should be faster
 - Clicking images in app should be faster
