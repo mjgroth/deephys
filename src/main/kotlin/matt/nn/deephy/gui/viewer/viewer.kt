@@ -26,7 +26,6 @@ import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.ResolvedNeuronLike
 import matt.nn.deephy.state.DeephySettings
-import matt.nn.deephy.state.DeephyState
 import matt.obs.bind.binding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
