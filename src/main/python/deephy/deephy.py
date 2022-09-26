@@ -142,7 +142,7 @@ class Stopwatch:
         self.report()
 
 
-def start_stopwatch(self, name):
+def start_stopwatch(name):
     sw = Stopwatch(name)
     sw.start()
     return sw
