@@ -1,5 +1,4 @@
-from cbor import dump
-from cbor import cbor
+from cbor2 import dumps
 from dataclasses import dataclass, asdict
 from typing import List, Optional
 from typing import List, Optional
@@ -33,7 +32,7 @@ class DeephyData:
         else:
             fileName = f"{self.name}_{self.suffix}.{self.extension}"
         with open(fileName, "wb") as fp:
-            dump(asdict(self), fp)
+            dumps(asdict(self), fp)
 
 
 @dataclass
@@ -49,11 +48,11 @@ class Model(DeephyData):
                 f"expected activations data with length of {len(self.layers)} (number of layers) but got {len(activations)}"
             )
         for index, sub in enumerate(activations):
-            subLen = len(sub)
+            subLen = len(sub) / 4
             neuronsLen = len(self.layers[index].neurons)
             if subLen != neuronsLen:
                 raise Exception(
-                    f"expected activations data with length of {neuronsLen} (number of neurons in layer {index}) but got {subLen}"
+                    f"expected activations data with length of {neuronsLen} (number of neurons in layer {index}) but got {subLen / 4}"
                 )
         ms = self.ModelState(activations)
         return ms
@@ -90,7 +89,14 @@ def import_torch_dataset(name, dataset, classes, state):
                 data=im_to_bytes(im_as_list),
                 # python cbor package has no way to make float32, also bytearray is smaller/faster
                 activations=model.state(
-                    list(map(lambda layer: [float32(a) for a in layer], im_activations))
+                    list(
+                        map(
+                            lambda layer: bytearray(
+                                [b for a in layer for b in float32(a)]
+                            ),
+                            im_activations,
+                        )
+                    )
                 ),
             )
         )
