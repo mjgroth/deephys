@@ -12,7 +12,7 @@ fun NodeWrapper.deephyTooltip(s: String, op: Tooltip.()->Unit = {}) = tooltip(s)
   op()
 }
 
-fun NodeWrapper.deephyText(s: String, op: TextWrapper.()->Unit = {}) = text(s) {
+fun NodeWrapper.deephyText(s: String = "", op: TextWrapper.()->Unit = {}) = text(s) {
   font = DEEPHY_FONT
   op()
 }

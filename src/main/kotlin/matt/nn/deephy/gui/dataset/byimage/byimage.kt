@@ -18,6 +18,7 @@ import matt.math.sumOf
 import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
+import matt.nn.deephy.gui.global.DEEPHY_FONT
 import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.gui.neuron.NeuronView

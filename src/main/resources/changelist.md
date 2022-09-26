@@ -1,29 +1,18 @@
 <!--- https://github.com/mgroth0/deephy/releases -->
 
-[//]: # (VERSION:1.15.0)
+[//]: # (VERSION:1.16.0)
 
 
 Compatible pip package
-version: [0.5.0](https://pypi.org/project/deephy/0.5.0/) ([instructions](https://colab.research.google.com/drive/1HAaVOopHDNVKryP14wW4K_rcqeeqYrLK#scrollTo=VtUgz8xGYKHj))
+version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https://colab.research.google.com/drive/1HAaVOopHDNVKryP14wW4K_rcqeeqYrLK#scrollTo=VtUgz8xGYKHj))
 
-### PIP Python Package Updated to 0.5.0
-- Added `Stopwatch` helper class
-- Updated from `cbor` pip package to `cbor2` which is much better
-- Saves in the new formats described below
-- Added convenience function `import_torch_dataset` to pip package (see instructions above)
-- Creating an `ImageFile` directly now will be more difficult. If you cannot migrate to `import_torch_dataset`, please let me know
+[//]: # (### PIP Python Package Updated to 0.5.0)
 
-[//]: # (### New Features)
+### New Features
+- Added new setting to control to which decimal point prediction values are rounded to
 
+[//]: # (### Performance Improvements)
 
-### Performance Improvements
-
-- Changed pixel format from float64 to int8
-- Changed activation format from float64 to float32
-- Saving `Test`data from using the pip package should be 6-10 times faster
-- `.test` files should be 7-8 times smaller
-- Loading tests in app should be faster
-- Clicking images in app should be faster
 
 
 
