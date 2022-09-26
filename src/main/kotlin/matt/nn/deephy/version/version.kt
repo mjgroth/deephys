@@ -14,7 +14,7 @@ import matt.kjlib.git.hub.GitHub
 import matt.log.warn
 import matt.model.release.Release
 import matt.model.release.Version
-import matt.nn.deephy.gui.DEEPHY_FONT
+import matt.nn.deephy.gui.global.deephyText
 import matt.time.dur.sec
 import java.net.ConnectException
 
@@ -50,17 +50,12 @@ object VersionChecker {
 		clear()
 		if (new == null) text("checking for updates...")
 		else if (new.version > myVersion) {
-		  text("Version ${new.version} Available: ") {
-			font = DEEPHY_FONT
-		  }
-		  hyperlink("Click here to update") {
-			font = DEEPHY_FONT
+		  deephyText("Version ${new.version} Available: ")
+		  deephyHyperlink("Click here to update") {
 			opens(GitHub.mainPageOf(appName).jURL.toURI())
 		  }
 		} else if (new.version < myVersion) {
-		  text("developing unreleased version (last pushed was ${new.version})") {
-			font = DEEPHY_FONT
-		  }
+		  deephyText("developing unreleased version (last pushed was ${new.version})")
 		}
 	  }
 	  update(newestRelease.value)

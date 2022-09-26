@@ -12,7 +12,6 @@ import matt.hurricanefx.wrapper.imageview.ImageViewWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.lang.resourceStream
-import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.state.BoolSetting
 import matt.nn.deephy.state.DeephySettings
 import matt.nn.deephy.state.IntSetting
@@ -45,9 +44,8 @@ object SettingsPane: VBoxWrapper<NodeWrapper>() {
 	  when (sett) {
 		is IntSetting  -> {
 
-		  label {
-			tooltip(sett.tooltip)
-			font = DEEPHY_FONT
+		  deephyLabel {
+			deephyTooltip(sett.tooltip)
 			text = sett.label
 			contentDisplay = RIGHT
 			graphic = spinner(
@@ -65,11 +63,10 @@ object SettingsPane: VBoxWrapper<NodeWrapper>() {
 		}
 
 		is BoolSetting -> {
-		  checkbox(
+		  deephyCheckbox(
 			sett.label
 		  ) {
-			tooltip(sett.tooltip)
-			font = DEEPHY_FONT
+			deephyTooltip(sett.tooltip)
 			isSelected = sett.prop.value
 			selectedProperty.onChange {
 			  sett.prop.value = it

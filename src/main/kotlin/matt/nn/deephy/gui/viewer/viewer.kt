@@ -13,12 +13,12 @@ import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.log.profile.stopwatch
 import matt.log.profile.tic
 import matt.model.tostringbuilder.toStringBuilder
-import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.DSetViewsVBox
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
+import matt.nn.deephy.gui.global.DEEPHY_FONT
 import matt.nn.deephy.load.asyncLoadSwapper
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.DeephyImage
@@ -145,11 +145,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	isExpanded = true
 	titleProperty.bind(file.binding { it?.nameWithoutExtension })
 	graphic = hbox<NodeWrapper> {
-	  button("remove test") {
-		font = DEEPHY_FONT
-		tooltip("remove this test viewer") {
-		  font = DEEPHY_FONT
-		}
+	  deephyButton("remove test") {
+		deephyTooltip("remove this test viewer")
 		setOnAction {
 		  if (this@DatasetViewer.outerBox.bound.value == this@DatasetViewer) {
 			this@DatasetViewer.outerBox.bound.value = null
@@ -158,11 +155,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  this@DatasetViewer.outerBox.save()
 		}
 	  }
-	  button("select test") {
-		font = DEEPHY_FONT
-		tooltip("choose test file") {
-		  font = DEEPHY_FONT
-		}
+	  deephyButton("select test") {
+		deephyTooltip("choose test file")
 		setOnAction {
 		  val f = FileChooser().apply {
 			title = "choose test data"
@@ -205,10 +199,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  this@DatasetViewer.imageSelection.value = (action as SelectImage).image
 		}
 	  }
-	  togglebutton(
+	  deephyToggleButton(
 		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
 	  ) {
-		font = DEEPHY_FONT
 		backgroundProperty.bind(selectedProperty.objectBindingN {
 		  if (it == true) backgroundColor(Color.YELLOW) else null
 		})

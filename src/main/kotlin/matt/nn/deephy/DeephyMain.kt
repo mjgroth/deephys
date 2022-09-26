@@ -12,14 +12,14 @@ import matt.file.CborFile
 import matt.file.construct.toMFile
 import matt.file.toMFile
 import matt.file.toSFile
-import matt.fx.graphics.lang.actionbutton
 import matt.gui.app.GuiApp
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.log.profile.MemReport
 import matt.log.taball
-import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.DSetViewsVBox
+import matt.nn.deephy.gui.global.deephyActionButton
+import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.settings.settingsButton
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.loadCbor
@@ -58,8 +58,7 @@ fun main(): Unit = GuiApp(decorated = true) {
 	alignment = Pos.TOP_CENTER
 
 	hbox<NodeWrapper> {
-	  actionbutton("choose model file") {
-		font = DEEPHY_FONT
+	  deephyActionButton("choose model file") {
 		val f = FileChooser().apply {
 		  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
 		}.showOpenDialog(stage)?.toMFile()?.toSFile()
@@ -82,17 +81,14 @@ fun main(): Unit = GuiApp(decorated = true) {
 
 	  val model = this@loadSwapper
 	  VBoxWrapper<NodeWrapper>().apply {
-		text("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "") {
-		  font = DEEPHY_FONT
-		}
+		deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
 		val multiAcc = DSetViewsVBox(model).apply {
 		  DeephyState.tests.value?.forEach {
 			this += (CborFile(it.path))
 		  }
 		}
 		+multiAcc
-		actionbutton("add dataset") {
-		  font = DEEPHY_FONT
+		deephyActionButton("add dataset") {
 		  multiAcc += DatasetViewer(null, multiAcc)
 		  taball("children of multAcc:", multiAcc.node.children)
 		}
