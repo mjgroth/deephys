@@ -140,3 +140,9 @@ class Stopwatch:
     def stop_and_report(self):
         self.stop()
         self.report()
+
+
+def start_stopwatch(self):
+    sw = Stopwatch()
+    sw.start()
+    return sw
