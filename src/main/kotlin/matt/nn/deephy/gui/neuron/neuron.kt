@@ -25,7 +25,7 @@ class NeuronView(
 	  //	  t.toc(1)
 	  clear()
 	  //	  t.toc(2)
-	  val realNumImages = min(numImages.value!!.toULong(), testLoader.numImages.await())
+	  val realNumImages = min(numImages.value.toULong(), testLoader.numImages.await())
 	  //	  t.toc(3)
 	  val testResults = NeuronTestResults(
 		neuron.neuron,

@@ -159,7 +159,7 @@ class DeephyImage(
 		//		sub.toc("4")
 		rr
 	  }
-		.sortedBy { if (DeephySettings.normalizeTopNeuronActivations.value!!) it.normalizedActivation else (it.activation) }
+		.sortedBy { if (DeephySettings.normalizeTopNeuronActivations.value) it.normalizedActivation else (it.activation) }
 		.reversed()
 		.take(25)
 	}
