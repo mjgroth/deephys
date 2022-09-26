@@ -104,13 +104,16 @@ class TestLoader(
   val start = SingleCall {
 	daemon {
 	  require(file.exists())
-	  val t = tic("TestLoader Daemon")
+//	  val t = tic("TestLoader Daemon")
 	  try {
 		val stream = file.inputStream()
-		t.toc("got stream")
+//		t.toc("got stream")
 		try {
 		  val reader = stream.cborReader()
 		  reader.readManually<MapReader, Unit> {
+
+//			t.toc("reading cbor manually")
+
 			if (count != 3.toULong()) {
 			  warn("expected 3 name-value pairs but got $count")
 			  signalParseError()
@@ -119,26 +122,31 @@ class TestLoader(
 			val name = nextValue<String>(requireKeyIs = "name")
 			val suffix = nextValue<String?>(requireKeyIs = "suffix")
 
+//			t.toc("got name and suffix")
+
 			nextValueManual<ArrayReader, Unit>(requireKeyIs = "images") {
 			  numImages.putLoadedValue(count)
 			  println("numImages=$count")
 
 			  readEachManually<MapReader, Unit> {
+
+				val t = tic("reading image")
+
+//				t.toc("reading image")
+
 				val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
 				val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
 				val category = nextValue<String>(requireKeyIs = "category")
+
+				t.toc("got first 3 props")
+
 				val imageData: Any = if (numDataBytes == null) {
 				  var willBeNumHeaderBytes = 0
-
 				  nextValueManual<ArrayReader, List2D<IntArray>>(requireKeyIs = "data") {
 					willBeNumHeaderBytes += head.numBytes
-					require(hasCount) /*make sure there is a count*/
-
 					val r = readEachManually<ArrayReader, List<IntArray>> {
 					  willBeNumHeaderBytes += head.numBytes
-					  require(hasCount)
 					  readEachManually<ByteStringReader, IntArray> {
-						require(hasCount)
 						willBeNumHeaderBytes += head.numBytes + count.toInt()
 						val r = IntArray(count.toInt())
 						for ((i, b) in read().raw.withIndex()) {
@@ -152,8 +160,10 @@ class TestLoader(
 				  }
 				} else {
 				  require(nextKeyOnly<String>() == "data")
-				  stream.readNBytes(numDataBytes!!)
+				  readNBytes(numDataBytes!!)
 				}
+
+				t.toc("got imageData")
 
 				val activationsThing: Any = nextValueManual<MapReader, Any>(
 				  requireKeyIs = "activations"
@@ -164,19 +174,22 @@ class TestLoader(
 					  willBeNumHeaderBytes += head.numBytes
 					  val activations = readEachManually<ByteStringReader, FloatArray> {
 						willBeNumHeaderBytes += head.numBytes + count.toInt()
-						val r = FloatArray(count.toInt())
+						val r = FloatArray(count.toInt()/4)
 						ByteBuffer.wrap(read().raw.toByteArray()).asFloatBuffer().get(r)
 						r
 					  }
 					  numActivationBytes = willBeNumHeaderBytes
-					  println("numActivationBytes=$numActivationBytes")
+					  println("activations.size=${activations.size}")
+					  println("activations[0].size=${activations[0].size}")
 					  activations
 					}
 				  } else {
 					require(nextKeyOnly<String>() == "activations")
-					stream.readNBytes(numActivationBytes!!)
+					readNBytes(numActivationBytes!!)
 				  }
 				}
+
+				t.toc("got activations")
 
 
 				@Suppress("UNCHECKED_CAST")
@@ -195,7 +208,7 @@ class TestLoader(
 						  workerCborReader.readManually<ArrayReader, Unit> {
 							require(hasCount)
 							val theData = readEachManually<ByteStringReader, FloatArray> {
-							  val r = FloatArray(count.toInt())
+							  val r = FloatArray(count.toInt()/4)
 							  ByteBuffer.wrap(read().raw.toByteArray()).asFloatBuffer().get(r)
 							  r
 							}
@@ -236,12 +249,18 @@ class TestLoader(
 					}
 				  }
 				}
+
+				t.toc("got image")
+
 				finishedImages.sync {
 				  finishedImages += deephyImage
 				  if (finishedImages.size%2500 == 0) {
 					println("finished loading ${finishedImages.size} images")
 				  }
 				}
+
+				t.toc("put image\n\n")
+
 			  }
 			}
 			finishedTest = Test(
