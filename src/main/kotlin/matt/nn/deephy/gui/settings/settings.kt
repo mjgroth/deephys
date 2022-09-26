@@ -13,8 +13,9 @@ import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.lang.resourceStream
 import matt.nn.deephy.gui.DEEPHY_FONT
-import matt.nn.deephy.state.DeephyState
-
+import matt.nn.deephy.state.BoolSetting
+import matt.nn.deephy.state.DeephySettings
+import matt.nn.deephy.state.IntSetting
 
 
 val settingsButton by lazy {
@@ -38,31 +39,48 @@ val settingsWindow by lazy {
 
 object SettingsPane: VBoxWrapper<NodeWrapper>() {
   init {
-	label {
-	  font = DEEPHY_FONT
-	  text = "Number of images per neuron in image view"
-	  contentDisplay = RIGHT
-	  graphic = spinner(
-		min = 9,
-		max = 18,
-		initialValue = DeephyState.numImagesPerNeuronInByImage.value
-	  ) {
-		prefWidth = 55.0
-		valueProperty().onChange {
-		  require(it != null)
-		  DeephyState.numImagesPerNeuronInByImage.value = it
+
+	DeephySettings.settings.forEach { sett ->
+
+	  when (sett) {
+		is IntSetting  -> {
+
+		  label {
+			tooltip(sett.tooltip)
+			font = DEEPHY_FONT
+			text = sett.label
+			contentDisplay = RIGHT
+			graphic = spinner(
+			  min = sett.min,
+			  max = sett.max,
+			  initialValue = sett.prop.value
+			) {
+			  prefWidth = 55.0
+			  valueProperty().onChange {
+				require(it != null)
+				sett.prop.value = it
+			  }
+			}
+		  }
+		}
+
+		is BoolSetting -> {
+		  checkbox(
+			sett.label
+		  ) {
+			tooltip(sett.tooltip)
+			font = DEEPHY_FONT
+			isSelected = sett.prop.value
+			selectedProperty.onChange {
+			  sett.prop.value = it
+			}
+		  }
 		}
 	  }
+
+
 	}
-	checkbox(
-	  "Normalize activations of top neurons",
-	) {
-	  font = DEEPHY_FONT
-	  isSelected = DeephyState.normalizeTopNeuronActivations.value!!
-	  //	  prefWidth = 55.0
-	  selectedProperty.onChange {
-		DeephyState.normalizeTopNeuronActivations.value = it
-	  }
-	}
+
+
   }
 }

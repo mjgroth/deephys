@@ -13,7 +13,7 @@ import kotlin.math.min
 
 class NeuronView(
   neuron: ResolvedNeuron,
-  numImages: BindableProperty<Int?> = BindableProperty(100),
+  numImages: BindableProperty<Int> = BindableProperty(100),
   testLoader: TestLoader,
   viewer: DatasetViewer,
 

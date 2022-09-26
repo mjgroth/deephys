@@ -24,7 +24,7 @@ import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.NeuronWithActivation
 import matt.nn.deephy.model.ResolvedNeuron
-import matt.nn.deephy.state.DeephyState
+import matt.nn.deephy.state.DeephySettings
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
 import matt.prim.str.truncateWithElipsesOrAddSpaces
@@ -91,7 +91,7 @@ class ByImageView(
 				  hideDelay = Duration.millis(1000.0)
 				}
 			  }
-			  predValuesBox.text("${exactPred.sigFigs(5)}") {
+			  predValuesBox.text("${exactPred.sigFigs(DeephySettings.predictionSigFigs.value)}") {
 				font = DEEPHY_FONT
 				tooltip(fullString) {
 				  showDelay = Duration.millis(100.0)
@@ -147,8 +147,8 @@ class ByImageView(
 				  font = DEEPHY_FONT
 				}
 				if (neuron is NeuronWithActivation) {
-				  text(DeephyState.normalizeTopNeuronActivations.binding {
-					" (${(if (it!!) neuron.normalizedActivation else neuron.activation).sigFigs(3)})"
+				  text(DeephySettings.normalizeTopNeuronActivations.binding {
+					" (${(if (it) neuron.normalizedActivation else neuron.activation).sigFigs(3)})"
 				  }) {
 					font = DEEPHY_FONT
 				  }
@@ -167,7 +167,7 @@ class ByImageView(
 
 			  +NeuronView(
 				viewer.model.neurons.first { it.neuron == neuron.neuron },
-				numImages = DeephyState.numImagesPerNeuronInByImage,
+				numImages = DeephySettings.numImagesPerNeuronInByImage,
 				testLoader = testLoader,
 				viewer = viewer
 			  ).apply {

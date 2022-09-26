@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 import matt.collect.map.lazyMap
 import matt.hurricanefx.wrapper.style.FXColor
 import matt.model.latch.asyncloaded.AsyncLoadingValue
-import matt.nn.deephy.state.DeephyState
+import matt.nn.deephy.state.DeephySettings
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2
@@ -159,7 +159,7 @@ class DeephyImage(
 		//		sub.toc("4")
 		rr
 	  }
-		.sortedBy { if (DeephyState.normalizeTopNeuronActivations.value!!) it.normalizedActivation else (it.activation) }
+		.sortedBy { if (DeephySettings.normalizeTopNeuronActivations.value!!) it.normalizedActivation else (it.activation) }
 		.reversed()
 		.take(25)
 	}
@@ -168,6 +168,11 @@ class DeephyImage(
   }
 
 }
+
+
+val normalizeTopNeuronsBlurb = """
+  Activations of top neurons are normalized by dividing the raw activation by the maximum activations for all images for this neuron
+""".trimIndent()
 
 
 interface LayerLike {
