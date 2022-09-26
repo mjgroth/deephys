@@ -25,6 +25,7 @@ import matt.nn.deephy.model.DeephyImage
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.ResolvedNeuronLike
+import matt.nn.deephy.state.DeephySettings
 import matt.nn.deephy.state.DeephyState
 import matt.obs.bind.binding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
@@ -115,7 +116,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
   val imageSelection = VarProp<DeephyImage?>(null)
   private val topNeuronsFromMyImage =
-	imageSelection.binding(testData, layerSelection, DeephyState.normalizeTopNeuronActivations) { im ->
+	imageSelection.binding(testData, layerSelection, DeephySettings.normalizeTopNeuronActivations) { im ->
 	  layerSelection.value?.let { im?.topNeurons(it) }
 
 	}
