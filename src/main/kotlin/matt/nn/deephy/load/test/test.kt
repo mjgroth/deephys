@@ -1,12 +1,11 @@
 package matt.nn.deephy.load.test
 
 import matt.async.thread.daemon
-import matt.cbor.CborArrayReader
-import matt.cbor.CborMapReader
-import matt.cbor.CborParseException
 import matt.cbor.CborItemReader
-import matt.cbor.numCborBytesFor
+import matt.cbor.read.major.array.ArrayReader
+import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.streamman.cborReader
+import matt.cbor.read.streamman.readCbor
 import matt.file.CborFile
 import matt.lang.sync
 import matt.log.profile.tic
@@ -22,10 +21,11 @@ import matt.nn.deephy.model.Test
 import java.io.IOException
 import java.lang.Thread.sleep
 import java.nio.ByteBuffer
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-private val dataLoaderDispatcher = Executors.newCachedThreadPool {
+private val dataLoaderDispatcher: ExecutorService = Executors.newCachedThreadPool {
   Thread(it).apply {
 	isDaemon = true
   }
@@ -45,7 +45,7 @@ private val dataLoaderDispatcher = Executors.newCachedThreadPool {
 private var loadJobStartedCount = 0
 private var loadJobFinishedCount = 0
 
-@Suppress("OPT_IN_USAGE") class TestLoader(
+class TestLoader(
   file: CborFile, val model: Model
 ): AsyncLoader(file) {
 
@@ -79,7 +79,7 @@ private var loadJobFinishedCount = 0
 	return finishedTest!!
   }
 
-  val numImages = AsyncLoadingValue<Int>()
+  val numImages = AsyncLoadingValue<ULong>()
 
   fun category(id: Int): String {
 	var i = 0
@@ -108,178 +108,75 @@ private var loadJobFinishedCount = 0
 		val stream = file.inputStream()
 		t.toc("got stream")
 		try {
-
 		  val reader = stream.cborReader()
-
-		  reader.streamMap {
-			if (length != 3) {
-			  warn("expected 3 name-value pairs but got $length")
+		  reader.readManually<MapReader> {
+			if (count != 3.toULong()) {
+			  warn("expected 3 name-value pairs but got $count")
 			  signalParseError()
 			  return@daemon
 			}
-			val name = nextValue(requireKeyIs = "name")
-			val suffix = nextValue(requireKeyIs = "suffix")
+			val name = nextValue<String>(requireKeyIs = "name")
+			val suffix = nextValue<String>(requireKeyIs = "suffix")
 
-			(nextValue(requireKeyIs = "images") as CborArrayReader).apply {
-			  numImages.putLoadedValue(length!!)
-			  println("numImages=$length")
-			  forEachElement {
+			nextValueManual<ArrayReader>(requireKeyIs = "images") {
+			  numImages.putLoadedValue(count)
+			  println("numImages=$count")
 
-				//				val imageLoadingStopwatch = tic("loading image")
-				//				imageLoadingStopwatch.toc("1")
-
-				//								println("im?:$it")
-
-
-				it as CborMapReader
-
-				val imageID = it.nextValue(requireKeyIs = "imageID")
-				//				imageLoadingStopwatch.toc("2")
-				val categoryID = it.nextValue(requireKeyIs = "categoryID")
-				//				imageLoadingStopwatch.toc("3")
-				val category = it.nextValue(requireKeyIs = "category")
-				//				imageLoadingStopwatch.toc("4")
-
-
+			  readEachManually<MapReader> {
+				val imageID = nextValue<String>(requireKeyIs = "imageID")
+				val categoryID = nextValue<String>(requireKeyIs = "categoryID")
+				val category = nextValue<String>(requireKeyIs = "category")
 				val imageData: Any = if (numDataBytes == null) {
-
-
 				  var willBeNumHeaderBytes = 0
 
-				  val dataReader = it.nextValue(requireKeyIs = "data") as CborArrayReader
+				  nextValueManual<ArrayReader>(requireKeyIs = "data") {
+					willBeNumHeaderBytes += head.numBytes
+					require(hasCount) /*make sure there is a cunt*/
 
-				  willBeNumHeaderBytes += dataReader.numHeaderBytes
-
-				  //				  imageLoadingStopwatch.toc("5")
-				  require(dataReader.length != null)
-
-				  val r = dataReader.mapElements {
-					it as CborArrayReader
-
-
-					willBeNumHeaderBytes += it.numHeaderBytes
-
-					require(it.length != null)
-
-
-
-
-					it.mapElements {
-
-					  require(length != null)
-
-					  it as ByteArray
-
-
-					  //					  val r = IntArray(it.size)
-
-
-					  //					  ByteBuffer.wrap(it).asIntBuffer().get(r)
-
-					  //					  it as CborArrayReader
-					  //					  require(it.length != null)
-
-
-					  willBeNumHeaderBytes += numCborBytesFor(it)
-
-
-					  //					  willBeNumHeaderBytes += it.numBytesIfListOfBytesIncludingHeader()
-					  //					  it.readSetSizeByteArrayAsInt8s()
-
-
-					  //					  return numHeaderBytes + length
-
-					  //					  it.map { it.toUInt() }
-
-					  val r = IntArray(it.size)
-					  for ((i, b) in it.withIndex()) {
-						//						r[i] = b.toUInt()
-						r[i] = b.toInt() and 0xff
+					val r = dataReader.mapElements {
+					  willBeNumHeaderBytes += head.numBytes
+					  require(it.length != null)
+					  it.mapElements {
+						require(length != null)
+						it as ByteArray
+						willBeNumHeaderBytes += numCborBytesFor(it)
+						val r = IntArray(it.size)
+						for ((i, b) in it.withIndex()) {
+						  r[i] = b.toInt() and 0xff
+						}
+						r
 					  }
-					  r
-
 					}
-
-
+					numDataBytes = willBeNumHeaderBytes
+					r
 				  }
 
-				  numDataBytes = willBeNumHeaderBytes
-				  r
+
 				} else {
 				  val key = reader.next()
 				  require(key == "data")
 				  reader.stream.readNBytes(numDataBytes!!)
 				}
-
-
-				//				imageLoadingStopwatch.toc("6")
-
 				val modelReader = it.nextValue(requireKeyIs = "activations") as CborMapReader
-
 				val activationsThing: Any = if (numActivationBytes == null) {
-
-				  //				  imageLoadingStopwatch.toc("7")
-
 				  var willBeNumHeaderBytes = 0
-
 				  val activationsReader = modelReader.nextValue(requireKeyIs = "activations") as CborArrayReader
-
 				  willBeNumHeaderBytes += activationsReader.numHeaderBytes
-
-				  //				  imageLoadingStopwatch.toc("8")
-
-				  println("activationsReader.numHeaderBytes=${activationsReader.numHeaderBytes}")
-				  println("activationsReader.length=${activationsReader.length}")
-
 				  val activations = activationsReader.mapElements {
-
-
-//					println("DEBUG:")
-//					reader.nextDataItem()
-//					println("DEBUG:")
-//					reader.nextDataItem()
-//					println("DEBUG:")
-//					reader.nextDataItem()
-//					println("DEBUG:")
-//					reader.nextDataItem()
-//					println("DEBUG:")
-//					reader.nextDataItem()
-
-
-
-
-//					println("getting num")
-//					willBeNumHeaderBytes += it.numBytesIfListOfFloat32sIncludingHeader()
-
-
-
-//					println("reading float array")
-					/*it.readSetSizeFloat32Array()*//*.onEachIndexed { idx,f ->
-					  println("got float($idx): ${f}")
-					}*/
-//					println("read float array")
-
 					it as ByteArray
 					willBeNumHeaderBytes += numCborBytesFor(it)
 					val r = FloatArray(it.size)
 					ByteBuffer.wrap(it).asFloatBuffer().get(r)
 					r
-
 				  }
-
 				  numActivationBytes = willBeNumHeaderBytes
-
 				  println("numActivationBytes=$numActivationBytes")
 				  activations
 				} else {
 				  val key = reader.next()
 				  require(key == "activations")
 				  reader.stream.readNBytes(numActivationBytes!!)
-				  //				  println("skipped!")
 				}
-
-
-				//				imageLoadingStopwatch.toc("9")
 
 				@Suppress("KotlinConstantConditions", "UNCHECKED_CAST")
 				val deephyImage = DeephyImage(
@@ -295,16 +192,10 @@ private var loadJobFinishedCount = 0
 						  val actsReader = workerCborReader.next() as CborArrayReader
 						  require(actsReader.length != null)
 						  val theData = actsReader.mapElements {
-//							it as CborArrayReader
-//							require(it.length != null)
-//							it.readSetSizeFloat32Array()
-
 							it as ByteArray
-//							willBeNumHeaderBytes += numCborBytesFor(it)
 							val r = FloatArray(it.size)
 							ByteBuffer.wrap(it).asFloatBuffer().get(r)
 							r
-
 						  }
 						  activations.putLoadedValue(theData)
 						  loadJobFinishedCount += 1
@@ -315,7 +206,6 @@ private var loadJobFinishedCount = 0
 				).apply {
 				  model.putLoadedValue(this@TestLoader.model)
 				  index.putLoadedValue(finishedImages.size)
-
 				  when (imageData) {
 					is List<*> -> data.putLoadedValue(imageData as List<List<IntArray>>)
 					else       -> {
@@ -330,25 +220,9 @@ private var loadJobFinishedCount = 0
 						  require(it.length != null)
 						  it.mapElements {
 							it as ByteArray
-							//							it as CborArrayReader
-							//							require(it.length != null)
-
-							//							it.readSetSizeByteArrayAsInt8s()
-
-							//							val r = IntArray(it.size)
-
-
-							//							ByteBuffer.wrap(it).asIntBuffer().get(r)
-							//							r
 							val r = IntArray(it.size)
 							for ((i, b) in it.withIndex()) {
 							  r[i] = b.toInt() and 0xff
-							  //							  b shr 8
-							  //							  r[i] = /b.toUInt()
-							  //							  require(r[i] >= 0.toUInt())
-							  //							  require(r[i] <= 255.toUInt()) {
-							  //								"r[i]=${r[i]}, int = ${b.toInt()}, byte = ${b}"
-							  //							  }
 							}
 							r
 						  }
@@ -360,18 +234,12 @@ private var loadJobFinishedCount = 0
 					}
 				  }
 				}
-
-				//				imageLoadingStopwatch.toc("10")
-
 				finishedImages.sync {
 				  finishedImages += deephyImage
 				  if (finishedImages.size%2500 == 0) {
 					println("finished loading ${finishedImages.size} images")
 				  }
 				}
-
-				//				imageLoadingStopwatch.toc("11")
-
 			  }
 			}
 			finishedTest = Test(
