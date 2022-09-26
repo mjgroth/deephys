@@ -69,8 +69,8 @@ class ByImageView(
 			text("predictions:")
 			val preds = this@swapper.activationsFor(lay)
 			val softMaxDenom = preds.sumOf { exp(it) }
-			val predNamesBox = vbox<TextWrapper> {}
-			val predValuesBox = vbox<TextWrapper> {}
+			val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
+			val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
 			hbox {
 			  +predNamesBox
 			  spacer()
