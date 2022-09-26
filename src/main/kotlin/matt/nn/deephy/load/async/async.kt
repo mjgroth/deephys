@@ -12,11 +12,19 @@ abstract class AsyncLoader(file: CborFile) {
   val parseError: ObsB = BindableProperty(false)
   val finishedLoading: ObsB = BindableProperty(false)
   protected val finishedLoadingLatch = SimpleLatch()
+
+  protected fun signalFileNotFound() {
+	runLater {
+	  (fileFound as BindableProperty).value = false
+	}
+  }
+
   protected fun signalStreamNotOk() {
 	runLater {
 	  (streamOk as BindableProperty).value = false
 	}
   }
+
 
   protected fun signalParseError() {
 	runLater {

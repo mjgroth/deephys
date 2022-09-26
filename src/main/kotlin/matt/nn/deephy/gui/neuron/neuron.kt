@@ -33,7 +33,7 @@ class NeuronView(
 		//		testLoader.awaitFinishedTest().images.map { it.activations.activations.await()[neuron.layer.index][neuron.index] }
 	  )
 	  //	  t.toc(4)
-	  println("realNumImages=$realNumImages")
+//	  println("realNumImages=$realNumImages")
 	  (0.toULong() until realNumImages).forEach { imIndex ->
 		require(imIndex <= Int.MAX_VALUE.toULong())
 		val im = testLoader.awaitImage(testResults.activationIndexesHighToLow[imIndex.toInt()])

@@ -14,8 +14,8 @@ import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.region.RegionWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.lang.go
-import matt.math.jmath.roundToDecimalPlace
 import matt.math.jmath.sigFigs
+import matt.math.sumOf
 import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
@@ -48,14 +48,10 @@ class ByImageView(
 	}
 
 	swapper(viewer.imageSelection, "no image selected") {
-
-	  //	  val t = tic("swapped image")
-	  //	  t.toc("1")
 	  HBoxWrapper<NodeWrapper>().apply {
 		+DeephyImView(this@swapper, viewer).apply {
 		  scale.value = 4.0
 		}
-		//		t.toc("2")
 		spacer(10.0)
 		vbox {
 
@@ -69,49 +65,25 @@ class ByImageView(
 			}
 		  }
 		  spacer()
-		  //		  t.toc("3")
-		  testLoader.model.classificationLayer?.go {
+		  testLoader.model.classificationLayer?.go { lay ->
 			text("predictions:")
-			val preds = this@swapper.activationsFor(it)
-			var softMaxDenom = 0.0f
-			//			t.toc("3.1")
-			preds.forEach {
-			  softMaxDenom += exp(it)
-			}
-
-			//			t.toc("3.2")
+			val preds = this@swapper.activationsFor(lay)
+			val softMaxDenom = preds.sumOf { exp(it) }
 			val predNamesBox = vbox<TextWrapper> {}
 			val predValuesBox = vbox<TextWrapper> {}
-			//			t.toc("3.3")
-			hbox<NodeWrapper> {
+			hbox {
 			  +predNamesBox
 			  spacer()
 			  +predValuesBox
 			}
-
-			//			t.toc("3.4")
-			//			val softMaxDenom = preds.sumOf { exp(it.toFloat()).toFloat() }
-			preds.withIndex().also {
-			  //			  t.toc("3.4.1")
-			}.sortedBy { it.value }.also {
-			  //			  t.toc("3.4.2")
-			}.reversed().also {
-			  //			  t.toc("3.4.3")
-			}.take(5).also {
-			  //			  t.toc("3.4.4")
-			}.forEach { thePred ->
-			  //			  t.toc("3.4.4($i).1")
+			preds.withIndex().sortedBy { it.value }.reversed().take(5).forEach { thePred ->
 			  val exactPred = (exp(thePred.value)/softMaxDenom)
-			  //			  println("exactPred=$exactPred")
-			  //			  t.toc("3.4.4($i).2")
 			  val predClassNameString = testLoader.category(thePred.index).let {
 				if (", texture :" in it) {
 				  it.substringBefore(",")
 				} else it
 			  }
-			  //			  t.toc("3.4.4($i).3")
 			  val fullString = "\t${predClassNameString} (${exactPred})"
-			  //			  t.toc("3.4.4($i).4")
 			  predNamesBox.text(predClassNameString.truncateWithElipsesOrAddSpaces(25)) {
 				font = DEEPHY_FONT
 				tooltip(fullString) {
@@ -119,36 +91,22 @@ class ByImageView(
 				  hideDelay = Duration.millis(1000.0)
 				}
 			  }
-			  //			  t.toc("3.4.4($i).5")
-			  predValuesBox.text("${exactPred.roundToDecimalPlace(5)}") {
+			  predValuesBox.text("${exactPred.sigFigs(5)}") {
 				font = DEEPHY_FONT
 				tooltip(fullString) {
 				  showDelay = Duration.millis(100.0)
 				  hideDelay = Duration.millis(1000.0)
 				}
 			  }
-			  //			  t.toc("3.4.4($i).6")
-			  //			  text(
-			  //				"\t${predClassNameString.truncateWithElipsesOrAddSpaces(25)} ${exactPred.roundToDecimalPlace(5)}"
-			  //			  ).apply {
-			  //				font = DEEPHY_FONT
-			  //				tooltip()
-			  //			  } /*.sigFigs(3)*/
 			}
-			//			t.toc("3.5")
 		  }
-		  //		  t.toc("4")
 		}
-		//		t.toc("5")
 	  }
 	}.apply {
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 	spacer(10.0)
 	swapper(viewer.topNeurons, "no top neurons") {
-
-	  //	  val t = tic("swapped top neurons")
-	  //	  t.toc(1)
 
 	  ScrollPaneWrapper<HBoxWrapper<NodeWrapper>>().apply {
 		hbarPolicy = AS_NEEDED
@@ -172,13 +130,9 @@ class ByImageView(
 		}
 
 
-		//		t.toc(2)
 		content = HBoxWrapper<NodeWrapper>().apply {
-		  //		  t.toc(3)
-		  this@swapper.forEach { theNeuron ->
-			//			t.toc("4.$index.1")
-			val neuron = theNeuron
-			val neuronIndex = theNeuron.index
+		  this@swapper.forEach { neuron ->
+			val neuronIndex = neuron.index
 			vbox {
 			  textflow<TextWrapper> {
 				actionText("neuron $neuronIndex") {
@@ -192,28 +146,24 @@ class ByImageView(
 				}.apply {
 				  font = DEEPHY_FONT
 				}
-				//				t.toc("4.$index.2")
-				if (theNeuron is NeuronWithActivation) {
-				  val n = theNeuron
+				if (neuron is NeuronWithActivation) {
 				  text(DeephyState.normalizeTopNeuronActivations.binding {
-					" (${(if (it!!) n.normalizedActivation else n.activation).sigFigs(3)})"
+					" (${(if (it!!) neuron.normalizedActivation else neuron.activation).sigFigs(3)})"
 				  }) {
 					font = DEEPHY_FONT
 				  }
 				} else {
-				  val neur = (theNeuron as ResolvedNeuron)
-				  val bountTo = viewer.boundToDSet.value!!
-				  val boundNeur =
-					(bountTo.topNeurons.value!!.first { it.index == neur.index } as NeuronWithActivation).rNeuron
+				  val theNeuron = (neuron as ResolvedNeuron)
+				  val boundTo = viewer.boundToDSet.value!!
+				  val boundNeuron =
+					(boundTo.topNeurons.value!!.first { it.index == theNeuron.index } as NeuronWithActivation).rNeuron
 				  val activationRatio =
-					testLoader.awaitFinishedTest().maxActivations[neur]/bountTo.testData.value!!.awaitFinishedTest().maxActivations[boundNeur]
+					testLoader.awaitFinishedTest().maxActivations[theNeuron]/boundTo.testData.value!!.awaitFinishedTest().maxActivations[boundNeuron]
 				  text(" (${activationRatio.sigFigs(3)})") {
 					font = DEEPHY_FONT
 				  }
 				}
-				//				t.toc("4.$index.3")
 			  }
-			  //			  t.toc("4.$index.4")
 
 			  +NeuronView(
 				viewer.model.neurons.first { it.neuron == neuron.neuron },
@@ -226,11 +176,8 @@ class ByImageView(
 				vgap = 10.0
 			  }
 
-			  //			  t.toc("4.$index.5")
 			  spacer() /*space for the hbar*/
 			  prefWidth = myWidth
-
-			  //			  t.toc("4.$index.6")
 			}
 		  }
 		}

@@ -9,7 +9,6 @@ import matt.cbor.read.streamman.cborReader
 import matt.file.CborFile
 import matt.lang.List2D
 import matt.lang.sync
-import matt.log.profile.tic
 import matt.log.warn
 import matt.model.errreport.ThrowReport
 import matt.model.latch.asyncloaded.AsyncLoadingValue
@@ -103,7 +102,10 @@ class TestLoader(
 
   val start = SingleCall {
 	daemon {
-	  require(file.exists())
+	  if (!file.exists()) {
+		signalFileNotFound()
+		return@daemon
+	  }
 //	  val t = tic("TestLoader Daemon")
 	  try {
 		val stream = file.inputStream()
@@ -130,7 +132,7 @@ class TestLoader(
 
 			  readEachManually<MapReader, Unit> {
 
-				val t = tic("reading image")
+//				val t = tic("reading image")
 
 //				t.toc("reading image")
 
@@ -138,7 +140,7 @@ class TestLoader(
 				val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
 				val category = nextValue<String>(requireKeyIs = "category")
 
-				t.toc("got first 3 props")
+//				t.toc("got first 3 props")
 
 				val imageData: Any = if (numDataBytes == null) {
 				  var willBeNumHeaderBytes = 0
@@ -163,7 +165,7 @@ class TestLoader(
 				  readNBytes(numDataBytes!!)
 				}
 
-				t.toc("got imageData")
+//				t.toc("got imageData")
 
 				val activationsThing: Any = nextValueManual<MapReader, Any>(
 				  requireKeyIs = "activations"
@@ -179,8 +181,8 @@ class TestLoader(
 						r
 					  }
 					  numActivationBytes = willBeNumHeaderBytes
-					  println("activations.size=${activations.size}")
-					  println("activations[0].size=${activations[0].size}")
+//					  println("activations.size=${activations.size}")
+//					  println("activations[0].size=${activations[0].size}")
 					  activations
 					}
 				  } else {
@@ -189,7 +191,7 @@ class TestLoader(
 				  }
 				}
 
-				t.toc("got activations")
+//				t.toc("got activations")
 
 
 				@Suppress("UNCHECKED_CAST")
@@ -250,7 +252,7 @@ class TestLoader(
 				  }
 				}
 
-				t.toc("got image")
+//				t.toc("got image")
 
 				finishedImages.sync {
 				  finishedImages += deephyImage
@@ -259,7 +261,7 @@ class TestLoader(
 				  }
 				}
 
-				t.toc("put image\n\n")
+//				t.toc("put image\n\n")
 
 			  }
 			}

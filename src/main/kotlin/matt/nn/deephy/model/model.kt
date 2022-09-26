@@ -34,7 +34,7 @@ class NeuronTestResults(
 
 
   val activationIndexesHighToLow by lazy {
-	println("activationIndexesHighToLow activations.size=${activations.size}")
+//	println("activationIndexesHighToLow activations.size=${activations.size}")
 	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
   }
 }

@@ -4,7 +4,7 @@
 
 
 Compatible pip package
-version: [0.5.0](https://pypi.org/project/deephy/0.4.0/) ([instructions](https://colab.research.google.com/drive/1PNiGD26uBsktq64fqPg76yoN-ruixavj))
+version: [0.5.0](https://pypi.org/project/deephy/0.5.0/) ([instructions](https://colab.research.google.com/drive/1HAaVOopHDNVKryP14wW4K_rcqeeqYrLK#scrollTo=VtUgz8xGYKHj))
 
 ### PIP Python Package Updated to 0.5.0
 - Added `Stopwatch` helper class
