@@ -1,8 +1,8 @@
 package matt.nn.deephy.gui.dataset.byimage
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
+import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
-import matt.fx.graphics.node.actionText
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.font.fixed
 import matt.hurricanefx.wrapper.node.NodeWrapper
@@ -17,7 +17,8 @@ import matt.math.jmath.sigFigs
 import matt.math.sumOf
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
-import matt.nn.deephy.gui.global.DEEPHY_FONT
+import matt.nn.deephy.gui.global.deephyActionText
+import matt.nn.deephy.gui.global.deephyButton
 import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.gui.neuron.NeuronView
@@ -37,8 +38,7 @@ class ByImageView(
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
 
-	button("select random image") {
-	  font = DEEPHY_FONT
+	deephyButton("select random image") {
 	  setOnAction {
 
 		viewer.imageSelection.value = testLoader.awaitNonUniformRandomImage()
@@ -57,12 +57,12 @@ class ByImageView(
 		vbox {
 
 		  textflow<TextWrapper> {
-			val groundTruthFont = DEEPHY_FONT.fixed().copy(size = DEEPHY_FONT.size*2).fx()
-			text("ground truth: ") {
-			  font = groundTruthFont
+			val groundTruthFont: Font.()->Font = { fixed().copy(size = size*2).fx() }
+			deephyText("ground truth: ") {
+			  font = font.groundTruthFont()
 			}
-			text(this@swapper.category) {
-			  font = groundTruthFont.fixed().copy(weight = BOLD).fx()
+			deephyText(this@swapper.category) {
+			  font = font.groundTruthFont().fixed().copy(weight = BOLD).fx()
 			}
 		  }
 		  spacer()
@@ -131,7 +131,7 @@ class ByImageView(
 			val neuronIndex = neuron.index
 			vbox {
 			  textflow<TextWrapper> {
-				actionText("neuron $neuronIndex") {
+				deephyActionText("neuron $neuronIndex") {
 
 				  val viewerToChange = viewer.boundToDSet.value ?: viewer
 				  viewerToChange.neuronSelection.value = null
@@ -139,15 +139,11 @@ class ByImageView(
 				  viewerToChange.neuronSelection.value =
 					viewerToChange.model.neurons.first { it.neuron == neuron.neuron }
 				  viewerToChange.view.value = ByNeuron
-				}.apply {
-				  font = DEEPHY_FONT
 				}
 				if (neuron is NeuronWithActivation) {
-				  text(DeephySettings.normalizeTopNeuronActivations.binding {
+				  deephyText(DeephySettings.normalizeTopNeuronActivations.binding {
 					" (${(if (it) neuron.normalizedActivation else neuron.activation).sigFigs(3)})"
-				  }) {
-					font = DEEPHY_FONT
-				  }
+				  })
 				} else {
 				  val theNeuron = (neuron as ResolvedNeuron)
 				  val boundTo = viewer.boundToDSet.value!!
@@ -155,9 +151,7 @@ class ByImageView(
 					(boundTo.topNeurons.value!!.first { it.index == theNeuron.index } as NeuronWithActivation).rNeuron
 				  val activationRatio =
 					testLoader.awaitFinishedTest().maxActivations[theNeuron]/boundTo.testData.value!!.awaitFinishedTest().maxActivations[boundNeuron]
-				  text(" (${activationRatio.sigFigs(3)})") {
-					font = DEEPHY_FONT
-				  }
+				  deephyText(" (${activationRatio.sigFigs(3)})")
 				}
 			  }
 
