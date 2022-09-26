@@ -1,4 +1,4 @@
-from cbor2 import dumps
+from cbor2 import dump
 from dataclasses import dataclass, asdict
 from typing import List, Optional
 from typing import List, Optional
@@ -32,7 +32,7 @@ class DeephyData:
         else:
             fileName = f"{self.name}_{self.suffix}.{self.extension}"
         with open(fileName, "wb") as fp:
-            dumps(asdict(self), fp)
+            dump(asdict(self), fp)
 
 
 @dataclass
