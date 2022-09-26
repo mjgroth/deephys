@@ -2,7 +2,6 @@ package matt.nn.deephy.gui.dataset.byimage
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
 import javafx.scene.text.FontWeight.BOLD
-import javafx.util.Duration
 import matt.fx.graphics.node.actionText
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.font.fixed
@@ -19,6 +18,8 @@ import matt.math.sumOf
 import matt.nn.deephy.gui.DEEPHY_FONT
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
+import matt.nn.deephy.gui.global.deephyText
+import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
@@ -84,19 +85,14 @@ class ByImageView(
 				} else it
 			  }
 			  val fullString = "\t${predClassNameString} (${exactPred})"
-			  predNamesBox.text(predClassNameString.truncateWithElipsesOrAddSpaces(25)) {
-				font = DEEPHY_FONT
-				tooltip(fullString) {
-				  showDelay = Duration.millis(100.0)
-				  hideDelay = Duration.millis(1000.0)
-				}
+			  predNamesBox.deephyText(predClassNameString.truncateWithElipsesOrAddSpaces(25)) {
+				deephyTooltip(fullString)
 			  }
-			  predValuesBox.text("${exactPred.sigFigs(DeephySettings.predictionSigFigs.value)}") {
-				font = DEEPHY_FONT
-				tooltip(fullString) {
-				  showDelay = Duration.millis(100.0)
-				  hideDelay = Duration.millis(1000.0)
-				}
+			  predValuesBox.deephyText {
+				textProperty.bind(DeephySettings.predictionSigFigs.binding {
+				  exactPred.sigFigs(it).toString()
+				})
+				deephyTooltip(fullString)
 			  }
 			}
 		  }
