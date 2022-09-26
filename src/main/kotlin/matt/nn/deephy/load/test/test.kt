@@ -1,13 +1,11 @@
 package matt.nn.deephy.load.test
 
 import matt.async.thread.daemon
-import matt.cbor.CborItemReader
 import matt.cbor.err.CborParseException
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.bytestr.ByteStringReader
 import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.streamman.cborReader
-import matt.cbor.read.streamman.readCbor
 import matt.file.CborFile
 import matt.lang.List2D
 import matt.lang.sync
@@ -126,8 +124,8 @@ class TestLoader(
 			  println("numImages=$count")
 
 			  readEachManually<MapReader, Unit> {
-				val imageID = nextValue<Int>(requireKeyIs = "imageID")
-				val categoryID = nextValue<Int>(requireKeyIs = "categoryID")
+				val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
+				val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
 				val category = nextValue<String>(requireKeyIs = "category")
 				val imageData: Any = if (numDataBytes == null) {
 				  var willBeNumHeaderBytes = 0
@@ -157,7 +155,9 @@ class TestLoader(
 				  stream.readNBytes(numDataBytes!!)
 				}
 
-				val activationsThing: Any = nextValueManual<MapReader, Any>(requireKeyIs = "activations") {
+				val activationsThing: Any = nextValueManual<MapReader, Any>(
+				  requireKeyIs = "activations"
+				) {
 				  if (numActivationBytes == null) {
 					var willBeNumHeaderBytes = 0
 					nextValueManual<ArrayReader, List<FloatArray>>(requireKeyIs = "activations") {
