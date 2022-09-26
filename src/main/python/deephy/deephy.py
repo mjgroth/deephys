@@ -5,6 +5,7 @@ from typing import List, Optional
 import numpy
 import torch
 import struct
+from time import time
 
 # library already optimizes writes of int8
 float32 = lambda val: struct.pack("!f", val)
@@ -119,3 +120,18 @@ class Test(DeephyData):
 
     def __post_init__(self):
         self.extension = f"test"
+
+
+class Stopwatch:
+    def __init__(self, name):
+        self.name = name
+
+    def start(self):
+        self.start_time = time()
+
+    def stop(self):
+        self.stop_time = time()
+        self.duration_secs = self.stop_time - self.start_time
+
+    def report(self):
+        print(f"{self.name} took {self.duration_secs} seconds")
