@@ -1,3 +1,4 @@
+# @title Deephy
 from cbor2 import dump
 from dataclasses import dataclass, asdict
 from typing import List, Optional
@@ -135,3 +136,7 @@ class Stopwatch:
 
     def report(self):
         print(f"{self.name} took {self.duration_secs} seconds")
+
+    def stop_and_report(self):
+        self.stop()
+        self.report()
