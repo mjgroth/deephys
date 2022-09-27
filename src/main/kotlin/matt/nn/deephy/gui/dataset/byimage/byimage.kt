@@ -4,8 +4,10 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
 import matt.hurricanefx.eye.lib.onChange
+import matt.hurricanefx.eye.mtofx.createROFXPropWrapper
 import matt.hurricanefx.font.fixed
 import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.hurricanefx.wrapper.pane.PaneWrapper
 import matt.hurricanefx.wrapper.pane.hbox.HBoxWrapper
 import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
 import matt.hurricanefx.wrapper.pane.spacer
@@ -26,6 +28,7 @@ import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.NeuronWithActivation
 import matt.nn.deephy.model.ResolvedNeuron
+import matt.nn.deephy.model.normalizeTopNeuronsBlurb
 import matt.nn.deephy.state.DeephySettings
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
@@ -72,7 +75,7 @@ class ByImageView(
 			val softMaxDenom = preds.sumOf { exp(it) }
 			val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
 			val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
-			hbox<NodeWrapper> {
+			hbox<PaneWrapper<*>> {
 			  +predNamesBox
 			  spacer()
 			  +predValuesBox
@@ -140,10 +143,17 @@ class ByImageView(
 					viewerToChange.model.neurons.first { it.neuron == neuron.neuron }
 				  viewerToChange.view.value = ByNeuron
 				}
+				val normSett = DeephySettings.normalizeTopNeuronActivations
 				if (neuron is NeuronWithActivation) {
-				  deephyText(DeephySettings.normalizeTopNeuronActivations.binding {
-					" (${(if (it) neuron.normalizedActivation else neuron.activation).sigFigs(3)})"
-				  })
+				  deephyText(normSett.binding {
+					" ${if (it) "Y" else "Ŷ"}=${(if (it) neuron.normalizedActivation else neuron.activation).sigFigs(3)}"
+				  }) {
+					deephyTooltip(normalizeTopNeuronsBlurb) {
+					  textProperty().bind(normSett.binding {
+						if (it) normalizeTopNeuronsBlurb else "raw activation value for the selected image"
+					  }.createROFXPropWrapper())
+					}
+				  }
 				} else {
 				  val theNeuron = (neuron as ResolvedNeuron)
 				  val boundTo = viewer.boundToDSet.value!!
@@ -151,7 +161,11 @@ class ByImageView(
 					(boundTo.topNeurons.value!!.first { it.index == theNeuron.index } as NeuronWithActivation).rNeuron
 				  val activationRatio =
 					testLoader.awaitFinishedTest().maxActivations[theNeuron]/boundTo.testData.value!!.awaitFinishedTest().maxActivations[boundNeuron]
-				  deephyText(" (${activationRatio.sigFigs(3)})")
+				  deephyText(" %=${activationRatio.sigFigs(3)}") {
+					deephyTooltip(
+					  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the bound neuron"
+					)
+				  }
 				}
 			  }
 

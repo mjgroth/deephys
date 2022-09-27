@@ -15,6 +15,7 @@ import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.obs.bindings.str.ObsS
 
+/*todo: a single tooltip can be installed on multiple nodes, (and this seems important for performance)*/
 fun NodeWrapper.deephyTooltip(s: String, op: Tooltip.()->Unit = {}) = tooltip(s) {
   font = DEEPHY_FONT
   showDelay = Duration.millis(100.0)

@@ -10,13 +10,17 @@ version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https:/
 
 ### New Features
 - Added new setting to control to which decimal point prediction values are rounded to
+- Added tooltips explaining what the numbers mean for neuron all activations
+- Added symbols to mark what the different activations are
+  - `%`means ratio to the bound test
+  - `Y` means raw activation
+  - `Ŷ` means normalized activation (divided by max for this neuron for all images)
 
 [//]: # (### Performance Improvements)
 
 
-
-
-[//]: # (### Cosmetic Changes)
+### Cosmetic Changes
+- Changed tooltip style to improve readability
 
 [//]: # (### Bug Fixes)
 

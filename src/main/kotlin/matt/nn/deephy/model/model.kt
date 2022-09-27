@@ -252,15 +252,15 @@ class Test(
   }
 
   val activationsByNeuron = lazyMap<ResolvedNeuron, List<Float>> {
-	println("activationsMatByLayerIndex.size=${activationsMatByLayerIndex.size}")
-	println("activationsMatByLayerIndex[0].shape=${activationsMatByLayerIndex[0].shape.joinToString()}")
+//	println("activationsMatByLayerIndex.size=${activationsMatByLayerIndex.size}")
+//	println("activationsMatByLayerIndex[0].shape=${activationsMatByLayerIndex[0].shape.joinToString()}")
 	//	println("activationsMatByLayerIndex[0][0].size=${activationsMatByLayerIndex[0][0].size}")
 
 	val myMat = activationsMatByLayerIndex[it.layer.index]
-	println("myMat.shape=${myMat.shape.joinToString()}")
+//	println("myMat.shape=${myMat.shape.joinToString()}")
 	//	println("slice1.shape=${slice1.shape.joinToString()}")
 	val slice2 = myMat[0 until myMat.shape[0], it.index]
-	println("slice2.shape=${slice2.shape.joinToString()}")
+//	println("slice2.shape=${slice2.shape.joinToString()}")
 	slice2.toList()
 
 	//	val layerIndex = it.first
