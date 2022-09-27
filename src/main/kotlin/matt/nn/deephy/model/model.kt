@@ -21,6 +21,14 @@ sealed interface NeuronRef {
   val neuron: Neuron
 }
 
+data class InterTestLayer(
+  val index: Int
+)
+
+data class InterTestNeuron(
+  val layer: InterTestLayer,
+  val index: Int
+)
 
 @Serializable class Neuron: NeuronRef {
   override val neuron get() = this
@@ -34,7 +42,7 @@ class NeuronTestResults(
 
 
   val activationIndexesHighToLow by lazy {
-//	println("activationIndexesHighToLow activations.size=${activations.size}")
+	//	println("activationIndexesHighToLow activations.size=${activations.size}")
 	activations.withIndex().sortedBy { it.value }.reversed().map { it.index }
   }
 }
@@ -42,13 +50,17 @@ class NeuronTestResults(
 interface ResolvedNeuronLike: NeuronRef {
   val index: Int
   val layer: ResolvedLayer
+  val interTest: InterTestNeuron
 }
+
 
 class ResolvedNeuron(
   override val neuron: Neuron,
   override val index: Int,
   override val layer: ResolvedLayer,
-): ResolvedNeuronLike
+): ResolvedNeuronLike {
+  override val interTest by lazy { InterTestNeuron(layer.interTest, index) }
+}
 
 
 class NeuronWithActivation(
@@ -199,6 +211,7 @@ class ResolvedLayer(
 	  neuron = neuron, index = index, layer = this@ResolvedLayer
 	)
   }
+  val interTest by lazy { InterTestLayer(index) }
 }
 
 
@@ -252,15 +265,15 @@ class Test(
   }
 
   val activationsByNeuron = lazyMap<ResolvedNeuron, List<Float>> {
-//	println("activationsMatByLayerIndex.size=${activationsMatByLayerIndex.size}")
-//	println("activationsMatByLayerIndex[0].shape=${activationsMatByLayerIndex[0].shape.joinToString()}")
+	//	println("activationsMatByLayerIndex.size=${activationsMatByLayerIndex.size}")
+	//	println("activationsMatByLayerIndex[0].shape=${activationsMatByLayerIndex[0].shape.joinToString()}")
 	//	println("activationsMatByLayerIndex[0][0].size=${activationsMatByLayerIndex[0][0].size}")
 
 	val myMat = activationsMatByLayerIndex[it.layer.index]
-//	println("myMat.shape=${myMat.shape.joinToString()}")
+	//	println("myMat.shape=${myMat.shape.joinToString()}")
 	//	println("slice1.shape=${slice1.shape.joinToString()}")
 	val slice2 = myMat[0 until myMat.shape[0], it.index]
-//	println("slice2.shape=${slice2.shape.joinToString()}")
+	//	println("slice2.shape=${slice2.shape.joinToString()}")
 	slice2.toList()
 
 	//	val layerIndex = it.first
@@ -270,18 +283,8 @@ class Test(
   }
 
 
-  val maxActivations = lazyMap<ResolvedNeuron, Float> { neuron ->
-	//	val t = tic("maxActivations")
-	//	t.toc("1")
-	//	val allActives = images.map { it.activationFor(neuron) }
-	//	t.toc("2 (${allActives.size})")
+  val maxActivations = lazyMap<InterTestNeuron, Float> { neuron ->
 	activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!
-
-	/*val layerActs = activationsMatByLayerIndex[neuron.layer.index]*/
-	/*val r = *//*layerActs[0 until layerActs.shape[0]][neuron.index].max()!!*/
-	//	t.toc("3")
-	//	r!!
-
   }
 
 

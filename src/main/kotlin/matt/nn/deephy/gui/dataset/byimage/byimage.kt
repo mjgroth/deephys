@@ -17,6 +17,7 @@ import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.lang.go
 import matt.math.jmath.sigFigs
 import matt.math.sumOf
+import matt.nn.deephy.calc.ActivationRatio
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.global.deephyActionText
@@ -27,7 +28,6 @@ import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.NeuronWithActivation
-import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.normalizeTopNeuronsBlurb
 import matt.nn.deephy.state.DeephySettings
 import matt.obs.bind.binding
@@ -40,17 +40,14 @@ class ByImageView(
   testLoader: TestLoader, viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
-
 	deephyButton("select random image") {
 	  setOnAction {
-
 		viewer.imageSelection.value = testLoader.awaitNonUniformRandomImage()
 	  }
 	  visibleAndManagedProp.bind(
 		viewer.imageSelection.isNull.and(viewer.topNeurons.isNull)
 	  )
 	}
-
 	swapper(viewer.imageSelection, "no image selected") {
 	  HBoxWrapper<NodeWrapper>().apply {
 		+DeephyImView(this@swapper, viewer).apply {
@@ -58,7 +55,6 @@ class ByImageView(
 		}
 		spacer(10.0)
 		vbox {
-
 		  textflow<TextWrapper> {
 			val groundTruthFont: Font.()->Font = { fixed().copy(size = size*2).fx() }
 			deephyText("ground truth: ") {
@@ -135,7 +131,6 @@ class ByImageView(
 			vbox {
 			  textflow<TextWrapper> {
 				deephyActionText("neuron $neuronIndex") {
-
 				  val viewerToChange = viewer.boundToDSet.value ?: viewer
 				  viewerToChange.neuronSelection.value = null
 				  viewerToChange.layerSelection.value = neuron.layer
@@ -146,7 +141,11 @@ class ByImageView(
 				val normSett = DeephySettings.normalizeTopNeuronActivations
 				if (neuron is NeuronWithActivation) {
 				  deephyText(normSett.binding {
-					" ${if (it) "Y" else "Ŷ"}=${(if (it) neuron.normalizedActivation else neuron.activation).sigFigs(3)}"
+					" ${if (it) "Y" else "Ŷ"}=${
+					  (if (it) neuron.normalizedActivation else neuron.activation).sigFigs(
+						3
+					  )
+					}"
 				  }) {
 					deephyTooltip(normalizeTopNeuronsBlurb) {
 					  textProperty().bind(normSett.binding {
@@ -155,16 +154,14 @@ class ByImageView(
 					}
 				  }
 				} else {
-				  val theNeuron = (neuron as ResolvedNeuron)
-				  val boundTo = viewer.boundToDSet.value!!
-				  val boundNeuron =
-					(boundTo.topNeurons.value!!.first { it.index == theNeuron.index } as NeuronWithActivation).rNeuron
-				  val activationRatio =
-					testLoader.awaitFinishedTest().maxActivations[theNeuron]/boundTo.testData.value!!.awaitFinishedTest().maxActivations[boundNeuron]
-				  deephyText(" %=${activationRatio.sigFigs(3)}") {
-					deephyTooltip(
-					  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the bound neuron"
-					)
+				  deephyText(
+					ActivationRatio(
+					  numTest = testLoader,
+					  denomTest = viewer.boundToDSet.value!!.testData.value!!,
+					  neuron = neuron.interTest
+					).formattedResult
+				  ) {
+					deephyTooltip(ActivationRatio.technique)
 				  }
 				}
 			  }
