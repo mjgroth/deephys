@@ -163,7 +163,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  val f = FileChooser().apply {
 			title = "choose test data"
 			this.extensionFilters.setAll(ExtensionFilter("tests", "*.test"))
-		  }.showOpenDialog(stage)
+		  }.showOpenDialog(stage?.node)
 
 		  if (f != null) {
 			stopwatch("set fileProp") {

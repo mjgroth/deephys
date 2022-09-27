@@ -61,7 +61,7 @@ fun main(): Unit = GuiApp(decorated = true) {
 	  deephyActionButton("choose model file") {
 		val f = FileChooser().apply {
 		  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
-		}.showOpenDialog(stage)?.toMFile()?.toSFile()
+		}.showOpenDialog(stage?.node)?.toMFile()?.toSFile()
 		if (f != null) {
 		  DeephyState.tests.value = null
 		  DeephyState.model.value = f
