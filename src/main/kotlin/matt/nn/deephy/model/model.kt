@@ -161,7 +161,7 @@ class DeephyImage(
 		val neuron = rLayer.neurons[neuronIndex]
 		//		sub.toc("2")
 
-		val maxActivationForAllImagesForThisNeuron = tst.maxActivations[neuron]
+		val maxActivationForAllImagesForThisNeuron = tst.maxActivations[neuron.interTest]
 		//		sub.toc("3")
 		val rr = NeuronWithActivation(
 		  rLayer.neurons[neuronIndex],
