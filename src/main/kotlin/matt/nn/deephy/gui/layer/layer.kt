@@ -11,7 +11,7 @@ import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.ResolvedLayer
-import matt.nn.deephy.model.ResolvedNeuron
+import matt.nn.deephy.model.data.InterTestNeuron
 
 class LayerView(
   layer: ResolvedLayer,
@@ -19,8 +19,8 @@ class LayerView(
   viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
-	val neuronCB = choicebox(property = viewer.neuronSelection, values = layer.neurons) {
-	  converter = toStringConverter<ResolvedNeuron?> { "neuron ${it?.index}" }.toFXConverter()
+	val neuronCB = choicebox(property = viewer.neuronSelection, values = layer.neurons.map { it.interTest }) {
+	  converter = toStringConverter<InterTestNeuron?> { "neuron ${it?.index}" }.toFXConverter()
 	}
 	hbox<NodeWrapper> {
 	  deephyText("neuron: ")

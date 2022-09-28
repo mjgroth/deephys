@@ -1,53 +1,43 @@
 package matt.nn.deephy.gui.neuron
 
-import javafx.scene.layout.Priority
-import matt.hurricanefx.wrapper.canvas.CanvasWrapper
-import matt.hurricanefx.wrapper.pane.flow.FlowPaneWrapper
+import matt.nn.deephy.calc.TopImages
 import matt.nn.deephy.gui.deephyimview.DeephyImView
+import matt.nn.deephy.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
-import matt.nn.deephy.model.NeuronTestResults
-import matt.nn.deephy.model.ResolvedNeuron
+import matt.nn.deephy.model.data.InterTestNeuron
+import matt.obs.bindings.math.times
 import matt.obs.prop.BindableProperty
 import kotlin.math.min
 
 class NeuronView(
-  neuron: ResolvedNeuron,
+  neuron: InterTestNeuron,
   numImages: BindableProperty<Int> = BindableProperty(100),
   testLoader: TestLoader,
   viewer: DatasetViewer,
 
-  ): FlowPaneWrapper<CanvasWrapper>() {
+  ): ImageFlowPane(viewer) {
   init {
 
+	/*for reasons I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
+	prefWrapLengthProperty.bind(viewer.widthProperty*0.8)
+
 	fun update() {
-	  //	  val t = tic("neuron view update")
-	  //	  t.toc(1)
 	  clear()
-	  //	  t.toc(2)
 	  val realNumImages = min(numImages.value.toULong(), testLoader.numImages.await())
-	  //	  t.toc(3)
-	  val testResults = NeuronTestResults(
-		neuron.neuron,
-		testLoader.awaitFinishedTest().activationsByNeuron[neuron]
-		//		testLoader.awaitFinishedTest().images.map { it.activations.activations.await()[neuron.layer.index][neuron.index] }
-	  )
-	  //	  t.toc(4)
-//	  println("realNumImages=$realNumImages")
+	  val topImages = TopImages(neuron, testLoader)()
+
+
 	  (0.toULong() until realNumImages).forEach { imIndex ->
 		require(imIndex <= Int.MAX_VALUE.toULong())
-		val im = testLoader.awaitImage(testResults.activationIndexesHighToLow[imIndex.toInt()])
+		val im = testLoader.awaitImage(topImages[imIndex.toInt()].index)
 		+DeephyImView(im, viewer)
-		vgrow = Priority.ALWAYS
 	  }
-	  //	  t.toc(5)
 	}
 	update()
 	numImages.onChange {
 	  update()
 	}
-
-
   }
 }
 

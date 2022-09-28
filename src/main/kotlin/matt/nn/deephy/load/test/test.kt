@@ -14,10 +14,11 @@ import matt.model.errreport.ThrowReport
 import matt.model.latch.asyncloaded.AsyncLoadingValue
 import matt.model.obj.single.SingleCall
 import matt.nn.deephy.load.async.AsyncLoader
-import matt.nn.deephy.model.DeephyImage
-import matt.nn.deephy.model.Model
-import matt.nn.deephy.model.ModelState
-import matt.nn.deephy.model.Test
+import matt.nn.deephy.model.data.Category
+import matt.nn.deephy.model.importformat.DeephyImage
+import matt.nn.deephy.model.importformat.Model
+import matt.nn.deephy.model.importformat.ModelState
+import matt.nn.deephy.model.importformat.Test
 import java.io.IOException
 import java.lang.Thread.sleep
 import java.nio.ByteBuffer
@@ -81,12 +82,12 @@ class TestLoader(
 
   val numImages = AsyncLoadingValue<ULong>()
 
-  fun category(id: Int): String {
+  fun category(id: Int): Category {
 	var i = 0
 	do {
 	  finishedImages.sync {
 		while (i < finishedImages.size) {
-		  if (finishedImages[i].categoryID == id) {
+		  if (finishedImages[i].category.id == id) {
 			return finishedImages[i].category
 		  }
 		  i++

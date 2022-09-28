@@ -8,7 +8,7 @@ import matt.json.custom.int
 import matt.json.fx.jsonObj
 import matt.json.ser.JsonObjectSerializer
 import matt.lang.go
-import matt.nn.deephy.model.normalizeTopNeuronsBlurb
+import matt.nn.deephy.calc.NormalizedActivation.Companion.normalizeTopNeuronsBlurb
 import matt.obs.hold.ObservableHolderImpl
 import matt.obs.prop.Var
 import matt.stream.message.FileList

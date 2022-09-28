@@ -1,11 +1,7 @@
 package matt.nn.deephy.gui.dataset.byimage
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
-import javafx.scene.text.Font
-import javafx.scene.text.FontWeight.BOLD
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.mtofx.createROFXPropWrapper
-import matt.hurricanefx.font.fixed
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.PaneWrapper
 import matt.hurricanefx.wrapper.pane.hbox.HBoxWrapper
@@ -16,28 +12,31 @@ import matt.hurricanefx.wrapper.region.RegionWrapper
 import matt.hurricanefx.wrapper.text.TextWrapper
 import matt.lang.go
 import matt.math.jmath.sigFigs
-import matt.math.sumOf
 import matt.nn.deephy.calc.ActivationRatio
-import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
+import matt.nn.deephy.calc.ImageTopPredictions
+import matt.nn.deephy.calc.NormalizedActivation
+import matt.nn.deephy.calc.NormalizedActivation.Companion.NORMALIZED_ACT_SYMBOL
+import matt.nn.deephy.calc.NormalizedActivation.Companion.RAW_ACT_SYMBOL
+import matt.nn.deephy.calc.NormalizedActivation.Companion.normalizeTopNeuronsBlurb
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.global.deephyActionText
 import matt.nn.deephy.gui.global.deephyButton
 import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.global.deephyTooltip
+import matt.nn.deephy.gui.global.titleBoldFont
+import matt.nn.deephy.gui.global.titleFont
 import matt.nn.deephy.gui.neuron.NeuronView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
-import matt.nn.deephy.model.NeuronWithActivation
-import matt.nn.deephy.model.normalizeTopNeuronsBlurb
 import matt.nn.deephy.state.DeephySettings
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
 import matt.prim.str.truncateWithElipsesOrAddSpaces
-import kotlin.math.exp
 
 
 class ByImageView(
-  testLoader: TestLoader, viewer: DatasetViewer
+  testLoader: TestLoader,
+  viewer: DatasetViewer
 ): VBoxWrapper<RegionWrapper<*>>() {
   init {
 	deephyButton("select random image") {
@@ -49,50 +48,44 @@ class ByImageView(
 	  )
 	}
 	swapper(viewer.imageSelection, "no image selected") {
+	  val img = this@swapper
 	  HBoxWrapper<NodeWrapper>().apply {
-		+DeephyImView(this@swapper, viewer).apply {
+		+DeephyImView(img, viewer).apply {
 		  scale.value = 4.0
 		}
 		spacer(10.0)
 		vbox {
 		  textflow<TextWrapper> {
-			val groundTruthFont: Font.()->Font = { fixed().copy(size = size*2).fx() }
-			deephyText("ground truth: ") {
-			  font = font.groundTruthFont()
-			}
-			deephyText(this@swapper.category) {
-			  font = font.groundTruthFont().fixed().copy(weight = BOLD).fx()
-			}
+			deephyText("ground truth: ").titleFont()
+			deephyActionText(img.category.label) {
+			  viewer.navigateTo(img.category)
+			}.titleBoldFont()
 		  }
 		  spacer()
-		  testLoader.model.classificationLayer?.go { lay ->
-			text("predictions:")
-			val preds = this@swapper.activationsFor(lay)
-			val softMaxDenom = preds.sumOf { exp(it) }
-			val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
-			val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
-			hbox<PaneWrapper<*>> {
-			  +predNamesBox
-			  spacer()
-			  +predValuesBox
+
+		  text("predictions:")
+		  val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
+		  val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
+		  hbox<PaneWrapper<*>> {
+			+predNamesBox
+			spacer()
+			+predValuesBox
+		  }
+		  val topPreds = ImageTopPredictions(img, testLoader)()
+		  topPreds.forEach {
+			val category = it.first
+			val pred = it.second
+			val fullString = "\t${category.label} (${pred})"
+			predNamesBox.deephyActionText(category.label.truncateWithElipsesOrAddSpaces(25)) {
+			  viewer.navigateTo(category)
+			}.apply {
+			  deephyTooltip(fullString)
 			}
-			preds.withIndex().sortedBy { it.value }.reversed().take(5).forEach { thePred ->
-			  val exactPred = (exp(thePred.value)/softMaxDenom)
-			  val predClassNameString = testLoader.category(thePred.index).let {
-				if (", texture :" in it) {
-				  it.substringBefore(",")
-				} else it
-			  }
-			  val fullString = "\t${predClassNameString} (${exactPred})"
-			  predNamesBox.deephyText(predClassNameString.truncateWithElipsesOrAddSpaces(25)) {
-				deephyTooltip(fullString)
-			  }
-			  predValuesBox.deephyText {
-				textProperty.bind(DeephySettings.predictionSigFigs.binding {
-				  exactPred.sigFigs(it).toString()
-				})
-				deephyTooltip(fullString)
-			  }
+			predValuesBox.deephyText {
+			  textProperty.bind(DeephySettings.predictionSigFigs.binding {
+				pred.sigFigs(it).toString()
+			  })
+			  deephyTooltip(fullString)
 			}
 		  }
 		}
@@ -101,7 +94,11 @@ class ByImageView(
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 	spacer(10.0)
-	swapper(viewer.topNeurons, "no top neurons") {
+	swapper(viewer.topNeurons.binding(viewer.imageSelection) { it }, "no top neurons") {
+
+	  val tops = this@swapper
+
+	  val normalized = this.normalized
 
 	  ScrollPaneWrapper<HBoxWrapper<NodeWrapper>>().apply {
 		hbarPolicy = AS_NEEDED
@@ -126,48 +123,35 @@ class ByImageView(
 
 
 		content = HBoxWrapper<NodeWrapper>().apply {
-		  this@swapper.forEach { neuron ->
+		  tops().forEach { neuron ->
 			val neuronIndex = neuron.index
 			vbox {
 			  textflow<TextWrapper> {
 				deephyActionText("neuron $neuronIndex") {
 				  val viewerToChange = viewer.boundToDSet.value ?: viewer
-				  viewerToChange.neuronSelection.value = null
-				  viewerToChange.layerSelection.value = neuron.layer
-				  viewerToChange.neuronSelection.value =
-					viewerToChange.model.neurons.first { it.neuron == neuron.neuron }
-				  viewerToChange.view.value = ByNeuron
+				  viewerToChange.navigateTo(neuron)
 				}
-				val normSett = DeephySettings.normalizeTopNeuronActivations
-				if (neuron is NeuronWithActivation) {
-				  deephyText(normSett.binding {
-					" ${if (it) "Y" else "Ŷ"}=${
-					  (if (it) neuron.normalizedActivation else neuron.activation).sigFigs(
-						3
-					  )
-					}"
-				  }) {
-					deephyTooltip(normalizeTopNeuronsBlurb) {
-					  textProperty().bind(normSett.binding {
-						if (it) normalizeTopNeuronsBlurb else "raw activation value for the selected image"
-					  }.createROFXPropWrapper())
-					}
-				  }
-				} else {
-				  deephyText(
-					ActivationRatio(
-					  numTest = testLoader,
-					  denomTest = viewer.boundToDSet.value!!.testData.value!!,
-					  neuron = neuron.interTest
-					).formattedResult
-				  ) {
-					deephyTooltip(ActivationRatio.technique)
-				  }
-				}
-			  }
+				val image = viewer.imageSelection.value
+				if (image != null) {
 
+				  val symbol = if (normalized) NORMALIZED_ACT_SYMBOL else RAW_ACT_SYMBOL
+				  val value = if (normalized) NormalizedActivation(
+					neuron, image, testLoader.awaitFinishedTest()
+				  )() else neuron.activation(image)
+				  val blurb =
+					if (normalized) normalizeTopNeuronsBlurb else "raw activation value for the selected image"
+
+				  deephyText(" $symbol=${value.sigFigs(3)}") {
+					deephyTooltip(blurb)
+				  }
+				} else +ActivationRatio(
+				  numTest = testLoader,
+				  denomTest = viewer.boundToDSet.value!!.testData.value!!,
+				  neuron = neuron
+				).text()
+			  }
 			  +NeuronView(
-				viewer.model.neurons.first { it.neuron == neuron.neuron },
+				neuron,
 				numImages = DeephySettings.numImagesPerNeuronInByImage,
 				testLoader = testLoader,
 				viewer = viewer

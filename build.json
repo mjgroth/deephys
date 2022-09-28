@@ -12,6 +12,11 @@
 	  "path" : ":k:cbor"
 	},
 	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "implementation",
+	  "path" : ":k:caching"
+	},
+	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
 	  "cfg" :  "implementation",
 	  "key" :  "kotlinx-serialization-cbor"
@@ -24,18 +29,22 @@
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
 	  "cfg" :  "implementation",
+	  "key" :  "hanSoloFxCharts"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "cfg" :  "implementation",
 	  "key" :  "kotlinx-multik-default"
 	},
-
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
-	  "path" :  ":k:model"
+	  "path" : ":k:model"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
-	  "path" :  ":k:kjlib:git"
+	  "path" : ":k:kjlib:git"
 	}
   ]
 }

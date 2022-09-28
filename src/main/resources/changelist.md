@@ -15,9 +15,11 @@ version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https:/
   - `%`means ratio to the bound test
   - `Y` means raw activation
   - `Ŷ` means normalized activation (divided by max for this neuron for all images)
+- Added the new Model Visualizer
+- Added the new Category View
 
-[//]: # (### Performance Improvements)
-
+### Performance Improvements
+- Added new calculation caching system. Certain operations have their parameters and results cached to avoid recomputing the same thing.
 
 ### Cosmetic Changes
 - Changed tooltip style to improve readability
@@ -25,7 +27,9 @@ version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https:/
 [//]: # (### Bug Fixes)
 
 
-[//]: # (### Notes)
+### Notes
+- Imported data must now include a classification layer for the app to work properly (previously it was just reduced functionality, now an error will be thrown)
+- ImageNet results with "Texture: " in category label will no longer work. We will need a better data structure to support this. This will come in a later update and will require small changes to the data.
 
 [//]: # (### Todo)
 

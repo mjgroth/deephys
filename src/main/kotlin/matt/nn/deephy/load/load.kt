@@ -44,6 +44,7 @@ fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
   op: T.()->NodeWrapper
 ) = swapper(loader, nullMessage) {
   VBoxWrapper<NodeWrapper>().also {
+
 	it.swapper(fileFound.binding(streamOk) { this }) {
 	  when {
 		!fileFound.value -> TextWrapper("file not found")

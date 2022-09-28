@@ -5,6 +5,7 @@ import javafx.scene.control.ContentDisplay
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
+import matt.collect.itr.filterNotNull
 import matt.file.CborFile
 import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.prop.objectBindingN
@@ -12,22 +13,28 @@ import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
 import matt.log.profile.stopwatch
 import matt.log.profile.tic
+import matt.log.warn
 import matt.model.tostringbuilder.toStringBuilder
-import matt.nn.deephy.gui.DSetViewsVBox
+import matt.nn.deephy.calc.TopNeurons
 import matt.nn.deephy.gui.dataset.DatasetNode
 import matt.nn.deephy.gui.dataset.DatasetNodeView
+import matt.nn.deephy.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
+import matt.nn.deephy.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephy.gui.global.deephyButton
 import matt.nn.deephy.gui.global.deephyToggleButton
 import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.load.asyncLoadSwapper
 import matt.nn.deephy.load.test.TestLoader
-import matt.nn.deephy.model.DeephyImage
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
-import matt.nn.deephy.model.ResolvedNeuronLike
+import matt.nn.deephy.model.data.Category
+import matt.nn.deephy.model.data.InterTestLayer
+import matt.nn.deephy.model.data.InterTestNeuron
+import matt.nn.deephy.model.importformat.DeephyImage
 import matt.nn.deephy.state.DeephySettings
+import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
@@ -78,18 +85,16 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   ).withNonNullUpdatesFrom(boundView)
 
   private val boundLayer by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.layerSelection } }
-  private val boundLayerConversion by lazy {
-	boundLayer.binding(
-	  testData /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
-	) { layer ->
 
-	  model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
-	}
-  }
-
-  val layerSelection: VarProp<ResolvedLayer?> = VarProp(
+  val layerSelection: VarProp<InterTestLayer?> = VarProp(
 	boundLayer.value
-  ).withNonNullUpdatesFrom(boundLayerConversion)
+  ).withNonNullUpdatesFrom(boundLayer)
+
+  val layerSelectionResolved = layerSelection.binding(
+	testData /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+  ) { layer ->
+	model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
+  }
 
   private val boundNeuron = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
 	it?.neuronSelection
@@ -99,48 +104,96 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	it.index == n?.index
   }
 
-  private val boundNeuronConversion = boundNeuron.binding(
-	testData, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
-	layerSelection
-  ) { neuron ->
-	layerSelection.value?.neuronThatMatches(neuron)
-  }
 
-
-  val neuronSelection: VarProp<ResolvedNeuron?> = VarProp<ResolvedNeuron?>(
-	boundNeuronConversion.value
+  val neuronSelection: VarProp<InterTestNeuron?> = VarProp<InterTestNeuron?>(
+	boundNeuron.value
   ).apply {
-	withNonNullUpdatesFrom(boundNeuronConversion)
-	layerSelection.onChange { l ->
-	  if (!isBoundToDSet.value) value = l?.neuronThatMatches(value)
-	}
+	withNonNullUpdatesFrom(boundNeuron)
+	//	layerSelection.onChange { l ->
+	//	  if (!isBoundToDSet.value) value = l?.neuronThatMatches(value)
+	//	}
   }
-  val imageSelection = VarProp<DeephyImage?>(null)
-  private val topNeuronsFromMyImage =
-	imageSelection.binding(testData, layerSelection, DeephySettings.normalizeTopNeuronActivations) { im ->
-	  layerSelection.value?.let { im?.topNeurons(it) }
 
+  val neuronSelectionResolved = neuronSelection.binding(
+	testData, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+	layerSelectionResolved
+  ) { neuron ->
+	layerSelectionResolved.value?.neurons?.firstOrNull { it.index == neuron?.index }
+  }
+
+
+  val imageSelection = VarProp<DeephyImage?>(null)
+
+
+  private val topNeuronsFromMyImage =
+	imageSelection.binding(
+	  testData,
+	  layerSelection,
+	  DeephySettings.normalizeTopNeuronActivations
+	) { im ->
+	  layerSelection.value?.let { lay ->
+		im?.let { TopNeurons(it, lay, DeephySettings.normalizeTopNeuronActivations.value) }
+	  }
 	}
   private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
 	it?.topNeurons
   }
-  private val boundTopNeuronConversion = boundTopNeurons.binding(testData) { ns ->
-	ns?.map { n ->
-	  model.neurons.first { it.neuron == n.neuron }
+
+  val topNeurons: VarProp<TopNeurons?> =
+	VarProp(boundTopNeurons.value).apply {
+	  withUpdatesFromWhen(topNeuronsFromMyImage) { !isBoundToDSet.value }
+	  withNonNullUpdatesFrom(boundTopNeurons)
+	}
+
+
+  val highlightedNeurons = MyBinding(
+	view, topNeurons, neuronSelection
+  ) {
+	when (view.value) {
+	  ByNeuron -> listOf(neuronSelection.value).filterNotNull()
+	  ByImage -> topNeurons.value?.findOrCompute() ?: listOf()
+	  ByCategory -> listOf<InterTestNeuron>().apply {
+		warn("did not make highlighted neurons from category view work yet")
+	  }
 	}
   }
 
 
-  val topNeurons: VarProp<List<ResolvedNeuronLike>?> =
-	VarProp<List<ResolvedNeuronLike>?>(boundTopNeuronConversion.value).apply {
-	  withUpdatesFromWhen(topNeuronsFromMyImage) { !isBoundToDSet.value }
-	  withNonNullUpdatesFrom(boundTopNeuronConversion)
-	}
+  val categorySelection = BindableProperty<Category?>(null)
 
   var currentByImageHScroll: DoubleProperty? = null
 
   val history = basicMutableObservableListOf<TestViewerAction>()
   val historyIndex = BindableProperty(-1)
+
+
+  fun navigateTo(neuron: InterTestNeuron) {
+	require(!isBoundToDSet.value)
+	neuronSelection.value = null
+	layerSelection.value = neuron.layer
+	neuronSelection.value = neuron
+	view.value = ByNeuron
+  }
+
+  fun navigateTo(im: DeephyImage) {
+	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
+	imageSelection.value = im
+	for (i in (historyIndex.value + 1) until history.size) {
+	  history.removeAt(historyIndex.value + 1)
+	}
+	history.add(SelectImage(im))
+	historyIndex.value += 1
+	view.value = ByImage
+  }
+
+  fun navigateTo(category: Category) {
+	outerBox.bound.value = null
+	neuronSelection.value = null
+	neuronSelection.value = null
+	categorySelection.value = category
+	view.value = ByCategory
+  }
+
 
   init {
 	contentDisplay = ContentDisplay.LEFT
