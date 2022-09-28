@@ -30,7 +30,6 @@ class DatasetNode(
 
   init {
 	setupSwapping(viewer.view) {
-	  val theView = this
 	  VBoxWrapper<NodeWrapper>().apply {
 		val layerCB =
 		  choicebox(property = viewer.layerSelection, values = viewer.model.resolvedLayers.map { it.interTest }) {
