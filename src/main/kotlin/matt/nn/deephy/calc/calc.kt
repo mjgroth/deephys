@@ -53,7 +53,6 @@ data class TopNeurons(
 }
 
 
-
 class ActivationRatio(
   private val numTest: TestLoader,
   private val denomTest: TestLoader,
@@ -127,8 +126,10 @@ data class CategoryFalsePositivesSorted(
   private val testLoader: TestLoader
 ): ComputeInput<List<DeephyImage>>() {
   companion object {
-	const val blurb = "false positives sorted so that the images with the highest prediction value (after softmax) are first"
+	const val blurb =
+	  "false positives sorted so that the images with the highest prediction value (after softmax) are first"
   }
+
   override fun compute(): List<DeephyImage> = testLoader
 	.awaitFinishedTest()
 	.imagesWithoutGroundTruth(category)
@@ -136,6 +137,29 @@ data class CategoryFalsePositivesSorted(
 	  it to ImageTopPredictions(it, testLoader)().first()
 	}.filter {
 	  it.second.first == category
+	}.sortedBy {
+	  it.second.second
+	}.reversed().map {
+	  it.first
+	}
+}
+
+data class CategoryFalseNegativesSorted(
+  private val category: Category,
+  private val testLoader: TestLoader
+): ComputeInput<List<DeephyImage>>() {
+  companion object {
+	const val blurb =
+	  "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
+  }
+
+  override fun compute(): List<DeephyImage> = testLoader
+	.awaitFinishedTest()
+	.imagesWithGroundTruth(category)
+	.map {
+	  it to ImageTopPredictions(it, testLoader)().first()
+	}.filter {
+	  it.second.first != category
 	}.sortedBy {
 	  it.second.second
 	}.reversed().map {

@@ -29,11 +29,6 @@
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
 	  "cfg" :  "implementation",
-	  "key" :  "hanSoloFxCharts"
-	},
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
-	  "cfg" :  "implementation",
 	  "key" :  "kotlinx-multik-default"
 	},
 	{
