@@ -17,6 +17,7 @@
 /data/
 /cfg/
 /cache/
+deps.txt
 /jar/
 /jars/
 /bin/jar/
