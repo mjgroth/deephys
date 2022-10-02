@@ -5,7 +5,7 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import matt.file.MFile
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.nn.deephy.load.async.AsyncLoader

@@ -9,8 +9,8 @@ import javafx.scene.shape.ArcType.ROUND
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.node.onHover
-import matt.hurricanefx.wrapper.pane.PaneWrapperImpl
-import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.nn.deephy.gui.global.deephyLabel
 import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.global.subtitleFont

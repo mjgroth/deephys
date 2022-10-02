@@ -10,7 +10,7 @@ import matt.file.CborFile
 import matt.hurricanefx.backgroundColor
 import matt.hurricanefx.eye.prop.objectBindingN
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.pane.titled.TitledPaneWrapper
+import matt.fx.graphics.wrapper.pane.titled.TitledPaneWrapper
 import matt.log.profile.stopwatch
 import matt.log.profile.tic
 import matt.log.warn

@@ -1,6 +1,6 @@
 package matt.nn.deephy.gui.dataset.byneuron
 
-import matt.hurricanefx.wrapper.pane.anchor.swapper.Swapper
+import matt.fx.graphics.wrapper.pane.anchor.swapper.Swapper
 import matt.nn.deephy.gui.layer.LayerView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader

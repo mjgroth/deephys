@@ -3,11 +3,11 @@ package matt.nn.deephy.gui.dataset.byimage
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.pane.PaneWrapper
-import matt.hurricanefx.wrapper.pane.hbox.HBoxWrapper
+import matt.fx.graphics.wrapper.pane.PaneWrapper
+import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapper
 import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
-import matt.hurricanefx.wrapper.pane.spacer
-import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.spacer
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.go

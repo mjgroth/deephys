@@ -12,7 +12,7 @@ import matt.file.toMFile
 import matt.file.toSFile
 import matt.gui.app.GuiApp
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.lang.go
 import matt.nn.deephy.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephy.gui.global.deephyActionButton

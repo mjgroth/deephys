@@ -6,7 +6,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import matt.fx.graphics.wrapper.node.line.LineWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.pane.PaneWrapperImpl
+import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephy.gui.global.deephyText

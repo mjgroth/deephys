@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.layer
 import matt.hurricanefx.eye.converter.toFXConverter
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.model.convert.toStringConverter
 import matt.nn.deephy.gui.global.deephyText

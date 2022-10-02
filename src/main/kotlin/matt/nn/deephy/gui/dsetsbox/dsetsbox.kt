@@ -5,7 +5,7 @@ import matt.file.CborFile
 import matt.file.toSFile
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.hurricanefx.tornadofx.control.selectedValueProperty
-import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.nn.deephy.gui.modelvis.ModelVisualizer
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.importformat.Model

@@ -1,6 +1,6 @@
 package matt.nn.deephy.gui.neuron.imgflowpane
 
-import matt.hurricanefx.wrapper.pane.flow.FlowPaneWrapper
+import matt.fx.graphics.wrapper.pane.flow.FlowPaneWrapper
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.obs.bindings.math.times

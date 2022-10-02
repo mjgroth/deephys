@@ -9,7 +9,7 @@ import matt.exec.app.myVersion
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.hurricanefx.wrapper.textflow.TextFlowWrapper
+import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.kjlib.git.hub.GitHub
 import matt.log.warn
 import matt.model.release.Release
