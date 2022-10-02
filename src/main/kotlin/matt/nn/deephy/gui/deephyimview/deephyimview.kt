@@ -1,8 +1,8 @@
 package matt.nn.deephy.gui.deephyimview
 
+import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.wrapper.node.onLeftClick
 import matt.log.todoOnce
 import matt.nn.deephy.gui.draw.draw
 import matt.nn.deephy.gui.viewer.DatasetViewer

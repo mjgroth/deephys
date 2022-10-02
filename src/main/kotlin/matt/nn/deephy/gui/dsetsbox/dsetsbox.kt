@@ -3,8 +3,8 @@ package matt.nn.deephy.gui.dsetsbox
 import javafx.scene.control.ToggleGroup
 import matt.file.CborFile
 import matt.file.toSFile
+import matt.fx.control.tfx.control.selectedValueProperty
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
-import matt.hurricanefx.tornadofx.control.selectedValueProperty
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.nn.deephy.gui.modelvis.ModelVisualizer
 import matt.nn.deephy.gui.viewer.DatasetViewer

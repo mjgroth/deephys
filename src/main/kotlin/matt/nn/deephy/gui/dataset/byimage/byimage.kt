@@ -1,15 +1,20 @@
 package matt.nn.deephy.gui.dataset.byimage
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
+import matt.fx.control.wrapper.scroll.ScrollPaneWrapper
 import matt.hurricanefx.eye.lib.onChange
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapper
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
-import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
+import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
+import matt.fx.graphics.wrapper.text.text
+import matt.fx.graphics.wrapper.textflow.textflow
 import matt.lang.go
 import matt.math.jmath.sigFigs
 import matt.nn.deephy.calc.ActivationRatio

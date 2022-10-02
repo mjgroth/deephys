@@ -2,6 +2,8 @@ package matt.nn.deephy.gui.dataset.bycategory
 
 import matt.fx.control.wrapper.control.choice.choicebox
 import matt.fx.graphics.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
+import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.nn.deephy.gui.category.CategoryView
