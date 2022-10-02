@@ -2,7 +2,7 @@ package matt.nn.deephy.model.importformat
 
 import kotlinx.serialization.Serializable
 import matt.collect.map.lazyMap
-import matt.hurricanefx.wrapper.style.FXColor
+import matt.fx.graphics.wrapper.style.FXColor
 import matt.model.latch.asyncloaded.AsyncLoadingValue
 import matt.nn.deephy.model.LayerLike
 import matt.nn.deephy.model.ResolvedLayer

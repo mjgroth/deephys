@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.modelvis.neuroncirc
 import javafx.scene.Cursor
 import javafx.scene.paint.Color
 import matt.hurricanefx.wrapper.node.onHover
-import matt.hurricanefx.wrapper.shape.circle.CircleWrapper
+import matt.fx.graphics.wrapper.node.shape.circle.CircleWrapper
 import matt.lang.D
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron

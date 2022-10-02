@@ -4,7 +4,7 @@ import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
-import matt.hurricanefx.wrapper.line.LineWrapper
+import matt.fx.graphics.wrapper.node.line.LineWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.PaneWrapperImpl
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
