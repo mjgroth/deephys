@@ -7,7 +7,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.ArcType.ROUND
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.node.onHover
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl

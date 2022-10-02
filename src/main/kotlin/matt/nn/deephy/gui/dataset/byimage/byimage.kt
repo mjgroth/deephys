@@ -2,7 +2,7 @@ package matt.nn.deephy.gui.dataset.byimage
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapper
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper

@@ -9,7 +9,7 @@ import matt.fx.graphics.win.stage.WMode.CLOSE
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.tornadofx.item.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.lang.resourceStream
 import matt.nn.deephy.gui.global.deephyCheckbox

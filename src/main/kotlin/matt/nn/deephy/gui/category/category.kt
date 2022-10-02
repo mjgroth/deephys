@@ -1,7 +1,7 @@
 package matt.nn.deephy.gui.category
 
 import javafx.scene.paint.Color
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.nn.deephy.calc.CategoryAccuracy

@@ -4,7 +4,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import matt.file.MFile
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.nn.deephy.load.async.AsyncLoader

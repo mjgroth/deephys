@@ -14,7 +14,7 @@ import matt.hurricanefx.wrapper.checkbox.CheckBoxWrapper
 import matt.hurricanefx.wrapper.control.button.ButtonWrapper
 import matt.hurricanefx.wrapper.label.LabelWrapper
 import matt.hurricanefx.wrapper.link.HyperlinkWrapper
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.obs.bindings.str.ObsS
 import matt.obs.prop.BindableProperty

@@ -11,7 +11,7 @@ import matt.file.construct.toMFile
 import matt.file.toMFile
 import matt.file.toSFile
 import matt.gui.app.GuiApp
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.lang.go
 import matt.nn.deephy.gui.dsetsbox.DSetViewsVBox

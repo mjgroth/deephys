@@ -1,7 +1,7 @@
 package matt.nn.deephy.gui.dataset
 
 import matt.hurricanefx.tornadofx.item.choicebox
-import matt.hurricanefx.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.Swapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
