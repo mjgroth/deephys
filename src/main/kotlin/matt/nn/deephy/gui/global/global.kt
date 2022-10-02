@@ -19,7 +19,7 @@ import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.obs.bindings.str.ObsS
 import matt.obs.prop.BindableProperty
 
-/*todo: a single tooltip can be installed on multiple nodes, (and this seems important for performance)*/
+/*todo: a single matt.fx.control.tooltip.tooltip can be installed on multiple nodes, (and this seems important for performance)*/
 fun NodeWrapper.deephyTooltip(s: String, op: Tooltip.()->Unit = {}) = DeephyTooltip(s).apply(op).also { add(it) }
 fun DeephyTooltip(s: String) = Tooltip(s).apply {
   font = DEEPHY_FONT_DEFAULT
