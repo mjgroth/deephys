@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.dataset
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.Swapper
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
@@ -30,7 +30,7 @@ class DatasetNode(
 
   init {
 	setupSwapping(viewer.view) {
-	  VBoxWrapper<NodeWrapper>().apply {
+	  VBoxWrapperImpl<NodeWrapper>().apply {
 		val layerCB =
 		  choicebox(property = viewer.layerSelection, values = viewer.model.resolvedLayers.map { it.interTest }) {
 			valueProperty.onChange {

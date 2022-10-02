@@ -12,7 +12,7 @@ import matt.file.toMFile
 import matt.file.toSFile
 import matt.gui.app.GuiApp
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.lang.go
 import matt.nn.deephy.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephy.gui.global.deephyActionButton
@@ -35,7 +35,7 @@ fun startDeephyApp() = GuiApp(decorated = true) {
   stage.height = 850.0
 
 
-  root<VBoxWrapper<NodeWrapper>> {
+  root<VBoxWrapperImpl<NodeWrapper>> {
 	alignment = TOP_CENTER
 
 	hbox<NodeWrapper> {
@@ -57,7 +57,7 @@ fun startDeephyApp() = GuiApp(decorated = true) {
 	  f?.toMFile()?.loadCbor<Model>()
 	}, nullMessage = "Select a .model file to begin") {
 	  val model = this@loadSwapper
-	  VBoxWrapper<NodeWrapper>().apply {
+	  VBoxWrapperImpl<NodeWrapper>().apply {
 
 		val vis = ModelVisualizer(model)
 		+vis

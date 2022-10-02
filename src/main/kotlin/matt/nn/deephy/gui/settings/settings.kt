@@ -10,7 +10,7 @@ import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.tornadofx.item.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.lang.resourceStream
 import matt.nn.deephy.gui.global.deephyCheckbox
 import matt.nn.deephy.gui.global.deephyLabel
@@ -39,7 +39,7 @@ val settingsWindow by lazy {
   )
 }
 
-object SettingsPane: VBoxWrapper<NodeWrapper>() {
+object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
   init {
 
 	DeephySettings.settings.forEach { sett ->

@@ -5,7 +5,7 @@ import matt.file.CborFile
 import matt.file.toSFile
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.hurricanefx.tornadofx.control.selectedValueProperty
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.nn.deephy.gui.modelvis.ModelVisualizer
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.importformat.Model
@@ -13,7 +13,7 @@ import matt.nn.deephy.state.DeephyState
 import matt.obs.prop.Var
 import matt.stream.message.FileList
 
-class DSetViewsVBox(val model: Model): VBoxWrapper<DatasetViewer>() {
+class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 
   var modelVisualizer: ModelVisualizer? = null
 

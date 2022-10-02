@@ -4,10 +4,10 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapper
-import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapper
+import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
 import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.go
@@ -37,7 +37,7 @@ import matt.prim.str.truncateWithElipsesOrAddSpaces
 class ByImageView(
   testLoader: TestLoader,
   viewer: DatasetViewer
-): VBoxWrapper<RegionWrapper<*>>() {
+): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	deephyButton("select random image") {
 	  setOnAction {
@@ -49,7 +49,7 @@ class ByImageView(
 	}
 	swapper(viewer.imageSelection, "no image selected") {
 	  val img = this@swapper
-	  HBoxWrapper<NodeWrapper>().apply {
+	  HBoxWrapperImpl<NodeWrapper>().apply {
 		+DeephyImView(img, viewer).apply {
 		  scale.value = 4.0
 		}
@@ -100,7 +100,7 @@ class ByImageView(
 
 	  val normalized = this.normalized
 
-	  ScrollPaneWrapper<HBoxWrapper<NodeWrapper>>().apply {
+	  ScrollPaneWrapper<HBoxWrapperImpl<NodeWrapper>>().apply {
 		hbarPolicy = AS_NEEDED
 		vbarPolicy = AS_NEEDED
 		isFitToHeight = true
@@ -122,7 +122,7 @@ class ByImageView(
 		}
 
 
-		content = HBoxWrapper<NodeWrapper>().apply {
+		content = HBoxWrapperImpl<NodeWrapper>().apply {
 		  tops().forEach { neuron ->
 			val neuronIndex = neuron.index
 			vbox {

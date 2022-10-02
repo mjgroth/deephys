@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.layer
 import matt.hurricanefx.eye.converter.toFXConverter
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.model.convert.toStringConverter
 import matt.nn.deephy.gui.global.deephyText
@@ -17,7 +17,7 @@ class LayerView(
   layer: ResolvedLayer,
   testLoader: TestLoader,
   viewer: DatasetViewer
-): VBoxWrapper<RegionWrapper<*>>() {
+): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	val neuronCB = choicebox(property = viewer.neuronSelection, values = layer.neurons.map { it.interTest }) {
 	  converter = toStringConverter<InterTestNeuron?> { "neuron ${it?.index}" }.toFXConverter()

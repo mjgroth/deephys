@@ -2,7 +2,7 @@ package matt.nn.deephy.gui.category
 
 import javafx.scene.paint.Color
 import matt.hurricanefx.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.nn.deephy.calc.CategoryAccuracy
 import matt.nn.deephy.calc.CategoryFalseNegativesSorted
@@ -22,7 +22,7 @@ import matt.obs.bindings.math.times
 
 class CategoryView(
   category: Category, testLoader: TestLoader, viewer: DatasetViewer
-): VBoxWrapper<RegionWrapper<*>>() {
+): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	deephyText(category.label).titleBoldFont()
 	vbox<NodeWrapper> {

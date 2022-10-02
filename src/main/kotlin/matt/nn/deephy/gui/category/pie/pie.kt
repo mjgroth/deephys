@@ -10,7 +10,7 @@ import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.node.onHover
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.nn.deephy.gui.global.deephyLabel
 import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.global.subtitleFont
@@ -25,7 +25,7 @@ class CategoryPie(
   nums: Map<Category, Int>,
   viewer: DatasetViewer,
   colorMap: Map<Category,Color>
-): VBoxWrapper<NodeWrapper>() {
+): VBoxWrapperImpl<NodeWrapper>() {
   init {
 	alignment = Pos.TOP_CENTER
 	exactWidth = 350.0
