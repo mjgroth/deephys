@@ -6,7 +6,7 @@ import javafx.scene.control.Tooltip
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
 import javafx.util.Duration
-import matt.fx.graphics.lang.actionbutton
+import matt.fx.control.lang.actionbutton
 import matt.fx.graphics.node.actionText
 import matt.hurricanefx.font.fixed
 import matt.hurricanefx.wrapper.button.toggle.ToggleButtonWrapper
