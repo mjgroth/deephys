@@ -1,6 +1,6 @@
 package matt.nn.deephy.gui.draw
 
-import matt.hurricanefx.wrapper.canvas.Canv
+import matt.fx.graphics.wrapper.canvas.Canv
 import matt.nn.deephy.model.importformat.DeephyImage
 
 fun Canv.draw(image: DeephyImage) {

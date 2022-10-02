@@ -8,7 +8,7 @@ import matt.fx.graphics.win.stage.ShowMode.DO_NOT_SHOW
 import matt.fx.graphics.win.stage.WMode.CLOSE
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.tornadofx.item.spinner
-import matt.hurricanefx.wrapper.imageview.ImageViewWrapper
+import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.lang.resourceStream
