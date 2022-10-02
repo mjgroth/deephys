@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.settings
 import javafx.scene.control.ContentDisplay.RIGHT
 import javafx.scene.image.Image
 import matt.fx.graphics.lang.actionbutton
-import matt.fx.graphics.win.interact.openInNewWindow
+import matt.fx.control.win.interact.openInNewWindow
 import matt.fx.graphics.win.stage.ShowMode.DO_NOT_SHOW
 import matt.fx.graphics.win.stage.WMode.CLOSE
 import matt.hurricanefx.eye.lib.onChange
