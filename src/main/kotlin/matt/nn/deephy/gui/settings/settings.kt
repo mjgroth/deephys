@@ -6,6 +6,7 @@ import matt.fx.control.lang.actionbutton
 import matt.fx.control.mstage.ShowMode.DO_NOT_SHOW
 import matt.fx.control.mstage.WMode.CLOSE
 import matt.fx.control.win.interact.openInNewWindow
+import matt.fx.control.wrapper.control.spinner.spinner
 import matt.hurricanefx.eye.lib.onChange
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
