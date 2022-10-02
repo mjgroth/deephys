@@ -7,7 +7,7 @@ import matt.file.MFile
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
 import matt.hurricanefx.wrapper.target.EventTargetWrapper
-import matt.hurricanefx.wrapper.text.TextWrapper
+import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.nn.deephy.load.async.AsyncLoader
 import matt.obs.bind.binding
 import matt.obs.prop.ObsVal

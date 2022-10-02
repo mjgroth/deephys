@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.dataset.bycategory
 import matt.hurricanefx.tornadofx.item.choicebox
 import matt.hurricanefx.wrapper.node.NodeWrapper
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
-import matt.hurricanefx.wrapper.region.RegionWrapper
+import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.nn.deephy.gui.category.CategoryView
 import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.viewer.DatasetViewer

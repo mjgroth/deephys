@@ -8,8 +8,8 @@ import matt.hurricanefx.wrapper.pane.hbox.HBoxWrapper
 import matt.hurricanefx.wrapper.pane.scroll.ScrollPaneWrapper
 import matt.hurricanefx.wrapper.pane.spacer
 import matt.hurricanefx.wrapper.pane.vbox.VBoxWrapper
-import matt.hurricanefx.wrapper.region.RegionWrapper
-import matt.hurricanefx.wrapper.text.TextWrapper
+import matt.fx.graphics.wrapper.region.RegionWrapper
+import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.go
 import matt.math.jmath.sigFigs
 import matt.nn.deephy.calc.ActivationRatio
