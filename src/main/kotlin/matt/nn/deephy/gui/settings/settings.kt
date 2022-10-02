@@ -5,7 +5,7 @@ import javafx.scene.image.Image
 import matt.fx.graphics.lang.actionbutton
 import matt.fx.control.win.interact.openInNewWindow
 import matt.fx.graphics.win.stage.ShowMode.DO_NOT_SHOW
-import matt.fx.graphics.win.stage.WMode.CLOSE
+import matt.fx.control.mstage.WMode.CLOSE
 import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.tornadofx.item.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
