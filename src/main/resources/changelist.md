@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephy/releases -->
 
-[//]: # (VERSION:1.17.1)
+[//]: # (VERSION:1.16.1)
 
 
 Compatible pip package
@@ -9,7 +9,6 @@ version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https:/
 [//]: # (### PIP Python Package Updated to 0.5.0)
 
 [//]: # (### New Features)
-
 
 [//]: # (### Performance Improvements)
 
