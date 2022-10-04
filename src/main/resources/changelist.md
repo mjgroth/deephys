@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephy/releases -->
 
-[//]: # (VERSION:1.16.1)
+[//]: # (VERSION:1.17.0)
 
 
 Compatible pip package
@@ -8,14 +8,18 @@ version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https:/
 
 [//]: # (### PIP Python Package Updated to 0.5.0)
 
-[//]: # (### New Features)
+### New Features
+- Replaced drop down menu with spinner for neuron selection
+  - click arrows to move up or down
+  - up and down keyboard keys supported
+  - can type in number to jump to any neuron by index
+  - avoids performance issue of huge drop down list from large number of neurons
 
 [//]: # (### Performance Improvements)
 
 [//]: # (### Cosmetic Changes)
 
-### Bug Fixes
- - Show maximum of 25 FP images and 25 FN images in category View to prevent issues with huge datasets
+[//]: # (### Bug Fixes)
 
 [//]: # (### Notes)
 

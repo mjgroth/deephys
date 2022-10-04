@@ -10,12 +10,13 @@ import matt.exec.app.myVersion
 import matt.file.construct.toMFile
 import matt.file.toMFile
 import matt.file.toSFile
-import matt.gui.app.GuiApp
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
+import matt.gui.app.GuiApp
 import matt.lang.go
+import matt.log.tab
 import matt.nn.deephy.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephy.gui.global.deephyActionButton
 import matt.nn.deephy.gui.global.deephyText
@@ -60,14 +61,24 @@ fun startDeephyApp() = GuiApp(decorated = true) {
 	}, nullMessage = "Select a .model file to begin") {
 	  val model = this@loadSwapper
 	  VBoxWrapperImpl<NodeWrapper>().apply {
-
-		val vis = ModelVisualizer(model)
-		+vis
 		deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
+
+		println("loaded model: ${model.name}")
+		model.layers.forEach {
+		  tab("${it.layerID} has ${it.neurons.size} neurons")
+		}
+
+		val maxNeurons = 50
+		val vis = if (model.layers.all { it.neurons.size <= maxNeurons }) {
+		  ModelVisualizer(model).also { +it }
+		} else {
+		  deephyText("model is too large to visualize (>$maxNeurons in a layer)")
+		  null
+		}
 		val dSetViewsBox = DSetViewsVBox(model)
 
 		dSetViewsBox.modelVisualizer = vis
-		vis.dsetViewsBox = dSetViewsBox
+		vis?.dsetViewsBox = dSetViewsBox
 
 
 		DeephyState.tests.value?.go {
