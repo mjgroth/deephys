@@ -8,10 +8,12 @@ import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.streamman.cborReader
 import matt.file.CborFile
 import matt.lang.List2D
+import matt.lang.disabledCode
 import matt.lang.sync
+import matt.log.profile.tic
 import matt.log.warn
 import matt.model.errreport.ThrowReport
-import matt.model.latch.asyncloaded.AsyncLoadingValue
+import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephy.load.async.AsyncLoader
 import matt.nn.deephy.model.data.Category
@@ -19,11 +21,13 @@ import matt.nn.deephy.model.importformat.DeephyImage
 import matt.nn.deephy.model.importformat.Model
 import matt.nn.deephy.model.importformat.ModelState
 import matt.nn.deephy.model.importformat.Test
+import matt.obs.prop.BindableProperty
 import java.io.IOException
 import java.lang.Thread.sleep
 import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 
 private val dataLoaderDispatcher: ExecutorService = Executors.newCachedThreadPool {
@@ -31,20 +35,24 @@ private val dataLoaderDispatcher: ExecutorService = Executors.newCachedThreadPoo
 	isDaemon = true
   }
 }.apply {
-  daemon {
-	var lastReported = ""
-	while (true) {
-	  val report = "$loadJobFinishedCount/$loadJobStartedCount jobs finished"
-	  if (report != lastReported) {
-		println(report)
-		lastReported = report
+  disabledCode {
+	daemon {
+	  var lastReported = ""
+	  while (true) {
+		val report = "$loadJobFinishedCount/$loadJobStartedCount jobs finished"
+		if (report != lastReported) {
+		  println(report)
+		  lastReported = report
+		}
+		sleep(1000)
 	  }
-	  sleep(1000)
 	}
   }
 }
-private var loadJobStartedCount = 0
-private var loadJobFinishedCount = 0
+
+private val loadJobStartedCount = AtomicInteger()
+private val loadJobFinishedCount = AtomicInteger()
+
 
 class TestLoader(
   file: CborFile, val model: Model
@@ -52,6 +60,7 @@ class TestLoader(
 
   private var finishedTest: Test? = null
   private val finishedImages = mutableListOf<DeephyImage>()
+
 
   fun awaitNonUniformRandomImage(): DeephyImage {
 	while (true) {
@@ -80,7 +89,11 @@ class TestLoader(
 	return finishedTest!!
   }
 
-  val numImages = AsyncLoadingValue<ULong>()
+  val numImages = LoadedValueSlot<ULong>()
+
+  val progress by lazy {
+	BindableProperty(0.0)
+  }
 
   fun category(id: Int): Category {
 	var i = 0
@@ -102,46 +115,55 @@ class TestLoader(
 
 
   val start = SingleCall {
+	val t = tic("TestLoader", enabled = false)
+	t.toc(1)
 	daemon {
+	  t.toc(2)
 	  if (!file.exists()) {
 		signalFileNotFound()
 		return@daemon
 	  }
-//	  val t = tic("TestLoader Daemon")
+	  t.toc(3)
+	  //	  val t = tic("TestLoader Daemon")
 	  try {
+		t.toc(4)
 		val stream = file.inputStream()
-//		t.toc("got stream")
+		t.toc(5)
+		//		t.toc("got stream")
 		try {
 		  val reader = stream.cborReader()
+		  t.toc(6)
 		  reader.readManually<MapReader, Unit> {
-
-//			t.toc("reading cbor manually")
+			t.toc(7)
+			//			t.toc("reading cbor manually")
 
 			if (count != 3.toULong()) {
 			  warn("expected 3 name-value pairs but got $count")
 			  signalParseError()
 			  return@daemon
 			}
+			t.toc(8)
 			val name = nextValue<String>(requireKeyIs = "name")
 			val suffix = nextValue<String?>(requireKeyIs = "suffix")
-
-//			t.toc("got name and suffix")
+			t.toc(9)
+			//			t.toc("got name and suffix")
 
 			nextValueManual<ArrayReader, Unit>(requireKeyIs = "images") {
+			  val numIms = count
 			  numImages.putLoadedValue(count)
 			  println("numImages=$count")
 
 			  readEachManually<MapReader, Unit> {
 
-//				val t = tic("reading image")
+				//				val t = tic("reading image")
 
-//				t.toc("reading image")
+				//				t.toc("reading image")
 
 				val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
 				val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
 				val category = nextValue<String>(requireKeyIs = "category")
 
-//				t.toc("got first 3 props")
+				//				t.toc("got first 3 props")
 
 				val imageData: Any = if (numDataBytes == null) {
 				  var willBeNumHeaderBytes = 0
@@ -166,7 +188,7 @@ class TestLoader(
 				  readNBytes(numDataBytes!!)
 				}
 
-//				t.toc("got imageData")
+				//				t.toc("got imageData")
 
 				val activationsThing: Any = nextValueManual<MapReader, Any>(
 				  requireKeyIs = "activations"
@@ -182,8 +204,8 @@ class TestLoader(
 						r
 					  }
 					  numActivationBytes = willBeNumHeaderBytes
-//					  println("activations.size=${activations.size}")
-//					  println("activations[0].size=${activations[0].size}")
+					  //					  println("activations.size=${activations.size}")
+					  //					  println("activations[0].size=${activations[0].size}")
 					  activations
 					}
 				  } else {
@@ -192,7 +214,7 @@ class TestLoader(
 				  }
 				}
 
-//				t.toc("got activations")
+				//				t.toc("got activations")
 
 
 				@Suppress("UNCHECKED_CAST")
@@ -205,7 +227,7 @@ class TestLoader(
 					  is List<*> -> activations.putLoadedValue(activationsThing as List<FloatArray>)
 					  else       -> {
 						dataLoaderDispatcher.execute {
-						  loadJobStartedCount += 1
+						  loadJobStartedCount.incrementAndGet()
 						  val workerReader = (activationsThing as ByteArray).inputStream().buffered()
 						  val workerCborReader = workerReader.cborReader()
 						  workerCborReader.readManually<ArrayReader, Unit> {
@@ -216,7 +238,7 @@ class TestLoader(
 							  r
 							}
 							activations.putLoadedValue(theData)
-							loadJobFinishedCount += 1
+							loadJobFinishedCount.incrementAndGet()
 						  }
 						}
 					  }
@@ -229,7 +251,7 @@ class TestLoader(
 					is List<*> -> data.putLoadedValue(imageData as List<List<IntArray>>)
 					else       -> {
 					  dataLoaderDispatcher.execute {
-						loadJobStartedCount += 1
+						loadJobStartedCount.incrementAndGet()
 						val workerReader = (imageData as ByteArray).inputStream().buffered()
 						workerReader.cborReader().readManually<ArrayReader, Unit> {
 						  require(hasCount)
@@ -244,7 +266,7 @@ class TestLoader(
 							}
 						  }
 						  data.putLoadedValue(theData)
-						  loadJobFinishedCount += 1
+						  loadJobFinishedCount.incrementAndGet()
 						}
 
 					  }
@@ -253,28 +275,36 @@ class TestLoader(
 				  }
 				}
 
-//				t.toc("got image")
+				//				t.toc("got image")
 
 				finishedImages.sync {
 				  finishedImages += deephyImage
-				  if (finishedImages.size%2500 == 0) {
-					println("finished loading ${finishedImages.size} images")
+
+				  if (finishedImages.size%100 == 0) {
+					progress.value = finishedImages.size/numIms.toDouble()
 				  }
 				}
 
-//				t.toc("put image\n\n")
+				//				t.toc("put image\n\n")
 
 			  }
 			}
+			t.toc(10)
 			finishedTest = Test(
 			  name = name, suffix = suffix, images = finishedImages
 			).apply {
 			  model = this@TestLoader.model
+			  daemon {
+				startPreloadingActs()
+			  }
 			}
+			t.toc(11)
 			finishedImages.forEach {
 			  it.test.putLoadedValue(finishedTest!!)
 			}
+			t.toc(12)
 			signalFinishedLoading()
+			t.toc(13)
 		  }
 		} catch (e: CborParseException) {
 		  signalParseError()
@@ -287,5 +317,6 @@ class TestLoader(
 		signalStreamNotOk()
 	  }
 	}
+	t.toc(14)
   }
 }

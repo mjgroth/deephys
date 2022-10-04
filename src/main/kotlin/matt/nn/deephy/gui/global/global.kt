@@ -104,8 +104,8 @@ fun NodeWrapper.deephyActionButton(s: String = "", theOp: ButtonWrapper.()->Unit
   font = DEEPHY_FONT_DEFAULT
 }
 
-private val DEEPHY_FONT_DEFAULT: Font = Font.font("Georgia")
-private val DEEPHY_FONT_SUBTITLE = DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*1.5).fx()
-private val DEEPHY_FONT_TITLE = DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*2).fx()
-private val DEEPHY_FONT_TITLE_BOLD = DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx()
+private val DEEPHY_FONT_DEFAULT: Font by lazy { Font.font("Georgia") }
+private val DEEPHY_FONT_SUBTITLE by lazy { DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*1.5).fx() }
+private val DEEPHY_FONT_TITLE by lazy { DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*2).fx() }
+private val DEEPHY_FONT_TITLE_BOLD by lazy { DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx() }
 

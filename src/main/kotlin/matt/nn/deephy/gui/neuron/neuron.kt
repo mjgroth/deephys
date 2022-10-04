@@ -25,12 +25,11 @@ class NeuronView(
 	fun update() {
 	  clear()
 	  val realNumImages = min(numImages.value.toULong(), testLoader.numImages.await())
-	  val topImages = TopImages(neuron, testLoader)()
+	  val topImages = TopImages(neuron, testLoader, realNumImages.toInt())()
 
 
-	  (0.toULong() until realNumImages).forEach { imIndex ->
-		require(imIndex <= Int.MAX_VALUE.toULong())
-		val im = testLoader.awaitImage(topImages[imIndex.toInt()].index)
+	  topImages.forEach {
+		val im = testLoader.awaitImage(it.index)
 		+DeephyImView(im, viewer)
 	  }
 	}

@@ -30,7 +30,7 @@ private object DeephySettingsNode: FXPrefNode(
 	"numImagesPerNeuronInByImage", "normalizeTopNeuronActivations", "predictionSigFigs"
   )
 ) {
-  val settings by obj<DeephySettingsData>()
+  val settings by obsObj { DeephySettingsData() }
 }
 
 object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(DeephySettingsData::class) {
@@ -56,7 +56,13 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 
 }
 
-sealed class Setting<T>(val prop: Var<T>, val label: String, val tooltip: String)
+sealed class Setting<T>(val prop: Var<T>, val label: String, val tooltip: String) {
+  init {
+	prop.observe {
+	  println("Setting.prop changed...")
+	}
+  }
+}
 class IntSetting(prop: Var<Int>, label: String, tooltip: String, val min: Int, val max: Int):
   Setting<Int>(prop, label = label, tooltip = tooltip)
 
@@ -67,6 +73,8 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 @Serializable(DeephySettingsSerializer::class) class DeephySettingsData: ObservableHolderImpl() {
   private val mSettings = mutableListOf<Setting<*>>()
   val settings: List<Setting<*>> = mSettings
+
+
 
   private inner class BoolSettingProv(
 	private val defaultValue: Boolean,
@@ -115,15 +123,17 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 	min = 3,
 	max = 10
   )
+
+
+  init {
+	observe {
+	  println("biig obj changed")
+	}
+  }
+
 }
 
 /*Todo: I wish this could be an object*/
 val DeephySettings by lazy {
-  (DeephySettingsNode.settings.value ?: DeephySettingsData().also {
-	DeephySettingsNode.settings.value = it
-  }).apply {
-	observe {
-	  DeephySettingsNode.settings.value = this
-	}
-  }
+  DeephySettingsNode.settings
 }

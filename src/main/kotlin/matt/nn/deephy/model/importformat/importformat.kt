@@ -1,23 +1,29 @@
 package matt.nn.deephy.model.importformat
 
 import kotlinx.serialization.Serializable
+import matt.async.thread.daemon
 import matt.collect.map.lazyMap
 import matt.fx.graphics.wrapper.style.FXColor
-import matt.model.latch.asyncloaded.AsyncLoadingValue
+import matt.log.profile.tic
+import matt.model.latch.asyncloaded.DaemonLoadedValueOp
+import matt.model.latch.asyncloaded.LoadedValueSlot
+import matt.model.obj.single.SingleCall
 import matt.nn.deephy.model.LayerLike
 import matt.nn.deephy.model.ResolvedLayer
 import matt.nn.deephy.model.ResolvedNeuron
 import matt.nn.deephy.model.data.Category
 import matt.nn.deephy.model.data.InterTestLayer
 import matt.nn.deephy.model.data.InterTestNeuron
+import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
+import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.slice
+import org.jetbrains.kotlinx.multik.ndarray.operations.forEachIndexed
 import org.jetbrains.kotlinx.multik.ndarray.operations.max
-import org.jetbrains.kotlinx.multik.ndarray.operations.toList
 
 sealed interface DeephyFileObject {
   val name: String
@@ -66,20 +72,48 @@ class Test(
   fun imagesWithGroundTruth(category: Category) = images.filter { it.category == category }
   fun imagesWithoutGroundTruth(category: Category) = images.filter { it.category != category }
 
+  val startPreloadingActs = SingleCall {
+	val t = tic("preloading acts")
+	t.toc(0)
+	daemon {
+	  t.toc(1)
+	  model!!.layers.forEachIndexed { index, _ ->
+		activationsMatByLayerIndex[index]
+	  }
+	  t.toc(2)
+
+
+	  preds.startLoading()
+	  t.toc(3)
+	}
+	t.toc(4)
+
+
+  }
+
   val activationsMatByLayerIndex = lazyMap<Int, D2Array<Float>> { lay ->
 	val r = images.map { it.goodActivations[lay].toList() }.toNDArray()
 	r
   }
 
-  val activationsByNeuron = lazyMap<InterTestNeuron, List<Float>> {
+  val activationsByNeuron = lazyMap<InterTestNeuron, MultiArray<Float, D1>> {
 	val myMat = activationsMatByLayerIndex[it.layer.index]
-	val slice2 = myMat[0 until myMat.shape[0], it.index]
-	slice2.toList()
+	myMat[0 until myMat.shape[0], it.index]
   }
 
 
   val maxActivations = lazyMap<InterTestNeuron, Float> { neuron ->
 	activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!
+  }
+
+
+  val preds = DaemonLoadedValueOp<Map<DeephyImage, Category>> {
+	val m = mutableMapOf<DeephyImage, Category>()
+	mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
+	  .forEachIndexed { imageIndex, predIndex ->
+		m[images[imageIndex]] = category(predIndex)
+	  }
+	m
   }
 
 
@@ -116,17 +150,17 @@ class DeephyImage(
   fun activationsFor(rLayer: InterTestLayer): FloatArray = goodActivations[rLayer.index]
   fun activationFor(neuron: InterTestNeuron) = goodActivations[neuron.layer.index][neuron.index]
 
-  val test = AsyncLoadingValue<Test>()
-  val index = AsyncLoadingValue<Int>()
-  val model = AsyncLoadingValue<Model>()
-  val data = AsyncLoadingValue<List<List<IntArray>>>()
+  val test = LoadedValueSlot<Test>()
+  val index = LoadedValueSlot<Int>()
+  val model = LoadedValueSlot<Model>()
+  val data = LoadedValueSlot<List<List<IntArray>>>()
 
 }
 
 class ModelState(
 
 ) {
-  val activations = AsyncLoadingValue<List<FloatArray>>()
+  val activations = LoadedValueSlot<List<FloatArray>>()
 }
 
 

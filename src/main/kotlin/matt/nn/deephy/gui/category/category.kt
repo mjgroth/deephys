@@ -9,7 +9,6 @@ import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.nn.deephy.calc.CategoryAccuracy
 import matt.nn.deephy.calc.CategoryFalseNegativesSorted
 import matt.nn.deephy.calc.CategoryFalsePositivesSorted
-import matt.nn.deephy.calc.ImageTopPredictions
 import matt.nn.deephy.gui.category.pie.CategoryPie
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.global.deephyText
@@ -76,7 +75,10 @@ class CategoryView(
 		  "False Negatives",
 		  cats,
 		  nums = cats.associateWith { cat ->
-			falseNegatives.filter { ImageTopPredictions(it, testLoader).findOrCompute().first().first == cat }.size
+			falseNegatives.filter {
+			  testLoader.awaitFinishedTest().preds.await()[it] == cat
+			  /*ImageTopPredictions(it, testLoader).findOrCompute().first().first == cat*/
+			}.size
 		  },
 		  viewer,
 		  colorMap = colorMap

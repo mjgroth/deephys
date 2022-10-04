@@ -27,14 +27,14 @@
 	  "key" :  "slf4j-nop"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
-	  "key" :  "kotlinx-multik-default"
+	  "path" : ":k:model"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
-	  "path" : ":k:model"
+	  "path" : ":k:math:mat"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",

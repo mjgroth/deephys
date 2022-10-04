@@ -4,14 +4,16 @@ import javafx.application.Platform.runLater
 import javafx.beans.property.SimpleObjectProperty
 import matt.async.schedule.AccurateTimer
 import matt.async.schedule.every
+import matt.async.thread.daemon
 import matt.exec.app.appName
 import matt.exec.app.myVersion
-import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
+import matt.hurricanefx.eye.lib.onChange
+import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.kjlib.git.hub.GitHub
+import matt.log.profile.tic
 import matt.log.warn
 import matt.model.release.Release
 import matt.model.release.Version
@@ -22,7 +24,7 @@ import java.net.ConnectException
 
 object VersionChecker {
   private var checking = false
-  fun checkForUpdatesInBackground() {
+  fun checkForUpdatesInBackground() = daemon {
 	if (!checking) {
 	  every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
 		try {
@@ -38,13 +40,12 @@ object VersionChecker {
 		} catch (e: ConnectException) {
 		  println("no internet to check version")
 		}
-
 	  }
 	}
 	checking = true
   }
 
-  private val newestRelease = SimpleObjectProperty<Release>()
+  private val newestRelease by lazy { SimpleObjectProperty<Release>() }
 
   val statusNode by lazy {
 	TextFlowWrapper<NodeWrapper>().apply {

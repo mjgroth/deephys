@@ -6,17 +6,19 @@ import javafx.scene.effect.Glow
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.ArcType.ROUND
-import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.node.onHover
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.nn.deephy.gui.global.deephyLabel
 import matt.nn.deephy.gui.global.deephyText
+import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.gui.global.subtitleFont
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.data.Category
+import matt.prim.str.truncateWithElipses
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -49,13 +51,14 @@ class CategoryPie(
 		  layoutY = 150.0 + 130*sin(-Math.toRadians(nextStart + arcLength/2.0))
 
 		  node.viewOrder = -1.0
-		  val t = deephyLabel(cat.label)
+		  val t = deephyLabel(cat.label.truncateWithElipses(20))
 		  backgroundFill = Color.BLACK
 
 		  layoutY -= t.font.size
 		}
 
 		+ArcWrapper().apply {
+		  deephyTooltip(cat.label)
 		  centerX = 150.0
 		  centerY = 150.0
 		  radiusX = 100.0

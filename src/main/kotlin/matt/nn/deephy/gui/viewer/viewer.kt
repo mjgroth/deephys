@@ -1,6 +1,7 @@
 package matt.nn.deephy.gui.viewer
 
 import javafx.beans.property.DoubleProperty
+import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
@@ -8,11 +9,13 @@ import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
 import matt.file.CborFile
 import matt.fx.control.wrapper.control.button.button
+import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
 import matt.fx.graphics.style.backgroundColor
-import matt.hurricanefx.eye.prop.objectBindingN
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
+import matt.hurricanefx.eye.prop.objectBindingN
+import matt.lang.go
 import matt.log.profile.stopwatch
 import matt.log.profile.tic
 import matt.log.warn
@@ -25,8 +28,10 @@ import matt.nn.deephy.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephy.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephy.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephy.gui.global.deephyButton
+import matt.nn.deephy.gui.global.deephyText
 import matt.nn.deephy.gui.global.deephyToggleButton
 import matt.nn.deephy.gui.global.deephyTooltip
+import matt.nn.deephy.gui.global.titleFont
 import matt.nn.deephy.load.asyncLoadSwapper
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.ResolvedLayer
@@ -49,6 +54,12 @@ import matt.obs.prop.withUpdatesFromWhen
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
+  private val initStopwatch = tic("viewer init", enabled = false)
+
+  init {
+	initStopwatch.toc(1)
+  }
+
   val model by lazy { outerBox.model }
 
   val siblings by lazy { outerBox.children.filtered { it != this } }
@@ -59,7 +70,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	outerBox.save()
   }
   val testData = file.binding { f ->
-	val t = tic(prefix = "dataBinding2")
+	val t = tic(prefix = "dataBinding2", enabled = false)
 	t.toc("start")
 	f?.run {
 	  val loader = TestLoader(f, model)
@@ -80,6 +91,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   val isBoundToDSet by lazy { boundToDSet.isNotNull }
   val isUnboundToDSet by lazy { isBoundToDSet.not() }
 
+  init {
+	initStopwatch.toc(2)
+  }
 
   private val boundView by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.view } }
   val view: VarProp<DatasetNodeView> = VarProp(
@@ -116,6 +130,10 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	//	}
   }
 
+  init {
+	initStopwatch.toc(3)
+  }
+
   val neuronSelectionResolved = neuronSelection.binding(
 	testData, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
 	layerSelectionResolved
@@ -147,6 +165,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  withNonNullUpdatesFrom(boundTopNeurons)
 	}
 
+  init {
+	initStopwatch.toc(4)
+  }
 
   val highlightedNeurons = MyBinding(
 	view, topNeurons, neuronSelection
@@ -168,6 +189,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   val history = basicMutableObservableListOf<TestViewerAction>()
   val historyIndex = BindableProperty(-1)
 
+  init {
+	initStopwatch.toc(5)
+  }
 
   fun navigateTo(neuron: InterTestNeuron) {
 	require(!isBoundToDSet.value)
@@ -178,14 +202,22 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   fun navigateTo(im: DeephyImage) {
+	val t = tic("navigating to image")
+	t.toc(1)
 	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
+	t.toc(2)
 	imageSelection.value = im
+	t.toc(3)
 	for (i in (historyIndex.value + 1) until history.size) {
 	  history.removeAt(historyIndex.value + 1)
 	}
+	t.toc(4)
 	history.add(SelectImage(im))
+	t.toc(5)
 	historyIndex.value += 1
+	t.toc(6)
 	view.value = ByImage
+	t.toc(7)
   }
 
   fun navigateTo(category: Category) {
@@ -196,14 +228,23 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	view.value = ByCategory
   }
 
+  init {
+	initStopwatch.toc(6)
+  }
 
   init {
+	initStopwatch.toc(7)
 	contentDisplay = ContentDisplay.LEFT
 	isExpanded = true
-	titleProperty.bind(file.binding { it?.nameWithoutExtension })
+	/*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
+	initStopwatch.toc(8)
 	graphic = hbox<NodeWrapper> {
+	  alignment = Pos.CENTER
+	  this@DatasetViewer.initStopwatch.toc(8.1)
 	  deephyButton("remove test") {
+		this@DatasetViewer.initStopwatch.toc("8.1.1")
 		deephyTooltip("remove this test viewer")
+		this@DatasetViewer.initStopwatch.toc("8.1.2")
 		setOnAction {
 		  if (this@DatasetViewer.outerBox.bound.value == this@DatasetViewer) {
 			this@DatasetViewer.outerBox.bound.value = null
@@ -211,7 +252,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  this@DatasetViewer.removeFromParent()
 		  this@DatasetViewer.outerBox.save()
 		}
+		this@DatasetViewer.initStopwatch.toc("8.1.3")
 	  }
+	  this@DatasetViewer.initStopwatch.toc(8.2)
 	  deephyButton("select test") {
 		deephyTooltip("choose test file")
 		setOnAction {
@@ -227,7 +270,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  }
 		}
 	  }
-
+	  this@DatasetViewer.initStopwatch.toc(8.3)
 
 	  button("back") {
 		enableProperty.bind(
@@ -243,6 +286,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		}
 
 	  }
+	  this@DatasetViewer.initStopwatch.toc(8.4)
 	  button("forward") {
 		enableProperty.bind(
 		  this@DatasetViewer.history.binding(
@@ -256,6 +300,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  this@DatasetViewer.imageSelection.value = (action as SelectImage).image
 		}
 	  }
+	  this@DatasetViewer.initStopwatch.toc(8.5)
 	  deephyToggleButton(
 		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
 	  ) {
@@ -263,10 +308,27 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  if (it == true) backgroundColor(Color.YELLOW) else null
 		})
 	  }
+	  this@DatasetViewer.initStopwatch.toc(8.6)
+	  deephyText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {
+		titleFont()
+	  }
+	  progressbar {
+		visibleAndManagedProp.bind(progressProperty.neq(1.0))
+		this@DatasetViewer.testData.value?.progress?.let {
+		  progressProperty.bind(it)
+		}
+		this@DatasetViewer.testData.onChange {
+		  it?.progress?.go {
+			progressProperty.bind(it)
+		  }
+		}
+	  }
 	}
+	this@DatasetViewer.initStopwatch.toc(9)
 	content = asyncLoadSwapper(testData, nullMessage = "select a test to view it") {
 	  DatasetNode(this, this@DatasetViewer)
 	}.node
+	this@DatasetViewer.initStopwatch.toc(10)
   }
 }
 

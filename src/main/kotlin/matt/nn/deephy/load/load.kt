@@ -7,7 +7,6 @@ import matt.file.MFile
 import matt.fx.graphics.wrapper.EventTargetWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.nn.deephy.load.async.AsyncLoader
