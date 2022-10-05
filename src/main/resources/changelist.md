@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephy/releases -->
 
-[//]: # (VERSION:1.19.2)
+[//]: # (VERSION:1.19.3)
 
 
 Compatible pip package
@@ -12,10 +12,11 @@ version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https:/
 
 [//]: # (### Performance Improvements)
 
-[//]: # (### Cosmetic Changes)
+### Cosmetic Changes
 
-### Bug Fixes
-- Fixes bug where app crashes if bad data file was selected. App should now present the user with an error message and allow the user to choose a different file instead of crashing
+- Changed title on window from "deephy" to "deephys"
+
+[//]: # (### Bug Fixes)
 
 [//]: # (### Notes)
 

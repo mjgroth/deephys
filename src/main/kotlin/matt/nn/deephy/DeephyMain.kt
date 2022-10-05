@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
 	t.toc("warmed up jvm threading")
 
 	daemon {
-	  stageTitle.putLoadedValue("$appName $myVersion")
+	  stageTitle.putLoadedValue("${appName}s $myVersion")
 	}
 	t.toc("started async stage title getter")
 
