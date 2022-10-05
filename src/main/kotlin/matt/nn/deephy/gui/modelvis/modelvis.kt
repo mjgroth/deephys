@@ -14,11 +14,9 @@ import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.gui.modelvis.neuroncirc.NeuronCircle
 import matt.nn.deephy.model.importformat.Model
 import matt.obs.bind.MyBinding
-import matt.obs.bindings.math.div
-import matt.obs.bindings.math.min
-import matt.obs.bindings.math.plus
-import matt.obs.bindings.math.times
 import matt.obs.col.change.AdditionBase
+import matt.obs.math.double.op.times
+import matt.obs.math.op.div
 import matt.obs.prop.BindableProperty
 
 class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) {

@@ -3,7 +3,7 @@ package matt.nn.deephy.gui.neuron.imgflowpane
 import matt.fx.graphics.wrapper.pane.flow.FlowPaneWrapper
 import matt.nn.deephy.gui.deephyimview.DeephyImView
 import matt.nn.deephy.gui.viewer.DatasetViewer
-import matt.obs.bindings.math.times
+import matt.obs.math.double.op.times
 
 open class ImageFlowPane(viewer: DatasetViewer): FlowPaneWrapper<DeephyImView>() {
   init {

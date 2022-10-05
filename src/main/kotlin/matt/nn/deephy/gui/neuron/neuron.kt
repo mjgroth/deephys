@@ -6,7 +6,7 @@ import matt.nn.deephy.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.data.InterTestNeuron
-import matt.obs.bindings.math.times
+import matt.obs.math.double.op.times
 import matt.obs.prop.BindableProperty
 import kotlin.math.min
 

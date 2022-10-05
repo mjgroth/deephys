@@ -3,7 +3,7 @@ package matt.nn.deephy.calc
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.math.jmath.sigFigs
 import matt.math.mat.argmaxn.argmaxn2
-import matt.math.sumOf
+import matt.math.reduce.sumOf
 import matt.nn.deephy.gui.global.DeephyText
 import matt.nn.deephy.gui.global.deephyTooltip
 import matt.nn.deephy.load.test.TestLoader
