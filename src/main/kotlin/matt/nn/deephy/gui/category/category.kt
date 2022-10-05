@@ -34,7 +34,7 @@ class CategoryView(
 	  hbox<NodeWrapper> {
 		vbox<NodeWrapper> {
 		  val maxIms = 25
-		  deephyText("False Positives").apply {
+		  deephyText("False Positives (${falsePositives.size})").apply {
 			subtitleFont()
 			deephyTooltip(CategoryFalsePositivesSorted.blurb + "( first $maxIms)")
 		  }
@@ -45,7 +45,7 @@ class CategoryView(
 			  +DeephyImView(it, viewer)
 			}
 		  }
-		  deephyText("False Negatives").apply {
+		  deephyText("False Negatives (${falseNegatives.size})").apply {
 			subtitleFont()
 			deephyTooltip(CategoryFalseNegativesSorted.blurb + "( first $maxIms)")
 		  }

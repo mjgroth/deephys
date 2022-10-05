@@ -13,6 +13,7 @@ import matt.nn.deephy.model.data.InterTestLayer
 import matt.nn.deephy.model.data.InterTestNeuron
 import matt.nn.deephy.model.importformat.DeephyImage
 import matt.nn.deephy.model.importformat.Test
+import matt.nn.deephy.state.DeephySettings
 import kotlin.math.exp
 
 
@@ -20,7 +21,7 @@ data class NormalizedActivation(
   private val neuron: InterTestNeuron,
   private val image: DeephyImage,
   private val test: Test
-): TimedComputeInput<Float>() {
+): DeephysComputeInput<Float>() {
 
   companion object {
 	const val RAW_ACT_SYMBOL = "Y"
@@ -38,7 +39,7 @@ data class TopImages(
   private val neuron: InterTestNeuron,
   private val test: TestLoader,
   private val num: Int
-): TimedComputeInput<List<ImageIndex>>() {
+): DeephysComputeInput<List<ImageIndex>>() {
   override fun timedCompute(): List<ImageIndex> = run {
 	val theTest = test.awaitFinishedTest()
 	toc("got theTest")
@@ -54,7 +55,7 @@ data class TopNeurons(
   private val image: DeephyImage,
   private val layer: InterTestLayer,
   val normalized: Boolean
-): TimedComputeInput<List<InterTestNeuron>>() {
+): DeephysComputeInput<List<InterTestNeuron>>() {
   override fun timedCompute(): List<InterTestNeuron> = layer.neurons.map { it }.sortedBy {
 	if (normalized) NormalizedActivation(it, image, image.test.await())() else it.activation(image)
   }.reversed().take(25)
@@ -65,7 +66,7 @@ class ActivationRatio(
   private val numTest: TestLoader,
   private val denomTest: TestLoader,
   private val neuron: InterTestNeuron
-): TimedComputeInput<Float>() {
+): DeephysComputeInput<Float>() {
 
   companion object {
 	const val technique =
@@ -88,7 +89,7 @@ class ActivationRatio(
 class ImageSoftMaxDenom(
   private val image: DeephyImage,
   private val testLoader: TestLoader
-): TimedComputeInput<Float>() {
+): DeephysComputeInput<Float>() {
   override fun timedCompute(): Float {
 	val clsLay = testLoader.model.classificationLayer
 	val preds = image.activationsFor(clsLay.interTest)
@@ -99,7 +100,7 @@ class ImageSoftMaxDenom(
 class ImageTopPredictions(
   private val image: DeephyImage,
   private val testLoader: TestLoader
-): TimedComputeInput<List<Pair<Category, Float>>>() {
+): DeephysComputeInput<List<Pair<Category, Float>>>() {
   override fun timedCompute(): List<Pair<Category, Float>> {
 	val clsLay = testLoader.model.classificationLayer
 	val preds = image.activationsFor(clsLay.interTest)
@@ -120,7 +121,7 @@ class ImageTopPredictions(
 data class CategoryAccuracy(
   private val category: Category,
   private val testLoader: TestLoader
-): TimedComputeInput<Double>() {
+): DeephysComputeInput<Double>() {
   override fun timedCompute() = testLoader
 	.awaitFinishedTest()
 	.imagesWithGroundTruth(category)
@@ -133,7 +134,7 @@ data class CategoryAccuracy(
 data class CategoryFalsePositivesSorted(
   private val category: Category,
   private val testLoader: TestLoader
-): TimedComputeInput<List<DeephyImage>>() {
+): DeephysComputeInput<List<DeephyImage>>() {
   companion object {
 	const val blurb =
 	  "false positives sorted so that the images with the highest prediction value (after softmax) are first"
@@ -159,7 +160,7 @@ data class CategoryFalsePositivesSorted(
 data class CategoryFalseNegativesSorted(
   private val category: Category,
   private val testLoader: TestLoader
-): TimedComputeInput<List<DeephyImage>>() {
+): DeephysComputeInput<List<DeephyImage>>() {
   companion object {
 	const val blurb =
 	  "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
@@ -197,3 +198,8 @@ data class CategoryFalseNegativesSorted(
   override fun compute()
 }*/
 
+
+
+abstract class DeephysComputeInput<O>(): TimedComputeInput<O>() {
+  override val stopwatchEnabled get() = DeephySettings.verboseLogging.value
+}

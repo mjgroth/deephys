@@ -45,13 +45,17 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	  jsonObject["predictionSigFigs"]?.int?.go {
 		predictionSigFigs.value = it
 	  }
+	  jsonObject["verboseLogging"]?.bool?.go {
+		verboseLogging.value = it
+	  }
 	}
   }
 
   override fun serialize(value: DeephySettingsData) = jsonObj(
 	"numImagesPerNeuronInByImage" to value.numImagesPerNeuronInByImage,
 	"normalizeTopNeuronActivations" to value.normalizeTopNeuronActivations,
-	"predictionSigFigs" to value.predictionSigFigs
+	"predictionSigFigs" to value.predictionSigFigs,
+	"verboseLogging" to value.verboseLogging
   )
 
 }
@@ -63,6 +67,7 @@ sealed class Setting<T>(val prop: Var<T>, val label: String, val tooltip: String
 	}
   }
 }
+
 class IntSetting(prop: Var<Int>, label: String, tooltip: String, val min: Int, val max: Int):
   Setting<Int>(prop, label = label, tooltip = tooltip)
 
@@ -73,7 +78,6 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 @Serializable(DeephySettingsSerializer::class) class DeephySettingsData: ObservableHolderImpl() {
   private val mSettings = mutableListOf<Setting<*>>()
   val settings: List<Setting<*>> = mSettings
-
 
 
   private inner class BoolSettingProv(
@@ -122,6 +126,11 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 	tooltip = "Prediction value significant figures",
 	min = 3,
 	max = 10
+  )
+  val verboseLogging by BoolSettingProv(
+	defaultValue = false,
+	label = "Verbose Logging",
+	tooltip = "Extra logging to standard out. May impact performance."
   )
 
 
