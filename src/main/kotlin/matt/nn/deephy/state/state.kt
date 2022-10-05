@@ -5,14 +5,14 @@ import kotlinx.serialization.json.JsonObject
 import matt.hurricanefx.eye.pref.FXPrefNode
 import matt.json.custom.bool
 import matt.json.custom.int
-import matt.json.fx.jsonObj
+import matt.json.oldfx.jsonObj
 import matt.json.ser.JsonObjectSerializer
 import matt.lang.go
+import matt.model.message.FileList
+import matt.model.message.SFile
 import matt.nn.deephy.calc.NormalizedActivation.Companion.normalizeTopNeuronsBlurb
 import matt.obs.hold.ObservableHolderImpl
 import matt.obs.prop.Var
-import matt.model.message.FileList
-import matt.model.message.SFile
 import kotlin.reflect.KProperty
 
 object DeephyState: FXPrefNode(
