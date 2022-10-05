@@ -1,7 +1,6 @@
 package matt.nn.deephy.version
 
 import javafx.application.Platform.runLater
-import javafx.beans.property.SimpleObjectProperty
 import matt.async.schedule.AccurateTimer
 import matt.async.schedule.every
 import matt.async.thread.daemon
@@ -10,9 +9,7 @@ import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
-import matt.hurricanefx.eye.lib.onChange
 import matt.kjlib.git.hub.GitHub
-import matt.log.profile.tic
 import matt.log.warn
 import matt.model.release.Release
 import matt.model.release.Version
