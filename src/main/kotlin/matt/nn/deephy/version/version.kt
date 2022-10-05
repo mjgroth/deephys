@@ -11,7 +11,6 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.hurricanefx.eye.lib.onChange
-import matt.hurricanefx.eye.prop.setIfDifferent
 import matt.kjlib.git.hub.GitHub
 import matt.log.profile.tic
 import matt.log.warn
@@ -19,6 +18,7 @@ import matt.model.release.Release
 import matt.model.release.Version
 import matt.nn.deephy.gui.global.deephyHyperlink
 import matt.nn.deephy.gui.global.deephyText
+import matt.obs.prop.BindableProperty
 import matt.time.dur.sec
 import java.net.ConnectException
 
@@ -45,7 +45,7 @@ object VersionChecker {
 	checking = true
   }
 
-  private val newestRelease by lazy { SimpleObjectProperty<Release>() }
+  private val newestRelease by lazy { BindableProperty<Release?>(null) }
 
   val statusNode by lazy {
 	TextFlowWrapper<NodeWrapper>().apply {
