@@ -2,7 +2,6 @@ package matt.nn.deephy.state
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import matt.hurricanefx.eye.pref.FXPrefNode
 import matt.json.custom.bool
 import matt.json.custom.int
 import matt.json.oldfx.jsonObj
@@ -13,9 +12,10 @@ import matt.model.message.SFile
 import matt.nn.deephy.calc.NormalizedActivation.Companion.normalizeTopNeuronsBlurb
 import matt.obs.hold.ObservableHolderImpl
 import matt.obs.prop.Var
+import matt.pref.obs.ObsPrefNode
 import kotlin.reflect.KProperty
 
-object DeephyState: FXPrefNode(
+object DeephyState: ObsPrefNode(
   "sinhalab.deephys.state", oldKeys = listOf(
 	"dataFolder", "pref", "datasets"
   )
@@ -24,7 +24,7 @@ object DeephyState: FXPrefNode(
   val tests by obj<FileList>()
 }
 
-private object DeephySettingsNode: FXPrefNode(
+private object DeephySettingsNode: ObsPrefNode(
   "sinhalab.deephy.settings", oldKeys = listOf(
 	"numImagesPerNeuronInByImage", "normalizeTopNeuronActivations", "predictionSigFigs"
   )
