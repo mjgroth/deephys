@@ -16,7 +16,7 @@ import matt.obs.prop.Var
 import kotlin.reflect.KProperty
 
 object DeephyState: FXPrefNode(
-  "sinhalab.deephy.state", oldKeys = listOf(
+  "sinhalab.deephys.state", oldKeys = listOf(
 	"dataFolder", "pref", "datasets"
   )
 ) {

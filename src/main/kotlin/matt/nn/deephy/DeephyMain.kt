@@ -10,6 +10,7 @@ import matt.nn.deephy.gui.startDeephyApp
 import matt.nn.deephy.init.initializeWhatICan
 import matt.nn.deephy.state.DeephyState
 import matt.nn.deephy.version.VersionChecker
+import java.util.prefs.Preferences
 
 
 fun main(args: Array<String>) {
@@ -34,6 +35,14 @@ fun main(args: Array<String>) {
 
 	VersionChecker.checkForUpdatesInBackground()
 	t.toc("started VersionChecker")
+
+	daemon {
+	  Preferences.userRoot().node("sinhalab.deephy.state").apply {
+		removeNode()
+		flush()
+	  }
+	}
+
 	startDeephyApp(t)
 	t.toc("started Deephy app")
   }

@@ -46,12 +46,12 @@ fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
 ) = swapper(loader, nullMessage) {
   VBoxWrapperImpl<NodeWrapper>().also {
 
-	it.swapper(fileFound.binding(streamOk) { this }) {
+	it.swapper(fileFound.binding(streamOk, parseError) { this }) {
 	  when {
-		!fileFound.value -> TextWrapper("file not found")
-		!streamOk.value  -> TextWrapper("file loading stream broken. Was the file moved?")
-		parseError.value -> TextWrapper("parse error loading file")
-		else             -> op(this)
+		!fileFound.value         -> TextWrapper("file not found")
+		!streamOk.value          -> TextWrapper("file loading stream broken. Was the file moved?")
+		parseError.value != null -> TextWrapper("parse error loading file: ${parseError.value}")
+		else                     -> op(this)
 	  }
 	}
   }

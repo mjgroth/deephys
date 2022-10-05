@@ -11,7 +11,6 @@ import matt.lang.List2D
 import matt.lang.disabledCode
 import matt.lang.sync
 import matt.log.profile.tic
-import matt.log.warn
 import matt.model.errreport.ThrowReport
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
@@ -137,11 +136,7 @@ class TestLoader(
 			t.toc(7)
 			//			t.toc("reading cbor manually")
 
-			if (count != 3.toULong()) {
-			  warn("expected 3 name-value pairs but got $count")
-			  signalParseError()
-			  return@daemon
-			}
+			expectCount(3UL)
 			t.toc(8)
 			val name = nextValue<String>(requireKeyIs = "name")
 			val suffix = nextValue<String?>(requireKeyIs = "suffix")
@@ -307,7 +302,7 @@ class TestLoader(
 			t.toc(13)
 		  }
 		} catch (e: CborParseException) {
-		  signalParseError()
+		  signalParseError(e)
 		  return@daemon
 		}
 		stream.close()
