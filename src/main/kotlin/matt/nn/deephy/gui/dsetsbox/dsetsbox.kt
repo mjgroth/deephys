@@ -11,7 +11,7 @@ import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.model.importformat.Model
 import matt.nn.deephy.state.DeephyState
 import matt.obs.prop.Var
-import matt.stream.message.FileList
+import matt.model.message.FileList
 
 class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 

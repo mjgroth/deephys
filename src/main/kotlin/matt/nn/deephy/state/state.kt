@@ -11,8 +11,8 @@ import matt.lang.go
 import matt.nn.deephy.calc.NormalizedActivation.Companion.normalizeTopNeuronsBlurb
 import matt.obs.hold.ObservableHolderImpl
 import matt.obs.prop.Var
-import matt.stream.message.FileList
-import matt.stream.message.SFile
+import matt.model.message.FileList
+import matt.model.message.SFile
 import kotlin.reflect.KProperty
 
 object DeephyState: FXPrefNode(
