@@ -16,7 +16,8 @@ import matt.pref.obs.ObsPrefNode
 import kotlin.reflect.KProperty
 
 object DeephyState: ObsPrefNode(
-  "sinhalab.deephys.state", oldKeys = listOf(
+  "sinhalab.deephys.state",
+  oldKeys = listOf(
 	"dataFolder", "pref", "datasets"
   )
 ) {
@@ -24,8 +25,9 @@ object DeephyState: ObsPrefNode(
   val tests by obj<FileList>()
 }
 
-private object DeephySettingsNode: ObsPrefNode(
-  "sinhalab.deephy.settings", oldKeys = listOf(
+object DeephySettingsNode: ObsPrefNode(
+  "sinhalab.deephys.settings",
+  oldKeys = listOf(
 	"numImagesPerNeuronInByImage", "normalizeTopNeuronActivations", "predictionSigFigs"
   )
 ) {
