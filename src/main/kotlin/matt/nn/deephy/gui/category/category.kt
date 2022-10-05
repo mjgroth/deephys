@@ -19,6 +19,7 @@ import matt.nn.deephy.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephy.gui.viewer.DatasetViewer
 import matt.nn.deephy.load.test.TestLoader
 import matt.nn.deephy.model.data.Category
+import matt.obs.math.op.times
 
 class CategoryView(
   category: Category, testLoader: TestLoader, viewer: DatasetViewer

@@ -15,8 +15,10 @@ import matt.nn.deephy.gui.modelvis.neuroncirc.NeuronCircle
 import matt.nn.deephy.model.importformat.Model
 import matt.obs.bind.MyBinding
 import matt.obs.col.change.AdditionBase
+import matt.obs.math.double.min
+import matt.obs.math.double.op.div
+import matt.obs.math.double.op.plus
 import matt.obs.math.double.op.times
-import matt.obs.math.op.div
 import matt.obs.prop.BindableProperty
 
 class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) {
@@ -39,22 +41,20 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 	  field = value
 	  circles!!.forEach { circ ->
 		val n = circ.neuron
-		circ.isHighlighted.bind(
-		  MyBinding(value.children) {
-			value.children.any { n.interTest in it.highlightedNeurons.value }
-		  }.apply {
-			value.children.forEach {
-			  addDependency(it.highlightedNeurons)
-			}
-			value.children.onChange {
-			  if (it is AdditionBase) {
-				it.addedElements.forEach {
-				  addDependency(it.highlightedNeurons)
-				}
+		circ.isHighlighted.bind(MyBinding(value.children) {
+		  value.children.any { n.interTest in it.highlightedNeurons.value }
+		}.apply {
+		  value.children.forEach {
+			addDependency(it.highlightedNeurons)
+		  }
+		  value.children.onChange {
+			if (it is AdditionBase) {
+			  it.addedElements.forEach {
+				addDependency(it.highlightedNeurons)
 			  }
 			}
 		  }
-		)
+		})
 	  }
 	}
 
@@ -62,8 +62,8 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 
   init {
 	prefHeight = PREF_HEIGHT
-	val diagramHeightProp = BindableProperty(DIAGRAM_HEIGHT)
-	val diagramTopProp = BindableProperty(DIAGRAM_TOP)
+	val diagramHeightProp = BindableProperty<Double>(DIAGRAM_HEIGHT)
+	val diagramTopProp = BindableProperty<Double>(DIAGRAM_TOP)
 	val diagramWidthProp = widthProperty*DIAGRAM_RATIO
 	val diagramLeftProp = widthProperty*MARGIN_RATIO
 
@@ -86,14 +86,14 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 	}
 
 
-	val spacePerLayer = model.layers.size/totalSpaceForAllLayers
+	val spacePerLayer = model.layers.size.toDouble()/totalSpaceForAllLayers
 
 	circles = model.resolvedLayers.flatMapIndexed { layIndex, lay ->
 
-	  val spacePerNeuron = lay.neurons.size/totalSpaceForOneLayer
+	  val spacePerNeuron = lay.neurons.size.toDouble()/totalSpaceForOneLayer
 	  val radius = min(spacePerNeuron*0.25, spacePerLayer*0.25)
 
-	  val layerCenter = modelStart + spacePerLayer*layIndex + spacePerLayer/2.0
+	  val layerCenter = modelStart + spacePerLayer*layIndex.toDouble() + spacePerLayer/2.0
 
 	  deephyText(lay.layerID) {
 		layoutXProperty bind when (ORIENTATION) {
@@ -108,7 +108,7 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 
 	  lay.neurons.mapIndexed { neuronIndex, neuron ->
 
-		val neuronCenter = layerStart + spacePerNeuron*neuronIndex + spacePerNeuron/2.0
+		val neuronCenter = layerStart + spacePerNeuron*neuronIndex.toDouble() + spacePerNeuron/2.0
 
 		val xProp = when (ORIENTATION) {
 		  VERTICAL   -> neuronCenter
@@ -120,12 +120,7 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 		}
 
 		NeuronCircle(
-		  layer = lay,
-		  neuron = neuron,
-		  x = xProp,
-		  y = yProp,
-		  radius = radius,
-		  color = COLOR
+		  layer = lay, neuron = neuron, x = xProp, y = yProp, radius = radius, color = COLOR
 		).apply {
 		  deephyTooltip("neuron $neuronIndex")
 		  setOnMouseClicked {
