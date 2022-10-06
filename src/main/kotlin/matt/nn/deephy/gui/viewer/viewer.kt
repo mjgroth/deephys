@@ -64,7 +64,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
   val siblings by lazy { outerBox.children.filtered { it != this } }
 
-  override fun toString() = toStringBuilder("current file" to file.value?.fname)
+  override fun toString() = toStringBuilder("current file" to file.value?.fName)
 
   val file: VarProp<CborFile?> = VarProp(initialFile).withChangeListener {
 	outerBox.save()
