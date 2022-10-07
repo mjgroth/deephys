@@ -1,7 +1,6 @@
 package matt.nn.deephy.gui.layer
 
 import javafx.scene.paint.Color
-import javafx.util.StringConverter
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -38,13 +37,13 @@ class LayerView(
 	  //	  property = viewer.neuronSelection,
 	  enableScroll = false
 	) {
-	  valueFactory.converter = object: StringConverter<InterTestNeuron>() {
-		override fun toString(`object`: InterTestNeuron): String {
-		  return "${`object`.index}"
+	  valueFactory.converter = object: matt.model.convert.StringConverter<InterTestNeuron> {
+		override fun toString(t: InterTestNeuron): String {
+		  return "${t.index}"
 		}
 
-		override fun fromString(string: String): InterTestNeuron {
-		  return string.toIntOrNull()?.let { i -> neurons.firstOrNull { it.index == i } } ?: neurons.first()
+		override fun fromString(s: String): InterTestNeuron {
+		  return s.toIntOrNull()?.let { i -> neurons.firstOrNull { it.index == i } } ?: neurons.first()
 		  //		  val i = string.toIntOrNull()
 		  //		  if (i != null) {
 		  //		  return neurons.firstOrNull { it.index == i } ?: neurons.first()
