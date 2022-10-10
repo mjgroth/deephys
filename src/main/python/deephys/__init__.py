@@ -1,4 +1,4 @@
-from nndeephys.nndeephys import (
+from deephys.deephys import (
     ImageFile,
     Neuron,
     Layer,

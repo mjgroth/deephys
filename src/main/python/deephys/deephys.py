@@ -1,4 +1,4 @@
-# @title NNDEEPHYS
+# @title DEEPHYS
 from cbor2 import dump
 from dataclasses import dataclass, asdict
 from typing import List, Optional
@@ -24,7 +24,7 @@ class Layer:
 
 
 @dataclass
-class NNDEEPHYSData:
+class DEEPHYSData:
     name: str
     suffix: Optional[str]
 
@@ -38,7 +38,7 @@ class NNDEEPHYSData:
 
 
 @dataclass
-class Model(NNDEEPHYSData):
+class Model(DEEPHYSData):
     layers: List[Layer]
 
     def __post_init__(self):
@@ -118,7 +118,7 @@ class ImageFile:
 
 
 @dataclass
-class Test(NNDEEPHYSData):
+class Test(DEEPHYSData):
     images: List[ImageFile]
 
     def __post_init__(self):
