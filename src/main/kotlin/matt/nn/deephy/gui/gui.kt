@@ -83,7 +83,7 @@ fun startDeephyApp(t: Stopwatch) = GuiApp(decorated = true) {
 		swapT.toc(2)
 		println("loaded model: ${model.name}")
 		model.layers.forEach {
-		  tab("${it.layerID} has ${it.neurons.size} neurons")
+		  tab<Any>("${it.layerID} has ${it.neurons.size} neurons")
 		}
 		swapT.toc(3)
 
