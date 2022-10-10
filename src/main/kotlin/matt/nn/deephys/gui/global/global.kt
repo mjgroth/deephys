@@ -2,13 +2,10 @@ package matt.nn.deephys.gui.global
 
 import javafx.scene.Cursor
 import javafx.scene.control.ToggleGroup
-import javafx.scene.control.Tooltip
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
-import javafx.util.Duration
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.proto.actiontext.actionText
-import matt.fx.control.tooltip.add
 import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
 import matt.fx.control.wrapper.button.toggle.togglebutton
 import matt.fx.control.wrapper.checkbox.CheckBoxWrapper
@@ -25,16 +22,6 @@ import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.obs.bindings.str.ObsS
 import matt.obs.prop.BindableProperty
 
-/*todo: a single matt.fx.control.tooltip.tooltip can be installed on multiple nodes, (and this seems important for performance)*/
-fun NodeWrapper.deephyTooltip(s: String, op: Tooltip.()->Unit = {}) = DeephyTooltip(s).apply(op).also {
-  add(it)
-}
-
-fun DeephyTooltip(s: String) = Tooltip(s).apply {
-  font = DEEPHY_FONT_DEFAULT
-  showDelay = Duration.millis(100.0)
-  hideDelay = Duration.millis(1000.0)
-}
 
 fun NodeWrapper.deephyText(s: String = "", op: DeephyText.()->Unit = {}) =
   DeephyText(BindableProperty(s)).apply(op).also { +it }
@@ -104,8 +91,8 @@ fun NodeWrapper.deephyActionButton(s: String = "", theOp: ButtonWrapper.()->Unit
   font = DEEPHY_FONT_DEFAULT
 }
 
-private val DEEPHY_FONT_DEFAULT: Font by lazy { Font.font("Georgia") }
-private val DEEPHY_FONT_SUBTITLE by lazy { DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*1.5).fx() }
-private val DEEPHY_FONT_TITLE by lazy { DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*2).fx() }
-private val DEEPHY_FONT_TITLE_BOLD by lazy { DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx() }
+val DEEPHY_FONT_DEFAULT: Font by lazy { Font.font("Georgia") }
+val DEEPHY_FONT_SUBTITLE by lazy { DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*1.5).fx() }
+val DEEPHY_FONT_TITLE by lazy { DEEPHY_FONT_DEFAULT.fixed().copy(size = DEEPHY_FONT_DEFAULT.size*2).fx() }
+val DEEPHY_FONT_TITLE_BOLD by lazy { DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx() }
 

@@ -10,7 +10,7 @@ import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.modelvis.neuroncirc.NeuronCircle
 import matt.nn.deephys.model.importformat.Model
 import matt.obs.bind.MyBinding

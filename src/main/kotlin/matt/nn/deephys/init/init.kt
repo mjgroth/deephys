@@ -14,10 +14,10 @@ import matt.model.latch.asyncloaded.DaemonLoadedValueOp
 import matt.nn.deephys.gui.global.DeephyText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyToggleButton
-import matt.nn.deephys.gui.global.deephyTooltip
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.load.loadCbor
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState

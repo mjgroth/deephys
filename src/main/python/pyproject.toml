@@ -1,6 +1,6 @@
 [project]
-name = "deephy"
-version = "0.5.3"
+name = "deephys"
+version = "0.5.4"
 authors = [
     { name = "Matt Groth", email = "mjgroth@mit.edu" },
 ]
@@ -10,5 +10,5 @@ dependencies = [
     'torch'
 ]
 [project.urls]
-"Homepage" = "https://github.com/mgroth0/deephy"
-"Bug Tracker" = "https://github.com/mgroth0/deephy/issues"
+"Homepage" = "https://github.com/mgroth0/deephys"
+"Bug Tracker" = "https://github.com/mgroth0/deephys/issues"

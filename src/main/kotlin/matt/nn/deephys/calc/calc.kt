@@ -4,10 +4,17 @@ import matt.caching.compcache.timed.TimedComputeInput
 import matt.math.jmath.sigFigs
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
+import matt.nn.deephys.calc.act.Activation
+import matt.nn.deephys.calc.act.NormalActivation
+import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
+import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
 import matt.nn.deephys.gui.global.DeephyText
-import matt.nn.deephys.gui.global.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.TestOrLoader
 import matt.nn.deephys.model.data.Category
+import matt.nn.deephys.model.data.CategoryConfusion
+import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
@@ -21,17 +28,26 @@ data class NormalizedActivation(
   private val neuron: InterTestNeuron,
   private val image: DeephyImage,
   private val test: Test
-): DeephysComputeInput<Float>() {
+): DeephysComputeInput<NormalActivation>() {
 
   companion object {
-	const val RAW_ACT_SYMBOL = "Y"
-	const val NORMALIZED_ACT_SYMBOL = "Ŷ"
 	const val normalizeTopNeuronsBlurb =
-	  "Normalized Activation ($NORMALIZED_ACT_SYMBOL) = Raw Activation ($RAW_ACT_SYMBOL) / max(activation for each image for this neuron)"
+	  "Normalized matt.nn.deephys.calc.act.Activation ($NORMALIZED_ACT_SYMBOL) = Raw matt.nn.deephys.calc.act.Activation ($RAW_ACT_SYMBOL) / max(activation for each image for this neuron)"
   }
 
-  override fun timedCompute(): Float {
-	return neuron.activation(image)/test.maxActivations[neuron]
+  override fun timedCompute(): NormalActivation {
+	return NormalActivation(neuron.activation(image).value/test.maxActivations[neuron])
+  }
+}
+
+data class NormalizedAverageActivation(
+  private val neuron: InterTestNeuron,
+  private val cat: Category,
+  private val test: TestOrLoader,
+
+  ): DeephysComputeInput<NormalActivation>() {
+  override fun timedCompute(): NormalActivation {
+	return NormalActivation(cat.averageActivationFor(neuron, test).value/test.test.maxActivations[neuron])
   }
 }
 
@@ -51,14 +67,67 @@ data class TopImages(
   }
 }
 
+private const val NUM_TOP_NEURONS = 25
+
+interface TopNeuronsCalcType {
+  operator fun invoke(): List<NeuronWithActivation>
+}
+
+data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation)
+
 data class TopNeurons(
   private val image: DeephyImage,
   private val layer: InterTestLayer,
   val normalized: Boolean
-): DeephysComputeInput<List<InterTestNeuron>>() {
-  override fun timedCompute(): List<InterTestNeuron> = layer.neurons.map { it }.sortedBy {
-	if (normalized) NormalizedActivation(it, image, image.test.await())() else it.activation(image)
-  }.reversed().take(25)
+): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
+  override fun timedCompute(): List<NeuronWithActivation> = layer.neurons.map {
+	if (normalized) NeuronWithActivation(
+	  it, NormalizedActivation(it, image, image.test.await())()
+	) else NeuronWithActivation(it, it.activation(image))
+  }.sortedBy { it.activation.value }.reversed().take(NUM_TOP_NEURONS)
+}
+
+data class TopNeuronsCategory(
+  private val catSelect: CategorySelection,
+  private val layer: InterTestLayer,
+  val normalized: Boolean,
+  val testLoader: TestLoader
+): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
+  override fun timedCompute(): List<NeuronWithActivation> {
+
+
+	return layer.neurons.map {
+
+	  val v = when (catSelect) {
+		is Category          -> {
+		  if (normalized) NormalizedAverageActivation(it, catSelect, testLoader)()
+		  else it.averageActivation(
+			catSelect, testLoader
+		  )
+
+		}
+
+		is CategoryConfusion -> {
+		  if (normalized) NormalizedAverageActivation(
+			it, catSelect.first, testLoader
+		  )() + NormalizedAverageActivation(
+			it, catSelect.second, testLoader
+		  )()
+		  else it.averageActivation(
+			catSelect.first, testLoader
+		  ) + it.averageActivation(
+			catSelect.second, testLoader
+		  )
+		}
+	  }
+
+
+	  NeuronWithActivation(it, v)
+
+	}.sortedBy { it.activation }.reversed().take(NUM_TOP_NEURONS)
+
+
+  }
 }
 
 

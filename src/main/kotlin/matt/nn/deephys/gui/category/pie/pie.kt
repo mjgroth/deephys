@@ -1,23 +1,28 @@
 package matt.nn.deephys.gui.category.pie
 
+import javafx.animation.Interpolator
 import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.effect.Glow
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.ArcType.ROUND
+import javafx.util.Duration
+import matt.fx.graphics.tfx.animation.keyframe
+import matt.fx.graphics.tfx.animation.timeline
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
-import matt.fx.graphics.wrapper.node.onHover
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.deephyTooltip
 import matt.nn.deephys.gui.global.subtitleFont
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
+import matt.nn.deephys.model.data.CategoryConfusion
+import matt.obs.prop.VarProp
 import matt.prim.str.truncateWithElipses
 import kotlin.math.cos
 import kotlin.math.sin
@@ -27,8 +32,15 @@ class CategoryPie(
   cats: List<Category>,
   nums: Map<Category, Int>,
   viewer: DatasetViewer,
-  colorMap: Map<Category,Color>
+  colorMap: Map<Category, Color>,
+  selected: Category? = null
 ): VBoxWrapperImpl<NodeWrapper>() {
+
+  companion object {
+	const val CENTER_X = 150.0
+	const val CENTER_Y = 150.0
+  }
+
   init {
 	alignment = Pos.TOP_CENTER
 	exactWidth = 350.0
@@ -46,9 +58,14 @@ class CategoryPie(
 
 		val arcLength = ratio*360.0
 
-		textflow<NodeWrapper> {
-		  layoutX = 150.0 + 130*cos(-Math.toRadians(nextStart + arcLength/2.0))
-		  layoutY = 150.0 + 130*sin(-Math.toRadians(nextStart + arcLength/2.0))
+		val rads = -Math.toRadians(nextStart + arcLength/2.0)
+		val thetaX = cos(rads)
+		val thetaY = sin(rads)
+
+		val theLabel = textflow<NodeWrapper> {
+
+		  layoutX = CENTER_X + 130*thetaX
+		  layoutY = CENTER_Y + 130*thetaY
 
 		  node.viewOrder = -1.0
 		  val t = deephyLabel(cat.label.truncateWithElipses(20))
@@ -57,36 +74,76 @@ class CategoryPie(
 		  layoutY -= t.font.size
 		}
 
-		+ArcWrapper().apply {
-		  deephyTooltip(cat.label)
-		  centerX = 150.0
-		  centerY = 150.0
-		  radiusX = 100.0
-		  radiusY = 100.0
-		  length = arcLength
+		+CategorySlice(
+		  cat = cat,
+		  viewer = viewer,
+		  color = color,
+		  arcLength = arcLength,
 		  startAngle = nextStart
-		  nextStart += arcLength
-		  fill = color
-		  stroke = color.invert()
-		  node.apply {
-			type = ROUND
-		  }
-		  cursor = Cursor.HAND
-		  strokeWidth = 0.0
-		  onHover {
-			effect = if (it) Glow()
-			else null
-
-			strokeWidth = if (it) 2.0
-			else 0.0
-
-		  }
-		  setOnMouseClicked {
-			viewer.navigateTo(cat)
+		).apply {
+		  highlighted.bind(hoverProperty)
+		  if (cat == selected) {
+			timeline {
+			  keyframe(Duration.millis(500.0)) {
+				keyvalue(theLabel.node.layoutXProperty(), theLabel.layoutX + 25*thetaX, Interpolator.EASE_OUT)
+				keyvalue(theLabel.node.layoutYProperty(), theLabel.layoutY + 25*thetaY, Interpolator.EASE_OUT)
+				keyvalue(node.layoutXProperty(), layoutX + 25*thetaX, Interpolator.EASE_OUT)
+				keyvalue(node.layoutYProperty(), layoutY + 25*thetaY, Interpolator.EASE_OUT)
+			  }
+			}
 		  }
 		}
+		nextStart += arcLength
 
 	  }
 	}
   }
+
+  private class CategorySlice(
+	cat: Category,
+	viewer: DatasetViewer,
+	color: Color,
+	arcLength: Double,
+	startAngle: Double
+  ): ArcWrapper(
+	centerX = CENTER_X,
+	centerY = CENTER_Y,
+	radiusX = 100.0,
+	radiusY = 100.0,
+	startAngle = startAngle,
+	length = arcLength
+  ) {
+	init {
+	  deephyTooltip(cat.label + " (shift-click for Confusion View)")
+	  fill = color
+	  stroke = color.invert()
+	  node.apply {
+		type = ROUND
+	  }
+	  cursor = Cursor.HAND
+	  strokeWidth = 0.0
+	  setOnMouseClicked {
+		if (it.isShiftDown) {
+		  viewer.navigateTo(CategoryConfusion(viewer.categorySelection.value!!.primaryCategory, cat))
+		} else {
+		  viewer.navigateTo(cat)
+		}
+	  }
+
+	}
+
+	val highlighted = VarProp(false).apply {
+	  onChange {
+		effect = if (it) Glow()
+		else null
+
+		strokeWidth = if (it) 2.0
+		else 0.0
+	  }
+	}
+
+
+  }
 }
+
+

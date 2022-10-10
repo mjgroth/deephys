@@ -37,10 +37,13 @@ fun startDeephyApp(t: Stopwatch) = GuiApp(decorated = true) {
   t.toc("got stage title")
   stage.title = myStageTitle
   t.toc("setup stage title")
+
+
+
   stage.node.minWidth = 1000.0
   stage.node.minHeight = 850.0
-  stage.width = 1000.0
-  stage.height = 850.0
+  /*stage.width = 1500.0
+  stage.height = 1000.0*/
 
 
   t.toc("setup main stage")

@@ -8,6 +8,9 @@ import matt.log.profile.tic
 import matt.model.latch.asyncloaded.DaemonLoadedValueOp
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
+import matt.nn.deephys.calc.act.RawActivation
+import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.TestOrLoader
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
@@ -57,8 +60,9 @@ class Test(
   override val name: String,
   override val suffix: String?,
   val images: List<DeephyImage>,
-): DeephyFileObject {
+): DeephyFileObject, TestOrLoader {
 
+  override val test = this
 
   var model: Model? = null
 
@@ -69,8 +73,11 @@ class Test(
 	images.map { it.category }.toSet().toList().sortedBy { it.id }
   }
 
-  fun imagesWithGroundTruth(category: Category) = images.filter { it.category == category }
-  fun imagesWithoutGroundTruth(category: Category) = images.filter { it.category != category }
+
+  private val imagesByCategoryID by lazy { images.groupBy { it.category.id }.mapValues { it.value.toSet() } }
+
+  fun imagesWithGroundTruth(category: Category) = imagesByCategoryID[category.id] ?: setOf()
+  fun imagesWithoutGroundTruth(category: Category) = images - (imagesByCategoryID[category.id] ?: setOf())
 
   val startPreloadingActs = SingleCall {
 	val t = tic("preloading acts")
@@ -123,7 +130,8 @@ class DeephyImage(
   val imageID: Int,
   categoryID: Int,
   category: String,
-  val activations: ModelState
+  val activations: ModelState,
+  val testLoader: TestLoader
 ) {
 
 
@@ -148,12 +156,14 @@ class DeephyImage(
   }
 
   fun activationsFor(rLayer: InterTestLayer): FloatArray = goodActivations[rLayer.index]
-  fun activationFor(neuron: InterTestNeuron) = goodActivations[neuron.layer.index][neuron.index]
+  fun activationFor(neuron: InterTestNeuron) = RawActivation(goodActivations[neuron.layer.index][neuron.index])
 
   val test = LoadedValueSlot<Test>()
   val index = LoadedValueSlot<Int>()
   val model = LoadedValueSlot<Model>()
   val data = LoadedValueSlot<List<List<IntArray>>>()
+
+  val prediction by lazy { test.await().preds.await()[this]!! }
 
 }
 

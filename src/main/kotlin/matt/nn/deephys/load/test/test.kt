@@ -52,10 +52,15 @@ private val dataLoaderDispatcher: ExecutorService = Executors.newCachedThreadPoo
 private val loadJobStartedCount = AtomicInteger()
 private val loadJobFinishedCount = AtomicInteger()
 
+interface TestOrLoader {
+  val test: Test
+}
 
 class TestLoader(
   file: CborFile, val model: Model
-): AsyncLoader(file) {
+): AsyncLoader(file), TestOrLoader {
+
+  override val test get() = awaitFinishedTest()
 
   private var finishedTest: Test? = null
   private val finishedImages = mutableListOf<DeephyImage>()
@@ -217,6 +222,7 @@ class TestLoader(
 				  imageID = imageID,
 				  categoryID = categoryID,
 				  category = category,
+				  testLoader = this@TestLoader,
 				  activations = ModelState().apply {
 					when (activationsThing) {
 					  is List<*> -> activations.putLoadedValue(activationsThing as List<FloatArray>)

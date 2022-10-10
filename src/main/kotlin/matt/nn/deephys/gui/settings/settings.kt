@@ -13,7 +13,7 @@ import matt.log.profile.MemReport
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyLabel
-import matt.nn.deephys.gui.global.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.init.gearImage
 import matt.nn.deephys.state.BoolSetting
 import matt.nn.deephys.state.DeephySettings
@@ -86,7 +86,9 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 
 
 	deephyButton("Print RAM info to console") {
-	  println(MemReport())
+	  setOnAction {
+		println(MemReport())
+	  }
 	}
 
 

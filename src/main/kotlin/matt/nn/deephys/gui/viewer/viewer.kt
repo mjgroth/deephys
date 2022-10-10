@@ -30,13 +30,13 @@ import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephyToggleButton
-import matt.nn.deephys.gui.global.deephyTooltip
 import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.load.asyncLoadSwapper
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
-import matt.nn.deephys.model.data.Category
+import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.DeephyImage
@@ -182,7 +182,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
 
-  val categorySelection = BindableProperty<Category?>(null)
+  val categorySelection = BindableProperty<CategorySelection?>(null)
 
   var currentByImageHScroll: DoubleProperty? = null
 
@@ -220,7 +220,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	t.toc(7)
   }
 
-  fun navigateTo(category: Category) {
+  fun navigateTo(category: CategorySelection) {
 	outerBox.bound.value = null
 	neuronSelection.value = null
 	neuronSelection.value = null
