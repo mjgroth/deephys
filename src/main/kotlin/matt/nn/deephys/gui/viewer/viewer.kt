@@ -20,6 +20,7 @@ import matt.log.profile.stopwatch
 import matt.log.profile.tic
 import matt.log.warn
 import matt.model.tostringbuilder.toStringBuilder
+import matt.nn.deephys.calc.Contents
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.gui.dataset.DatasetNode
 import matt.nn.deephys.gui.dataset.DatasetNodeView
@@ -152,7 +153,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  DeephySettings.normalizeTopNeuronActivations
 	) { im ->
 	  layerSelection.value?.let { lay ->
-		im?.let { TopNeurons(it, lay, DeephySettings.normalizeTopNeuronActivations.value) }
+		im?.let { TopNeurons(Contents(setOf(it)), lay, DeephySettings.normalizeTopNeuronActivations.value) }
 	  }
 	}
   private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {

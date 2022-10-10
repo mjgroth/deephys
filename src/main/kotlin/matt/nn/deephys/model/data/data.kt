@@ -20,18 +20,24 @@ data class InterTestNeuron(
 ) {
   fun activation(image: DeephyImage) = image.activationFor(this)
   fun averageActivation(category: Category, testLoader: TestLoader) = category.averageActivationFor(this, testLoader)
+  fun averageActivation(images: Set<DeephyImage>) = RawActivation(images.map { activation(it).value }.average().toFloat())
 }
+
+
+
 
 @JvmInline value class ImageIndex(val index: Int)
 
 sealed interface CategorySelection {
   val title: String
   val primaryCategory: Category
+  val allCategories: Sequence<Category>
 }
 
 data class Category(val id: Int, val label: String): CategorySelection {
   override val title = label
   override val primaryCategory = this
+  override val allCategories get() = sequence<Category> { yield(this@Category) }
 
 
   fun averageActivationFor(neuron: InterTestNeuron, testLoader: TestOrLoader): RawActivation {
@@ -45,5 +51,6 @@ data class Category(val id: Int, val label: String): CategorySelection {
 data class CategoryConfusion(val first: Category, val second: Category): CategorySelection {
   override val title = "Category Confusion\n\t-${first.label}\n\t-${second.label}"
   override val primaryCategory = first
+  override val allCategories get() = sequence { yield(first); yield(second) }
 }
 

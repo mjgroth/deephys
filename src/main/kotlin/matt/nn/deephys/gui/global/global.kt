@@ -6,6 +6,8 @@ import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.proto.actiontext.actionText
+import matt.fx.control.wrapper.button.radio.RadioButtonWrapper
+import matt.fx.control.wrapper.button.radio.radiobutton
 import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
 import matt.fx.control.wrapper.button.toggle.togglebutton
 import matt.fx.control.wrapper.checkbox.CheckBoxWrapper
@@ -71,6 +73,16 @@ fun NodeWrapper.deephyCheckbox(s: String = "", op: CheckBoxWrapper.()->Unit = {}
 }
 
 fun NodeWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = button(s) {
+  font = DEEPHY_FONT_DEFAULT
+  theOp()
+}
+
+fun <V> NodeWrapper.deephyRadioButton(
+  s: String,
+  group: ToggleGroup,
+  value: V,
+  theOp: RadioButtonWrapper.()->Unit = {}
+) = radiobutton<V>(s, group, value) {
   font = DEEPHY_FONT_DEFAULT
   theOp()
 }

@@ -11,7 +11,7 @@ import matt.fx.graphics.wrapper.textflow.textflow
 import matt.hurricanefx.eye.lib.onChange
 import matt.lang.go
 import matt.nn.deephys.calc.ActivationRatio
-import matt.nn.deephys.calc.NormalizedActivation
+import matt.nn.deephys.calc.NormalizedAverageActivation
 import matt.nn.deephys.calc.TopNeuronsCalcType
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyText
@@ -65,7 +65,7 @@ class NeuronListView(
 				neuron, image, testLoader.awaitFinishedTest()
 			  )() else neuron.activation(image)*/
 			  val blurb =
-				if (normalized) NormalizedActivation.normalizeTopNeuronsBlurb else "raw activation value for the selected image"
+				if (normalized) NormalizedAverageActivation.normalizeTopNeuronsBlurb else "raw activation value for the selected image"
 
 			  deephyText(neuronWithAct.activation.formatted) {
 				deephyTooltip(blurb)

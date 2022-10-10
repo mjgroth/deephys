@@ -1,18 +1,26 @@
 package matt.nn.deephys.state
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import matt.json.custom.bool
 import matt.json.custom.int
 import matt.json.oldfx.jsonObj
+import matt.json.oldfx.toJsonElement
 import matt.json.ser.JsonObjectSerializer
+import matt.lang.delegation.fullProvider
 import matt.lang.go
 import matt.model.message.FileList
 import matt.model.message.SFile
-import matt.nn.deephys.calc.NormalizedActivation.Companion.normalizeTopNeuronsBlurb
+import matt.nn.deephys.calc.NormalizedAverageActivation.Companion.normalizeTopNeuronsBlurb
+import matt.nn.deephys.gui.category.CAT_TOP_NEURONS_TOOLTIP
+import matt.nn.deephys.gui.category.CatTopNeurons
+import matt.nn.deephys.gui.category.CatTopNeurons.FAILED
 import matt.obs.hold.ObservableHolderImpl
 import matt.obs.prop.Var
 import matt.pref.obs.ObsPrefNode
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 object DeephyState: ObsPrefNode(
@@ -49,6 +57,9 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	  jsonObject["verboseLogging"]?.bool?.go {
 		verboseLogging.value = it
 	  }
+	  jsonObject["categoryViewTopNeuronsMode"]?.go {
+		categoryViewTopNeuronsMode.value = Json.decodeFromJsonElement(it)
+	  }
 	}
   }
 
@@ -56,7 +67,8 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	"numImagesPerNeuronInByImage" to value.numImagesPerNeuronInByImage,
 	"normalizeTopNeuronActivations" to value.normalizeTopNeuronActivations,
 	"predictionSigFigs" to value.predictionSigFigs,
-	"verboseLogging" to value.verboseLogging
+	"verboseLogging" to value.verboseLogging,
+	"categoryViewTopNeuronsMode" to value.categoryViewTopNeuronsMode.value.toJsonElement()
   )
 
 }
@@ -69,6 +81,9 @@ sealed class Setting<T>(val prop: Var<T>, val label: String, val tooltip: String
   }
 }
 
+class EnumSetting<E: Enum<E>>(val cls: KClass<E>, prop: Var<E>, label: String, tooltip: String):
+  Setting<E>(prop, label = label, tooltip = tooltip)
+
 class IntSetting(prop: Var<Int>, label: String, tooltip: String, val min: Int, val max: Int):
   Setting<Int>(prop, label = label, tooltip = tooltip)
 
@@ -80,6 +95,16 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
   private val mSettings = mutableListOf<Setting<*>>()
   val settings: List<Setting<*>> = mSettings
 
+  private inline fun <reified E: Enum<E>> enumSettingProv(
+	defaultValue: E,
+	label: String,
+	tooltip: String
+  ) = fullProvider { tr, p ->
+	registeredProp(defaultValue).provideDelegate(this, p).also {
+	  mSettings += EnumSetting(E::class, it.getValue(tr, p), label = label, tooltip = tooltip)
+	}
+  }
+
 
   private inner class BoolSettingProv(
 	private val defaultValue: Boolean,
@@ -89,7 +114,7 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 	operator fun provideDelegate(
 	  thisRef: ObservableHolderImpl,
 	  prop: KProperty<*>,
-	) = RegisteredProp(defaultValue).provideDelegate(thisRef, prop).also {
+	) = registeredProp(defaultValue).provideDelegate(thisRef, prop).also {
 	  mSettings += BoolSetting(it.getValue(thisRef, prop), label = label, tooltip = tooltip)
 	}
   }
@@ -104,15 +129,15 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 	operator fun provideDelegate(
 	  thisRef: ObservableHolderImpl,
 	  prop: KProperty<*>,
-	) = RegisteredProp(defaultValue).provideDelegate(thisRef, prop).also {
+	) = registeredProp(defaultValue).provideDelegate(thisRef, prop).also {
 	  mSettings += IntSetting(it.getValue(thisRef, prop), label = label, tooltip = tooltip, min = min, max = max)
 	}
   }
 
   val numImagesPerNeuronInByImage by IntSettingProv(
 	defaultValue = 9,
-	label = "Number of images per neuron in image view",
-	tooltip = "Number of images per neuron in image view",
+	label = "Number of images per neuron in top neurons row",
+	tooltip = "Number of images per neuron in top neurons row",
 	min = 9,
 	max = 18
   )
@@ -127,6 +152,11 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 	tooltip = "Prediction value significant figures",
 	min = 3,
 	max = 10
+  )
+  val categoryViewTopNeuronsMode by enumSettingProv<CatTopNeurons>(
+	defaultValue = FAILED,
+	label = "Category View Top Neurons",
+	tooltip = CAT_TOP_NEURONS_TOOLTIP
   )
   val verboseLogging by BoolSettingProv(
 	defaultValue = false,
@@ -147,3 +177,4 @@ class BoolSetting(prop: Var<Boolean>, label: String, tooltip: String):
 val DeephySettings by lazy {
   DeephySettingsNode.settings
 }
+

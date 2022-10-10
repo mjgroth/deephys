@@ -1,16 +1,20 @@
 package matt.nn.deephys.gui.category
 
 import javafx.scene.paint.Color
+import kotlinx.serialization.Serializable
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.region.RegionWrapper
+import matt.lang.trip
 import matt.nn.deephys.calc.CategoryAccuracy
 import matt.nn.deephys.calc.CategoryFalseNegativesSorted
 import matt.nn.deephys.calc.CategoryFalsePositivesSorted
-import matt.nn.deephys.calc.TopNeuronsCategory
+import matt.nn.deephys.calc.Contents
+import matt.nn.deephys.calc.TopNeurons
+import matt.nn.deephys.gui.category.CatTopNeurons.FAILED
 import matt.nn.deephys.gui.category.pie.CategoryPie
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
@@ -139,12 +143,42 @@ class CategoryView(
 
 	  }*/
 
-	  swapper(viewer.layerSelection.binding(DeephySettings.normalizeTopNeuronActivations) {
-		it?.to(DeephySettings.normalizeTopNeuronActivations.value)
-	  }, "no top neurons") {
+
+	  /*val toggleGroup = ToggleGroup()
+	  hbox<NW> {
+		deephyText("top neurons for: ")
+		deephyRadioButton("all images", toggleGroup, CatTopNeurons.ALL)
+		deephyRadioButton("failed images", toggleGroup, FAILED)
+		deephyTooltip(DeephySettings.)
+	  }*/
+
+//	  val selectedModeProp = toggleGroup.selectedValueProperty<CatTopNeurons>().toNonNullableProp()
+//	  selectedModeProp.bindBidirectional(DeephySettings.categoryViewTopNeuronsMode)
+
+	  swapper(
+		viewer.layerSelection.binding(
+		  DeephySettings.normalizeTopNeuronActivations, DeephySettings.categoryViewTopNeuronsMode
+		) {
+		  (it?.to(DeephySettings.normalizeTopNeuronActivations.value))?.trip(DeephySettings.categoryViewTopNeuronsMode.value)
+		}, "no top neurons"
+	  ) {
 		NeuronListView(
 		  viewer = viewer,
-		  tops = TopNeuronsCategory(selection, this@swapper.first, this@swapper.second, testLoader),
+		  tops = TopNeurons(
+			when (third) {
+			  CatTopNeurons.ALL -> {
+				Contents(
+				  selection.allCategories.flatMap { testLoader.awaitFinishedTest().imagesWithGroundTruth(it) }.toSet()
+				)
+			  }
+
+			  FAILED            -> {
+				Contents(
+				  (shownFalseNegatives + shownFalsePositives).toSet()
+				)
+			  }
+			}, this@swapper.first, this@swapper.second
+		  ),
 		  normalized = this@swapper.second,
 		  testLoader = testLoader
 		)
@@ -153,3 +187,10 @@ class CategoryView(
   }
 }
 
+
+@Serializable
+enum class CatTopNeurons {
+  ALL, FAILED;
+}
+
+val CAT_TOP_NEURONS_TOOLTIP = "When calculating the top neurons in the Category View, should the images used be all of the images from the selected categories, or just the failed images?"
