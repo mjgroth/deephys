@@ -6,11 +6,14 @@
 Compatible pip package
 version: [0.5.3](https://pypi.org/project/deephy/0.5.3/) ([instructions](https://colab.research.google.com/drive/1HAaVOopHDNVKryP14wW4K_rcqeeqYrLK#scrollTo=VtUgz8xGYKHj))
 
+### Changed Name from "Deephy" to "Deephys". This should affect the Github URLS and all file names too.
+
 [//]: # (### PIP Python Package Updated to 0.5.3)
 
 ### New Features
 
-- Add `erase-settings` command line argument in case there is ever a future issue where a user needs to reset to default settings (
+- Add `erase-settings` command line argument in case there is ever a future issue where a user needs to reset to default
+  settings (
   works the same way as `erase-state`)
 
 [//]: # (### Performance Improvements)
