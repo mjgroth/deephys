@@ -2,6 +2,7 @@ package matt.nn.deephys.init
 
 import javafx.scene.control.ToggleGroup
 import javafx.scene.image.Image
+import kotlinx.serialization.ExperimentalSerializationApi
 import matt.async.thread.daemon
 import matt.file.toMFile
 import matt.fx.graphics.style.DarkModeController
@@ -45,6 +46,7 @@ val gearImage = DaemonLoadedValueOp("gear.png") {
 }
 
 
+@OptIn(ExperimentalSerializationApi::class)
 val modelBinding = DaemonLoadedValueOp(".model binding") {
   DeephyState.model.binding { f ->
 	f?.toMFile()?.loadCbor<Model>()
