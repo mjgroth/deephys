@@ -49,10 +49,13 @@ data class NormalizedActivation(
 //}
 
 
-class Contents<E>(set: Set<E>): Set<E> by set {
+class UniqueContents<E>(set: Set<E>): Set<E> by set {
+
+  constructor(itr: Iterable<E>): this(itr.toSet())
+  constructor(itr: Sequence<E>): this(itr.toSet())
 
   override fun equals(other: Any?): Boolean {
-	return other is Contents<*> && containsAll(other)
+	return other is UniqueContents<*> && containsAll(other)
   }
 
   override fun hashCode(): Int {
@@ -62,7 +65,7 @@ class Contents<E>(set: Set<E>): Set<E> by set {
 
 data class NormalizedAverageActivation(
   private val neuron: InterTestNeuron,
-  private val images: Contents<DeephyImage>,
+  private val images: UniqueContents<DeephyImage>,
 ): DeephysComputeInput<NormalActivation>() {
 
   companion object {
@@ -113,15 +116,18 @@ interface TopNeuronsCalcType {
 data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation)
 
 data class TopNeurons(
-  private val images: Contents<DeephyImage>,
+  private val images: UniqueContents<DeephyImage>,
   private val layer: InterTestLayer,
   val normalized: Boolean
 ): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
-  override fun timedCompute(): List<NeuronWithActivation> = layer.neurons.map {
-	if (normalized) NeuronWithActivation(
-	  it, NormalizedAverageActivation(it, images)()
-	) else NeuronWithActivation(it, it.averageActivation(images))
-  }.sortedBy { it.activation.value }.reversed().take(NUM_TOP_NEURONS)
+  override fun timedCompute(): List<NeuronWithActivation> {
+	if (images.isEmpty()) return listOf()
+	return layer.neurons.map {
+	  if (normalized) NeuronWithActivation(
+		it, NormalizedAverageActivation(it, images)()
+	  ) else NeuronWithActivation(it, it.averageActivation(images))
+	}.sortedBy { it.activation.value }.reversed().take(NUM_TOP_NEURONS)
+  }
 }
 
 //data class TopNeuronsCategory(

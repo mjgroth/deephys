@@ -1,5 +1,6 @@
 package matt.nn.deephys.gui.dataset.byimage
 
+import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
@@ -14,25 +15,57 @@ import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ImageTopPredictions
-import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
+import matt.nn.deephys.calc.UniqueContents
+import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.model.importformat.DeephyImage
 import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
+import matt.obs.math.op.times
 import matt.prim.str.truncateWithElipsesOrAddSpaces
 
 
+class MultipleImagesView(
+  viewer: DatasetViewer,
+  images: List<DeephyImage>,
+  title: String,
+  tooltip: String
+): VBoxWrapperImpl<NW>() {
+  companion object {
+	private const val MAX_IMS = 25
+  }
+
+  init {
+	deephyText("$title (${images.size})").apply {
+	  subtitleFont()
+	  deephyTooltip("$tooltip (first $MAX_IMS)")
+	}
+	+ImageFlowPane(viewer).apply {
+	  prefWrapLengthProperty.bind(viewer.widthProperty*0.4)
+	  images.take(MAX_IMS).forEach {
+		+DeephyImView(it, viewer)
+	  }
+	}
+	neuronListViewSwapper(
+	  viewer = viewer,
+	  contents = UniqueContents(images)
+	)
+  }
+}
+
 class ByImageView(
-  testLoader: TestLoader,
-  viewer: DatasetViewer
+  testLoader: TestLoader, viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	deephyButton("select random image") {
@@ -90,14 +123,11 @@ class ByImageView(
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 	spacer(10.0)
-	swapper(viewer.topNeurons.binding(viewer.imageSelection) { it }, "no top neurons") {
-	  NeuronListView(
-		viewer = viewer,
-		tops = this@swapper,
-		normalized = this.normalized,
-		testLoader = testLoader
-	  )
-	}
+
+	neuronListViewSwapper(
+	  viewer = viewer,
+	  top = viewer.topNeurons
+	)
   }
 }
 

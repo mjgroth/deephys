@@ -7,6 +7,7 @@ import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.file.construct.toMFile
 import matt.file.toSFile
+import matt.fx.graphics.hotkey.hotkeys
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
@@ -29,14 +30,11 @@ import matt.nn.deephys.version.VersionChecker
 
 val stageTitle = LoadedValueSlot<String>()
 
-fun startDeephyApp(t: Stopwatch) = GuiApp(decorated = true) {
+fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 
-  t.toc("starting Deephy App")
 
   val myStageTitle = stageTitle.await()
-  t.toc("got stage title")
   stage.title = myStageTitle
-  t.toc("setup stage title")
 
 
 
@@ -46,18 +44,14 @@ fun startDeephyApp(t: Stopwatch) = GuiApp(decorated = true) {
   stage.height = 1000.0*/
 
 
-  t.toc("setup main stage")
 
   root<VBoxWrapperImpl<NodeWrapper>> {
 
-	t.toc("started root setup")
+
 
 	alignment = TOP_CENTER
 
-	t.toc("setup root align")
-
 	hbox<NodeWrapper> {
-	  t.toc("configuring top hbox")
 	  deephyActionButton("choose model file") {
 		val f = FileChooser().apply {
 		  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
@@ -68,13 +62,16 @@ fun startDeephyApp(t: Stopwatch) = GuiApp(decorated = true) {
 		}
 	  }
 
-	  t.toc("setup choose model file button")
 	  +settingsButton
-	  t.toc("setup settings button")
 
 	}
 
-	t.toc("setup root hbox")
+	hotkeys {
+	  COMMA.meta {
+		settingsButton.fire()
+	  }
+	}
+
 
 	loadSwapper(modelBinding.await(), nullMessage = "Select a .model file to begin") {
 	  val swapT = tic("model swapper", enabled = false)
@@ -118,7 +115,6 @@ fun startDeephyApp(t: Stopwatch) = GuiApp(decorated = true) {
 	  }
 	}
 
-	t.toc("setup root model swapper")
 
 	vbox<NodeWrapper> {
 	  vgrow = ALWAYS
@@ -130,6 +126,5 @@ fun startDeephyApp(t: Stopwatch) = GuiApp(decorated = true) {
 	}
   }
 
-  t.toc("setup root")
 
 }.start(t = t)

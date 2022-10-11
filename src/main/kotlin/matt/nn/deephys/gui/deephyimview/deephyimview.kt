@@ -14,7 +14,9 @@ class DeephyImView(im: DeephyImage, viewer: DatasetViewer): ScaledCanvas() {
   init {
 	todoOnce("combine draw methods for V1 and deephy")
 	draw(im)
+
 	deephyTooltip(im.category.label, im)
+
 	node.hoverProperty().onChange {
 	  if (it) drawBorder()
 	  else draw(im)

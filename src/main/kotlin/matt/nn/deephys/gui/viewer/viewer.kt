@@ -8,6 +8,8 @@ import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
 import matt.file.CborFile
+import matt.fx.control.inter.contentDisplay
+import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.button.button
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
@@ -20,8 +22,8 @@ import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
 import matt.model.tostringbuilder.toStringBuilder
-import matt.nn.deephys.calc.Contents
 import matt.nn.deephys.calc.TopNeurons
+import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.dataset.DatasetNode
 import matt.nn.deephys.gui.dataset.DatasetNodeView
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
@@ -153,7 +155,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  DeephySettings.normalizeTopNeuronActivations
 	) { im ->
 	  layerSelection.value?.let { lay ->
-		im?.let { TopNeurons(Contents(setOf(it)), lay, DeephySettings.normalizeTopNeuronActivations.value) }
+		im?.let { TopNeurons(UniqueContents(setOf(it)), lay, DeephySettings.normalizeTopNeuronActivations.value) }
 	  }
 	}
   private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
