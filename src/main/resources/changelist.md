@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephy/releases -->
 
-[//]: # (VERSION:1.21.0)
+[//]: # (VERSION:1.21.1)
 
 
 Compatible pip package
@@ -8,11 +8,10 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
 
 [//]: # (### PIP Python Package Updated to 0.5.4)
 
-### New Features
+[//]: # (### New Features)
 
-- Added option to switch between ALL images or FAILED images for calculation to find top neurons in category view
-
-[//]: # (### Performance Improvements)
+### Performance Improvements
+- Made more javafx properties lazy
 
 [//]: # (### Cosmetic Changes)
 
