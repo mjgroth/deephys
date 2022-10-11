@@ -23,6 +23,11 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
 ### Performance Improvements
 
 - Made more javafx properties lazy
+- Decreased Xmx to 8GB. Effects for those 8GB RAM will be:
+  - generally faster performance as long as less than 8GB is needed from app
+  - less RAM usage
+  - more GC events. Maybe intermittent slowdowns
+  - much greater change of OOM errors. Though, this will help identify memory leaks
 
 [//]: # (### Cosmetic Changes)
 
