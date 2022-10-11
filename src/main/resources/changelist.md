@@ -16,7 +16,8 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
 [//]: # (### Cosmetic Changes)
 
 
-[//]: # (### Bug Fixes)
+### Bug Fixes
+- Fixed getWrapper bug for ScrollPane
 
 [//]: # (### Notes)
 
