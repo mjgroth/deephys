@@ -16,7 +16,7 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.hurricanefx.eye.prop.objectBindingN
 import matt.lang.go
-import matt.log.profile.stopwatch
+import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
 import matt.model.tostringbuilder.toStringBuilder
