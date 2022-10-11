@@ -13,7 +13,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.gui.app.GuiApp
 import matt.lang.go
-import matt.log.profile.Stopwatch
+import matt.log.profile.stopwatch.Stopwatch
 import matt.log.profile.tic
 import matt.log.tab
 import matt.model.latch.asyncloaded.LoadedValueSlot
