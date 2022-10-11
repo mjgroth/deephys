@@ -9,7 +9,7 @@ import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.lang.resourceStream
-import matt.log.profile.tic
+import matt.log.profile.stopwatch.tic
 import matt.model.latch.asyncloaded.DaemonLoadedValueOp
 import matt.nn.deephys.gui.global.DeephyText
 import matt.nn.deephys.gui.global.deephyButton

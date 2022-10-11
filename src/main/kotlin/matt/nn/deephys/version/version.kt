@@ -10,7 +10,7 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.kjlib.git.hub.GitHub
-import matt.log.warn
+import matt.log.warn.warn
 import matt.model.release.Release
 import matt.model.release.Version
 import matt.nn.deephys.gui.global.deephyHyperlink

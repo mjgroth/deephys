@@ -4,7 +4,7 @@ import matt.async.thread.daemon
 import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.gui.app.warmup.warmupJvmThreading
-import matt.log.profile.tic
+import matt.log.profile.stopwatch.tic
 import matt.nn.deephys.gui.stageTitle
 import matt.nn.deephys.gui.startDeephyApp
 import matt.nn.deephys.init.initializeWhatICan

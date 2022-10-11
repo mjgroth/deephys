@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import matt.async.thread.daemon
 import matt.collect.map.lazyMap
 import matt.fx.graphics.wrapper.style.FXColor
-import matt.log.profile.tic
+import matt.log.profile.stopwatch.tic
 import matt.model.latch.asyncloaded.DaemonLoadedValueOp
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
