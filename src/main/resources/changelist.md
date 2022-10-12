@@ -4,7 +4,7 @@
 
 
 Compatible pip package
-version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https://colab.research.google.com/drive/1HAaVOopHDNVKryP14wW4K_rcqeeqYrLK#scrollTo=VtUgz8xGYKHj))
+version: [0.6.0](https://pypi.org/project/deephys/0.5.4/) ([instructions](https://colab.research.google.com/drive/1aR5lnpVMxda7wUj1RZ6YODX5N2FA8YRn))
 
 ### PIP Python Package Updated to 0.6.0
 - Added `features` property to ImageFile
@@ -25,12 +25,12 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
 ### Performance Improvements
 
 - Made more javafx properties lazy
-- Decreased Xmx to 6GB. Effects for those 6GB RAM will be:
-    - generally faster performance as long as less than 8GB is needed from app
-    - less RAM usage
+- Decreased Xmx (max RAM) to 6GB. This will have many effects:
+    - possibly faster performance as long as less than 6GB is needed from app
+    - less system RAM usage
     - more GC events. Maybe intermittent slowdowns
     - much greater chance of OOM errors. Though, this will help identify memory leaks
-- Started addressed memory issues (decreasing RAM usage and heap reference map complexity) by:
+- Started addressing memory issues (decreasing RAM usage and heap reference map complexity) by:
     - Converting properties from a strong to a weak/soft reference
     - disposing of properties manually when done
     - Reduced number of stored objects/properties
@@ -39,6 +39,7 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
 - Implemented a new image and activation data caching system, alongside renewable weak references to the cached pixel
   and activation values
     - The second progress bar indicates the progress of caching the pixel data for the dataset
+    - The third progress bar indicates the progress of caching the activation data for the dataset
 - Throttle test loader to help prevent OOM errors
 
 ### Cosmetic Changes
