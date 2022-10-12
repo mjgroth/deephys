@@ -34,7 +34,8 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
     - Reduced number of stored objects/properties
     - More lazy properties
     - etc
-- Implemented a brand new image data caching system, alongside renewable weak references to the cached pixel values
+- Implemented a new image data caching system, alongside renewable weak references to the cached pixel values
+  - The second progress bar indicates the progress of caching the pixel data for the dataset
 
 [//]: # (### Cosmetic Changes)
 

@@ -2,9 +2,9 @@ package matt.nn.deephys.model.data
 
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.test.TestLoader
-import matt.nn.deephys.load.test.TestOrLoader
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.TestOrLoader
 
 
 data class InterTestLayer(

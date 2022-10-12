@@ -12,7 +12,6 @@ import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.test.TestLoader
-import matt.nn.deephys.load.test.TestOrLoader
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
@@ -55,6 +54,9 @@ sealed interface DeephyFileObject {
 
 @Serializable class Neuron
 
+interface TestOrLoader {
+  val test: Test
+}
 
 /*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
 class Test(
