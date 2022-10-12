@@ -4,8 +4,8 @@ import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
-import matt.fx.graphics.wrapper.node.line.LineWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.line.LineWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
@@ -62,8 +62,9 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 
   init {
 	prefHeight = PREF_HEIGHT
-	val diagramHeightProp = BindableProperty<Double>(DIAGRAM_HEIGHT)
-	val diagramTopProp = BindableProperty<Double>(DIAGRAM_TOP)
+	prefWidth = Double.MAX_VALUE
+	val diagramHeightProp = BindableProperty(DIAGRAM_HEIGHT)
+	val diagramTopProp = BindableProperty(DIAGRAM_TOP)
 	val diagramWidthProp = widthProperty*DIAGRAM_RATIO
 	val diagramLeftProp = widthProperty*MARGIN_RATIO
 
@@ -86,12 +87,15 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 	}
 
 
-	val spacePerLayer = model.layers.size.toDouble()/totalSpaceForAllLayers
+	val spacePerLayer = totalSpaceForAllLayers/model.layers.size.toDouble()
 
 	circles = model.resolvedLayers.flatMapIndexed { layIndex, lay ->
 
-	  val spacePerNeuron = lay.neurons.size.toDouble()/totalSpaceForOneLayer
+
+	  val spacePerNeuron = totalSpaceForOneLayer/lay.neurons.size.toDouble()
+
 	  val radius = min(spacePerNeuron*0.25, spacePerLayer*0.25)
+
 
 	  val layerCenter = modelStart + spacePerLayer*layIndex.toDouble() + spacePerLayer/2.0
 
@@ -108,7 +112,9 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 
 	  lay.neurons.mapIndexed { neuronIndex, neuron ->
 
+
 		val neuronCenter = layerStart + spacePerNeuron*neuronIndex.toDouble() + spacePerNeuron/2.0
+
 
 		val xProp = when (ORIENTATION) {
 		  VERTICAL   -> neuronCenter

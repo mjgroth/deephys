@@ -11,8 +11,8 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.textflow
+import matt.lang.go
 import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.calc.UniqueContents
@@ -92,7 +92,10 @@ class ByImageView(
 		  }
 		  spacer()
 
-		  text("predictions:")
+		  deephyText("predictions:") {
+			subtitleFont()
+		  }
+		  spacer(10.0)
 		  val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
 		  val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
 		  hbox<PaneWrapper<*>> {
@@ -118,6 +121,27 @@ class ByImageView(
 			}
 		  }
 		}
+		spacer()
+		img.features?.takeIf { it.isNotEmpty() }?.go {
+		  vbox<NodeWrapper> {
+			deephyText("Features:") {
+			  subtitleFont()
+			}
+			spacer()
+			val featureKeysBox: NodeWrapper = vbox<TextWrapper> {}
+			val featureValuesBox: NodeWrapper = vbox<TextWrapper> {}
+			hbox<PaneWrapper<*>> {
+			  +featureKeysBox
+			  spacer()
+			  +featureValuesBox
+			}
+			it.forEach { k, v ->
+			  featureKeysBox.deephyText(k.truncateWithElipsesOrAddSpaces(25))
+			  featureValuesBox.deephyText(v)
+			}
+		  }
+		}
+
 	  }
 	}.apply {
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)

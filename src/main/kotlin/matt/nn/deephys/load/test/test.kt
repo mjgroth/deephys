@@ -1,7 +1,6 @@
 package matt.nn.deephys.load.test
 
 
-
 import matt.async.pool.DaemonPool
 import matt.async.thread.daemon
 import matt.cbor.err.CborParseException
@@ -100,10 +99,10 @@ class TestLoader(
   private val numRead = AtomicInteger(0)
 
   val start = SingleCall {
-/*	matt.async.schedule.every(1.seconds) {
-	  MemReport().println()
-	  println(daemonPool.info())
-	}*/
+	/*	matt.async.schedule.every(1.seconds) {
+		  MemReport().println()
+		  println(daemonPool.info())
+		}*/
 	daemon {
 	  if (!file.exists()) {
 		signalFileNotFound()
@@ -146,6 +145,11 @@ class TestLoader(
 				  }
 				} else readNBytes(numDataBytes!!)
 
+				var features: Map<String, String>? = null
+				if (count.toInt() == 6) {
+				  features = nextValue(requireKeyIs = "features")
+				}
+
 				val activationsBytes: ByteArray = nextValueManual<MapReader, ByteArray>(
 				  requireKeyIs = "activations"
 				) {
@@ -162,6 +166,9 @@ class TestLoader(
 				  } else readNBytes(numActivationBytes!!)
 				}
 
+
+
+
 				if (numRead.incrementAndGet()%1000 == 0) {
 				  val free = ByteSize(RUNTIME.freeMemory())
 				  if (free < 100.megabytes) {
@@ -176,7 +183,7 @@ class TestLoader(
 				val deephyImage = DeephyImage(
 				  imageID = imageID, categoryID = categoryID, category = category,
 				  index = finishedImages.size, testLoader = this@TestLoader, model = this@TestLoader.model,
-				  test = finishedTest, activations = state
+				  test = finishedTest, activations = state, features = features
 				).apply {
 
 				  val im = this

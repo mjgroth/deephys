@@ -78,6 +78,7 @@ fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 	  swapT.toc(0)
 	  val model = this@loadSwapper
 	  VBoxWrapperImpl<NodeWrapper>().apply {
+
 		swapT.toc(1)
 		deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
 		swapT.toc(2)
@@ -89,7 +90,10 @@ fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 
 		val maxNeurons = 50
 		val vis = if (model.layers.all { it.neurons.size <= maxNeurons }) {
-		  ModelVisualizer(model).also { +it }
+		  ModelVisualizer(model).also {
+			+it
+			it.blue()
+		  }
 		} else {
 		  deephyText("model is too large to visualize (>$maxNeurons in a layer)")
 		  null

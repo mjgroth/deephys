@@ -140,7 +140,8 @@ class DeephyImage(
   val testLoader: TestLoader,
   val index: Int,
   val model: Model,
-  val test: LoadedValueSlot<Test>
+  val test: LoadedValueSlot<Test>,
+  val features: Map<String, String>?
 ) {
 
 

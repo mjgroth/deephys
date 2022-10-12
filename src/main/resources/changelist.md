@@ -7,7 +7,7 @@ Compatible pip package
 version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https://colab.research.google.com/drive/1HAaVOopHDNVKryP14wW4K_rcqeeqYrLK#scrollTo=VtUgz8xGYKHj))
 
 ### PIP Python Package Updated to 0.6.0
-- Added `Features` property to ImageFile
+- Added `features` property to ImageFile
 
 ### New Features
 
@@ -20,6 +20,7 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
     - they are transparent to mouse events
     - they are moved further away from the mouse
     - They automatically adjust their position if they would be off screen
+- Can now parse cbor files with `features` in `ImageFile` and display those features in the ByImage view
 
 ### Performance Improvements
 
@@ -40,7 +41,9 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
     - The second progress bar indicates the progress of caching the pixel data for the dataset
 - Throttle test loader to help prevent OOM errors
 
-[//]: # (### Cosmetic Changes)
+### Cosmetic Changes
+- Used proper style for "predictions" text
+- Improved layout of ByImage view
 
 ### Bug Fixes
 
@@ -49,6 +52,8 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
   label is huge
 - Take at most 25 categories for the category pie chart so in a case where there are many categories that are confused
   the pie chart isn't overwhelmed
+- Fix model visualizer layout bug
+- Removed neurons with NaN activations
 
 [//]: # (### Notes)
 

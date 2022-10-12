@@ -92,9 +92,7 @@ data class NormalizedAverageActivation(
 
 
 data class TopImages(
-  private val neuron: InterTestNeuron,
-  private val test: TestLoader,
-  private val num: Int
+  private val neuron: InterTestNeuron, private val test: TestLoader, private val num: Int
 ): DeephysComputeInput<List<ImageIndex>>() {
   override fun timedCompute(): List<ImageIndex> = run {
 	val theTest = test.awaitFinishedTest()
@@ -116,9 +114,7 @@ interface TopNeuronsCalcType {
 data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation)
 
 data class TopNeurons(
-  private val images: UniqueContents<DeephyImage>,
-  private val layer: InterTestLayer,
-  val normalized: Boolean
+  private val images: UniqueContents<DeephyImage>, private val layer: InterTestLayer, val normalized: Boolean
 ): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
   override fun timedCompute(): List<NeuronWithActivation> {
 	if (images.isEmpty()) return listOf()
@@ -126,7 +122,7 @@ data class TopNeurons(
 	  if (normalized) NeuronWithActivation(
 		it, NormalizedAverageActivation(it, images)()
 	  ) else NeuronWithActivation(it, it.averageActivation(images))
-	}.sortedBy { it.activation.value }.reversed().take(NUM_TOP_NEURONS)
+	}.filterNot { it.activation.value.isNaN() }.sortedBy { it.activation.value }.reversed().take(NUM_TOP_NEURONS)
   }
 }
 
@@ -175,9 +171,7 @@ data class TopNeurons(
 
 
 class ActivationRatio(
-  private val numTest: TestLoader,
-  private val denomTest: TestLoader,
-  private val neuron: InterTestNeuron
+  private val numTest: TestLoader, private val denomTest: TestLoader, private val neuron: InterTestNeuron
 ): DeephysComputeInput<Float>() {
 
   companion object {
@@ -199,8 +193,7 @@ class ActivationRatio(
 }
 
 class ImageSoftMaxDenom(
-  private val image: DeephyImage,
-  private val testLoader: TestLoader
+  private val image: DeephyImage, private val testLoader: TestLoader
 ): DeephysComputeInput<Float>() {
   override fun timedCompute(): Float {
 	val clsLay = testLoader.model.classificationLayer
@@ -210,8 +203,7 @@ class ImageSoftMaxDenom(
 }
 
 class ImageTopPredictions(
-  private val image: DeephyImage,
-  private val testLoader: TestLoader
+  private val image: DeephyImage, private val testLoader: TestLoader
 ): DeephysComputeInput<List<Pair<Category, Float>>>() {
   override fun timedCompute(): List<Pair<Category, Float>> {
 	val clsLay = testLoader.model.classificationLayer
@@ -220,8 +212,7 @@ class ImageTopPredictions(
 	return preds.withIndex().sortedBy { it.value }.reversed().take(5).map { thePred ->
 	  val exactPred = (exp(thePred.value)/softMaxDenom)
 	  val theCategory = testLoader.category(thePred.index)
-	  theCategory to exactPred
-	  /* val predClassNameString = theCategory.let {
+	  theCategory to exactPred    /* val predClassNameString = theCategory.let {
 		 if (", texture :" in it.label) {
 		   it.label.substringBefore(",")
 		 } else it.label
@@ -231,32 +222,23 @@ class ImageTopPredictions(
 }
 
 data class CategoryAccuracy(
-  private val category: Category,
-  private val testLoader: TestLoader
+  private val category: Category, private val testLoader: TestLoader
 ): DeephysComputeInput<Double>() {
-  override fun timedCompute() = testLoader
-	.awaitFinishedTest()
-	.imagesWithGroundTruth(category)
-	.map {
-	  if (testLoader.awaitFinishedTest().preds.await()[it] == category) 1.0 else 0.0
-	  /*if (ImageTopPredictions(it, testLoader)().first().first == category) 1.0 else 0.0*/
-	}.let { it.sum()/it.size }
+  override fun timedCompute() = testLoader.awaitFinishedTest().imagesWithGroundTruth(category).map {
+	if (testLoader.awaitFinishedTest().preds.await()[it] == category) 1.0 else 0.0    /*if (ImageTopPredictions(it, testLoader)().first().first == category) 1.0 else 0.0*/
+  }.let { it.sum()/it.size }
 }
 
 data class CategoryFalsePositivesSorted(
-  private val category: Category,
-  private val testLoader: TestLoader
+  private val category: Category, private val testLoader: TestLoader
 ): DeephysComputeInput<List<DeephyImage>>() {
   companion object {
 	const val blurb =
 	  "false positives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute(): List<DeephyImage> = testLoader
-	.awaitFinishedTest()
-	.imagesWithoutGroundTruth(category)
-	.map {
-	  /*it to ImageTopPredictions(it, testLoader)().first()*/
+  override fun timedCompute(): List<DeephyImage> = testLoader.awaitFinishedTest().imagesWithoutGroundTruth(category)
+	.map {    /*it to ImageTopPredictions(it, testLoader)().first()*/
 	  it to testLoader.awaitFinishedTest().preds.await()[it]
 	}.filter {
 	  it.second/*.first*/ == category
@@ -270,26 +252,21 @@ data class CategoryFalsePositivesSorted(
 }
 
 data class CategoryFalseNegativesSorted(
-  private val category: Category,
-  private val testLoader: TestLoader
+  private val category: Category, private val testLoader: TestLoader
 ): DeephysComputeInput<List<DeephyImage>>() {
   companion object {
 	const val blurb =
 	  "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute(): List<DeephyImage> = testLoader
-	.awaitFinishedTest()
-	.imagesWithGroundTruth(category)
-	.map {
-	  /*it to ImageTopPredictions(it, testLoader)().first()*/
+  override fun timedCompute(): List<DeephyImage> = testLoader.awaitFinishedTest().imagesWithGroundTruth(category)
+	.map {    /*it to ImageTopPredictions(it, testLoader)().first()*/
 	  it to testLoader.awaitFinishedTest().preds.await()[it]
 	}.filter {
 	  it.second/*.first*/ != category
 	}.map {
 	  it.first to ImageTopPredictions(it.first, testLoader)().first()
-	}
-	.sortedBy {
+	}.sortedBy {
 	  it.second.second
 	}.reversed().map {
 	  it.first
