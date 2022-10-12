@@ -17,7 +17,6 @@ import matt.fx.graphics.style.backgroundColor
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.hurricanefx.eye.prop.objectBindingN
-import matt.lang.go
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
@@ -46,11 +45,13 @@ import matt.nn.deephys.model.importformat.DeephyImage
 import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
+import matt.obs.bind.deepBinding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
 import matt.obs.col.olist.basicMutableObservableListOf
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.VarProp
+import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
 import matt.obs.prop.withUpdatesFromWhen
@@ -76,6 +77,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	val t = tic(prefix = "dataBinding2", enabled = false)
 	t.toc("start")
 	f?.run {
+
 	  val loader = TestLoader(f, model)
 	  t.toc("got loader")
 	  loader.start()
@@ -316,15 +318,24 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		titleFont()
 	  }
 	  progressbar {
-		visibleAndManagedProp.bind(progressProperty.neq(1.0))
-		this@DatasetViewer.testData.value?.progress?.let {
-		  progressProperty.bind(it)
-		}
-		this@DatasetViewer.testData.onChange {
-		  it?.progress?.go {
-			progressProperty.bind(it)
-		  }
-		}
+		/*visibleAndManagedProp.bind(progressProperty.neq(1.0))*/
+		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
+		  it?.progress ?: 0.0.toVarProp()
+		})
+		/*	this@DatasetViewer.testData.value?.progress?.let {
+			  progressProperty.bind(it)
+			}
+			this@DatasetViewer.testData.onChange {
+			  it?.progress?.go {
+				progressProperty.bind(it)
+			  }
+			}*/
+	  }
+	  progressbar {
+		style = "-fx-accent: green"
+		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
+		  it?.cacheProgress ?: 0.0.toVarProp()
+		})
 	  }
 	}
 	this@DatasetViewer.initStopwatch.toc(9)

@@ -13,7 +13,7 @@ import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.category.pie.CategoryPie
 import matt.nn.deephys.gui.dataset.byimage.MultipleImagesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -29,13 +29,13 @@ class CategoryView(
   init {
 
 
-	deephyText(
+	deephyLabel(
 	  selection.title.addNewLinesUntilNumLinesIs(3) /*so switching to confusion title with 3 lines isn't as jarring*/
 	).titleBoldFont()
 	vbox<NodeWrapper> {
 
 	  when (selection) {
-		is Category          -> deephyText(
+		is Category          -> deephyLabel(
 		  "Accuracy: ${
 			CategoryAccuracy(
 			  selection, testLoader
@@ -44,10 +44,10 @@ class CategoryView(
 		)
 
 		is CategoryConfusion -> {
-		  deephyText(
+		  deephyLabel(
 			"Accuracy of ${selection.first.label}: ${CategoryAccuracy(selection.first, testLoader)()}"
 		  )
-		  deephyText(
+		  deephyLabel(
 			"Accuracy of ${selection.second.label}: ${CategoryAccuracy(selection.second, testLoader)()}"
 		  )
 		}
@@ -119,7 +119,7 @@ class CategoryView(
 		is Category          -> "top neurons according to their average activation for ${selection.label}"
 		is CategoryConfusion -> "top neurons according to their average activation for ${selection.first} and ${selection.second}"
 	  }
-	  deephyText(topNeuronsLabel) {
+	  deephyLabel(topNeuronsLabel) {
 		subtitleFont()
 	  }
 	  neuronListViewSwapper(

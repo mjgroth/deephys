@@ -3,7 +3,7 @@ package matt.nn.deephys.load.async
 import javafx.application.Platform.runLater
 import matt.cbor.err.CborParseException
 import matt.file.CborFile
-import matt.model.latch.SimpleLatch
+import matt.model.await.Awaitable
 import matt.obs.bindings.bool.ObsB
 import matt.obs.prop.BindableProperty
 
@@ -12,7 +12,7 @@ abstract class AsyncLoader(file: CborFile) {
   val streamOk: ObsB = BindableProperty(true)
   val parseError = BindableProperty<CborParseException?>(null)
   val finishedLoading: ObsB = BindableProperty(false)
-  protected val finishedLoadingLatch = SimpleLatch()
+  abstract val finishedLoadingAwaitable: Awaitable<*>
 
   protected fun signalFileNotFound() {
 	runLater {
@@ -34,7 +34,7 @@ abstract class AsyncLoader(file: CborFile) {
   }
 
   protected fun signalFinishedLoading() {
-	finishedLoadingLatch.open()
+	/*finishedLoadingLatch.open()*/
 	runLater {
 	  (finishedLoading as BindableProperty).value = true
 	}

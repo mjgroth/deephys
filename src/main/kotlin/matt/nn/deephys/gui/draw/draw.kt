@@ -4,10 +4,11 @@ import matt.fx.graphics.wrapper.canvas.Canv
 import matt.nn.deephys.model.importformat.DeephyImage
 
 fun Canv.draw(image: DeephyImage) {
-  pixelWidth = image.matrix[0].size.toDouble()
-  pixelHeight = image.matrix.size.toDouble()
+  val mat = image.matrix
+  pixelWidth = mat.size.toDouble()
+  pixelHeight = mat.size.toDouble()
   val pw = graphicsContext.pixelWriter
-  image.matrix.forEachIndexed { y, row ->
+  mat.forEachIndexed { y, row ->
 	row.forEachIndexed { x, pix ->
 	  /* val r = pix[0]
 	   val g = pix[1]

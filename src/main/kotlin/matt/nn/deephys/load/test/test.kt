@@ -1,4 +1,3 @@
-
 package matt.nn.deephys.load.test
 
 import matt.async.thread.daemon
@@ -16,6 +15,7 @@ import matt.model.errreport.ThrowReport
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.load.async.AsyncLoader
+import matt.nn.deephys.load.cache.PixelCacher
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.importformat.DeephyImage
 import matt.nn.deephys.model.importformat.Model
@@ -63,8 +63,13 @@ class TestLoader(
 
   override val test get() = awaitFinishedTest()
 
-  private var finishedTest: Test? = null
+
+  private var finishedTest = LoadedValueSlot<Test>()
   private val finishedImages = mutableListOf<DeephyImage>()
+  override val finishedLoadingAwaitable = finishedTest
+
+
+  private val pixelCacher = PixelCacher()
 
 
   fun awaitNonUniformRandomImage(): DeephyImage {
@@ -90,13 +95,17 @@ class TestLoader(
   }
 
   fun awaitFinishedTest(): Test {
-	finishedLoadingLatch.await()
-	return finishedTest!!
+	/*finishedLoadingLatch.await()*/
+	return finishedTest.await()
   }
 
   val numImages = LoadedValueSlot<ULong>()
 
   val progress by lazy {
+	BindableProperty(0.0)
+  }
+
+  val cacheProgress by lazy {
 	BindableProperty(0.0)
   }
 
@@ -223,7 +232,10 @@ class TestLoader(
 				  imageID = imageID,
 				  categoryID = categoryID,
 				  category = category,
+				  index = finishedImages.size,
 				  testLoader = this@TestLoader,
+				  model = this@TestLoader.model,
+				  test = finishedTest,
 				  activations = ModelState().apply {
 					when (activationsThing) {
 					  is List<*> -> activations.putLoadedValue(activationsThing as List<FloatArray>)
@@ -247,8 +259,6 @@ class TestLoader(
 					}
 				  }
 				).apply {
-				  model.putLoadedValue(this@TestLoader.model)
-				  index.putLoadedValue(finishedImages.size)
 				  when (imageData) {
 					is List<*> -> data.putLoadedValue(imageData as List<List<IntArray>>)
 					else       -> {
@@ -291,22 +301,35 @@ class TestLoader(
 
 			  }
 			}
+
+
+
 			t.toc(10)
-			finishedTest = Test(
+			finishedTest.putLoadedValue(Test(
 			  name = name, suffix = suffix, images = finishedImages
 			).apply {
 			  model = this@TestLoader.model
 			  daemon {
 				startPreloadingActs()
 			  }
-			}
+			})
 			t.toc(11)
-			finishedImages.forEach {
+			/*finishedImages.forEach {
 			  it.test.putLoadedValue(finishedTest!!)
-			}
+			}*/
 			t.toc(12)
 			signalFinishedLoading()
 			t.toc(13)
+
+
+			stream.close()
+
+			val siz = finishedImages.size
+			finishedImages.forEachIndexed { index, im ->
+			  pixelCacher.cache(im)
+			  cacheProgress.value = (index + 1.0)/siz
+			}
+
 		  }
 		} catch (e: CborParseException) {
 		  signalParseError(e)

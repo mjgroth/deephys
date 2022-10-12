@@ -39,6 +39,7 @@ class CategoryPie(
   companion object {
 	const val CENTER_X = 150.0
 	const val CENTER_Y = 150.0
+	const val MAX_SLICES = 25
   }
 
   init {
@@ -46,13 +47,14 @@ class CategoryPie(
 	exactWidth = 350.0
 	deephyText(title) {
 	  subtitleFont()
+	  deephyTooltip("only shows at most ${MAX_SLICES} slices")
 	}
 	val total = nums.values.sum().toDouble()
 	+PaneWrapperImpl<Pane, NodeWrapper>(Pane()).apply {
 	  exactWidth = 300.0
 	  exactHeight = 300.0
 	  var nextStart = 0.0
-	  cats.filter { nums[it]!! > 0 }.mapIndexed { _, cat ->
+	  cats.filter { nums[it]!! > 0 }.sortedBy { nums[it] }.take(MAX_SLICES).mapIndexed { _, cat ->
 		val ratio = nums[cat]!!/total
 		val color = colorMap[cat]!!
 

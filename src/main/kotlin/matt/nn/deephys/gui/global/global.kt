@@ -21,6 +21,7 @@ import matt.fx.control.wrapper.link.hyperlink
 import matt.fx.graphics.font.fixed
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
+import matt.fx.graphics.wrapper.text.textlike.TextLike
 import matt.obs.bindings.str.ObsS
 import matt.obs.prop.BindableProperty
 
@@ -37,15 +38,15 @@ class DeephyText(s: ObsS): TextWrapper() {
   }
 }
 
-fun TextWrapper.subtitleFont() {
+fun TextLike.subtitleFont() {
   font = DEEPHY_FONT_SUBTITLE
 }
 
-fun TextWrapper.titleFont() {
+fun TextLike.titleFont() {
   font = DEEPHY_FONT_TITLE
 }
 
-fun TextWrapper.titleBoldFont() {
+fun TextLike.titleBoldFont() {
   font = DEEPHY_FONT_TITLE_BOLD
 }
 

@@ -11,29 +11,38 @@ version: [0.5.4](https://pypi.org/project/deephys/0.5.4/) ([instructions](https:
 ### New Features
 
 - Category View Improvements
-  - Removed setting for choosing where top neurons come from in category view
-  - instead show top neurons for all 3 choices: ALL (on the bottom), FP, and FN
-  - Added text to explain what top neurons on bottom mean
+    - Removed setting for choosing where top neurons come from in category view
+    - instead show top neurons for all 3 choices: ALL (on the bottom), FP, and FN
+    - Added text to explain what top neurons on bottom mean
 - Tooltip improvements
-  - they no longer auto hide. They can be hidden with the escape key
-  - they are transparent to mouse events
-  - they are moved further away from the mouse
-  - They automatically adjust their position if they would be off screen
+    - they no longer auto hide. They can be hidden with the escape key
+    - they are transparent to mouse events
+    - they are moved further away from the mouse
+    - They automatically adjust their position if they would be off screen
 
 ### Performance Improvements
 
 - Made more javafx properties lazy
 - Decreased Xmx to 8GB. Effects for those 8GB RAM will be:
-  - generally faster performance as long as less than 8GB is needed from app
-  - less RAM usage
-  - more GC events. Maybe intermittent slowdowns
-  - much greater change of OOM errors. Though, this will help identify memory leaks
+    - generally faster performance as long as less than 8GB is needed from app
+    - less RAM usage
+    - more GC events. Maybe intermittent slowdowns
+    - much greater change of OOM errors. Though, this will help identify memory leaks
+- Started addressed memory issues (decreasing RAM usage and heap reference map complexity) by:
+    - Converting properties from a strong to a weak/soft reference
+    - disposing of properties manually when done
+    - Reduced number of stored objects/properties
+    - More lazy properties
+    - etc
+- Implemented a brand new image data caching system, alongside renewable weak references to the cached pixel values
 
 [//]: # (### Cosmetic Changes)
 
 ### Bug Fixes
 
 - Fixed getWrapper bug for ScrollPane
+- Changed text nodes to labels (which auto-truncate to fit space) in category view to avoid layout issues when category label is huge 
+- Take at most 25 categories for the category pie chart so in a case where there are many categories that are confused the pie chart isn't overwhelmed
 
 [//]: # (### Notes)
 

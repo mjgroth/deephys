@@ -10,7 +10,10 @@ class ByNeuronView(
   testLoader: TestLoader, viewer: DatasetViewer
 ): Swapper<ResolvedLayer?, LayerView>() {
   init {
-	setupSwapping(viewer.layerSelectionResolved, nullMessage = "select a layer") {
+	setupSwapping(
+	  viewer.layerSelectionResolved,
+	  nullMessage = "select a layer"
+	) {
 	  println("making LayerView")
 	  LayerView(this, testLoader, viewer)
 	}

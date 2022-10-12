@@ -4,8 +4,10 @@ import kotlinx.serialization.Serializable
 import matt.async.thread.daemon
 import matt.collect.map.lazyMap
 import matt.fx.graphics.wrapper.style.FXColor
+import matt.lang.weak.lazyWeak
 import matt.log.profile.stopwatch.tic
 import matt.model.latch.asyncloaded.DaemonLoadedValueOp
+import matt.model.latch.asyncloaded.LoadedThenCachedValueSlot
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.calc.act.RawActivation
@@ -46,8 +48,7 @@ sealed interface DeephyFileObject {
 }
 
 @Serializable class Layer(
-  override val layerID: String,
-  val neurons: List<Neuron>
+  override val layerID: String, val neurons: List<Neuron>
 ): LayerLike {
   override fun toString() = layerID
 }
@@ -131,23 +132,25 @@ class DeephyImage(
   categoryID: Int,
   category: String,
   val activations: ModelState,
-  val testLoader: TestLoader
+  val testLoader: TestLoader,
+  val index: Int,
+  val model: Model,
+  val test: LoadedValueSlot<Test>
 ) {
 
 
   val category = Category(id = categoryID, label = category)
 
-  val matrix by lazy {
+  val matrix by lazyWeak {
 	val d = data.await()
 	val numRows = d[0].size
 	val numCols = d[0][0].size
 
-	val r = (0 until numRows).map { index1 ->
+	(0 until numRows).map { index1 ->
 	  MutableList<FXColor>(numCols) { index2 ->
 		FXColor.rgb(d[0][index1][index2], d[1][index1][index2], d[2][index1][index2])
 	  }
 	}
-	r
   }
 
 
@@ -158,10 +161,7 @@ class DeephyImage(
   fun activationsFor(rLayer: InterTestLayer): FloatArray = goodActivations[rLayer.index]
   fun activationFor(neuron: InterTestNeuron) = RawActivation(goodActivations[neuron.layer.index][neuron.index])
 
-  val test = LoadedValueSlot<Test>()
-  val index = LoadedValueSlot<Int>()
-  val model = LoadedValueSlot<Model>()
-  val data = LoadedValueSlot<List<List<IntArray>>>()
+  val data = LoadedThenCachedValueSlot<List<List<IntArray>>>()
 
   val prediction by lazy { test.await().preds.await()[this]!! }
 
