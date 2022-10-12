@@ -1,8 +1,7 @@
 # @title DEEPHYS
 from cbor2 import dump
 from dataclasses import dataclass, asdict
-from typing import List, Optional
-from typing import List, Optional
+from typing import List, Optional, Mapping
 import numpy
 import torch
 import struct
@@ -114,6 +113,7 @@ class ImageFile:
     categoryID: int
     category: str
     data: List[bytearray]  # R8G8B8
+    features: Optional[Mapping[str, str]]
     activations: Model.ModelState
 
 
