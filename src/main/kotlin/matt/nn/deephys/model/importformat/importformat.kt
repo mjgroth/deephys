@@ -2,15 +2,18 @@ package matt.nn.deephys.model.importformat
 
 import kotlinx.serialization.Serializable
 import matt.async.thread.daemon
-import matt.collect.map.lazyMap
+import matt.collect.weak.soft.lazySoftMap
 import matt.fx.graphics.wrapper.style.FXColor
+import matt.lang.weak.lazySoft
 import matt.lang.weak.lazyWeak
-import matt.log.profile.stopwatch.tic
+import matt.log.profile.stopwatch.stopwatch
 import matt.model.latch.asyncloaded.DaemonLoadedValueOp
-import matt.model.latch.asyncloaded.LoadedThenCachedValueSlot
+import matt.model.latch.asyncloaded.DelegatedSlot
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.calc.act.RawActivation
+import matt.nn.deephys.load.test.ActivationData
+import matt.nn.deephys.load.test.PixelData3
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.ResolvedLayer
@@ -18,6 +21,7 @@ import matt.nn.deephys.model.ResolvedNeuron
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
+import matt.nn.deephys.state.DeephySettings
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
@@ -73,57 +77,56 @@ class Test(
   fun category(id: Int) = images.find { it.category.id == id }!!.category
 
   val categories by lazy {
-	images.map { it.category }.toSet().toList().sortedBy { it.id }
+	stopwatch("categories", enabled = DeephySettings.verboseLogging.value) {
+	  images.map { it.category }.toSet().toList().sortedBy { it.id }
+	}
   }
 
 
-  private val imagesByCategoryID by lazy { images.groupBy { it.category.id }.mapValues { it.value.toSet() } }
+  private val imagesByCategoryID by lazy {
+	stopwatch("imagesByCategoryID", enabled = DeephySettings.verboseLogging.value) {
+	  images.groupBy { it.category.id }.mapValues { it.value.toSet() }
+	}
+  }
 
   fun imagesWithGroundTruth(category: Category) = imagesByCategoryID[category.id] ?: setOf()
   fun imagesWithoutGroundTruth(category: Category) = images - (imagesByCategoryID[category.id] ?: setOf())
 
   val startPreloadingActs = SingleCall {
-	val t = tic("preloading acts")
-	t.toc(0)
 	daemon {
-	  t.toc(1)
 	  model!!.layers.forEachIndexed { index, _ ->
 		activationsMatByLayerIndex[index]
 	  }
-	  t.toc(2)
-
-
 	  preds.startLoading()
-	  t.toc(3)
 	}
-	t.toc(4)
-
-
   }
 
-  val activationsMatByLayerIndex = lazyMap<Int, D2Array<Float>> { lay ->
+  val activationsMatByLayerIndex = lazySoftMap<Int, D2Array<Float>> { lay ->
 	val r = images.map { it.goodActivations[lay].toList() }.toNDArray()
 	r
   }
 
-  val activationsByNeuron = lazyMap<InterTestNeuron, MultiArray<Float, D1>> {
+  val activationsByNeuron = lazySoftMap<InterTestNeuron, MultiArray<Float, D1>> {
 	val myMat = activationsMatByLayerIndex[it.layer.index]
 	myMat[0 until myMat.shape[0], it.index]
   }
 
 
-  val maxActivations = lazyMap<InterTestNeuron, Float> { neuron ->
+  val maxActivations = lazySoftMap<InterTestNeuron, Float> { neuron ->
 	activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!
   }
 
 
   val preds = DaemonLoadedValueOp<Map<DeephyImage, Category>> {
+
 	val m = mutableMapOf<DeephyImage, Category>()
 	mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
 	  .forEachIndexed { imageIndex, predIndex ->
 		m[images[imageIndex]] = category(predIndex)
 	  }
 	m
+
+
   }
 
 
@@ -156,14 +159,14 @@ class DeephyImage(
   }
 
 
-  internal val goodActivations by lazy {
+  internal val goodActivations by lazySoft {
 	activations.activations.await()
   }
 
   fun activationsFor(rLayer: InterTestLayer): FloatArray = goodActivations[rLayer.index]
   fun activationFor(neuron: InterTestNeuron) = RawActivation(goodActivations[neuron.layer.index][neuron.index])
 
-  val data = LoadedThenCachedValueSlot<List<List<IntArray>>>()
+  val data = DelegatedSlot<PixelData3>()
 
   val prediction by lazy { test.await().preds.await()[this]!! }
 
@@ -172,7 +175,7 @@ class DeephyImage(
 class ModelState(
 
 ) {
-  val activations = LoadedValueSlot<List<FloatArray>>()
+  val activations = DelegatedSlot<ActivationData>()
 }
 
 

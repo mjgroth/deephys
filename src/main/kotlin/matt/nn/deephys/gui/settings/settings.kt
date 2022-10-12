@@ -2,6 +2,7 @@ package matt.nn.deephys.gui.settings
 
 import javafx.scene.control.ContentDisplay.RIGHT
 import javafx.scene.control.ToggleGroup
+import matt.async.thread.aliveThreads
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.lang.actionbutton
@@ -62,7 +63,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 			sett.cls.java.enumConstants.forEach {
 			  deephyRadioButton((it as Enum<*>).name, group, it) {
 
-				  isSelected = sett.prop.value == it
+				isSelected = sett.prop.value == it
 			  }
 			}
 			deephyTooltip(sett.tooltip)
@@ -74,7 +75,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 		  }
 		}
 
-		is IntSetting -> {
+		is IntSetting  -> {
 
 		  deephyLabel {
 			deephyTooltip(sett.tooltip)
@@ -114,6 +115,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 	deephyButton("Print RAM info to console") {
 	  setOnAction {
 		println(MemReport())
+		println("num alive threads = ${aliveThreads().size}")
 	  }
 	}
 

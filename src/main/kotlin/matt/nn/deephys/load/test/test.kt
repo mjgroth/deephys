@@ -1,5 +1,7 @@
 package matt.nn.deephys.load.test
 
+
+
 import matt.async.pool.DaemonPool
 import matt.async.thread.daemon
 import matt.cbor.err.CborParseException
@@ -10,7 +12,11 @@ import matt.cbor.read.streamman.cborReader
 import matt.cbor.read.withByteStoring
 import matt.file.CborFile
 import matt.lang.List2D
+import matt.lang.RUNTIME
+import matt.lang.disabledCode
 import matt.lang.sync
+import matt.model.byte.ByteSize
+import matt.model.byte.megabytes
 import matt.model.errreport.ThrowReport
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
@@ -68,8 +74,10 @@ class TestLoader(
   fun awaitFinishedTest(): Test = finishedTest.await()
   val numImages = LoadedValueSlot<ULong>()
   val progress by lazy { BindableProperty(0.0) }
-  val cacheProgress by lazy { BindableProperty(0.0) }
-  val numCached = AtomicInteger(0)
+  val cacheProgressPixels by lazy { BindableProperty(0.0) }
+  val cacheProgressActs by lazy { BindableProperty(0.0) }
+  val numCachedPixels = AtomicInteger(0)
+  val numCachedActs = AtomicInteger(0)
 
   fun category(id: Int): Category {
 	var i = 0
@@ -89,8 +97,13 @@ class TestLoader(
   private var numDataBytes: Int? = null
   private var numActivationBytes: Int? = null
 
+  private val numRead = AtomicInteger(0)
 
   val start = SingleCall {
+/*	matt.async.schedule.every(1.seconds) {
+	  MemReport().println()
+	  println(daemonPool.info())
+	}*/
 	daemon {
 	  if (!file.exists()) {
 		signalFileNotFound()
@@ -139,7 +152,7 @@ class TestLoader(
 				  require(nextKeyOnly<String>() == "activations")
 				  if (numActivationBytes == null) {
 					withByteStoring {
-					  nextValueManualDontReadKey<ArrayReader, List<FloatArray>> {
+					  nextValueManualDontReadKey<ArrayReader, ActivationData> {
 						readActivations()
 					  }
 					}.let {
@@ -149,25 +162,50 @@ class TestLoader(
 				  } else readNBytes(numActivationBytes!!)
 				}
 
+				if (numRead.incrementAndGet()%1000 == 0) {
+				  val free = ByteSize(RUNTIME.freeMemory())
+				  if (free < 100.megabytes) {
+					println("throttling test loader because there is < 100 mb free...")
+					sleep(1000)
+				  }
+				}
 
-				val deephyImage = DeephyImage(imageID = imageID, categoryID = categoryID, category = category,
+
+				val state = ModelState()
+
+				val deephyImage = DeephyImage(
+				  imageID = imageID, categoryID = categoryID, category = category,
 				  index = finishedImages.size, testLoader = this@TestLoader, model = this@TestLoader.model,
-				  test = finishedTest, activations = ModelState().apply {
+				  test = finishedTest, activations = state
+				).apply {
+
+				  val im = this
+
+				  state.apply {
 					daemonPool.execute {
-					  val workerReader = activationsBytes.inputStream().buffered()
-					  val workerCborReader = workerReader.cborReader()
-					  workerCborReader.readManually<ArrayReader, Unit> {
-						activations.putLoadedValue(readActivations())
+					  disabledCode {
+						activations.putGetter {
+						  readActivations(activationsBytes)
+						}
 					  }
 					}
-				  }).apply {
-				  daemonPool.execute {
-					data.putLoadedValue(readPixels(imageData))
 					daemonPool.executeLowPriority {
-					  pixelCacher.cache(this@apply, imageData, ::readPixels)
-					  val n = numCached.incrementAndGet()
-					  cacheProgress.value = (n.toDouble())/numImsDouble
+					  pixelCacher.cacheActs(im, activationsBytes, ::readActivations)
+					  val n = numCachedActs.incrementAndGet()
+					  cacheProgressActs.value = (n.toDouble())/numImsDouble
 					}
+				  }
+
+				  daemonPool.execute {
+					disabledCode {
+					  data.putGetter { readPixels(imageData) }
+					}
+				  }
+				  daemonPool.executeLowPriority {
+					pixelCacher.cachePixels(this@apply, imageData, ::readPixels)
+					val n = numCachedPixels.incrementAndGet()
+					/*if (n%1000 == 0) println("n=$n")*/
+					cacheProgressPixels.value = (n.toDouble())/numImsDouble
 				  }
 				}
 
@@ -198,7 +236,6 @@ class TestLoader(
 		  return@daemon
 		}
 		stream.close()
-
 	  } catch (e: IOException) {
 		ThrowReport(Thread.currentThread(), e).print()
 		signalStreamNotOk()
@@ -206,6 +243,8 @@ class TestLoader(
 	}
   }
 }
+
+typealias ActivationData = List<FloatArray>
 
 typealias PixelData2 = List<IntArray>
 typealias PixelData3 = List<PixelData2>
@@ -230,5 +269,12 @@ private fun readPixels(byteArray: ByteArray): PixelData3 {
   val workerReader = byteArray.inputStream().buffered()
   workerReader.cborReader().readManually<ArrayReader, Unit> {
 	return readPixels()
+  }
+}
+
+private fun readActivations(byteArray: ByteArray): ActivationData {
+  val workerReader = byteArray.inputStream().buffered()
+  workerReader.cborReader().readManually<ArrayReader, Unit> {
+	return readActivations()
   }
 }

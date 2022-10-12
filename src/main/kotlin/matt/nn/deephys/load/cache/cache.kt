@@ -6,6 +6,7 @@ import matt.file.construct.mFile
 import matt.file.thismachine.thisMachine
 import matt.lang.weak.lazyWeak
 import matt.model.sys.Mac
+import matt.nn.deephys.load.test.ActivationData
 import matt.nn.deephys.load.test.PixelData3
 import matt.nn.deephys.model.importformat.DeephyImage
 import kotlin.concurrent.thread
@@ -28,12 +29,27 @@ class PixelCacher {
 		  "unknown file $it found in the user data directory"
 		}
 	  }
-
-
 	}
 
-	private val dSetCaches = DEEPHY_CACHE_DIR.listFiles()!!
-	private val oldIDs = dSetCaches.map {
+
+	private val DATA_SETS_CACHE_DIR = DEEPHY_CACHE_DIR.mkdir("datasets")
+
+	private val weirdCaches1 = DEEPHY_CACHE_DIR.listFiles()!!.filter { it !in listOf(DATA_SETS_CACHE_DIR) }
+
+	private val oldDatasetCaches = DATA_SETS_CACHE_DIR.listFiles()!!
+
+	init {
+	  thread(isDaemon = true, priority = DELETING_OLD_CACHE.ordinal) {
+		weirdCaches1.forEach {
+		  it.deleteIfExists()
+		}
+		oldDatasetCaches.forEach {
+		  it.deleteIfExists()
+		}
+	  }
+	}
+
+	private val oldDatasetIDs = oldDatasetCaches.mapNotNull {
 	  it.name.toIntOrNull()
 	}
 
@@ -41,33 +57,42 @@ class PixelCacher {
 	  var r = 0
 	  while (true) {
 		r++
-		if (r !in oldIDs) yield(r)
+		if (r !in oldDatasetIDs) yield(r)
 	  }
 	}.iterator()
 
-	@Synchronized fun getNextID(): Int {
+	@Synchronized fun getNextDatasetID(): Int {
 	  return newIDs.next()
 	}
 
-	init {
-	  thread(isDaemon = true, priority = DELETING_OLD_CACHE.ordinal) {
-		dSetCaches.forEach {
-		  it.deleteIfExists()
-		}
-	  }
+
+  }
+
+  private val id by lazy { getNextDatasetID() }
+  private val folder by lazy { DATA_SETS_CACHE_DIR.mkdir(id.toString()) }
+
+  fun cachePixels(im: DeephyImage, pixelBytes: ByteArray, read: (ByteArray)->PixelData3) {
+	val imFold = folder.mkdir("${im.index}")
+	val f = imFold["pixels.cbor"]
+	f.writeBytes(pixelBytes)
+	val dataCache by lazyWeak {
+	  /*did not save f on purpose in order to reduce RAM usage*/
+	  read(folder["${im.index}"]["pixels.cbor"].readBytes())
+	}
+	im.data.putGetter {
+	  dataCache
 	}
   }
 
-  private val id by lazy { getNextID() }
-  private val folder by lazy { DEEPHY_CACHE_DIR.mkdir(id.toString()) }
-
-  fun cache(im: DeephyImage, pixelBytes: ByteArray, read: (ByteArray)->PixelData3) {
-	val f = folder["${im.index}.cbor"]
-	f.writeBytes(pixelBytes)
+  fun cacheActs(im: DeephyImage, actsBytes: ByteArray, read: (ByteArray)->ActivationData) {
+	val imFold = folder.mkdir("${im.index}")
+	val f = imFold["activations.cbor"]
+	f.writeBytes(actsBytes)
 	val dataCache by lazyWeak {
-	  read(f.readBytes())
+	  /*did not save f on purpose in order to reduce RAM usage*/
+	  read(folder["${im.index}"]["activations.cbor"].readBytes())
 	}
-	im.data.disposeValueAndSetCacheGetter {
+	im.activations.activations.putGetter {
 	  dataCache
 	}
   }

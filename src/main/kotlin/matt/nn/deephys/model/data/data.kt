@@ -37,7 +37,7 @@ sealed interface CategorySelection {
 data class Category(val id: Int, val label: String): CategorySelection {
   override val title = label
   override val primaryCategory = this
-  override val allCategories get() = sequence<Category> { yield(this@Category) }
+  override val allCategories get() = sequence { yield(this@Category) }
 
 
   fun averageActivationFor(neuron: InterTestNeuron, testLoader: TestOrLoader): RawActivation {

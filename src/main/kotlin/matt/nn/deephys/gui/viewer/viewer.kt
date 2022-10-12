@@ -334,7 +334,13 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  progressbar {
 		style = "-fx-accent: green"
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
-		  it?.cacheProgress ?: 0.0.toVarProp()
+		  it?.cacheProgressPixels ?: 0.0.toVarProp()
+		})
+	  }
+	  progressbar {
+		style = "-fx-accent: yellow"
+		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
+		  it?.cacheProgressActs ?: 0.0.toVarProp()
 		})
 	  }
 	}
