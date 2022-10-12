@@ -101,6 +101,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
                         )
                     )
                 ),
+                features=None,
             )
         )
     test = Test(name=name, suffix=None, images=imageList)
