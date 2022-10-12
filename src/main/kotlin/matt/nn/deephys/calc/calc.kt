@@ -70,7 +70,7 @@ data class NormalizedAverageActivation(
 
   companion object {
 	const val normalizeTopNeuronsBlurb =
-	  "Normalized matt.nn.deephys.calc.act.Activation ($NORMALIZED_ACT_SYMBOL) = Raw matt.nn.deephys.calc.act.Activation ($RAW_ACT_SYMBOL) / max(activation for each image for this neuron)"
+	  "Normalized Activation ($NORMALIZED_ACT_SYMBOL) = Raw Activation ($RAW_ACT_SYMBOL) / max(activation for each image for this neuron)"
   }
 
   override fun timedCompute(): NormalActivation {
