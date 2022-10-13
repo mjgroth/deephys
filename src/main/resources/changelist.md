@@ -1,4 +1,4 @@
-<!--- https://github.com/mgroth0/deephy/releases -->
+<!--- https://github.com/mgroth0/deephys/releases -->
 
 [//]: # (VERSION:1.22.1)
 
