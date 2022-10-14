@@ -10,7 +10,6 @@ import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
-import matt.hurricanefx.eye.lib.onChange
 import matt.lang.go
 import matt.nn.deephys.calc.ActivationRatio
 import matt.nn.deephys.calc.NormalizedAverageActivation

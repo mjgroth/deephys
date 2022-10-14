@@ -2,7 +2,6 @@ package matt.nn.deephys.gui.deephyimview
 
 import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
-import matt.hurricanefx.eye.lib.onChange
 import matt.log.todo.todoOnce
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
@@ -17,7 +16,7 @@ class DeephyImView(im: DeephyImage, viewer: DatasetViewer): ScaledCanvas() {
 
 	deephyTooltip(im.category.label, im)
 
-	node.hoverProperty().onChange {
+	hoverProperty.onChange {
 	  if (it) drawBorder()
 	  else draw(im)
 	}

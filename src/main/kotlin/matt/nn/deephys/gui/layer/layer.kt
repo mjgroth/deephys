@@ -9,7 +9,6 @@ import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.region.border.FXBorder
-import matt.hurricanefx.eye.lib.onChange
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.nn.deephys.gui.global.deephyText
@@ -58,7 +57,7 @@ class LayerView(
 	  //	  valueProperty.onChange {
 	  //		println("v:$it")
 	  //	  }
-	  node.editor.textProperty().onChange {
+	  editor.textProperty.onChange {
 		val oldSelection = node.editor.selection
 		runLater {
 		  node.commitValue()

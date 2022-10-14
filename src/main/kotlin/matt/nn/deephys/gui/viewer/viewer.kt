@@ -187,12 +187,12 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
 
-  val categorySelection = BindableProperty<CategorySelection?>(null)
+  val categorySelection = VarProp<CategorySelection?>(null)
 
-  var currentByImageHScroll: DoubleProperty? = null
+  var currentByImageHScroll: VarProp<Double>? = null
 
   val history = basicMutableObservableListOf<TestViewerAction>()
-  val historyIndex = BindableProperty(-1)
+  val historyIndex = VarProp(-1)
 
   init {
 	initStopwatch.toc(5)
@@ -309,7 +309,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  deephyToggleButton(
 		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
 	  ) {
-		backgroundProperty.bind(selectedProperty.objectBindingN {
+		backgroundProperty.bind(selectedProperty.binding {
 		  if (it == true) backgroundColor(Color.YELLOW) else null
 		})
 	  }
