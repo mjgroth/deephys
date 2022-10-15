@@ -3,14 +3,17 @@ package matt.nn.deephys.calc.act
 import matt.math.jmath.sigFigs
 import matt.math.mathable.FloatWrapper
 
-sealed interface Activation: Comparable<Activation> {
+sealed interface Activation<T: Activation<T>>: FloatWrapper<T> {
   val value: Float
   val formatted: String
-  override fun compareTo(other: Activation) = value.compareTo(other.value)
+  override val asFloat: Float
+	get() = value
+
 }
 
 @JvmInline
-value class RawActivation(override val value: Float): Activation, FloatWrapper<RawActivation> {
+value class RawActivation(override val value: Float): Activation<RawActivation> {
+
   companion object {
 	const val RAW_ACT_SYMBOL = "Y"
   }
@@ -20,13 +23,11 @@ value class RawActivation(override val value: Float): Activation, FloatWrapper<R
 	return RawActivation(d)
   }
 
-  override val asFloat: Float
-	get() = value
 
 }
 
 @JvmInline
-value class NormalActivation(override val value: Float): Activation, FloatWrapper<NormalActivation> {
+value class NormalActivation(override val value: Float): Activation<NormalActivation> {
   companion object {
 	const val NORMALIZED_ACT_SYMBOL = "Ŷ"
   }
@@ -39,9 +40,6 @@ value class NormalActivation(override val value: Float): Activation, FloatWrappe
   override fun fromFloat(d: Float): NormalActivation {
 	return NormalActivation(d)
   }
-
-  override val asFloat: Float
-	get() = value
 
   override fun div(n: Number): NormalActivation {
 	return NormalActivation(value/n.toFloat())
