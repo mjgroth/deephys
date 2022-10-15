@@ -19,6 +19,11 @@
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
+	  "path" : ":k:fx:node:proto"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "implementation",
 	  "path" : ":k:caching"
 	},
 	{
