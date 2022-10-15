@@ -111,7 +111,7 @@ interface TopNeuronsCalcType {
   operator fun invoke(): List<NeuronWithActivation>
 }
 
-data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation)
+data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation<*>)
 
 data class TopNeurons(
   private val images: UniqueContents<DeephyImage>, private val layer: InterTestLayer, val normalized: Boolean
