@@ -33,7 +33,7 @@ class DatasetNode(
 	setupSwapping(viewer.view) {
 	  VBoxWrapperImpl<NodeWrapper>().apply {
 		val layerCB =
-		  choicebox(property = viewer.layerSelection, values = viewer.model.resolvedLayers.map { it.interTest }) {
+		  choicebox(nullableProp = viewer.layerSelection, values = viewer.model.resolvedLayers.map { it.interTest }) {
 			valueProperty.onChange {
 			  println("layerCB value changed to $it")
 			}

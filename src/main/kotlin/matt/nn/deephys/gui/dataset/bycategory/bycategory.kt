@@ -17,7 +17,7 @@ class ByCategoryView(
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	val categoryCB = choicebox(
-	  property = viewer.categorySelection,
+	  nullableProp = viewer.categorySelection,
 	  values = testLoader.awaitFinishedTest().categories
 	) {
 	  //	  converter = toStringConverter<InterTestNeuron?> { "neuron ${it?.index}" }.toFXConverter()
