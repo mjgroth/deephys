@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephys/releases -->
 
-[//]: # (VERSION:1.22.1)
+[//]: # (VERSION:1.22.2)
 
 
 Compatible pip package
@@ -16,7 +16,7 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 
 ### Bug Fixes
 
-- Fixed the text in a tooltip 
+- Temporary workaround to prevent duplicate node in AnchorPane bug (will need to find real cause and fix it later)
 
 [//]: # (### Notes)
 
