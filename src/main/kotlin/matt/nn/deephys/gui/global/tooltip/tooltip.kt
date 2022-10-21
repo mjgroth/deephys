@@ -1,7 +1,6 @@
 package matt.nn.deephys.gui.global.tooltip
 
 import javafx.scene.control.ContentDisplay.BOTTOM
-import javafx.util.Duration
 import matt.async.queue.QueueThread
 import matt.async.queue.QueueThread.SleepType.WHEN_NO_JOBS
 import matt.collect.map.lazyMap
@@ -60,38 +59,25 @@ private class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
 
   init {
 	font = DEEPHY_FONT_DEFAULT
-	showDelay = Duration.millis(100.0)
-	hideDelay = Duration.INDEFINITE
-	showDuration = Duration.INDEFINITE
-
-
+	comfortableShowAndHideSettingsForMatt()
 
 	node.setOnShown {
 	  val screenMaxX = screen!!.bounds.maxX
 	  val screenMaxY = screen!!.bounds.maxY
 
-	  if (screenMaxX > x + width + 50.0) {
-		x += 50.0
-	  } else if (screenMaxX > x + width + 10.0) {
-		x = (screenMaxX - width)
-	  } else {
-		x = screenMaxX - width*2
+	  x = when {
+		screenMaxX > x + width + 50.0 -> x + 50.0
+		screenMaxX > x + width + 10.0 -> screenMaxX - width
+		else                          -> screenMaxX - width*2
 	  }
 
 
-	  if (screenMaxY > y + height + 50.0) {
-		y += 50.0
-	  } else if (screenMaxY > y + height + 10.0) {
-		y = (screenMaxY - height)
-	  } else {
-		y = screenMaxY - height*2
+	  y = when {
+		screenMaxY > y + height + 50.0 -> y + 50.0
+		screenMaxY > y + height + 10.0 -> screenMaxY - height
+		else                           -> screenMaxY - height*2
 	  }
-
-
 	}
-
-
-
 
 	contentDisplay = BOTTOM
 	if (im != null) {

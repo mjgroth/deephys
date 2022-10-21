@@ -15,6 +15,7 @@ import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.textflow
+import matt.model.idea.MChartIdea
 import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.subtitleFont
@@ -34,7 +35,7 @@ class CategoryPie(
   viewer: DatasetViewer,
   colorMap: Map<Category, Color>,
   selected: Category? = null
-): VBoxWrapperImpl<NodeWrapper>() {
+): VBoxWrapperImpl<NodeWrapper>(), MChartIdea {
 
   companion object {
 	const val CENTER_X = 150.0
