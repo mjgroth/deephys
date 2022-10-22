@@ -17,7 +17,10 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 ### Bug Fixes
 
 - Temporary workaround to prevent duplicate node in AnchorPane bug (will need to find real cause and fix it later)
-- Fixed two deep issues (one with observable property listeners giving wrong "old" values and one where MyBinding classes were deadlocking) which should fix or prevent various issues and possibly improve performance
+- Fixed deep issues in observable value library which should fix or prevent various issues and possibly improve performance:
+  1. `NewAndOldListener` giving wrong "old" values 
+  2. `MyBinding` classes were deadlocking)
+  3. Similarly, `MObservableImpl` was deadlocking when listener list was modified while updating. Implemented `AntiDeadlockSynchronizer` with good logic to fix and optimize this.
 
 [//]: # (### Notes)
 
