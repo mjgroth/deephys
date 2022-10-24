@@ -3,6 +3,7 @@
 /out/
 *.hprof
 *.zip
+*.tgz
 .private
 .gradle/
 /gradle/
