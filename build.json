@@ -1,5 +1,5 @@
 {
-  "type" :         "matt.mstruct.bj.APPModule",
+  "type": "matt.mstruct.bj.BasicJvmOnlyMod", "executable": "YES",
   "dependencies" : [
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
