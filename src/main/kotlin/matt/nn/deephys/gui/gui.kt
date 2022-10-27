@@ -2,14 +2,18 @@ package matt.nn.deephys.gui
 
 import javafx.geometry.Pos.BOTTOM_LEFT
 import javafx.geometry.Pos.TOP_CENTER
+import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.file.construct.toMFile
 import matt.file.toSFile
+import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.hotkey.hotkeys
+import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.gui.app.GuiApp
@@ -45,26 +49,9 @@ fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 
 
 
+
   root<VBoxWrapperImpl<NodeWrapper>> {
-
-
-
 	alignment = TOP_CENTER
-
-	hbox<NodeWrapper> {
-	  deephyActionButton("choose model file") {
-		val f = FileChooser().apply {
-		  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
-		}.showOpenDialog(stage?.node)?.toMFile()?.toSFile()
-		if (f != null) {
-		  DeephyState.tests.value = null
-		  DeephyState.model.value = f
-		}
-	  }
-
-	  +settingsButton
-
-	}
 
 	hotkeys {
 	  COMMA.meta {
@@ -72,54 +59,86 @@ fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 	  }
 	}
 
+	scrollpane<VBoxWrapper<NW>>() {
+	  hbarPolicy = NEVER
+	  isFitToWidth = true
 
-	loadSwapper(modelBinding.await(), nullMessage = "Select a .model file to begin") {
-	  val swapT = tic("model swapper", enabled = false)
-	  swapT.toc(0)
-	  val model = this@loadSwapper
-	  VBoxWrapperImpl<NodeWrapper>().apply {
 
-		swapT.toc(1)
-		deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
-		swapT.toc(2)
-		println("loaded model: ${model.name}")
-		model.layers.forEach {
-		  tab("${it.layerID} has ${it.neurons.size} neurons")
-		}
-		swapT.toc(3)
 
-		val maxNeurons = 50
-		val vis = if (model.layers.all { it.neurons.size <= maxNeurons }) {
-		  ModelVisualizer(model).also {
-			+it
-			it.blue()
+
+
+	  content = VBoxWrapperImpl<NodeWrapper>().apply {
+		alignment = TOP_CENTER
+
+
+
+		hbox<NodeWrapper> {
+		  deephyActionButton("choose model file") {
+			val f = FileChooser().apply {
+			  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
+			}.showOpenDialog(stage?.node)?.toMFile()?.toSFile()
+			if (f != null) {
+			  DeephyState.tests.value = null
+			  DeephyState.model.value = f
+			}
 		  }
-		} else {
-		  deephyText("model is too large to visualize (>$maxNeurons in a layer)")
-		  null
+
+		  +settingsButton
+
 		}
-		swapT.toc(4)
-		val dSetViewsBox = DSetViewsVBox(model)
-		swapT.toc(5)
-		dSetViewsBox.modelVisualizer = vis
-		vis?.dsetViewsBox = dSetViewsBox
-		swapT.toc(6)
-		val theTests = DeephyState.tests.value
-		swapT.toc(6.5)
-		theTests?.go {
-		  dSetViewsBox += it
+
+
+
+
+		loadSwapper(modelBinding.await(), nullMessage = "Select a .model file to begin") {
+		  val swapT = tic("model swapper", enabled = false)
+		  swapT.toc(0)
+		  val model = this@loadSwapper
+		  VBoxWrapperImpl<NodeWrapper>().apply {
+
+			swapT.toc(1)
+			deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
+			swapT.toc(2)
+			println("loaded model: ${model.name}")
+			model.layers.forEach {
+			  tab("${it.layerID} has ${it.neurons.size} neurons")
+			}
+			swapT.toc(3)
+
+			val maxNeurons = 50
+			val vis = if (model.layers.all { it.neurons.size <= maxNeurons }) {
+			  ModelVisualizer(model).also {
+				+it
+				it.blue()
+			  }
+			} else {
+			  deephyText("model is too large to visualize (>$maxNeurons in a layer)")
+			  null
+			}
+			swapT.toc(4)
+			val dSetViewsBox = DSetViewsVBox(model)
+			swapT.toc(5)
+			dSetViewsBox.modelVisualizer = vis
+			vis?.dsetViewsBox = dSetViewsBox
+			swapT.toc(6)
+			val theTests = DeephyState.tests.value
+			swapT.toc(6.5)
+			theTests?.go {
+			  dSetViewsBox += it
+			}
+			swapT.toc(7)
+			+dSetViewsBox
+			swapT.toc(8)
+			deephyActionButton("add test") {
+			  dSetViewsBox.addTest()
+			}
+			swapT.toc(9)
+		  }
 		}
-		swapT.toc(7)
-		+dSetViewsBox
-		swapT.toc(8)
-		deephyActionButton("add test") {
-		  dSetViewsBox.addTest()
-		}
-		swapT.toc(9)
+
+
 	  }
 	}
-
-
 	vbox<NodeWrapper> {
 	  vgrow = ALWAYS
 	}
@@ -129,6 +148,9 @@ fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 	  +VersionChecker.statusNode
 	}
   }
+
+  /*not currently using this, because after making scroll bars transparet I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G */
+  /*  scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/
 
 
 }.start(t = t)

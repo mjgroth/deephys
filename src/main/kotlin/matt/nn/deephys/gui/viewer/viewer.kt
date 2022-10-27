@@ -1,22 +1,28 @@
 package matt.nn.deephys.gui.viewer
 
-import javafx.beans.property.DoubleProperty
 import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
+import javafx.scene.layout.Background
+import javafx.scene.layout.BackgroundFill
 import javafx.scene.paint.Color
+import javafx.scene.paint.CycleMethod.NO_CYCLE
+import javafx.scene.paint.CycleMethod.REFLECT
+import javafx.scene.paint.LinearGradient
+import javafx.scene.paint.RadialGradient
+import javafx.scene.paint.Stop
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
+import matt.collect.weak.WeakSet
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.button.button
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
-import matt.fx.graphics.style.backgroundColor
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
-import matt.hurricanefx.eye.prop.objectBindingN
+import matt.lang.disabledCode
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
@@ -49,7 +55,6 @@ import matt.obs.bind.deepBinding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
 import matt.obs.col.olist.basicMutableObservableListOf
-import matt.obs.prop.BindableProperty
 import matt.obs.prop.VarProp
 import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
@@ -306,12 +311,86 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		}
 	  }
 	  this@DatasetViewer.initStopwatch.toc(8.5)
+	  @Suppress("UNUSED_VARIABLE")
+	  disabledCode {
+		val coolColor = LinearGradient(
+		  0.0,
+		  0.0,
+		  1.0,
+		  1.0,
+		  true,
+		  NO_CYCLE,
+		  Stop(0.0, Color.YELLOW),
+		  Stop(0.5, Color.TRANSPARENT),
+		  //		  Stop(1.0, Color.TRANSPARENT)
+		)
+		val coolColor2 = RadialGradient(
+		  0.0,
+		  1.0,
+		  0.0,
+		  0.0,
+		  1.0,
+		  true,
+		  NO_CYCLE,
+		  Stop(0.0, Color.TRANSPARENT),
+		  Stop(1.0, Color.YELLOW),
+		)
+	  }
+
 	  deephyToggleButton(
 		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
 	  ) {
-		backgroundProperty.bind(selectedProperty.binding {
-		  if (it == true) backgroundColor(Color.YELLOW) else null
-		})
+		val selectColor = LinearGradient(
+		  0.0,
+		  0.0,
+		  0.1,
+		  0.1,
+		  true,
+		  REFLECT,
+		  Stop(0.0, Color.YELLOW.deriveColor(0.0, 1.0, 1.0, 0.5)),
+		  Stop(1.0, Color.TRANSPARENT),
+		  //		  Stop(1.0, Color.TRANSPARENT)
+		)
+
+		val shouldBes = WeakSet<BackgroundFill>()
+		val shouldBe = selectedProperty.binding {
+		  if (it == true) selectColor else Color.TRANSPARENT
+		}
+
+
+		//		backgroundProperty.value?.fills?.add(shouldBe.value)
+		fun update() {
+		  val currentBG = backgroundProperty.value
+		  val latestShouldBe = shouldBe.value
+//		  println("currentBG=${currentBG}")
+		  if (currentBG != null) {
+			if (currentBG.fills.last().fill !== latestShouldBe) {
+//			  println("appending to background")
+
+			  val standards = currentBG.fills.filter { it !in shouldBes }
+			  val example = standards.first()
+			  val cool = BackgroundFill(latestShouldBe, example.radii, example.insets)
+			  shouldBes += cool
+			  backgroundProperty.value = Background(*standards.toTypedArray(), cool)
+			}
+		  }
+		}
+		update()
+		shouldBe.onChange {
+		  update()
+		}
+		backgroundProperty.onChange {
+		  update()
+		}
+
+		/*	backgroundProperty.bind(shouldBe)
+			backgroundProperty.onChange {
+			  if (it != shouldBe.value) {
+				backgroundProperty.value = shouldBe.value
+			  }
+			}*/
+
+
 	  }
 	  this@DatasetViewer.initStopwatch.toc(8.6)
 	  deephyText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {

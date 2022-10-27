@@ -2,9 +2,9 @@ package matt.nn.deephys.model.importformat
 
 import kotlinx.serialization.Serializable
 import matt.async.thread.daemon
+import matt.collect.weak.lazyWeakMap
 import matt.collect.weak.soft.lazySoftMap
 import matt.fx.graphics.wrapper.style.FXColor
-import matt.lang.weak.lazySoft
 import matt.lang.weak.lazyWeak
 import matt.log.profile.stopwatch.stopwatch
 import matt.model.latch.asyncloaded.DaemonLoadedValueOp
@@ -94,19 +94,20 @@ class Test(
 
   val startPreloadingActs = SingleCall {
 	daemon {
-	  model!!.layers.forEachIndexed { index, _ ->
+	  /*this makes sense only when you have a machine with infinite ram...*/
+	  /*model!!.layers.forEachIndexed { index, _ ->
 		activationsMatByLayerIndex[index]
-	  }
+	  }*/
 	  preds.startLoading()
 	}
   }
 
-  val activationsMatByLayerIndex = lazySoftMap<Int, D2Array<Float>> { lay ->
+  val activationsMatByLayerIndex = lazyWeakMap<Int, D2Array<Float>> { lay ->
 	val r = images.map { it.goodActivations[lay].toList() }.toNDArray()
 	r
   }
 
-  val activationsByNeuron = lazySoftMap<InterTestNeuron, MultiArray<Float, D1>> {
+  val activationsByNeuron = lazyWeakMap<InterTestNeuron, MultiArray<Float, D1>> {
 	val myMat = activationsMatByLayerIndex[it.layer.index]
 	myMat[0 until myMat.shape[0], it.index]
   }
@@ -160,7 +161,7 @@ class DeephyImage(
   }
 
 
-  internal val goodActivations by lazySoft {
+  internal val goodActivations by lazyWeak {
 	activations.activations.await()
   }
 

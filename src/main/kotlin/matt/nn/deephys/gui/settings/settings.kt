@@ -2,7 +2,7 @@ package matt.nn.deephys.gui.settings
 
 import javafx.scene.control.ContentDisplay.RIGHT
 import javafx.scene.control.ToggleGroup
-import matt.async.thread.aliveThreads
+import matt.async.thread.ThreadReport
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.lang.actionbutton
@@ -115,7 +115,12 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 	deephyButton("Print RAM info to console") {
 	  setOnAction {
 		println(MemReport())
-		println("num alive threads = ${aliveThreads().size}")
+	  }
+	}
+
+	deephyButton("Print thread info to console") {
+	  setOnAction {
+		println(ThreadReport())
 	  }
 	}
 

@@ -105,7 +105,7 @@ class NeuronListView(
 		viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
 	  }
 
-	  content.apply {
+	  content!!.apply {
 		tops().forEach { neuronWithAct ->
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {

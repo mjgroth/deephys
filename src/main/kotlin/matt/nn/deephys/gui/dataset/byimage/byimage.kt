@@ -123,7 +123,7 @@ class ByImageView(
 		}
 		spacer()
 		img.features?.takeIf { it.isNotEmpty() }?.go {
-		  vbox<NodeWrapper> {
+		  vbox {
 			deephyText("Features:") {
 			  subtitleFont()
 			}
@@ -135,7 +135,7 @@ class ByImageView(
 			  spacer()
 			  +featureValuesBox
 			}
-			it.forEach { k, v ->
+			it.forEach { (k, v) ->
 			  featureKeysBox.deephyText(k.truncateWithElipsesOrAddSpaces(25))
 			  featureValuesBox.deephyText(v)
 			}

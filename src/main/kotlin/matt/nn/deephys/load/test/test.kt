@@ -11,11 +11,9 @@ import matt.cbor.read.streamman.cborReader
 import matt.cbor.read.withByteStoring
 import matt.file.CborFile
 import matt.lang.List2D
-import matt.lang.RUNTIME
 import matt.lang.disabledCode
 import matt.lang.sync
-import matt.model.byte.ByteSize
-import matt.model.byte.megabytes
+import matt.log.profile.mem.throttle
 import matt.model.errreport.ThrowReport
 import matt.model.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
@@ -170,11 +168,7 @@ class TestLoader(
 
 
 				if (numRead.incrementAndGet()%1000 == 0) {
-				  val free = ByteSize(RUNTIME.freeMemory())
-				  if (free < 100.megabytes) {
-					println("throttling test loader because there is < 100 mb free...")
-					sleep(1000)
-				  }
+				  throttle("test loader")
 				}
 
 
