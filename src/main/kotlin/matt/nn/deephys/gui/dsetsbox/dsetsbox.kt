@@ -1,17 +1,15 @@
 package matt.nn.deephys.gui.dsetsbox
 
-import javafx.scene.control.ToggleGroup
 import matt.file.CborFile
 import matt.file.toSFile
-import matt.fx.control.tfx.control.selectedValueProperty
-import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
+import matt.fx.control.tfx.control.ToggleMechanism
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.model.message.FileList
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.prop.Var
-import matt.model.message.FileList
 
 class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 
@@ -32,8 +30,8 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   }
 
 
-  val myToggleGroup = ToggleGroup()
-  val bound: Var<DatasetViewer?> = myToggleGroup.selectedValueProperty<DatasetViewer>().toNullableProp()
+  val myToggleGroup = ToggleMechanism<DatasetViewer>()
+  val bound: Var<DatasetViewer?> = myToggleGroup.selectedValue
 
   fun addTest() = plusAssign(DatasetViewer(null, this))
 

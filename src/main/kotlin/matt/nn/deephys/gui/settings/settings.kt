@@ -8,7 +8,7 @@ import matt.fx.control.inter.graphic
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.mstage.ShowMode.DO_NOT_SHOW
 import matt.fx.control.mstage.WMode.CLOSE
-import matt.fx.control.tfx.control.selectedValueProperty
+import matt.fx.control.tfx.control.ToggleMechanism
 import matt.fx.control.win.interact.openInNewWindow
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
@@ -57,7 +57,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 
 	  when (sett) {
 		is EnumSetting -> {
-		  val group = ToggleGroup()
+		  val group = ToggleMechanism<Any>()
 		  hbox<NW> {
 			deephyText(sett.label)
 			sett.cls.java.enumConstants.forEach {
@@ -68,7 +68,8 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 			}
 			deephyTooltip(sett.tooltip)
 		  }
-		  val prop = group.selectedValueProperty<Any>().toNonNullableProp()
+
+		  val prop = group.selectedValue/*<Any>().toNonNullableProp()*/
 		  prop.value = sett.prop.value
 		  prop.onChange {
 			sett.prop::value.set(it)

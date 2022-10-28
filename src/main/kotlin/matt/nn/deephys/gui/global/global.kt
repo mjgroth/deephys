@@ -6,6 +6,7 @@ import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.proto.actiontext.actionText
+import matt.fx.control.tfx.control.ToggleMechanism
 import matt.fx.control.wrapper.button.radio.RadioButtonWrapper
 import matt.fx.control.wrapper.button.radio.radiobutton
 import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
@@ -78,9 +79,9 @@ fun NodeWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {})
   theOp()
 }
 
-fun <V> NodeWrapper.deephyRadioButton(
+fun <V: Any> NodeWrapper.deephyRadioButton(
   s: String,
-  group: ToggleGroup,
+  group: ToggleMechanism<V>,
   value: V,
   theOp: RadioButtonWrapper.()->Unit = {}
 ) = radiobutton<V>(s, group, value) {
@@ -88,10 +89,10 @@ fun <V> NodeWrapper.deephyRadioButton(
   theOp()
 }
 
-fun <V> NodeWrapper.deephyToggleButton(
+fun <V: Any> NodeWrapper.deephyToggleButton(
   s: String = "",
   value: V,
-  group: ToggleGroup,
+  group: ToggleMechanism<V>,
   op: ToggleButtonWrapper.()->Unit = {}
 ) = togglebutton(s, value = value, group = group) {
   font = DEEPHY_FONT_DEFAULT
