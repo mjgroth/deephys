@@ -6,6 +6,7 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.Swapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
+import matt.fx.graphics.wrapper.text.text
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron

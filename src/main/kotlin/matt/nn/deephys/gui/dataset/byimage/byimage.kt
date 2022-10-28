@@ -73,9 +73,7 @@ class ByImageView(
 	  setOnAction {
 		viewer.imageSelection.value = testLoader.awaitNonUniformRandomImage()
 	  }
-	  visibleAndManagedProp.bind(
-		viewer.imageSelection.isNull.and(viewer.isUnboundToDSet)
-	  )
+	  visibleAndManagedProp.bind(viewer.imageSelection.isNull.and(viewer.isUnboundToDSet))
 	}
 	swapper(viewer.imageSelection, "no image selected") {
 	  val img = this@swapper

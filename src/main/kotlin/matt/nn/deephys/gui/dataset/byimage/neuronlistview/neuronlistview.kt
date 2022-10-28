@@ -50,24 +50,22 @@ fun NW.neuronListViewSwapper(
 
 fun NW.neuronListViewSwapper(
   viewer: DatasetViewer, top: ObsVal<out TopNeuronsCalcType?>
-) {
-  swapper(
-	MyBinding(
-	  DeephySettings.normalizeTopNeuronActivations, viewer.testData, top
-	) {
-	  viewer.testData.value?.let { tst ->
-		top.value?.let { topCalc ->
-		  NeuronListViewConfig(
-			viewer = viewer,
-			testLoader = tst,
-			tops = topCalc
-		  )
-		}
-	  }
-	}, "no top neurons"
+) = swapper(
+  MyBinding(
+	DeephySettings.normalizeTopNeuronActivations, viewer.testData, top
   ) {
-	NeuronListView(this)
-  }
+	viewer.testData.value?.let { tst ->
+	  top.value?.let { topCalc ->
+		NeuronListViewConfig(
+		  viewer = viewer,
+		  testLoader = tst,
+		  tops = topCalc
+		)
+	  }
+	}
+  }, "no top neurons"
+) {
+  NeuronListView(this)
 }
 
 

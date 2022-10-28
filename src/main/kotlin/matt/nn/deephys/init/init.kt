@@ -1,6 +1,5 @@
 package matt.nn.deephys.init
 
-import javafx.scene.control.ToggleGroup
 import javafx.scene.image.Image
 import kotlinx.serialization.ExperimentalSerializationApi
 import matt.async.thread.daemon
