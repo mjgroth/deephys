@@ -362,10 +362,10 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		fun update() {
 		  val currentBG = backgroundProperty.value
 		  val latestShouldBe = shouldBe.value
-//		  println("currentBG=${currentBG}")
+		  //		  println("currentBG=${currentBG}")
 		  if (currentBG != null) {
 			if (currentBG.fills.last().fill !== latestShouldBe) {
-//			  println("appending to background")
+			  //			  println("appending to background")
 
 			  val standards = currentBG.fills.filter { it !in shouldBes }
 			  val example = standards.first()
