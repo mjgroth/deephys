@@ -114,7 +114,7 @@ class NeuronListView(
 				val viewerToChange = viewer.boundToDSet.value ?: viewer
 				viewerToChange.navigateTo(neuronWithAct.neuron)
 			  }
-			  val image = viewer.imageSelection.value
+			  val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value
 			  if (image != null) {
 				deephyText(neuronWithAct.activation.formatted) {
 				  deephyTooltip(

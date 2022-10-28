@@ -183,7 +183,7 @@ class ActivationRatio(
   override fun timedCompute() =
 	numTest.awaitFinishedTest().maxActivations[neuron]/denomTest.awaitFinishedTest().maxActivations[neuron]
 
-  val formattedResult by lazy {
+  private val formattedResult by lazy {
 	" %=${findOrCompute().sigFigs(3)}"
   }
 

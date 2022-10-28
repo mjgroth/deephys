@@ -32,6 +32,7 @@ import matt.nn.deephys.model.importformat.DeephyImage
 import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
+import matt.obs.bindings.bool.or
 import matt.obs.math.op.times
 import matt.prim.str.truncateWithElipsesOrAddSpaces
 
@@ -73,7 +74,7 @@ class ByImageView(
 		viewer.imageSelection.value = testLoader.awaitNonUniformRandomImage()
 	  }
 	  visibleAndManagedProp.bind(
-		viewer.imageSelection.isNull.and(viewer.topNeurons.isNull)
+		viewer.imageSelection.isNull.and(viewer.isUnboundToDSet)
 	  )
 	}
 	swapper(viewer.imageSelection, "no image selected") {
@@ -144,14 +145,16 @@ class ByImageView(
 
 	  }
 	}.apply {
-	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
+	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
 	}
 	spacer(10.0)
 
 	neuronListViewSwapper(
 	  viewer = viewer,
 	  top = viewer.topNeurons
-	)
+	).apply {
+	  visibleAndManagedProp.bind(viewer.isBoundToDSet.or(viewer.imageSelection.isNotNull))
+	}
   }
 }
 
