@@ -1,7 +1,6 @@
 package matt.nn.deephys.gui.global
 
 import javafx.scene.Cursor
-import javafx.scene.control.ToggleGroup
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
 import matt.fx.control.lang.actionbutton
