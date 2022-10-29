@@ -30,3 +30,8 @@
    5. Click on an image to see top neurons
    6. Click on a neuron name to go back to seeing top images for that neuron, or click another image to navigate to the top neurons for that image
 
+## Intel Mac Instructions
+1. Download the `deephys-mac-intel.zip` for a release
+2. Unzip it
+3. From terminal, execute the file `intel` inside of it
+    - Note: it will install homebrew and openjdk17 if you do not already have it. This may take a while but will only happen the first time you open the app.
