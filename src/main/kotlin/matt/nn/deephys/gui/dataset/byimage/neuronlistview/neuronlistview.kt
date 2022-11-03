@@ -113,7 +113,11 @@ class NeuronListView(
 				viewerToChange.navigateTo(neuronWithAct.neuron)
 			  }
 			  val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value
+
+
 			  if (image != null) {
+
+
 				deephyText(neuronWithAct.activation.formatted) {
 				  deephyTooltip(
 					when (neuronWithAct.activation) {
@@ -122,11 +126,17 @@ class NeuronListView(
 					}
 				  )
 				}
-			  } else +ActivationRatio(
-				numTest = testLoader,
-				denomTest = viewer.boundToDSet.value!!.testData.value!!,
-				neuron = neuronWithAct.neuron
-			  ).text()
+
+
+			  } else +(viewer.boundToDSet.value?.testData?.value?.let {
+				ActivationRatio(
+				  numTest = testLoader,
+				  denomTest = it,
+				  neuron = neuronWithAct.neuron
+				).text()
+			  } ?: deephyText("error: no activation info"))
+
+
 			}
 			+NeuronView(
 			  neuronWithAct.neuron, numImages = DeephySettings.numImagesPerNeuronInByImage, testLoader = testLoader,

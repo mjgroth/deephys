@@ -55,11 +55,12 @@ import matt.obs.bind.deepBinding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
 import matt.obs.col.olist.basicMutableObservableListOf
+import matt.obs.prop.BindableProperty
+import matt.obs.prop.ObsVal
 import matt.obs.prop.VarProp
 import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
-import matt.obs.prop.withUpdatesFromWhen
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
@@ -165,15 +166,26 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		im?.let { TopNeurons(UniqueContents(setOf(it)), lay, DeephySettings.normalizeTopNeuronActivations.value) }
 	  }
 	}
-  private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
-	it?.topNeurons
+
+  /*  private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
+	  it?.topNeurons
+	}*/
+  private val boundTopNeurons: ObsVal<TopNeurons?> = boundToDSet.deepBinding(outerBox.isChangingBinding) {
+	if (outerBox.isChangingBinding.value) BindableProperty<TopNeurons?>(
+	  null
+	) /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
+	else (it?.topNeurons ?: BindableProperty<TopNeurons?>(null))
   }
 
-  val topNeurons: VarProp<TopNeurons?> =
-	VarProp(boundTopNeurons.value).apply {
-	  withUpdatesFromWhen(topNeuronsFromMyImage) { !isBoundToDSet.value }
-	  withNonNullUpdatesFrom(boundTopNeurons)
-	}
+  val topNeurons = MyBinding(boundTopNeurons, topNeuronsFromMyImage, outerBox.isChangingBinding) {
+	if (outerBox.isChangingBinding.value) null /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
+	else boundTopNeurons.value ?: topNeuronsFromMyImage.value
+  }
+  //  VarProp(boundTopNeurons.value ).apply
+  //  {
+  //	withUpdatesFromWhen(topNeuronsFromMyImage) { !isBoundToDSet.value }
+  //	withNonNullUpdatesFrom(boundTopNeurons)
+  //  }
 
   init {
 	initStopwatch.toc(4)

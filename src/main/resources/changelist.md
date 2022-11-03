@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephys/releases -->
 
-[//]: # (VERSION:1.22.3)
+[//]: # (VERSION:1.22.4)
 
 
 Compatible pip package
@@ -16,10 +16,11 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 
 ### Bug Fixes
 
-- Fixed normalization numbers being wrong
-- Fixed neurons showing in ByImage view when there is no image or bounded test
+- fixed normalization numbers being wrong issue
 
-[//]: # (### Internal Development)
+### Internal Development
+
+- Improved ability to detect errors in various ways
 
 [//]: # (### Notes)
 
