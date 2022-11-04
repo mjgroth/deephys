@@ -19,9 +19,7 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 - fixed crash when un-binding
 - fixed bind not working for ByImageView
 
-### Internal Development
-
-- Improved ability to detect errors in various ways
+[//]: # (### Internal Development)
 
 [//]: # (### Notes)
 

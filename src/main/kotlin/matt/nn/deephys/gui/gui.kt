@@ -6,6 +6,9 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
+import matt.async.thread.daemon
+import matt.exec.app.appName
+import matt.exec.app.myVersion
 import matt.file.construct.toMFile
 import matt.file.toSFile
 import matt.fx.control.wrapper.scroll.scrollpane
@@ -17,6 +20,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.gui.app.GuiApp
+import matt.gui.app.warmup.warmupJvmThreading
 import matt.lang.go
 import matt.log.profile.stopwatch.Stopwatch
 import matt.log.profile.stopwatch.tic
@@ -27,20 +31,59 @@ import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.settings.settingsButton
+import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.init.modelBinding
 import matt.nn.deephys.load.loadSwapper
+import matt.nn.deephys.state.DeephySettingsNode
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
+import java.util.prefs.Preferences
+
+/*invoked directly from test, in case I ever want to return something*/
+fun boot(args: Array<String>) {
+  if (args.size == 1 && args[0] == "erase-state") {
+	DeephyState.delete()
+  } else if (args.size == 1 && args[0] == "erase-settings") {
+	DeephySettingsNode.delete()
+  } else {
+	warmupJvmThreading()
+
+	daemon {
+	  stageTitle.putLoadedValue("${appName}s $myVersion")
+	}
+
+	daemon {
+	  initializeWhatICan()
+	}
+
+
+	VersionChecker.checkForUpdatesInBackground()
+
+	daemon {
+	  Preferences.userRoot().node("sinhalab.deephy.state").apply {
+		removeNode()
+		flush()
+	  }
+	  Preferences.userRoot().node("sinhalab.deephy.settings").apply {
+		removeNode()
+		flush()
+	  }
+	}
+
+	startDeephyApp()
+  }
+}
 
 val stageTitle = LoadedValueSlot<String>()
 
 fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 
+  println("start app 1")
 
   val myStageTitle = stageTitle.await()
   stage.title = myStageTitle
 
-
+  println("start app 2")
 
   stage.node.minWidth = 1000.0
   stage.node.minHeight = 850.0
@@ -48,7 +91,7 @@ fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
   stage.height = 1000.0*/
 
 
-
+  println("start app 3")
 
   root<VBoxWrapperImpl<NodeWrapper>> {
 	alignment = TOP_CENTER
@@ -148,6 +191,7 @@ fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 	  +VersionChecker.statusNode
 	}
   }
+  println("start app 4")
 
   /*not currently using this, because after making scroll bars transparet I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G */
   /*  scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/

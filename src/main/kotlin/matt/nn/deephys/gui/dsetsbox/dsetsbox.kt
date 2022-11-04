@@ -15,6 +15,12 @@ import matt.obs.prop.Var
 
 class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 
+  init {
+	runLater {
+	  println("created $this")
+	}
+  }
+
   var modelVisualizer: ModelVisualizer? = null
 
   operator fun plusAssign(file: CborFile) {
@@ -48,7 +54,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   val isChangingBinding = isChangingBindingM.readOnly()
   val bound: Var<DatasetViewer?> = myToggleGroup.selectedValue
 
-  fun addTest() = plusAssign(DatasetViewer(null, this))
+  fun addTest() = DatasetViewer(null, this).also { plusAssign(it) }
 
 }
 
