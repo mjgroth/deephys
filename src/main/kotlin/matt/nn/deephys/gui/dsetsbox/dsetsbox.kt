@@ -34,9 +34,9 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 
   val myToggleGroup = ToggleMechanism<DatasetViewer>().apply {
 	this.selectedValue.onChange {
-	  isChangingBinding.value = true
-	  runLater{
-		isChangingBinding.value = false
+	  isChangingBindingM.value = true
+	  runLater {
+		isChangingBindingM.value = false
 	  }
 	  /*prevents infinite recursion stack overflows in some cases*/
 	  /*must be the first listener for "myToggleGroup"... and I'm concerned this enforced enough*/
@@ -44,7 +44,8 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	  /*or maybe is the best solution but needs to be generalized / canonicalize better*/
 	}
   }
-  val isChangingBinding = BindableProperty(false)
+  private val isChangingBindingM = BindableProperty(false)
+  val isChangingBinding = isChangingBindingM.readOnly()
   val bound: Var<DatasetViewer?> = myToggleGroup.selectedValue
 
   fun addTest() = plusAssign(DatasetViewer(null, this))

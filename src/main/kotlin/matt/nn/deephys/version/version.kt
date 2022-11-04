@@ -11,6 +11,7 @@ import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.kjlib.git.hub.GitHub
 import matt.log.warn.warn
+import matt.log.warn.warnOnce
 import matt.model.release.Release
 import matt.model.release.Version
 import matt.nn.deephys.gui.global.deephyHyperlink
@@ -27,7 +28,7 @@ object VersionChecker {
 		try {
 		  val releases = GitHub.releasesOf(appName)
 		  if (releases == null) {
-			warn("releases == null")
+			warnOnce("releases == null")
 		  } else {
 			val newest = releases.maxBy { it.version }
 			runLater {

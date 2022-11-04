@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephys/releases -->
 
-[//]: # (VERSION:1.22.4)
+[//]: # (VERSION:1.22.5)
 
 
 Compatible pip package
@@ -16,7 +16,8 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 
 ### Bug Fixes
 
-- fixed normalization numbers being wrong issue
+- fixed crash when un-binding
+- fixed bind not working for ByImageView
 
 ### Internal Development
 

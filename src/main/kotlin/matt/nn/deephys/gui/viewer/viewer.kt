@@ -26,6 +26,7 @@ import matt.lang.disabledCode
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
+import matt.model.debug.DebugLogger
 import matt.model.tostringbuilder.toStringBuilder
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.UniqueContents
@@ -170,16 +171,24 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   /*  private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
 	  it?.topNeurons
 	}*/
-  private val boundTopNeurons: ObsVal<TopNeurons?> = boundToDSet.deepBinding(outerBox.isChangingBinding) {
-	if (outerBox.isChangingBinding.value) BindableProperty<TopNeurons?>(
-	  null
-	) /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
-	else (it?.topNeurons ?: BindableProperty<TopNeurons?>(null))
-  }
+  private val boundTopNeurons: ObsVal<TopNeurons?> =
+	boundToDSet.deepBinding(outerBox.isChangingBinding, debugLogger = DebugLogger("boundTopNeurons")) {
+	  val r = if (outerBox.isChangingBinding.value) BindableProperty<TopNeurons?>(
+		null
+	  ) /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
+	  else (it?.topNeurons ?: BindableProperty<TopNeurons?>(null))
+
+	  println("boundTopNeurons(${file.value?.name})=$r")
+	  r
+	}
 
   val topNeurons = MyBinding(boundTopNeurons, topNeuronsFromMyImage, outerBox.isChangingBinding) {
-	if (outerBox.isChangingBinding.value) null /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
-	else boundTopNeurons.value ?: topNeuronsFromMyImage.value
+	val r =
+	  if (outerBox.isChangingBinding.value) null /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
+	  else boundTopNeurons.value ?: topNeuronsFromMyImage.value
+
+	println("topNeurons(${file.value?.name})=$r")
+	r
   }
   //  VarProp(boundTopNeurons.value ).apply
   //  {
@@ -224,7 +233,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   fun navigateTo(im: DeephyImage) {
-	val t = tic("navigating to image")
+	val t = tic("navigating to image", enabled = false)
 	t.toc(1)
 	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
 	t.toc(2)

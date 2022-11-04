@@ -1,5 +1,6 @@
 {
-  "type": "matt.mstruct.bj.BasicJvmOnlyMod", "jvmExec": {},
+  "type" :         "matt.mstruct.bj.BasicJvmOnlyMod",
+  "jvmExec" :      {},
   "dependencies" : [
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
@@ -50,10 +51,16 @@
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
 	  "path" : ":k:kjlib:git"
-	},{
+	},
+	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
 	  "path" : ":k:pref"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "commonTestImplementation",
+	  "path" : ":k:test"
 	}
   ]
 }
