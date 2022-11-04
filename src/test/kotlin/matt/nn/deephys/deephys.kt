@@ -15,6 +15,7 @@ import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.stageTitle
 import matt.nn.deephys.state.DeephyState
+import matt.test.yesIUseTestLibs
 import matt.time.dur.sleep
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -32,7 +33,10 @@ class SomeTests {
 
 	@JvmStatic
 	@BeforeAll
-	fun openApp(): Unit {
+	fun openApp() {
+
+	  yesIUseTestLibs()
+
 	  thread {
 		main(arrayOf())
 	  }
