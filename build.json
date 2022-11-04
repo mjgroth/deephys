@@ -59,7 +59,7 @@
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "commonTestImplementation",
+	  "cfg" :  "testImplementation",
 	  "path" : ":k:test"
 	}
   ]
