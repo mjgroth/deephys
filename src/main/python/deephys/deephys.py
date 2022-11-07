@@ -141,8 +141,8 @@ class Stopwatch:
         print(f"{self.name} took {self.duration_secs} seconds")
 
     def stop_and_report(self):
-        self.stop()
-        self.report()
+        self.stop(null)
+        self.report(null)
 
 
 def start_stopwatch(name):
