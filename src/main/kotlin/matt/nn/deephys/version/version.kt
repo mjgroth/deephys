@@ -4,7 +4,6 @@ import javafx.application.Platform.runLater
 import matt.async.schedule.AccurateTimer
 import matt.async.schedule.every
 import matt.async.thread.daemon
-import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
@@ -14,6 +13,7 @@ import matt.log.warn.warn
 import matt.log.warn.warnOnce
 import matt.model.release.Release
 import matt.model.release.Version
+import matt.mstruct.rstruct.appName
 import matt.nn.deephys.gui.global.deephyHyperlink
 import matt.nn.deephys.gui.global.deephyText
 import matt.obs.prop.BindableProperty

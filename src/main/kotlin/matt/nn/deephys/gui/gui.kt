@@ -7,7 +7,6 @@ import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.async.thread.daemon
-import matt.exec.app.appName
 import matt.exec.app.myVersion
 import matt.file.construct.toMFile
 import matt.file.toSFile
@@ -26,6 +25,7 @@ import matt.log.profile.stopwatch.Stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.tab
 import matt.model.latch.asyncloaded.LoadedValueSlot
+import matt.mstruct.rstruct.appName
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyText
