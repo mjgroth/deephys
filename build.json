@@ -1,6 +1,6 @@
 {
   "type" :         "matt.mstruct.bj.BasicJvmOnlyMod",
-  "jvmExec" :      {},
+  "jvmExec" :      {"type":"Typical"},
   "dependencies" : [
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
