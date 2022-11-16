@@ -56,5 +56,27 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 
   fun addTest() = DatasetViewer(null, this).also { plusAssign(it) }
 
+
+
+  fun removeTest(t: DatasetViewer) {
+	println("removing test: ${t.file.value}")
+	if (bound.value == t) bound.value = null
+	t.removeFromParent()
+	t.normalizeTopNeuronActivations.unbind()
+	t.numImagesPerNeuronInByImage.unbind()
+	t.predictionSigFigs.unbind()
+	t.topNeurons.removeAllDependencies()
+	t.boundTopNeurons.removeAllDependencies()
+	t.boundToDSet.removeAllDependencies()
+	t.outerBox.save()
+  }
+
+  fun removeAllTests() {
+	/*need the toList here since concurrent modification exception is NOT being thrown and actually causing bugs*/
+	children.toList().forEach {
+	  removeTest(it)
+	}
+  }
+
 }
 

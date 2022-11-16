@@ -11,6 +11,7 @@ import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.lang.go
+import matt.lang.weak.WeakRef
 import matt.nn.deephys.calc.ActivationRatio
 import matt.nn.deephys.calc.NormalizedAverageActivation
 import matt.nn.deephys.calc.TopNeurons
@@ -32,42 +33,66 @@ import matt.obs.prop.ObsVal
 fun NW.neuronListViewSwapper(
   viewer: DatasetViewer,
   contents: UniqueContents<DeephyImage>
-) = neuronListViewSwapper(
-  viewer = viewer,
-  top = MyBinding(
-	viewer.layerSelection,
-	DeephySettings.normalizeTopNeuronActivations
-  ) {
-	viewer.layerSelection.value?.let { lay ->
-	  TopNeurons(
-		images = contents,
-		layer = lay,
-		normalized = DeephySettings.normalizeTopNeuronActivations.value
-	  )
-	}
-  }
-)
+) = run {
 
-fun NW.neuronListViewSwapper(
-  viewer: DatasetViewer, top: ObsVal<out TopNeuronsCalcType?>
-) = swapper(
-  MyBinding(
-	DeephySettings.normalizeTopNeuronActivations, viewer.testData, top
-  ) {
-	viewer.testData.value?.let { tst ->
-	  top.value?.let { topCalc ->
-		NeuronListViewConfig(
-		  viewer = viewer,
-		  testLoader = tst,
-		  tops = topCalc
-		)
+  val weakViewer = WeakRef(viewer)
+  neuronListViewSwapper(
+	viewer = viewer,
+	top = MyBinding(
+	  viewer.layerSelection,
+	  DeephySettings.normalizeTopNeuronActivations
+	) {
+	  weakViewer.deref()?.let { deRefedViewer ->
+		deRefedViewer.layerSelection.value?.let { lay ->
+		  TopNeurons(
+			images = contents,
+			layer = lay,
+			normalized = deRefedViewer.normalizeTopNeuronActivations.value
+		  )
+		}
 	  }
+
+	}.apply {
+	  /*  viewer.onGarbageCollected {
+		  markInvalid()
+		  removeAllDependencies()
+		}*/
 	}
-  }, "no top neurons"
-) {
-  NeuronListView(this)
+  )
 }
 
+fun NW.neuronListViewSwapper(
+  viewer: DatasetViewer,
+  top: ObsVal<out TopNeuronsCalcType?>
+) = run {
+  val weakViewer = WeakRef(viewer)
+  swapper(
+	MyBinding(
+	  viewer.normalizeTopNeuronActivations,
+	  viewer.testData,
+	  top
+	) {
+	  weakViewer.deref()?.let { deRefedViewer ->
+		deRefedViewer.testData.value?.let { tst ->
+		  top.value?.let { topCalc ->
+			NeuronListViewConfig(
+			  viewer = deRefedViewer,
+			  testLoader = tst,
+			  tops = topCalc
+			)
+		  }
+		}
+	  }
+	}.apply {
+	  /*	  viewer.onGarbageCollected {
+			  markInvalid()
+			  removeAllDependencies()
+			}*/
+	}, "no top neurons"
+  ) {
+	NeuronListView(this)
+  }
+}
 
 data class NeuronListViewConfig(
   val viewer: DatasetViewer,
@@ -108,8 +133,10 @@ class NeuronListView(
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {
 			textflow<TextWrapper> {
+			  val weakViewer = WeakRef(viewer)
 			  deephyActionText("neuron $neuronIndex") {
-				val viewerToChange = viewer.boundToDSet.value ?: viewer
+				val deReffedViewer = weakViewer.deref()!!
+				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
 				viewerToChange.navigateTo(neuronWithAct.neuron)
 			  }
 			  val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value
@@ -139,7 +166,7 @@ class NeuronListView(
 
 			}
 			+NeuronView(
-			  neuronWithAct.neuron, numImages = DeephySettings.numImagesPerNeuronInByImage, testLoader = testLoader,
+			  neuronWithAct.neuron, numImages = cfg.viewer.numImagesPerNeuronInByImage, testLoader = testLoader,
 			  viewer = viewer
 			).apply {
 			  prefWrapLength = myWidth

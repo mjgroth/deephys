@@ -1,11 +1,12 @@
 package matt.nn.deephys.gui.category
 
-import javafx.scene.paint.Color
+import matt.color.colorMap
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.region.RegionWrapper
+import matt.fx.graphics.wrapper.style.toFXColor
 import matt.nn.deephys.calc.CategoryAccuracy
 import matt.nn.deephys.calc.CategoryFalseNegativesSorted
 import matt.nn.deephys.calc.CategoryFalsePositivesSorted
@@ -86,11 +87,8 @@ class CategoryView(
 		  )
 		}
 		val cats = (testLoader.awaitFinishedTest().categories - selection.primaryCategory)
-		val hueStep = (1.0/cats.size)
-		val colorMap = List(cats.size) {
-		  val hue = it*hueStep*360
-		  Color.hsb(hue, 0.5, 1.0)
-		}.withIndex().associate { cats[it.index] to it.value }
+		val cMap = colorMap(cats.size)
+		val colorMap = cats.withIndex().associate { it.value to cMap[it.index]!!.toFXColor() }
 		+CategoryPie(
 		  "False Positives",
 		  cats,

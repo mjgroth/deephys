@@ -13,6 +13,7 @@ import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.lang.go
+import matt.lang.weak.WeakRef
 import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.calc.UniqueContents
@@ -29,7 +30,6 @@ import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.importformat.DeephyImage
-import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.or
@@ -69,79 +69,85 @@ class ByImageView(
   testLoader: TestLoader, viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
+	val weakViewer = WeakRef(viewer)
+	val weakTest = WeakRef(testLoader)
 	deephyButton("select random image") {
 	  setOnAction {
-		viewer.imageSelection.value = testLoader.awaitNonUniformRandomImage()
+		weakViewer.deref()!!.imageSelection.value = weakTest.deref()!!.awaitNonUniformRandomImage()
 	  }
 	  visibleAndManagedProp.bind(viewer.imageSelection.isNull.and(viewer.isUnboundToDSet))
 	}
 	swapper(viewer.imageSelection, "no image selected") {
 	  val img = this@swapper
-	  HBoxWrapperImpl<NodeWrapper>().apply {
-		+DeephyImView(img, viewer).apply {
-		  scale.value = 4.0
-		}
-		spacer(10.0)
-		vbox {
-		  textflow<TextWrapper> {
-			deephyText("ground truth: ").titleFont()
-			deephyActionText(img.category.label) {
-			  viewer.navigateTo(img.category)
-			}.titleBoldFont()
-		  }
-		  spacer()
-
-		  deephyText("predictions:") {
-			subtitleFont()
+	  weakViewer.deref()?.let { deRefedViewer ->
+		HBoxWrapperImpl<NodeWrapper>().apply {
+		  +DeephyImView(img, deRefedViewer).apply {
+			scale.value = 4.0
 		  }
 		  spacer(10.0)
-		  val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
-		  val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
-		  hbox<PaneWrapper<*>> {
-			+predNamesBox
-			spacer()
-			+predValuesBox
-		  }
-		  val topPreds = ImageTopPredictions(img, testLoader)()
-		  topPreds.forEach {
-			val category = it.first
-			val pred = it.second
-			val fullString = "\t${category.label} (${pred})"
-			predNamesBox.deephyActionText(category.label.truncateWithElipsesOrAddSpaces(25)) {
-			  viewer.navigateTo(category)
-			}.apply {
-			  deephyTooltip(fullString)
-			}
-			predValuesBox.deephyText {
-			  textProperty.bind(DeephySettings.predictionSigFigs.binding {
-				pred.sigFigs(it).toString()
-			  })
-			  deephyTooltip(fullString)
-			}
-		  }
-		}
-		spacer()
-		img.features?.takeIf { it.isNotEmpty() }?.go {
 		  vbox {
-			deephyText("Features:") {
+			textflow<TextWrapper> {
+			  deephyText("ground truth: ").titleFont()
+			  val cat = img.category
+			  deephyActionText(cat.label) {
+				weakViewer.deref()!!.navigateTo(cat)
+			  }.titleBoldFont()
+			}
+			spacer()
+
+			deephyText("predictions:") {
 			  subtitleFont()
 			}
-			spacer()
-			val featureKeysBox: NodeWrapper = vbox<TextWrapper> {}
-			val featureValuesBox: NodeWrapper = vbox<TextWrapper> {}
+			spacer(10.0)
+			val predNamesBox: NodeWrapper = vbox<TextWrapper> {}
+			val predValuesBox: NodeWrapper = vbox<TextWrapper> {}
 			hbox<PaneWrapper<*>> {
-			  +featureKeysBox
+			  +predNamesBox
 			  spacer()
-			  +featureValuesBox
+			  +predValuesBox
 			}
-			it.forEach { (k, v) ->
-			  featureKeysBox.deephyText(k.truncateWithElipsesOrAddSpaces(25))
-			  featureValuesBox.deephyText(v)
+			val topPreds = ImageTopPredictions(img, weakTest.deref()!!)()
+			topPreds.forEach {
+			  val category = it.first
+			  val pred = it.second
+			  val fullString = "\t${category.label} (${pred})"
+			  predNamesBox.deephyActionText(category.label.truncateWithElipsesOrAddSpaces(25)) {
+				weakViewer.deref()!!.navigateTo(category)
+			  }.apply {
+				deephyTooltip(fullString)
+			  }
+			  predValuesBox.deephyText {
+				textProperty.bind(deRefedViewer.predictionSigFigs.binding {
+				  pred.sigFigs(it).toString()
+				})
+				deephyTooltip(fullString)
+			  }
 			}
 		  }
-		}
+		  spacer()
+		  img.features?.takeIf { it.isNotEmpty() }?.go {
+			vbox {
+			  deephyText("Features:") {
+				subtitleFont()
+			  }
+			  spacer()
+			  val featureKeysBox: NodeWrapper = vbox<TextWrapper> {}
+			  val featureValuesBox: NodeWrapper = vbox<TextWrapper> {}
+			  hbox<PaneWrapper<*>> {
+				+featureKeysBox
+				spacer()
+				+featureValuesBox
+			  }
+			  it.forEach { (k, v) ->
+				featureKeysBox.deephyText(k.truncateWithElipsesOrAddSpaces(25))
+				featureValuesBox.deephyText(v)
+			  }
+			}
+		  }
 
-	  }
+		}
+	  } ?: TextWrapper("if you see this, then there must be a problem")
+
 	}.apply {
 	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
 	}

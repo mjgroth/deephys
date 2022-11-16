@@ -57,7 +57,6 @@ import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
 import matt.obs.col.olist.basicMutableObservableListOf
 import matt.obs.prop.BindableProperty
-import matt.obs.prop.ObsVal
 import matt.obs.prop.VarProp
 import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
@@ -80,6 +79,18 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   val file: VarProp<CborFile?> = VarProp(initialFile).withChangeListener {
 	outerBox.save()
   }
+
+  val normalizeTopNeuronActivations = BindableProperty(DeephySettings.normalizeTopNeuronActivations.value).apply {
+	bind(DeephySettings.normalizeTopNeuronActivations)
+  }
+  val numImagesPerNeuronInByImage = BindableProperty(DeephySettings.numImagesPerNeuronInByImage.value).apply {
+	bind(DeephySettings.numImagesPerNeuronInByImage)
+  }
+  val predictionSigFigs = BindableProperty(DeephySettings.predictionSigFigs.value).apply {
+	bind(DeephySettings.predictionSigFigs)
+  }
+
+
   val testData = file.binding { f ->
 	val t = tic(prefix = "dataBinding2", enabled = false)
 	t.toc("start")
@@ -93,6 +104,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	}
   }.apply {
 	stopwatch = "dataBinding"
+
   }
 
   val boundToDSet by lazy {
@@ -161,17 +173,17 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	imageSelection.binding(
 	  testData,
 	  layerSelection,
-	  DeephySettings.normalizeTopNeuronActivations
+	  normalizeTopNeuronActivations
 	) { im ->
 	  layerSelection.value?.let { lay ->
-		im?.let { TopNeurons(UniqueContents(setOf(it)), lay, DeephySettings.normalizeTopNeuronActivations.value) }
+		im?.let { TopNeurons(UniqueContents(setOf(it)), lay, normalizeTopNeuronActivations.value) }
 	  }
 	}
 
   /*  private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
 	  it?.topNeurons
 	}*/
-  private val boundTopNeurons: ObsVal<TopNeurons?> =
+  val boundTopNeurons: MyBinding<TopNeurons?> =
 	boundToDSet.deepBinding(outerBox.isChangingBinding, debugLogger = DebugLogger("boundTopNeurons")) {
 	  val r = if (outerBox.isChangingBinding.value) BindableProperty<TopNeurons?>(
 		null
@@ -182,6 +194,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  r
 	}
 
+
   val topNeurons = MyBinding(boundTopNeurons, topNeuronsFromMyImage, outerBox.isChangingBinding) {
 	val r =
 	  if (outerBox.isChangingBinding.value) null /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
@@ -190,6 +203,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	println("topNeurons(${file.value?.name})=$r")
 	r
   }
+
+
+
   //  VarProp(boundTopNeurons.value ).apply
   //  {
   //	withUpdatesFromWhen(topNeuronsFromMyImage) { !isBoundToDSet.value }
@@ -272,20 +288,24 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	graphic = hbox<NodeWrapper> {
 	  alignment = Pos.CENTER
 	  this@DatasetViewer.initStopwatch.toc(8.1)
+
+
+
 	  deephyButton("remove test") {
-		this@DatasetViewer.initStopwatch.toc("8.1.1")
 		deephyTooltip("remove this test viewer")
-		this@DatasetViewer.initStopwatch.toc("8.1.2")
 		setOnAction {
-		  if (this@DatasetViewer.outerBox.bound.value == this@DatasetViewer) {
-			this@DatasetViewer.outerBox.bound.value = null
-		  }
-		  this@DatasetViewer.removeFromParent()
-		  this@DatasetViewer.outerBox.save()
+		  this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
 		}
-		this@DatasetViewer.initStopwatch.toc("8.1.3")
 	  }
+
+
+
+
+
 	  this@DatasetViewer.initStopwatch.toc(8.2)
+
+
+
 	  deephyButton("select test") {
 		deephyTooltip("choose test file")
 		setOnAction {

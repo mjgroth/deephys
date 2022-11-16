@@ -4,6 +4,7 @@ import javafx.scene.control.ContentDisplay.BOTTOM
 import matt.async.queue.QueueThread
 import matt.async.queue.QueueThread.SleepType.WHEN_NO_JOBS
 import matt.collect.map.lazyMap
+import matt.collect.weak.lazyWeakMap
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.tooltip.Owner
@@ -13,6 +14,7 @@ import matt.fx.graphics.fxthread.runLaterReturn
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.lang.sync
+import matt.lang.weak.WeakRef
 import matt.model.flowlogic.controlflowstatement.ControlFlow.CONTINUE
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.DEEPHY_FONT_DEFAULT
@@ -24,14 +26,25 @@ import kotlin.time.Duration.Companion.seconds
 
 /*cant have op here since it will operate on the tooltip for other nodes*/
 fun NodeWrapper.deephyTooltip(s: String, im: DeephyImage? = null/*, op: Tooltip.()->Unit = {}*/): TooltipWrapper {
-  return tooltips[s to im].also {
+  return tooltips[im][s]!!.also {
 	install(it)
   }
 }
 
 /*a single tooltip can be installed on multiple nodes, (and this seems important for performance)*/
-val tooltips = lazyMap<Pair<String, DeephyImage?>, TooltipWrapper> {
-  DeephyTooltip(it.first, it.second)
+val tooltips = lazyWeakMap<DeephyImage?, Map<String, TooltipWrapper>> { im ->
+
+  if (im == null) {
+	lazyMap { str ->
+	  DeephyTooltip(str, null)
+	}
+  } else {
+	val weakIm = WeakRef(im) /*prevents the tooltip map from leaking DeephyImages into memory*/
+	lazyMap { str ->
+	  DeephyTooltip(str, weakIm.deref()!!) /*this reference should always return non-null as long as the image is still being used.*/
+	}
+  }
+
 }
 
 

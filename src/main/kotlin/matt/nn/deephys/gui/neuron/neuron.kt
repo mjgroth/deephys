@@ -1,5 +1,6 @@
 package matt.nn.deephys.gui.neuron
 
+import matt.lang.weak.WeakPair
 import matt.nn.deephys.calc.TopImages
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
@@ -19,23 +20,25 @@ class NeuronView(
   ): ImageFlowPane(viewer) {
   init {
 
-	/*for reasons I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
+	/*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
 	prefWrapLengthProperty.bind(viewer.widthProperty*0.8)
 
-	fun update() {
+	fun update(testLoaderAndViewer: Pair<TestLoader, DatasetViewer>) {
+	  val localTestLoader = testLoaderAndViewer.first
+	  val localViewer = testLoaderAndViewer.second
 	  clear()
-	  val realNumImages = min(numImages.value.toULong(), testLoader.numImages.await())
-	  val topImages = TopImages(neuron, testLoader, realNumImages.toInt())()
+	  val realNumImages = min(numImages.value.toULong(), localTestLoader.numImages.await())
+	  val topImages = TopImages(neuron, localTestLoader, realNumImages.toInt())()
 
 
 	  topImages.forEach {
-		val im = testLoader.awaitImage(it.index)
-		+DeephyImView(im, viewer)
+		val im = localTestLoader.awaitImage(it.index)
+		+DeephyImView(im, localViewer)
 	  }
 	}
-	update()
-	numImages.onChange {
-	  update()
+	update(testLoader to viewer)
+	numImages.onChangeWithAlreadyWeak(WeakPair(testLoader, viewer)) { tl, _ ->
+	  update(tl)
 	}
   }
 }

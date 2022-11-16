@@ -2,6 +2,7 @@ package matt.nn.deephys.gui.deephyimview
 
 import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
+import matt.lang.weak.WeakRef
 import matt.log.todo.todoOnce
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
@@ -16,12 +17,15 @@ class DeephyImView(im: DeephyImage, viewer: DatasetViewer): ScaledCanvas() {
 
 	deephyTooltip(im.category.label, im)
 
-	hoverProperty.onChange {
-	  if (it) drawBorder()
-	  else draw(im)
+
+	val weakIm = WeakRef(im)
+	hoverProperty.onChangeWithAlreadyWeak(weakIm) { derefedIm, h ->
+	  if (h) drawBorder()
+	  else draw(derefedIm)
 	}
+	val weakViewer = WeakRef(viewer)
 	onLeftClick {
-	  viewer.navigateTo(im)
+	  weakViewer.deref()!!.navigateTo(weakIm.deref()!!)
 	}
   }
 }

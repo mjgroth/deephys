@@ -1,7 +1,7 @@
 package matt.nn.deephys.calc.act
 
 import matt.math.jmath.sigFigs
-import matt.math.mathable.FloatWrapper
+import matt.model.mathable.FloatWrapper
 
 sealed interface Activation<T: Activation<T>>: FloatWrapper<T> {
   val value: Float
