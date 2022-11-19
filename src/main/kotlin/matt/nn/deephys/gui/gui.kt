@@ -30,7 +30,7 @@ import matt.lang.go
 import matt.log.profile.stopwatch.Stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.tab
-import matt.model.latch.asyncloaded.LoadedValueSlot
+import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.mstruct.rstruct.appName
 import matt.nn.deephys.gui.Arg.`erase-settings`
 import matt.nn.deephys.gui.Arg.`erase-state`

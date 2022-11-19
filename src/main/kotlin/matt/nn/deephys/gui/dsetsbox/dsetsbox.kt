@@ -5,7 +5,7 @@ import matt.file.CborFile
 import matt.file.toSFile
 import matt.fx.control.tfx.control.ToggleMechanism
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.model.message.FileList
+import matt.model.data.message.FileList
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model

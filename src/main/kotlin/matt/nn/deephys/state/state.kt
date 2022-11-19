@@ -8,8 +8,8 @@ import matt.json.custom.int
 import matt.json.oldfx.jsonObj
 import matt.json.ser.JsonObjectSerializer
 import matt.lang.go
-import matt.model.message.FileList
-import matt.model.message.SFile
+import matt.model.data.message.FileList
+import matt.model.data.message.SFile
 import matt.nn.deephys.calc.NormalizedAverageActivation.Companion.normalizeTopNeuronsBlurb
 import matt.pref.obs.ObsPrefNode
 

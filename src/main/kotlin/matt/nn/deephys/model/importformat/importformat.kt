@@ -8,9 +8,9 @@ import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.weak.lazyWeak
 import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
-import matt.model.latch.asyncloaded.DaemonLoadedValueOp
-import matt.model.latch.asyncloaded.DelegatedSlot
-import matt.model.latch.asyncloaded.LoadedValueSlot
+import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
+import matt.model.flowlogic.latch.asyncloaded.DelegatedSlot
+import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.test.ActivationData

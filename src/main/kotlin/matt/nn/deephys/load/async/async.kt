@@ -3,7 +3,7 @@ package matt.nn.deephys.load.async
 import javafx.application.Platform.runLater
 import matt.cbor.err.CborParseException
 import matt.file.CborFile
-import matt.model.await.Awaitable
+import matt.model.flowlogic.await.Awaitable
 import matt.obs.bindings.bool.ObsB
 import matt.obs.prop.BindableProperty
 

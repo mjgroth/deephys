@@ -11,8 +11,8 @@ import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.kjlib.git.hub.GitHub
 import matt.log.warn.warn
 import matt.log.warn.warnOnce
-import matt.model.release.Release
-import matt.model.release.Version
+import matt.model.data.release.Release
+import matt.model.data.release.Version
 import matt.mstruct.rstruct.appName
 import matt.nn.deephys.gui.global.deephyHyperlink
 import matt.nn.deephys.gui.global.deephyText

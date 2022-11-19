@@ -26,8 +26,8 @@ import matt.lang.disabledCode
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
-import matt.model.debug.DebugLogger
-import matt.model.tostringbuilder.toStringBuilder
+import matt.model.op.debug.DebugLogger
+import matt.model.obj.tostringbuilder.toStringBuilder
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.dataset.DatasetNode

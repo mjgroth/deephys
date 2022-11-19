@@ -17,8 +17,8 @@ import matt.file.CborFile
 import matt.lang.List2D
 import matt.lang.disabledCode
 import matt.log.profile.mem.throttle
-import matt.model.errreport.ThrowReport
-import matt.model.latch.asyncloaded.LoadedValueSlot
+import matt.model.code.errreport.ThrowReport
+import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.load.async.AsyncLoader
 import matt.nn.deephys.load.cache.CacheTool

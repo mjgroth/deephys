@@ -11,6 +11,7 @@ import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.region.border.FXBorder
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
+import matt.model.op.convert.StringConverter
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -36,7 +37,7 @@ class LayerView(
 	  //	  property = viewer.neuronSelection,
 	  enableScroll = false
 	) {
-	  valueFactory.converter = object: matt.model.convert.StringConverter<InterTestNeuron> {
+	  valueFactory.converter = object: StringConverter<InterTestNeuron> {
 		override fun toString(t: InterTestNeuron): String {
 		  return "${t.index}"
 		}

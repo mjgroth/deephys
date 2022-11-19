@@ -28,8 +28,8 @@ import matt.log.profile.data.TestSession
 import matt.log.profile.data.ramSample
 import matt.log.profile.mem.MemReport
 import matt.log.profile.stopwatch.tic
-import matt.model.byte.megabytes
-import matt.model.rect.RectSize
+import matt.model.data.byte.megabytes
+import matt.model.data.rect.RectSize
 import matt.nn.deephys.gui.Arg.`erase-state`
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
