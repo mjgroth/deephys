@@ -1,8 +1,7 @@
 package matt.nn.deephys.gui.global.tooltip
 
 import javafx.scene.control.ContentDisplay.BOTTOM
-import matt.async.queue.QueueThread
-import matt.async.queue.QueueThread.SleepType.WHEN_NO_JOBS
+import matt.async.queue.QueueWorker
 import matt.collect.map.lazyMap
 import matt.collect.weak.lazyWeakMap
 import matt.fx.control.inter.contentDisplay
@@ -20,7 +19,6 @@ import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.DEEPHY_FONT_DEFAULT
 import matt.nn.deephys.model.importformat.DeephyImage
 import matt.sys.loopthread.DaemonLoop
-import matt.time.dur.ms
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -50,7 +48,7 @@ val tooltips = lazyWeakMap<DeephyImage?, Map<String, TooltipWrapper>> { im ->
 
 private class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
   companion object {
-	private val drawQueue = QueueThread(sleepPeriod = 250.ms, sleepType = WHEN_NO_JOBS)
+	private val drawQueue = QueueWorker()
 	private val runLaterBunch = mutableSetOf<()->Unit>()
 
 	init {
@@ -94,7 +92,7 @@ private class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
 
 	contentDisplay = BOTTOM
 	if (im != null) {
-	  drawQueue.with {
+	  drawQueue.schedule {
 		ScaledCanvas().apply {
 		  draw(im)
 		  scale.value = 5.0
