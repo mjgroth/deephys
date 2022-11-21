@@ -64,7 +64,7 @@ private class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
 		  }
 		}
 		CONTINUE
-	  }).start()
+	  }).sendStartSignal()
 	}
   }
 
