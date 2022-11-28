@@ -8,8 +8,8 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.ArcType.ROUND
 import javafx.util.Duration
-import matt.fx.graphics.tfx.animation.keyframe
-import matt.fx.graphics.tfx.animation.timeline
+import matt.fx.graphics.anim.animation.keyframe
+import matt.fx.graphics.anim.animation.timeline
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
@@ -88,10 +88,10 @@ class CategoryPie(
 		  if (cat == selected) {
 			timeline {
 			  keyframe(Duration.millis(500.0)) {
-				keyvalue(theLabel.node.layoutXProperty(), theLabel.layoutX + 25*thetaX, Interpolator.EASE_OUT)
-				keyvalue(theLabel.node.layoutYProperty(), theLabel.layoutY + 25*thetaY, Interpolator.EASE_OUT)
-				keyvalue(node.layoutXProperty(), layoutX + 25*thetaX, Interpolator.EASE_OUT)
-				keyvalue(node.layoutYProperty(), layoutY + 25*thetaY, Interpolator.EASE_OUT)
+				keyvalue(theLabel.node.layoutXProperty(), theLabel.layoutX + 25*thetaX, MyInterpolator.EASE_OUT)
+				keyvalue(theLabel.node.layoutYProperty(), theLabel.layoutY + 25*thetaY, MyInterpolator.EASE_OUT)
+				keyvalue(node.layoutXProperty(), layoutX + 25*thetaX, MyInterpolator.EASE_OUT)
+				keyvalue(node.layoutYProperty(), layoutY + 25*thetaY, MyInterpolator.EASE_OUT)
 			  }
 			}
 		  }
