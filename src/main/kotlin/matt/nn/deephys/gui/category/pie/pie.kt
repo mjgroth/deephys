@@ -10,6 +10,8 @@ import javafx.scene.shape.ArcType.ROUND
 import javafx.util.Duration
 import matt.fx.graphics.anim.animation.keyframe
 import matt.fx.graphics.anim.animation.timeline
+import matt.fx.graphics.anim.interp.MyInterpolator
+import matt.fx.graphics.anim.interp.MyInterpolator.Companion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
