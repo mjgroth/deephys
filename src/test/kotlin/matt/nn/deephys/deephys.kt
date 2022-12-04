@@ -119,7 +119,7 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 	  app.boot(arrayOf())
 	}
 	mainStage.apply {
-	  runLater {
+	  runLaterReturn {
 		width = MAC_MAYBE_MIN_SCREEN_SIZE.width
 		height = MAC_MAYBE_MIN_SCREEN_SIZE.height
 		centerOnScreen()
