@@ -140,10 +140,13 @@ class Test(
 		m[images[imageStartIndex + imageIndex]] = category(predIndex)
 	  }
 	  throttle("preds of $name")
-	}    /*val argMaxResults = mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
+	}
+
+	/*val argMaxResults = mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
 	argMaxResults.forEachIndexed { imageIndex, predIndex ->
 	  m[images[imageIndex]] = category(predIndex)
 	}*/
+
 	m
   }
 
