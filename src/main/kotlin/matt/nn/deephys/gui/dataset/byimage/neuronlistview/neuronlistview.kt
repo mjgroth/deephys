@@ -19,6 +19,7 @@ import matt.nn.deephys.calc.TopNeuronsCalcType
 import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.RawActivation
+import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProgressPopUp
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
@@ -129,7 +130,20 @@ class NeuronListView(
 	  }
 
 	  content!!.apply {
-		tops().forEach { neuronWithAct ->
+
+
+		val topNeurons = withProgressPopUp {
+		  it.message = "loading tops..."
+		  tops()
+		}
+
+
+
+
+
+
+
+		topNeurons.forEach { neuronWithAct ->
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {
 			textflow<TextWrapper> {
