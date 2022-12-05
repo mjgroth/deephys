@@ -46,6 +46,7 @@ import matt.nn.deephys.state.DeephySettingsNode
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
 import matt.obs.subscribe.Channel
+import matt.obs.subscribe.Pager
 import java.util.prefs.Preferences
 
 enum class Arg {
@@ -93,7 +94,7 @@ class DeephysApp {
 
   val stageTitle = LoadedValueSlot<String>()
 
-  val testReadyDSetViewsBbox = Channel<DSetViewsVBox>()
+  val testReadyDSetViewsBbox = Pager<DSetViewsVBox>()
   val readyForConfiguringWindowFromTest = LoadedValueSlot<StageWrapper>()
   val testReadyScene = LoadedValueSlot<MScene<ParentWrapper<*>>>()
 
@@ -197,7 +198,7 @@ class DeephysApp {
 			  }
 			  swapT.toc(9)
 			  runLater {
-				testReadyDSetViewsBbox.post(dSetViewsBox)
+				testReadyDSetViewsBbox.page(dSetViewsBox)
 			  }
 			}
 		  }
