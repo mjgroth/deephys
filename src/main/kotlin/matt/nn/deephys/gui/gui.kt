@@ -45,7 +45,6 @@ import matt.nn.deephys.load.loadSwapper
 import matt.nn.deephys.state.DeephySettingsNode
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
-import matt.obs.subscribe.Channel
 import matt.obs.subscribe.Pager
 import java.util.prefs.Preferences
 
