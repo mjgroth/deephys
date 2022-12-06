@@ -1,14 +1,13 @@
 package matt.nn.deephys.gui.settings
 
 import javafx.scene.control.ContentDisplay.RIGHT
-import javafx.scene.control.ToggleGroup
 import matt.async.thread.ThreadReport
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.mstage.ShowMode.DO_NOT_SHOW
 import matt.fx.control.mstage.WMode.CLOSE
-import matt.fx.control.tfx.control.ToggleMechanism
+import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.win.interact.openInNewWindow
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
@@ -19,7 +18,6 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.gui.option.BoolSetting
 import matt.gui.option.EnumSetting
 import matt.gui.option.IntSetting
-import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNonNullableProp
 import matt.log.profile.mem.MemReport
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox

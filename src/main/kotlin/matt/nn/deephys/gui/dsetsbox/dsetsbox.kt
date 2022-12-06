@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.dsetsbox
 import javafx.application.Platform.runLater
 import matt.file.CborFile
 import matt.file.toSFile
-import matt.fx.control.tfx.control.ToggleMechanism
+import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.model.data.message.FileList
 import matt.nn.deephys.gui.modelvis.ModelVisualizer

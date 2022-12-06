@@ -4,7 +4,7 @@ import javafx.scene.image.Image
 import kotlinx.serialization.ExperimentalSerializationApi
 import matt.async.thread.daemon
 import matt.file.toMFile
-import matt.fx.control.tfx.control.ToggleMechanism
+import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl

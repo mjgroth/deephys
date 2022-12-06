@@ -5,7 +5,7 @@ import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.proto.actiontext.actionText
-import matt.fx.control.tfx.control.ToggleMechanism
+import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.wrapper.button.radio.RadioButtonWrapper
 import matt.fx.control.wrapper.button.radio.radiobutton
 import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
