@@ -419,9 +419,11 @@ class TestLoader(
 			//			}
 
 			finishedTest.putLoadedValue(Test(
-			  name = name, suffix = suffix, images = finishedImages.await()
-			).apply {
+			  name = name,
+			  suffix = suffix,
+			  images = finishedImages.await(),
 			  model = this@TestLoader.model
+			).apply {
 			  testNeurons = localTestNeurons
 			  daemon("activation preloading") {
 				startPreloadingActs()

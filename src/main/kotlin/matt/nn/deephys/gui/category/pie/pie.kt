@@ -1,6 +1,5 @@
 package matt.nn.deephys.gui.category.pie
 
-import javafx.animation.Interpolator
 import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.effect.Glow
@@ -11,7 +10,8 @@ import javafx.util.Duration
 import matt.fx.graphics.anim.animation.keyframe
 import matt.fx.graphics.anim.animation.timeline
 import matt.fx.graphics.anim.interp.MyInterpolator
-import matt.fx.graphics.anim.interp.MyInterpolator.Companion
+import matt.fx.graphics.style.DarkModeController
+import matt.fx.graphics.style.backgroundFromColor
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
@@ -25,6 +25,7 @@ import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
+import matt.obs.bind.binding
 import matt.obs.prop.VarProp
 import matt.prim.str.truncateWithElipses
 import kotlin.math.cos
@@ -74,7 +75,9 @@ class CategoryPie(
 
 		  node.viewOrder = -1.0
 		  val t = deephyLabel(cat.label.truncateWithElipses(20))
-		  backgroundFill = Color.BLACK
+		  backgroundProperty.bind(DarkModeController.darkModeProp.binding {
+			backgroundFromColor(if (it) Color.BLACK else Color.WHITE)
+		  })
 
 		  layoutY -= t.font.size
 		}

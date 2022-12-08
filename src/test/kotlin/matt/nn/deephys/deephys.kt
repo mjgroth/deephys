@@ -1,5 +1,6 @@
 package matt.nn.deephys
 
+import com.yourkit.api.controller.Controller
 import javafx.application.Platform
 import javafx.application.Platform.runLater
 import javafx.scene.control.Alert.AlertType.CONFIRMATION
@@ -7,7 +8,6 @@ import javafx.scene.control.ButtonType
 import matt.async.thread.daemon
 import matt.caching.compcache.GlobalRAMComputeInput
 import matt.collect.itr.list
-import matt.collect.itr.recurse.recurse
 import matt.file.CborFile
 import matt.file.commons.DEEPHYS_DATA_FOLDER
 import matt.file.commons.DEEPHYS_RAM_SAMPLES_FOLDER
@@ -16,8 +16,7 @@ import matt.file.commons.RAM_NUMBERED_FILES
 import matt.file.toSFile
 import matt.fx.control.tfx.dialog.asyncAlert
 import matt.fx.graphics.fxthread.runLaterReturn
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.region.RegionWrapper
+import matt.fx.graphics.wrapper.node.findRecursivelyFirstOrNull
 import matt.json.prim.loadJson
 import matt.json.prim.save
 import matt.json.prim.saveAsJsonTo
@@ -33,6 +32,7 @@ import matt.model.data.rect.RectSize
 import matt.nn.deephys.gui.Arg.`erase-state`
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
+import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.state.DeephyState
 import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.reflect.reflections.mattSubClasses
@@ -58,10 +58,7 @@ import kotlin.time.Duration.Companion.seconds
 val TEST_DATA_FOLDER = DEEPHYS_DATA_FOLDER["test"]
 
 class DeephysTestData(
-  val name: String,
-  model: String,
-  tests: List<String>,
-  val expectedLoadTime: Duration
+  val name: String, model: String, tests: List<String>, val expectedLoadTime: Duration
 ) {
   private val root = TEST_DATA_FOLDER[name]
   val model = root[model]
@@ -71,36 +68,24 @@ class DeephysTestData(
 val tests = list {
   add(
 	DeephysTestData(
-	  name = "CIFARX2",
-	  model = "resnet18_cifar.model",
-	  tests = listOf(
-		"CIFARV1.test",
-		"CIFARV2.test"
-	  ),
-	  expectedLoadTime = 15.seconds
+	  name = "CIFARX2", model = "resnet18_cifar.model", tests = listOf(
+		"CIFARV1.test", "CIFARV2.test"
+	  ), expectedLoadTime = 15.seconds
 	)
-  )
-  //  disabledCode {
+  ) //  disabledCode {
   add(
 	DeephysTestData(
-	  name = "INX3",
-	  model = "resnet50_imagenet.model",
-	  tests = listOf(
-		"ImageNetV1_resnet50.test",
-		"ImageNet_style_resnet50.test",
-		"ImageNet_sketch_resnet50.test"
-	  ),
-	  expectedLoadTime = 2.minutes
+	  name = "INX3", model = "resnet50_imagenet.model", tests = listOf(
+		"ImageNetV1_resnet50.test", "ImageNet_style_resnet50.test", "ImageNet_sketch_resnet50.test"
+	  ), expectedLoadTime = 2.minutes
 	)
-  )
-  //  }
+  ) //  }
 }
 
 
 @SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")    /*@TestClassOrder()*/
 val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
-  width = 1366.0,
-  height = 768.0
+  width = 1366.0, height = 768.0
 )
 
 @TestInstance(PER_CLASS) class TestDeephys {
@@ -141,8 +126,7 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 	}
 
 
-	@Synchronized
-	fun sampleRam() {
+	@Synchronized fun sampleRam() {
 	  ramSamples.add(ramSample())
 	  ramSamples.saveAsJsonTo(myRamSamplesJson, false)
 	}
@@ -208,23 +192,17 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 
   @TestMethodOrder(OrderAnnotation::class) @Nested inner class TestRunningApp {
 
-	@Order(1)
-	@Test
-	fun fastLoad() {
+	@Order(1) @Test fun fastLoad() {
 	  tests.forEach {
 		loadData(
-		  it.name,
-		  it,
-		  maxTime = it.expectedLoadTime
+		  it.name, it, maxTime = it.expectedLoadTime
 		)
 	  }
 	}
 
 
 	private fun loadData(
-	  key: String,
-	  testData: DeephysTestData,
-	  maxTime: Duration
+	  key: String, testData: DeephysTestData, maxTime: Duration
 	) {
 	  sampleRam()
 	  val t = tic("runThroughFeatures")
@@ -240,18 +218,14 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 
 	  val sub = app.testReadyDSetViewsBbox.subscribe()
 	  runLater {
-		(root.recurse<NW> { (it as? RegionWrapper<*>)?.children ?: listOf() }.firstOrNull {
-		  it is DSetViewsVBox
-		} as? DSetViewsVBox)?.removeAllTests()
+		root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
 		DeephyState.model.value = testData.model.toSFile()
 	  }
 	  sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe()
 	  tocAndSampleRam("GUI ready")
 
 
-	  val dSetViewsBox = root.recurse<NW> { (it as? RegionWrapper<*>)?.children ?: listOf() }.first {
-		it is DSetViewsVBox
-	  } as DSetViewsVBox
+	  val dSetViewsBox = root.findRecursivelyFirstOrNull<DSetViewsVBox>()!!
 	  tocAndSampleRam("found dSetViewsBox")
 
 
@@ -282,7 +256,8 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 	  tocAndSampleRam("selected layer")
 
 	  runLaterReturn {
-		dSetViewsBox.bound.value = firstViewer
+		dSetViewsBox.myToggleGroup.selectedValue.value = firstViewer
+		//		dSetViewsBox.bound.value =
 	  }
 	  val totalTime = tocAndSampleRam("set binding")!!
 
@@ -290,8 +265,7 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 
 	  mySession.tests.add(
 		TestResults(
-		  name = key,
-		  loadMillis = totalTime.inWholeMilliseconds
+		  name = key, loadMillis = totalTime.inWholeMilliseconds
 		)
 	  )
 	  DEEPHYS_TEST_RESULT_JSON.save(sessionList, pretty = true)
@@ -307,13 +281,69 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 	}
 
 	@Test @Order(2) fun runThroughFeatures() {
+	  testConfirmation(
+		prompt = "If I click images on the top, does the dataset on the bottom correctly follow?"
+	  )
+
+	}
+
+
+	@Test @Order(3) fun cateogryViewOpensWithoutError() {
+	  val scene = app.testReadyScene.await()
+	  val root = scene.root
+	  val viewer = root.findRecursivelyFirstOrNull<DatasetViewer>()!!
+	  val cat = viewer.testData.value!!.test.categories.first()
+	  runLaterReturn {
+		viewer.navigateTo(cat)
+	  }
+	}
+
+	@Test @Order(4) fun categoryViewLooksOK() {
+	  testConfirmation("click and shift-click around different categories. Does the ByCategoryView look ok?")
+	}
+
+	@Test @Order(5) fun testsAreDisposed() {
+	  val scene = app.testReadyScene.await()
+	  val root = scene.root
+	  runLater {
+		root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
+	  }
+	  println("sleeping for 1 sec")
+	  sleep(1.seconds)
+	  println("running gc")
+	  Runtime.getRuntime().gc()
+	  println("sleeping for another sec")
+	  sleep(1.seconds)
+	  val threshold = 500.megabytes
+	  val u = MemReport().used
+	  println("u=$u")
+	  assertTrueLazyMessage(u < threshold) {
+		println("building YourKit Controller...")
+		val controller = Controller.newBuilder().self().build()
+		println("capturing memory snapshot...")
+		val snapshotFilePath = controller.captureMemorySnapshot()
+		println("Own memory snapshot captured: $snapshotFilePath");
+		"test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is $u"
+	  }
+	}
+
+
+	fun testConfirmation(
+	  prompt: String
+	) {
+
+
 	  val response = runLaterReturn {
 		println("opening async alert")
 		asyncAlert(
 		  CONFIRMATION, "Manually Test Binding",
-		  "If I click images on the top, does the dataset on the bottom correctly follow?", ButtonType.NO,
-		  ButtonType.YES, owner = mainStage
+		  prompt,
+		  ButtonType.NO,
+		  ButtonType.YES,
+		  owner = mainStage,
+		  closeOnEscape = false
 		) {
+
 		  runLater {
 			x = mainStage.x + (mainStage.width/2.0) - (width/2.0)
 			y = mainStage.y - height
@@ -328,28 +358,6 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 		if (it != ButtonType.YES) fail("it was bad")
 	  }
 
-	}
-
-	@Test @Order(3) fun testsAreDisposed() {
-	  val scene = app.testReadyScene.await()
-	  val root = scene.root
-	  runLater {
-		(root.recurse<NW> { (it as? RegionWrapper<*>)?.children ?: listOf() }.firstOrNull {
-		  it is DSetViewsVBox
-		} as? DSetViewsVBox)?.removeAllTests()
-	  }
-	  println("sleeping for 1 sec")
-	  sleep(1.seconds)
-	  println("running gc")
-	  Runtime.getRuntime().gc()
-	  println("sleeping for another sec")
-	  sleep(1.seconds)
-	  val threshold = 500.megabytes
-	  val u = MemReport().used
-	  println("u=$u")
-	  assertTrueLazyMessage(u < threshold) {
-		"test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is ${u}"
-	  }
 	}
 
   }

@@ -11,7 +11,9 @@ import matt.nn.deephys.load.test.PixelData3
 import matt.nn.deephys.model.importformat.DeephyImage
 import matt.nn.deephys.model.importformat.TestNeuron
 import java.io.OutputStream
+import java.nio.file.Path
 import kotlin.concurrent.thread
+import kotlin.io.path.readBytes
 
 
 object DeephysCacheManager {
@@ -80,6 +82,7 @@ object DeephysCacheManager {
 	//	override val recentList = EvitctingQueue<MFile>(10)
 
 	val imagesFolder = folder.mkdir("images")
+	private val imagesFolderPath: Path = imagesFolder.toPath()
 	val neuronsRAF = RAFCache(folder["neurons.raf"])
 
 	override fun cachePixels(im: DeephyImage, pixelBytes: ByteArray, read: (ByteArray)->PixelData3) {
@@ -88,7 +91,8 @@ object DeephysCacheManager {
 	  f.writeBytes(pixelBytes)
 	  im.data.putLazyWeakGetter {
 		/*did not save f on purpose in order to reduce RAM usage*/
-		read(imagesFolder["${im.index}"][PIXELS_CBOR].readBytes())
+		/*used path instead to avoid some of my (significant but useful in other contexts) MFile overhead*/
+		read(imagesFolderPath.resolve("${im.index}/$PIXELS_CBOR").readBytes())
 	  }
 	}
 
@@ -98,7 +102,8 @@ object DeephysCacheManager {
 	  f.writeBytes(actsBytes)
 	  im.activations.activations.putLazyWeakGetter {
 		/*did not save f on purpose in order to reduce RAM usage*/
-		read(imagesFolder["${im.index}"][ACTS_CBOR].readBytes())
+		/*used path instead to avoid some of my (significant but useful in other contexts) MFile overhead*/
+		read(imagesFolderPath.resolve("${im.index}/$ACTS_CBOR").readBytes())
 	  }
 	}
 

@@ -26,8 +26,8 @@ import matt.lang.disabledCode
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
-import matt.model.op.debug.DebugLogger
 import matt.model.obj.tostringbuilder.toStringBuilder
+import matt.model.op.debug.DebugLogger
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.dataset.DatasetNode
@@ -176,41 +176,29 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  normalizeTopNeuronActivations
 	) { im ->
 	  layerSelection.value?.let { lay ->
-		im?.let { TopNeurons(UniqueContents(setOf(it)), lay, normalizeTopNeuronActivations.value) }
+		im?.let {
+		  TopNeurons(
+			UniqueContents(setOf(it)),
+			lay,
+			normalized = normalizeTopNeuronActivations.value,
+			test = testData.value!!
+		  )
+		}
 	  }
 	}
 
-  /*  private val boundTopNeurons = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
-	  it?.topNeurons
-	}*/
   val boundTopNeurons: MyBinding<TopNeurons?> =
-	boundToDSet.deepBinding(outerBox.isChangingBinding, debugLogger = DebugLogger("boundTopNeurons")) {
-	  val r = if (outerBox.isChangingBinding.value) BindableProperty<TopNeurons?>(
-		null
-	  ) /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
-	  else (it?.topNeurons ?: BindableProperty<TopNeurons?>(null))
+	boundToDSet.deepBinding(debugLogger = DebugLogger("boundTopNeurons"))
 
-	  println("boundTopNeurons(${file.value?.name})=$r")
-	  r
+	{
+	  (it?.topNeurons ?: BindableProperty(null))
 	}
 
 
-  val topNeurons = MyBinding(boundTopNeurons, topNeuronsFromMyImage, outerBox.isChangingBinding) {
-	val r =
-	  if (outerBox.isChangingBinding.value) null /*necessary to avoid infinite recursion / stack overflow error while binding is changing. Maybe not the cleanest solution? Or, maybe it is actually the cleanest solution but needs to be generalized better*/
-	  else boundTopNeurons.value ?: topNeuronsFromMyImage.value
-
-	println("topNeurons(${file.value?.name})=$r")
-	r
+  val topNeurons = MyBinding(boundTopNeurons, topNeuronsFromMyImage) {
+	boundTopNeurons.value ?: topNeuronsFromMyImage.value
   }
 
-
-
-  //  VarProp(boundTopNeurons.value ).apply
-  //  {
-  //	withUpdatesFromWhen(topNeuronsFromMyImage) { !isBoundToDSet.value }
-  //	withNonNullUpdatesFrom(boundTopNeurons)
-  //  }
 
   init {
 	initStopwatch.toc(4)
@@ -268,7 +256,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   fun navigateTo(category: CategorySelection) {
-	outerBox.bound.value = null
+	outerBox.myToggleGroup.selectToggle(null)
+	//	outerBox.bound.value = null
 	neuronSelection.value = null
 	neuronSelection.value = null
 	categorySelection.value = category

@@ -27,7 +27,6 @@ import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.importformat.DeephyImage
-import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.MyBinding
 import matt.obs.prop.ObsVal
 
@@ -41,13 +40,15 @@ fun NW.neuronListViewSwapper(
 	viewer = viewer,
 	top = MyBinding(
 	  viewer.layerSelection,
-	  DeephySettings.normalizeTopNeuronActivations
+	  viewer.normalizeTopNeuronActivations,
+	  viewer.testData
 	) {
 	  weakViewer.deref()?.let { deRefedViewer ->
 		deRefedViewer.layerSelection.value?.let { lay ->
 		  TopNeurons(
 			images = contents,
 			layer = lay,
+			test = viewer.testData.value!!,
 			normalized = deRefedViewer.normalizeTopNeuronActivations.value
 		  )
 		}

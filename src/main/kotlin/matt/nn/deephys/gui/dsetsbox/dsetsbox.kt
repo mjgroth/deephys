@@ -11,7 +11,6 @@ import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.prop.BindableProperty
-import matt.obs.prop.Var
 
 class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 
@@ -38,29 +37,41 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   }
 
 
-  val myToggleGroup = ToggleMechanism<DatasetViewer>().apply {
+  val myToggleGroup = ToggleMechanism<DatasetViewer>()/*.apply {
 	this.selectedValue.onChange {
 	  isChangingBindingM.value = true
 	  runLater {
 		isChangingBindingM.value = false
 	  }
-	  /*prevents infinite recursion stack overflows in some cases*/
-	  /*must be the first listener for "myToggleGroup"... and I'm concerned this enforced enough*/
-	  /*maybe not the best solution*/
-	  /*or maybe is the best solution but needs to be generalized / canonicalize better*/
+	  *//*prevents infinite recursion stack overflows in some cases*//*
+	  *//*must be the first listener for "myToggleGroup"... and I'm concerned this enforced enough*//*
+	  *//*maybe not the best solution*//*
+	  *//*or maybe is the best solution but needs to be generalized / canonicalize better*//*
+	}
+  }*/
+
+  //  private val isChangingBindingM = BindableProperty(false)
+  //  val isChangingBinding = isChangingBindingM.readOnly()
+  private val boundM = BindableProperty<DatasetViewer?>(null)
+  val bound = boundM.readOnly()
+
+  init {
+	myToggleGroup.selectedValue.onChange {
+	  boundM.value =
+		null /*necessary to remove all binding and reset everything before adding new binding or risk weird infinite recursions while changing binding and DatasetViewers are looking at each other infinitely looking for topNeurons*/
+	  boundM.value = it
 	}
   }
-  private val isChangingBindingM = BindableProperty(false)
-  val isChangingBinding = isChangingBindingM.readOnly()
-  val bound: Var<DatasetViewer?> = myToggleGroup.selectedValue
+
+
+  //  val bound: Var<DatasetViewer?> = myToggleGroup.selectedValue
 
   fun addTest() = DatasetViewer(null, this).also { plusAssign(it) }
 
 
-
   fun removeTest(t: DatasetViewer) {
 	println("removing test: ${t.file.value}")
-	if (bound.value == t) bound.value = null
+	if (bound.value == t) myToggleGroup.selectedValue.value = null
 	t.removeFromParent()
 	t.normalizeTopNeuronActivations.unbind()
 	t.numImagesPerNeuronInByImage.unbind()

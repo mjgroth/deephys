@@ -61,6 +61,13 @@
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "testImplementation",
 	  "path" : ":k:test"
+	},
+	{
+	  "type": "matt.mstruct.bj.BuildJsonAbsoluteFilesDependency",
+	  "cfg": "testImplementation",
+	  "files": [
+		"/Applications/YourKit-Java-Profiler-2022.9.app/Contents/Resources/lib/yjp-controller-api-redist.jar"
+	  ]
 	}
   ]
 }

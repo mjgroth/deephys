@@ -5,6 +5,7 @@ import matt.async.thread.daemon
 import matt.collect.weak.lazyWeakMap
 import matt.collect.weak.soft.lazySoftMap
 import matt.fx.graphics.wrapper.style.FXColor
+import matt.lang.anno.PhaseOut
 import matt.lang.weak.lazyWeak
 import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
@@ -26,12 +27,11 @@ import matt.nn.deephys.state.DeephySettings
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
-import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
-import org.jetbrains.kotlinx.multik.ndarray.data.slice
 import org.jetbrains.kotlinx.multik.ndarray.operations.forEachIndexed
 import org.jetbrains.kotlinx.multik.ndarray.operations.max
+import java.lang.ref.WeakReference
 import kotlin.collections.set
 
 sealed interface DeephyFileObject {
@@ -68,11 +68,12 @@ class Test(
   override val name: String,
   override val suffix: String?,
   val images: List<DeephyImage>,
+  val model: Model
 ): DeephyFileObject, TestOrLoader {
 
   override val test = this
 
-  var model: Model? = null
+
   var testNeurons: Map<InterTestNeuron, TestNeuron>? = null
 
 
@@ -82,6 +83,9 @@ class Test(
 	stopwatch("categories", enabled = DeephySettings.verboseLogging.value) {
 	  images.map { it.category }.toSet().toList().sortedBy { it.id }
 	}
+  }
+  val catsByID by lazy {
+	categories.associateBy { it.id }
   }
 
 
@@ -122,32 +126,39 @@ class Test(
 
 
   val maxActivations = lazySoftMap<InterTestNeuron, Float> { neuron ->
-	activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!
+	/*activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!*/
+	activationsByNeuron[neuron].max()!!
   }
 
 
-  val preds = DaemonLoadedValueOp<Map<DeephyImage, Category>> {
-	val m = mutableMapOf<DeephyImage, Category>()
-	val clsLayIdx = model!!.classificationLayer.index
-	val chunkSize = 1000
-	images.chunked(chunkSize).forEachIndexed { chunkIndex, imageChunk ->
-	  val actsMat = imageChunk.map {
-		it.weakActivations[clsLayIdx].asList()
-	  }.toNDArray()
-	  val argMaxResults = mk.math.argMaxD2(actsMat, 1)
-	  val imageStartIndex = chunkIndex*chunkSize
-	  argMaxResults.forEachIndexed { imageIndex, predIndex ->
-		m[images[imageStartIndex + imageIndex]] = category(predIndex)
+  val preds = run {
+	val clsLayerIndex = model.classificationLayer.index /*attempt to remove ref to Test from thread below*/
+	val ims = images
+	val nam = name
+	val weakTest = WeakReference(test)
+	DaemonLoadedValueOp<Map<DeephyImage, Category>> {
+	  val localCatsByID = weakTest.get()!!.catsByID
+	  val m = mutableMapOf<DeephyImage, Category>()
+	  val chunkSize = 1000
+	  ims.chunked(chunkSize).forEachIndexed { chunkIndex, imageChunk ->
+		val actsMat = imageChunk.map {
+		  it.weakActivations[clsLayerIndex].asList()
+		}.toNDArray()
+		val argMaxResults = mk.math.argMaxD2(actsMat, 1)
+		val imageStartIndex = chunkIndex*chunkSize
+		argMaxResults.forEachIndexed { imageIndex, predIndex ->
+		  m[ims[imageStartIndex + imageIndex]] = localCatsByID[predIndex]!!
+		}
+		throttle("preds of $nam")
 	  }
-	  throttle("preds of $name")
+
+	  /*val argMaxResults = mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
+	  argMaxResults.forEachIndexed { imageIndex, predIndex ->
+		m[images[imageIndex]] = category(predIndex)
+	  }*/
+
+	  m
 	}
-
-	/*val argMaxResults = mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
-	argMaxResults.forEachIndexed { imageIndex, predIndex ->
-	  m[images[imageIndex]] = category(predIndex)
-	}*/
-
-	m
   }
 
 
@@ -166,8 +177,8 @@ class DeephyImage(
   val testLoader: TestLoader,
   val index: Int,
   val model: Model,
-  val test: LoadedValueSlot<Test>,
-  val features: Map<String, String>?
+  val features: Map<String, String>?,
+  test: LoadedValueSlot<Test>,
 ) {
 
 
@@ -195,8 +206,10 @@ class DeephyImage(
 
   val data = DelegatedSlot<PixelData3>()
 
+  @PhaseOut
+  private val weakTest = WeakReference(test)
   val prediction by lazy {
-	test.await().preds.await()[this]!!
+	weakTest.get()!!.await().preds.await()[this]!!
   }
 
 }

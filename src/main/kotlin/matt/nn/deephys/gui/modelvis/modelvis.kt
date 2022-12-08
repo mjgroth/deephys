@@ -133,7 +133,8 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 			val dvb = this@ModelVisualizer.dsetViewsBox!!
 			if (dvb.children.isEmpty()) return@setOnMouseClicked
 			if (dvb.bound.value == null) {
-			  dvb.bound.value = dvb.children.first()
+			  dvb.myToggleGroup.selectedValue.value = dvb.children.first()
+//			  dvb.bound.value = /
 			}
 			val b = dvb.bound.value!!
 			b.neuronSelection v null

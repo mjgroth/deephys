@@ -1,5 +1,6 @@
 package matt.nn.deephys.calc
 
+import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.math.jmath.sigFigs
@@ -17,6 +18,7 @@ import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.TestOrLoader
 import matt.nn.deephys.state.DeephySettings
 import kotlin.math.exp
 
@@ -67,6 +69,7 @@ class UniqueContents<E>(set: Set<E>): Set<E> by set {
 data class NormalizedAverageActivation(
   private val neuron: InterTestNeuron,
   private val images: UniqueContents<DeephyImage>,
+  private val test: TestOrLoader
 ): DeephysComputeInput<NormalActivation>() {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
@@ -78,7 +81,7 @@ data class NormalizedAverageActivation(
   }
 
   override fun timedCompute(): NormalActivation {
-	return NormalActivation(neuron.averageActivation(images).value/images.first().test.await().maxActivations[neuron])
+	return NormalActivation(neuron.averageActivation(images).value/test.test.maxActivations[neuron])
   }
 
   override fun equals(other: Any?): Boolean {
@@ -122,17 +125,18 @@ data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Act
 data class TopNeurons(
   private val images: UniqueContents<DeephyImage>,
   private val layer: InterTestLayer,
+  private val test: TestOrLoader,
   val normalized: Boolean
 ): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
-  override val cacheManager get() = images.firstOrNull()?.testLoader?.cacheMan ?: GlobalRAMComputeCacheManager
+  override val cacheManager get() = images.firstOrNull()?.testLoader?.cacheMan ?: FakeCacheManager
 
   override fun timedCompute(): List<NeuronWithActivation> {
 	if (images.isEmpty()) return listOf()
 	return layer.neurons.map {
 	  if (normalized) NeuronWithActivation(
-		it, NormalizedAverageActivation(it, images)()
+		it, NormalizedAverageActivation(it, images, test)()
 	  ) else NeuronWithActivation(it, it.averageActivation(images))
 	}.filterNot { it.activation.value.isNaN() }.sortedBy { it.activation.value }.reversed().take(NUM_TOP_NEURONS)
   }
