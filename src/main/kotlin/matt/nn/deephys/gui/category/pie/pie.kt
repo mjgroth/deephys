@@ -16,6 +16,7 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.model.code.idea.MChartIdea
 import matt.nn.deephys.gui.global.deephyLabel
@@ -25,7 +26,6 @@ import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
-import matt.obs.bind.binding
 import matt.obs.prop.VarProp
 import matt.prim.str.truncateWithElipses
 import kotlin.math.cos
@@ -75,9 +75,13 @@ class CategoryPie(
 
 		  node.viewOrder = -1.0
 		  val t = deephyLabel(cat.label.truncateWithElipses(20))
-		  backgroundProperty.bind(DarkModeController.darkModeProp.binding {
-			backgroundFromColor(if (it) Color.BLACK else Color.WHITE)
-		  })
+		  fun updateColor(textFlow: TextFlowWrapper<*>, isDarkMode: Boolean) {
+			textFlow.background = backgroundFromColor(if (isDarkMode) Color.BLACK else Color.WHITE)
+		  }
+		  updateColor(this, DarkModeController.darkModeProp.value)
+		  DarkModeController.darkModeProp.onChangeWithWeak(this) { tf, it ->
+			updateColor(tf, it)
+		  }
 
 		  layoutY -= t.font.size
 		}

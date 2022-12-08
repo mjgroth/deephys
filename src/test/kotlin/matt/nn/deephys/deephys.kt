@@ -13,6 +13,7 @@ import matt.file.commons.DEEPHYS_DATA_FOLDER
 import matt.file.commons.DEEPHYS_RAM_SAMPLES_FOLDER
 import matt.file.commons.DEEPHYS_TEST_RESULT_JSON
 import matt.file.commons.RAM_NUMBERED_FILES
+import matt.file.commons.YOUR_KIT_APP_FOLDER
 import matt.file.toSFile
 import matt.fx.control.tfx.dialog.asyncAlert
 import matt.fx.graphics.fxthread.runLaterReturn
@@ -20,6 +21,7 @@ import matt.fx.graphics.wrapper.node.findRecursivelyFirstOrNull
 import matt.json.prim.loadJson
 import matt.json.prim.save
 import matt.json.prim.saveAsJsonTo
+import matt.kjlib.shell.shell
 import matt.lang.anno.SeeURL
 import matt.log.profile.data.RamSample
 import matt.log.profile.data.TestResults
@@ -256,8 +258,7 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 	  tocAndSampleRam("selected layer")
 
 	  runLaterReturn {
-		dSetViewsBox.myToggleGroup.selectedValue.value = firstViewer
-		//		dSetViewsBox.bound.value =
+		dSetViewsBox.myToggleGroup.selectedValue.value = firstViewer		//		dSetViewsBox.bound.value =
 	  }
 	  val totalTime = tocAndSampleRam("set binding")!!
 
@@ -322,7 +323,13 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 		val controller = Controller.newBuilder().self().build()
 		println("capturing memory snapshot...")
 		val snapshotFilePath = controller.captureMemorySnapshot()
-		println("Own memory snapshot captured: $snapshotFilePath");
+		println("Own memory snapshot captured: $snapshotFilePath")
+		println("opening snapshot")
+
+		/*https://www.yourkit.com/forum/viewtopic.php?t=43490*/
+		shell("open", "-a", YOUR_KIT_APP_FOLDER.abspath, "-open", snapshotFilePath)
+
+
 		"test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is $u"
 	  }
 	}
@@ -336,11 +343,7 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 	  val response = runLaterReturn {
 		println("opening async alert")
 		asyncAlert(
-		  CONFIRMATION, "Manually Test Binding",
-		  prompt,
-		  ButtonType.NO,
-		  ButtonType.YES,
-		  owner = mainStage,
+		  CONFIRMATION, "Manually Test Binding", prompt, ButtonType.NO, ButtonType.YES, owner = mainStage,
 		  closeOnEscape = false
 		) {
 

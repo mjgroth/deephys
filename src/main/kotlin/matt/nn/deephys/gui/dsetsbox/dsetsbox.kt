@@ -80,6 +80,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	t.boundTopNeurons.removeAllDependencies()
 	t.boundToDSet.removeAllDependencies()
 	t.outerBox.save()
+	requestFocus() /*make this into scene.oldFocusOwner to remove possibility of that causing memory leak*/
   }
 
   fun removeAllTests() {
