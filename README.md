@@ -35,3 +35,13 @@
 2. Unzip it
 3. From terminal, execute the file `intel` inside of it
     - Note: it will install homebrew and openjdk17 if you do not already have it. This may take a while but will only happen the first time you open the app.
+
+
+## Develop Instructions
+1. `mkdir "deephys"`
+2. `cd "deephys"`
+3. `mkdir "k"`
+4. `cd k`
+1. `git clone https://github.com/mgroth0/deephys`
+2. `cd ..`
+2. ... TBD
