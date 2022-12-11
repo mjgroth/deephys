@@ -7,7 +7,6 @@
 .private
 .gradle/
 /gradle/
-/gradlew
 /gradlew.bat
 /lastversion.txt
 .DS_Store
