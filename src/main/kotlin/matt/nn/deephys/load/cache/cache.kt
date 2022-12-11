@@ -31,12 +31,12 @@ object DeephysCacheManager {
 
   private val DATA_SETS_CACHE_DIR = DEEPHY_CACHE_DIR.mkdir("datasets")
 
-  private val weirdCaches1 = DEEPHY_CACHE_DIR.listFiles()!!.filter { it !in listOf(DATA_SETS_CACHE_DIR) }
-
   private val oldDatasetCaches = DATA_SETS_CACHE_DIR.listFiles()!!
 
-  init {
-	thread(name = "delete caches", isDaemon = true, priority = DELETING_OLD_CACHE.ordinal) {
+  val deleteCachesThread = thread(name = "delete caches", isDaemon = true, priority = DELETING_OLD_CACHE.ordinal) {
+
+	  val weirdCaches1 = DEEPHY_CACHE_DIR.listFiles()!!.filter { it !in listOf(DATA_SETS_CACHE_DIR) }
+
 	  /*KEEP THESE PRINT STATEMENTS UNTIL I CAN CONFIRM THIS IS WORKING*/
 	  println("started deleting weird caches")
 	  weirdCaches1.forEach {
@@ -49,7 +49,6 @@ object DeephysCacheManager {
 	  }
 	  println("finished deleting old dataset caches")
 	}
-  }
 
   private val oldDatasetIDs = oldDatasetCaches.mapNotNull {
 	it.name.toIntOrNull()

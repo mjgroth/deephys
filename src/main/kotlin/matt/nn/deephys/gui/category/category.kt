@@ -12,7 +12,7 @@ import matt.nn.deephys.calc.CategoryFalseNegativesSorted
 import matt.nn.deephys.calc.CategoryFalsePositivesSorted
 import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.category.pie.CategoryPie
-import matt.nn.deephys.gui.dataset.byimage.MultipleImagesView
+import matt.nn.deephys.gui.dataset.byimage.mult.MultipleImagesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.subtitleFont
@@ -25,7 +25,9 @@ import matt.nn.deephys.model.data.CategorySelection
 import matt.prim.str.addNewLinesUntilNumLinesIs
 
 class CategoryView(
-  selection: CategorySelection, testLoader: TestLoader, viewer: DatasetViewer
+  selection: CategorySelection,
+  testLoader: TestLoader,
+  viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 

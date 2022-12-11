@@ -142,48 +142,6 @@ data class TopNeurons(
   }
 }
 
-//data class TopNeuronsCategory(
-//  private val catSelect: CategorySelection,
-//  private val layer: InterTestLayer,
-//  val normalized: Boolean,
-//  val testLoader: TestLoader
-//): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
-//  override fun timedCompute(): List<NeuronWithActivation> {
-//
-//
-//	return layer.neurons.map {
-//
-//	  val v = when (catSelect) {
-//		is Category          -> {
-//		  if (normalized) NormalizedAverageActivation(it, catSelect, testLoader)()
-//		  else it.averageActivation(
-//			catSelect, testLoader
-//		  )
-//
-//		}
-//
-//		is CategoryConfusion -> {
-//		  if (normalized) NormalizedAverageActivation(
-//			it, catSelect.first, testLoader
-//		  )() + NormalizedAverageActivation(
-//			it, catSelect.second, testLoader
-//		  )()
-//		  else it.averageActivation(
-//			catSelect.first, testLoader
-//		  ) + it.averageActivation(
-//			catSelect.second, testLoader
-//		  )
-//		}
-//	  }
-//
-//
-//	  NeuronWithActivation(it, v)
-//
-//	}.sortedBy { it.activation }.reversed().take(NUM_TOP_NEURONS)
-//
-//
-//  }
-//}
 
 
 data class ActivationRatio(

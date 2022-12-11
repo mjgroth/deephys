@@ -35,6 +35,7 @@ import matt.nn.deephys.gui.Arg.`erase-state`
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.state.DeephyState
 import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.reflect.reflections.mattSubClasses
@@ -309,12 +310,18 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 	  runLater {
 		root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
 	  }
+	  println("waiting for delete caches thread...")
+	  DeephysCacheManager.deleteCachesThread.join() /*can hold a significant amount of memory*/
+	  println("finished waiting for delete caches thread")
 	  println("sleeping for 1 sec")
 	  sleep(1.seconds)
+
+
 	  println("running gc")
 	  Runtime.getRuntime().gc()
 	  println("sleeping for another sec")
 	  sleep(1.seconds)
+
 	  val threshold = 500.megabytes
 	  val u = MemReport().used
 	  println("u=$u")

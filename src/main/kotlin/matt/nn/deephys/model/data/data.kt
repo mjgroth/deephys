@@ -20,10 +20,9 @@ data class InterTestNeuron(
 ) {
   fun activation(image: DeephyImage) = image.activationFor(this)
   fun averageActivation(category: Category, testLoader: TestLoader) = category.averageActivationFor(this, testLoader)
-  fun averageActivation(images: Set<DeephyImage>) = RawActivation(images.map { activation(it).value }.average().toFloat())
+  fun averageActivation(images: Set<DeephyImage>) =
+	RawActivation(images.map { activation(it).value }.average().toFloat())
 }
-
-
 
 
 @JvmInline value class ImageIndex(val index: Int)
@@ -32,6 +31,7 @@ sealed interface CategorySelection {
   val title: String
   val primaryCategory: Category
   val allCategories: Sequence<Category>
+  fun forTest(test: TestOrLoader): CategorySelection
 }
 
 data class Category(val id: Int, val label: String): CategorySelection {
@@ -46,11 +46,24 @@ data class Category(val id: Int, val label: String): CategorySelection {
 	)
   }
 
+  override fun forTest(test: TestOrLoader): Category {
+	return test.test.category(id).also {
+	  require(it.label == label) {
+		"label of category $id of other test doesn't match (${it.label}!=${label})"
+	  }
+	}
+  }
+
 }
 
 data class CategoryConfusion(val first: Category, val second: Category): CategorySelection {
   override val title = "Category Confusion\n\t-${first.label}\n\t-${second.label}"
   override val primaryCategory = first
   override val allCategories get() = sequence { yield(first); yield(second) }
+  override fun forTest(test: TestOrLoader): CategoryConfusion {
+	val firstOther = first.forTest(test)
+	val secondOther = second.forTest(test)
+	return CategoryConfusion(first = firstOther, second = secondOther)
+  }
 }
 

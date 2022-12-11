@@ -66,7 +66,7 @@ class DeephysApp {
 	  warmupJvmThreading()
 
 	  daemon {
-		stageTitle.putLoadedValue("${appName}s $myVersion")
+		stageTitle.putLoadedValue("$appName $myVersion")
 	  }
 
 	  daemon {

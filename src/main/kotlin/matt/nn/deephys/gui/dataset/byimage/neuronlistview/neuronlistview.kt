@@ -32,11 +32,13 @@ import matt.obs.prop.ObsVal
 
 fun NW.neuronListViewSwapper(
   viewer: DatasetViewer,
-  contents: UniqueContents<DeephyImage>
+  contents: UniqueContents<DeephyImage>,
+  bindScrolling: Boolean = false
 ) = run {
 
   val weakViewer = WeakRef(viewer)
   neuronListViewSwapper(
+	bindScrolling = bindScrolling,
 	viewer = viewer,
 	top = MyBinding(
 	  viewer.layerSelection,
@@ -65,7 +67,8 @@ fun NW.neuronListViewSwapper(
 
 fun NW.neuronListViewSwapper(
   viewer: DatasetViewer,
-  top: ObsVal<out TopNeuronsCalcType?>
+  top: ObsVal<out TopNeuronsCalcType?>,
+  bindScrolling: Boolean = false
 ) = run {
   val weakViewer = WeakRef(viewer)
   swapper(
@@ -85,14 +88,10 @@ fun NW.neuronListViewSwapper(
 		  }
 		}
 	  }
-	}.apply {
-	  /*	  viewer.onGarbageCollected {
-			  markInvalid()
-			  removeAllDependencies()
-			}*/
-	}, "no top neurons"
+	},
+	nullMessage = "no top neurons"
   ) {
-	NeuronListView(this)
+	NeuronListView(this, bindScrolling = bindScrolling)
   }
 }
 
@@ -103,7 +102,8 @@ data class NeuronListViewConfig(
 )
 
 class NeuronListView(
-  cfg: NeuronListViewConfig
+  cfg: NeuronListViewConfig,
+  bindScrolling: Boolean = false
 ): ScrollPaneWrapper<HBoxWrapperImpl<NodeWrapper>>(HBoxWrapperImpl()) {
 
 
@@ -119,16 +119,19 @@ class NeuronListView(
 	val myWidth = 150.0
 	@Suppress("UNUSED_VARIABLE") val myHeight = 150.0
 	cfg.apply {
-	  viewer.currentByImageHScroll = hValueProp
-	  viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
-	  hValueProp.onChange { h ->
-		if (viewer.outerBox.bound.value != null) {
-		  viewer.siblings.forEach { it.currentByImageHScroll?.value = h }
+	  if (bindScrolling) {
+		viewer.currentByImageHScroll = hValueProp
+		viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
+		hValueProp.onChange { h ->
+		  if (viewer.outerBox.bound.value != null) {
+			viewer.siblings.forEach { it.currentByImageHScroll?.value = h }
+		  }
+		}
+		viewer.boundToDSet.onChange {
+		  viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
 		}
 	  }
-	  viewer.boundToDSet.onChange {
-		viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
-	  }
+
 
 	  content!!.apply {
 
@@ -170,18 +173,20 @@ class NeuronListView(
 				}
 
 
-			  } else +(viewer.boundToDSet.value?.testData?.value?.let {
+			  } else viewer.boundToDSet.value?.testData?.value?.let { tst ->
 				ActivationRatio(
 				  numTest = testLoader,
-				  denomTest = it,
+				  denomTest = tst,
 				  neuron = neuronWithAct.neuron
-				).text()
-			  } ?: deephyText("error: no activation info"))
+				).text().also { +it }
+			  } ?: deephyText("error: no activation info")
 
 
 			}
 			+NeuronView(
-			  neuronWithAct.neuron, numImages = cfg.viewer.numImagesPerNeuronInByImage, testLoader = testLoader,
+			  neuronWithAct.neuron,
+			  numImages = cfg.viewer.numImagesPerNeuronInByImage,
+			  testLoader = testLoader,
 			  viewer = viewer
 			).apply {
 			  prefWrapLength = myWidth

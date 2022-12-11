@@ -27,7 +27,6 @@ import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
 import matt.model.obj.tostringbuilder.toStringBuilder
-import matt.model.op.debug.DebugLogger
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.dataset.DatasetNode
@@ -52,11 +51,13 @@ import matt.nn.deephys.model.importformat.DeephyImage
 import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
+import matt.obs.bind.coalesceNull
 import matt.obs.bind.deepBinding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.not
 import matt.obs.col.olist.basicMutableObservableListOf
 import matt.obs.prop.BindableProperty
+import matt.obs.prop.ObsVal
 import matt.obs.prop.VarProp
 import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
@@ -147,12 +148,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
   val neuronSelection: VarProp<InterTestNeuron?> = VarProp<InterTestNeuron?>(
 	boundNeuron.value
-  ).apply {
-	withNonNullUpdatesFrom(boundNeuron)
-	//	layerSelection.onChange { l ->
-	//	  if (!isBoundToDSet.value) value = l?.neuronThatMatches(value)
-	//	}
-  }
+  ).withNonNullUpdatesFrom(boundNeuron)
 
   init {
 	initStopwatch.toc(3)
@@ -186,18 +182,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		}
 	  }
 	}
-
-  val boundTopNeurons: MyBinding<TopNeurons?> =
-	boundToDSet.deepBinding(debugLogger = DebugLogger("boundTopNeurons"))
-
-	{
-	  (it?.topNeurons ?: BindableProperty(null))
-	}
-
-
-  val topNeurons = MyBinding(boundTopNeurons, topNeuronsFromMyImage) {
-	boundTopNeurons.value ?: topNeuronsFromMyImage.value
-  }
+  val boundTopNeurons: MyBinding<TopNeurons?> = boundToDSet.deepBinding { (it?.topNeurons ?: BindableProperty(null)) }
+  val topNeurons = boundTopNeurons coalesceNull topNeuronsFromMyImage
 
 
   init {
@@ -217,7 +203,15 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
 
-  val categorySelection = VarProp<CategorySelection?>(null)
+  private val boundCategory: ObsVal<CategorySelection?> = boundToDSet.deepBindingIgnoringFutureNullOuterChanges(testData) {
+	it?.categorySelection?.binding {
+	  testData.value?.let { tst ->
+		it?.forTest(tst)
+	  }
+	} ?: BindableProperty<CategorySelection?>(null)
+  }
+  val categorySelection = VarProp<CategorySelection?>(null).withNonNullUpdatesFrom(boundCategory)
+
 
   var currentByImageHScroll: VarProp<Double>? = null
 
@@ -237,26 +231,19 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   fun navigateTo(im: DeephyImage) {
-	val t = tic("navigating to image", enabled = false)
-	t.toc(1)
 	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
-	t.toc(2)
 	imageSelection.value = im
-	t.toc(3)
 	for (i in (historyIndex.value + 1) until history.size) {
 	  history.removeAt(historyIndex.value + 1)
 	}
-	t.toc(4)
 	history.add(SelectImage(im))
-	t.toc(5)
 	historyIndex.value += 1
-	t.toc(6)
 	view.value = ByImage
-	t.toc(7)
   }
 
   fun navigateTo(category: CategorySelection) {
-	outerBox.myToggleGroup.selectToggle(null)
+	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
+	//	outerBox.myToggleGroup.selectToggle(null)
 	//	outerBox.bound.value = null
 	neuronSelection.value = null
 	neuronSelection.value = null
