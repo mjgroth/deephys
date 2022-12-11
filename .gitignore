@@ -6,7 +6,6 @@
 *.tgz
 .private
 .gradle/
-/gradle/
 /gradlew.bat
 /lastversion.txt
 .DS_Store

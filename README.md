@@ -37,11 +37,17 @@
     - Note: it will install homebrew and openjdk17 if you do not already have it. This may take a while but will only happen the first time you open the app.
 
 
-## Develop Instructions
+## Running From Source
 1. `mkdir "deephys"`
 2. `cd "deephys"`
 3. `mkdir "k"`
 4. `cd k`
 1. `git clone https://github.com/mgroth0/deephys`
+2. `cp deephys/gradlew ..`
 2. `cd ..`
-2. ... TBD
+3. Install `brew` (only if you don't already have it)
+   4. `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+   5. Follow any additional steps that Homebrew installation gives you in order to add `brew` command to shell path
+5. `brew install openjdk@17`
+2.  `chmod +x gradlew`
+3. `JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew`
