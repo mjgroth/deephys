@@ -44,5 +44,10 @@
 
 ## Running From Source
 
-1. Set up the project: copy and run code from `setup_project.sh` into terminal. Warning: this code will create a new folder "deephys" underneath the current directory and modify it. The code will work best if no such folder already exists.
-2. Run from source: while inside of the new directory "deephys", run the code from `run_from_source.sh` in terminal
+1. Set up the project: copy code from `setup_project.sh` on GitHub into terminal. NOTE: this code does many things:
+   - Creates a new folder "deephys" underneath the current directory and modify it. The code will work best if no such folder already exists.
+   - automatically clone many git repos into subdirectories
+   - install homebrew if it is not yet installed
+   - install JDK17 if it is not yet installed
+   - Downloads other necessary files and places them inside newly created "deephys" folder
+2. Run from source: while inside of the new directory "deephys", run the code from `run_from_source.sh` in terminal. Note that like the script above, `run_from_source.sh` will not be located directely inside of the "deephys folder". Best to just copy and paste the code from GitHub into terminal. 
