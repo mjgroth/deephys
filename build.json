@@ -10,11 +10,6 @@
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
-	  "path" : ":k:obs:math"
-	},
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "implementation",
 	  "path" : ":k:cbor"
 	},
 	{
@@ -23,24 +18,9 @@
 	  "path" : ":k:fx:node:proto"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "implementation",
-	  "path" : ":k:caching"
-	},
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
-	  "cfg" :  "implementation",
-	  "key" :  "kotlinx-serialization-cbor"
-	},
-	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
 	  "cfg" :  "implementation",
 	  "key" :  "slf4j-nop"
-	},
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "implementation",
-	  "path" : ":k:model"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
