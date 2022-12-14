@@ -1,5 +1,6 @@
 package matt.nn.deephys.gui.category
 
+import matt.collect.set.contents.Contents
 import matt.color.colorMap
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
@@ -10,7 +11,6 @@ import matt.fx.graphics.wrapper.style.toFXColor
 import matt.nn.deephys.calc.CategoryAccuracy
 import matt.nn.deephys.calc.CategoryFalseNegativesSorted
 import matt.nn.deephys.calc.CategoryFalsePositivesSorted
-import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.category.pie.CategoryPie
 import matt.nn.deephys.gui.dataset.byimage.mult.MultipleImagesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
@@ -124,7 +124,7 @@ class CategoryView(
 	  }
 	  neuronListViewSwapper(
 		viewer = viewer,
-		contents = UniqueContents(
+		contents = Contents(
 		  selection.allCategories.flatMap { testLoader.awaitFinishedTest().imagesWithGroundTruth(it) }
 		)
 	  )

@@ -1,8 +1,8 @@
 package matt.nn.deephys.gui.dataset.byimage.mult
 
+import matt.collect.set.contents.Contents
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyText
@@ -36,7 +36,7 @@ class MultipleImagesView(
 	}
 	neuronListViewSwapper(
 	  viewer = viewer,
-	  contents = UniqueContents(images)
+	  contents = Contents(images)
 	)
   }
 }

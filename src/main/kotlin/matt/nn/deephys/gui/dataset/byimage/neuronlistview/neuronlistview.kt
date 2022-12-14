@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.dataset.byimage.neuronlistview
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
+import matt.collect.set.contents.Contents
 import matt.fx.control.wrapper.scroll.ScrollPaneWrapper
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -16,7 +17,7 @@ import matt.nn.deephys.calc.ActivationRatio
 import matt.nn.deephys.calc.NormalizedAverageActivation
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.TopNeuronsCalcType
-import matt.nn.deephys.calc.UniqueContents
+import matt.nn.deephys.calc.Contents
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProgressPopUp
@@ -32,7 +33,7 @@ import matt.obs.prop.ObsVal
 
 fun NW.neuronListViewSwapper(
   viewer: DatasetViewer,
-  contents: UniqueContents<DeephyImage>,
+  contents: Contents<DeephyImage>,
   bindScrolling: Boolean = false
 ) = run {
 

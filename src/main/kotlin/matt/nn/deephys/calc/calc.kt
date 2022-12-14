@@ -3,6 +3,7 @@ package matt.nn.deephys.calc
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
+import matt.collect.set.contents.Contents
 import matt.math.jmath.sigFigs
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
@@ -52,23 +53,9 @@ data class NormalizedActivation(
 //}
 
 
-class UniqueContents<E>(set: Set<E>): Set<E> by set {
-
-  constructor(itr: Iterable<E>): this(itr.toSet())
-  constructor(itr: Sequence<E>): this(itr.toSet())
-
-  override fun equals(other: Any?): Boolean {
-	return other is UniqueContents<*> && containsAll(other)
-  }
-
-  override fun hashCode(): Int {
-	return map { it.hashCode() }.sum()
-  }
-}
-
 data class NormalizedAverageActivation(
   private val neuron: InterTestNeuron,
-  private val images: UniqueContents<DeephyImage>,
+  private val images: Contents<DeephyImage>,
   private val test: TestOrLoader
 ): DeephysComputeInput<NormalActivation>() {
 
@@ -123,7 +110,7 @@ interface TopNeuronsCalcType {
 data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation<*>)
 
 data class TopNeurons(
-  private val images: UniqueContents<DeephyImage>,
+  private val images: Contents<DeephyImage>,
   private val layer: InterTestLayer,
   private val test: TestOrLoader,
   val normalized: Boolean

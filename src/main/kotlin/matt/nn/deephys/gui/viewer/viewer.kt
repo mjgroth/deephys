@@ -13,6 +13,7 @@ import javafx.scene.paint.Stop
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
+import matt.collect.set.contents.Contents
 import matt.collect.weak.WeakSet
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
@@ -28,7 +29,6 @@ import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
 import matt.model.obj.tostringbuilder.toStringBuilder
 import matt.nn.deephys.calc.TopNeurons
-import matt.nn.deephys.calc.UniqueContents
 import matt.nn.deephys.gui.dataset.DatasetNode
 import matt.nn.deephys.gui.dataset.DatasetNodeView
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
@@ -174,7 +174,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  layerSelection.value?.let { lay ->
 		im?.let {
 		  TopNeurons(
-			UniqueContents(setOf(it)),
+			Contents(setOf(it)),
 			lay,
 			normalized = normalizeTopNeuronActivations.value,
 			test = testData.value!!
