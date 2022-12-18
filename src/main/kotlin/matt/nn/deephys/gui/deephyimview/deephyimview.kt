@@ -7,7 +7,7 @@ import matt.log.todo.todoOnce
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.im.DeephyImage
 
 class DeephyImView(im: DeephyImage, viewer: DatasetViewer): ScaledCanvas() {
 

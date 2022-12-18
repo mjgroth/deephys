@@ -7,6 +7,10 @@ import matt.collect.set.contents.Contents
 import matt.math.jmath.sigFigs
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
+import matt.model.code.successorfail.FailableReturn
+import matt.model.code.successorfail.SuccessfulReturn
+import matt.model.code.successorfail.mightFail
+import matt.model.code.successorfail.resultOr
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
@@ -18,8 +22,8 @@ import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
-import matt.nn.deephys.model.importformat.DeephyImage
-import matt.nn.deephys.model.importformat.TestOrLoader
+import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.state.DeephySettings
 import kotlin.math.exp
 
@@ -27,7 +31,7 @@ import kotlin.math.exp
 /*
 data class NormalizedActivation(
   private val neuron: InterTestNeuron,
-  private val image: DeephyImage,
+  private val image: matt.nn.deephys.model.importformat.im.DeephyImage,
   private val test: Test
 ): DeephysComputeInput<NormalActivation>() {
 
@@ -44,7 +48,7 @@ data class NormalizedActivation(
 //data class NormalizedAverageActivation(
 //  private val neuron: InterTestNeuron,
 //  private val cat: Category,
-//  private val test: TestOrLoader,
+//  private val test: matt.nn.deephys.model.importformat.testlike.TestOrLoader,
 //
 //  ): DeephysComputeInput<NormalActivation>() {
 //  override fun timedCompute(): NormalActivation {
@@ -130,7 +134,6 @@ data class TopNeurons(
 }
 
 
-
 data class ActivationRatio(
   val numTest: TestLoader,
   val denomTest: TestLoader,
@@ -201,9 +204,14 @@ data class CategoryAccuracy(
 
   override val cacheManager get() = testLoader.cacheMan
 
-  override fun timedCompute() = testLoader.awaitFinishedTest().imagesWithGroundTruth(category).map {
-	if (testLoader.awaitFinishedTest().preds.await()[it] == category) 1.0 else 0.0    /*if (ImageTopPredictions(it, testLoader)().first().first == category) 1.0 else 0.0*/
-  }.let { it.sum()/it.size }
+  override fun timedCompute(): Double {
+	val r = testLoader.awaitFinishedTest().imagesWithGroundTruth(category).map {
+	  if (testLoader.awaitFinishedTest().preds.await()[it] == category) 1.0 else 0.0
+	  /*if (ImageTopPredictions(it, testLoader)().first().first == category) 1.0 else 0.0*/
+	}.let { it.sum()/it.size }
+
+	return r
+  }
 }
 
 data class CategoryFalsePositivesSorted(
@@ -218,18 +226,19 @@ data class CategoryFalsePositivesSorted(
 	  "false positives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute(): List<DeephyImage> = testLoader.awaitFinishedTest().imagesWithoutGroundTruth(category)
-	.map {    /*it to ImageTopPredictions(it, testLoader)().first()*/
-	  it to testLoader.awaitFinishedTest().preds.await()[it]
-	}.filter {
-	  it.second/*.first*/ == category
-	}.map {
-	  it.first to ImageTopPredictions(it.first, testLoader)().first()
-	}.sortedBy {
-	  it.second.second
-	}.reversed().map {
-	  it.first
-	}
+  override fun timedCompute(): List<DeephyImage> =
+	testLoader.awaitFinishedTest().imagesWithoutGroundTruth(category)
+	  .map {    /*it to ImageTopPredictions(it, testLoader)().first()*/
+		it to testLoader.awaitFinishedTest().preds.await()[it]
+	  }.filter {
+		it.second/*.first*/ == category
+	  }.map {
+		it.first to ImageTopPredictions(it.first, testLoader)().first()
+	  }.sortedBy {
+		it.second.second
+	  }.reversed().map {
+		it.first
+	  }
 }
 
 data class CategoryFalseNegativesSorted(
@@ -244,7 +253,7 @@ data class CategoryFalseNegativesSorted(
 	  "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute(): List<DeephyImage> = testLoader.awaitFinishedTest().imagesWithGroundTruth(category)
+  override fun timedCompute() = testLoader.awaitFinishedTest().imagesWithGroundTruth(category)
 	.map {    /*it to ImageTopPredictions(it, testLoader)().first()*/
 	  it to testLoader.awaitFinishedTest().preds.await()[it]
 	}.filter {
@@ -276,4 +285,11 @@ data class CategoryFalseNegativesSorted(
 
 abstract class DeephysComputeInput<O>(): TimedComputeInput<O>() {
   override val stopwatchEnabled get() = DeephySettings.verboseLogging.value
+}
+
+abstract class DeephysFailableComputeInput<O>(): DeephysComputeInput<FailableReturn<O>>() {
+  //  override fun timedCompute(): FailableReturn<O> {
+  //	TODO("Not yet implemented")
+  //  }
+  //  abstract fun failableTimedCompute(): FailableReturn<O>
 }

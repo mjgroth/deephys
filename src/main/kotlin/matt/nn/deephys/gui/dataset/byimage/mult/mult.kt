@@ -10,7 +10,7 @@ import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.math.op.times
 
 class MultipleImagesView(

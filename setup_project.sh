@@ -4,7 +4,7 @@ mkdir k
 cd k
 mkdir nn
 cd nn
-echo {} > build.json
+echo {\"type\":\"matt.mstruct.bj.ABSTRACTModule\"} > build.json
 git clone https://github.com/mgroth0/deephys
 cd ..
 git clone https://github.com/mgroth0/math

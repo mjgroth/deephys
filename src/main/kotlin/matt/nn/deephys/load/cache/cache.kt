@@ -8,8 +8,8 @@ import matt.lang.function.Op
 import matt.nn.deephys.load.cache.raf.RAFCache
 import matt.nn.deephys.load.test.ActivationData
 import matt.nn.deephys.load.test.PixelData3
-import matt.nn.deephys.model.importformat.DeephyImage
-import matt.nn.deephys.model.importformat.TestNeuron
+import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import java.io.OutputStream
 import java.nio.file.Path
 import kotlin.concurrent.thread
@@ -116,7 +116,7 @@ object DeephysCacheManager {
 	}
 
 
-	override fun closeWritingOnNueronActs() {
+	override fun closeWritingOnNeuronActs() {
 	  neuronsRAF.closeWriting()
 	}
   }
@@ -134,7 +134,7 @@ interface DatasetCacher {
   fun cachePixels(im: DeephyImage, pixelBytes: ByteArray, read: (ByteArray)->PixelData3)
   fun cacheImActs(im: DeephyImage, actsBytes: ByteArray, read: (ByteArray)->ActivationData)
   fun startCachingNeuronActs(neuron: TestNeuron, size: Int, read: (ByteArray)->FloatArray): CacheTool
-  fun closeWritingOnNueronActs()
+  fun closeWritingOnNeuronActs()
   //  val recentList: Queue<MFile>
 }
 

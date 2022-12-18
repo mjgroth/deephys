@@ -17,7 +17,7 @@ import matt.lang.weak.WeakRef
 import matt.model.flowlogic.controlflowstatement.ControlFlow.CONTINUE
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.DEEPHY_FONT_DEFAULT
-import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.sys.loopthread.DaemonLoop
 import kotlin.time.Duration.Companion.seconds
 

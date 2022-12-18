@@ -1,7 +1,7 @@
 package matt.nn.deephys.gui.draw
 
 import matt.fx.graphics.wrapper.canvas.Canv
-import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.im.DeephyImage
 
 fun Canv.draw(image: DeephyImage) {
   val mat = image.matrix

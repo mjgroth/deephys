@@ -8,9 +8,18 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 
 [//]: # (### PIP Python Package Updated to 0.6.0)
 [//]: # (### New Features)
-[//]: # (### Performance Improvements)
+
+### Performance Improvements
+- Slightly faster loading time
+  - removed redundant threads
+- Reduced memory usage
+    - predictions: LinkedHashMap with no capacity -> HashMap with initial capacity 
+
 [//]: # (### Cosmetic Changes)
-[//]: # (### Bug Fixes)
+
+### Bug Fixes
+- Fixed a "file load stream broken" bug 
+
 [//]: # (### Internal Development)
 [//]: # (### New Tests)
 [//]: # (### Notes)

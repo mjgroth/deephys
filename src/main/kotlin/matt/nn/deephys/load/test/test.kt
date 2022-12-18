@@ -24,15 +24,16 @@ import matt.nn.deephys.load.async.AsyncLoader
 import matt.nn.deephys.load.cache.CacheTool
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.model.data.InterTestNeuron
-import matt.nn.deephys.model.importformat.DeephyImage
 import matt.nn.deephys.model.importformat.Model
-import matt.nn.deephys.model.importformat.ModelState
 import matt.nn.deephys.model.importformat.Test
-import matt.nn.deephys.model.importformat.TestNeuron
-import matt.nn.deephys.model.importformat.TestOrLoader
+import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.nn.deephys.model.importformat.mstate.ModelState
+import matt.nn.deephys.model.importformat.neuron.TestNeuron
+import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.obs.prop.BindableProperty
 import matt.prim.float.FLOAT_BYTE_LEN
 import matt.prim.str.elementsToString
+import matt.prim.str.mybuild.string
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
@@ -81,8 +82,22 @@ class TestLoader(
 
   //  val everythingBeforeBlock = ProfiledBlock("Everything-Before-${file.name}", uniqueSuffix = true)
   //  val everythingAfterBlock = ProfiledBlock("Everything-After-${file.name}", uniqueSuffix = true)
-  //  private val cacheNeuronActsBlock = ProfiledBlock("Cache-Neuron-Activations-${file.name}", uniqueSuffix = true)
+  //  private val cacheNeuronActsBlock = ProfiledBlock("Cache-matt.nn.deephys.model.importformat.neuron.Neuron-Activations-${file.name}", uniqueSuffix = true)
 
+
+  val pixelsShapePerImage = LoadedValueSlot<String>()
+  val activationsShapePerImage = LoadedValueSlot<String>()
+  val infoString by lazy {
+	string {
+	  lineDelimited {
+		+"Test:"
+		+"\tname=${file.name}"
+		+"\tnumImages=${numImages.await()}"
+		+"\t${pixelsShapePerImage.await()}"
+		+"\t${activationsShapePerImage.await()}"
+	  }
+	}
+  }
 
   val start = SingleCall {    /*	matt.async.schedule.every(1.seconds) {
 		  MemReport().println()
@@ -119,18 +134,13 @@ class TestLoader(
 			  var nextImageIndex = 0
 			  numImages.putLoadedValue(count)
 			  println("numImages=$count")
-
-
 			  val finishedImagesBuilder = BlockListBuilder<DeephyImage>(numImsInt)
 			  finishedImages.putLoadedValue(finishedImagesBuilder.blockList)
-
-
 			  localTestNeurons =
 				model.neurons.associate {
 				  it.interTest to TestNeuron(index = it.index, layerIndex = it.layer.index)
 				}
 			  println("numNeurons=${model.layers.map { it.neurons.size }.elementsToString()}")
-
 			  neuronActCacheTools = localTestNeurons!!.values.map { neuron ->
 				pixelAndActCacher.startCachingNeuronActs(neuron, numImsInt*FLOAT_BYTE_LEN) { bytes: ByteArray ->
 				  FloatArray(numImsInt).also {
@@ -155,9 +165,11 @@ class TestLoader(
 				require(nextKeyOnly<String>() == "data")
 				val imageData: ByteArray = if (numDataBytes == null) {
 				  withByteStoring {
-					nextValueManualDontReadKey<ArrayReader, List2D<IntArray>> {
+					val r = nextValueManualDontReadKey<ArrayReader, List2D<IntArray>> {
 					  readPixels()
 					}
+					pixelsShapePerImage.putLoadedValue( "pixelsShapePerImage=[${r.size},${r[0].size},${r[0][0].size}]")
+					r
 				  }.let {
 					numDataBytes = it.second.size
 					it.second
@@ -176,9 +188,12 @@ class TestLoader(
 					require(nextKeyOnly<String>() == "activations")
 					if (numActivationBytes == null) {
 					  withByteStoring {
-						nextValueManualDontReadKey<ArrayReader, ActivationData> {
+						val r = nextValueManualDontReadKey<ArrayReader, ActivationData> {
 						  readActivations()
 						}
+						activationsShapePerImage.putLoadedValue("activationsLengthPerLayerPerImage=[${r.joinToString { it.size.toString() }}]")
+						println(infoString)
+						r
 					  }.let {
 						numActivationBytes = it.second.size
 						it.second
@@ -186,6 +201,8 @@ class TestLoader(
 					} else readNBytes(numActivationBytes!!)
 				  }
 				)
+
+
 
 
 
@@ -404,10 +421,10 @@ class TestLoader(
 
 			neuronActCacheTools!!.forEach {
 			  it.outputStream.flush()
-			  pixelAndActCacher.closeWritingOnNueronActs()
 			  /*it.deed.close()*/
 			  it.cacheOp()
 			}
+			pixelAndActCacher.closeWritingOnNeuronActs()
 
 			progress.value = 1.0
 			//			everythingBeforeBlock.report()
@@ -425,9 +442,7 @@ class TestLoader(
 			  model = this@TestLoader.model
 			).apply {
 			  testNeurons = localTestNeurons
-			  daemon("activation preloading") {
-				startPreloadingActs()
-			  }
+			  preds.startLoading()
 			})
 			signalFinishedLoading()
 		  }

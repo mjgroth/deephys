@@ -9,6 +9,7 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.kjlib.git.hub.GitHub
+import matt.kjlib.git.hub.GitHubRepo
 import matt.log.warn.warn
 import matt.log.warn.warnOnce
 import matt.model.data.release.Release
@@ -26,7 +27,7 @@ object VersionChecker {
 	if (!checking) {
 	  every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
 		try {
-		  val releases = GitHub.releasesOf(appName)
+		  val releases = GitHubRepo(appName).releases()
 		  if (releases == null) {
 			warnOnce("releases == null")
 		  } else {

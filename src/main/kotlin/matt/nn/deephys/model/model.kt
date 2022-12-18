@@ -2,8 +2,8 @@ package matt.nn.deephys.model
 
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
-import matt.nn.deephys.model.importformat.Layer
 import matt.nn.deephys.model.importformat.Model
+import matt.nn.deephys.model.importformat.layer.Layer
 
 
 interface LayerLike {

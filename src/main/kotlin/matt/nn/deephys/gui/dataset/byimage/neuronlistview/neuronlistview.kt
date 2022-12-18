@@ -26,7 +26,7 @@ import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
-import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.bind.MyBinding
 import matt.obs.prop.ObsVal
 

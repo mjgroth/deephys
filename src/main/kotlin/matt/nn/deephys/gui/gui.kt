@@ -29,7 +29,6 @@ import matt.lang.anno.SeeURL
 import matt.lang.go
 import matt.log.profile.stopwatch.Stopwatch
 import matt.log.profile.stopwatch.tic
-import matt.log.tab
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.mstruct.rstruct.appName
 import matt.nn.deephys.gui.Arg.`erase-settings`
@@ -100,12 +99,12 @@ class DeephysApp {
 
   fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
 
-	println("start app 1")
+	//	println("start app 1")
 
 	val myStageTitle = stageTitle.await()
 	stage.title = myStageTitle
 
-	println("start app 2")
+	//	println("start app 2")
 
 	stage.node.minWidth = 1000.0
 	@SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
@@ -115,7 +114,7 @@ class DeephysApp {
 
 	readyForConfiguringWindowFromTest.putLoadedValue(stage)
 
-	println("start app 3")
+	//	println("start app 3")
 
 	root<VBoxWrapperImpl<NodeWrapper>> {
 	  alignment = TOP_CENTER
@@ -163,9 +162,7 @@ class DeephysApp {
 			  deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
 			  swapT.toc(2)
 			  println("loaded model: ${model.name}")
-			  model.layers.forEach {
-				tab("${it.layerID} has ${it.neurons.size} neurons")
-			  }
+			  println(model.infoString())
 			  swapT.toc(3)
 
 			  val maxNeurons = 50

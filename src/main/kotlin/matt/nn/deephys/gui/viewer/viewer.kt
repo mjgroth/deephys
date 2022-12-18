@@ -47,7 +47,7 @@ import matt.nn.deephys.model.ResolvedNeuron
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
-import matt.nn.deephys.model.importformat.DeephyImage
+import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
