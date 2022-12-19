@@ -4,7 +4,7 @@ mkdir k
 cd k
 mkdir nn
 cd nn
-echo {\"type\":\"matt.mstruct.bj.ABSTRACTModule\"} > build.json
+echo {} > build.json
 git clone https://github.com/mgroth0/deephys
 cd ..
 git clone https://github.com/mgroth0/math
@@ -44,24 +44,14 @@ git clone --recurse-submodules https://github.com/mgroth0/hurricanefx
 cp nn/deephys/gradlew ..
 cp -r nn/deephys/gradle ..
 cd ..
-# https://stackoverflow.com/questions/21577968/how-to-tell-if-homebrew-is-installed-on-mac-os-x
-which -s brew
-if [[ $? != 0 ]] ; then
-	# Install Homebrew
-	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-else
-	echo "brew exists."
-#    brew update
-fi
 # https://linuxize.com/post/bash-check-if-file-exists/
 JAV="/opt/homebrew/opt/openjdk@17"
 if [ -f "$JAV" ]; then
- echo "$FILE exists."
+	echo "$FILE exists."
 else
- echo "$FILE does not exist."
- brew install openjdk@17
+	echo "$FILE does not exist. Please install openjdk@17 with brew"
+	exit 1
 fi
-brew install openjdk@17
 curl https://gradle.nyc3.digitaloceanspaces.com//kbuild.zip --output kbuild.zip
 curl https://gradle.nyc3.digitaloceanspaces.com//settings.gradle.kts --output settings.gradle.kts
 unzip kbuild.zip
