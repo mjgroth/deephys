@@ -19,12 +19,16 @@
 
 ## Running From Source
 
+
+
 1. **Do not clone this repo manually.** It will be automatically cloned as a git submodule below.
+
+2. Install [Homebrew](https://brew.sh/) if it is not already
+3. Install `openjdk@17` with `brew`
 2. Set up the project: copy code from `setup_project.sh` straight from your web browser on GitHub into terminal. NOTE: this code does many things:
    - Creates a new folder "deephys" underneath the current directory and modify it. The code will work best if no such folder already exists.
    - automatically clone many git repos into subdirectories
-   - install homebrew if it is not yet installed
-   - install JDK17 if it is not yet installed
+   - makes sure jdk17 is installed
    - Downloads other necessary files and places them inside newly created "deephys" folder 
 2. Run from source: while inside of the new directory "deephys", run the code from `run_from_source.sh` in terminal. Note that like the script above, `run_from_source.sh` will not be located directly inside of the "deephys folder". Best to just copy and paste the code from GitHub into terminal.
 
