@@ -50,7 +50,6 @@ if [ -f "$JAV" ]; then
 	echo "$FILE exists."
 else
 	echo "$FILE does not exist. Please install openjdk@17 with brew"
-	exit 1
 fi
 curl https://gradle.nyc3.digitaloceanspaces.com//kbuild.zip --output kbuild.zip
 curl https://gradle.nyc3.digitaloceanspaces.com//settings.gradle.kts --output settings.gradle.kts
