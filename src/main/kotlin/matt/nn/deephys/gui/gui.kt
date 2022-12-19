@@ -153,7 +153,7 @@ class DeephysApp {
 
 
 		  loadSwapper(modelBinding.await(), nullMessage = "Select a .model file to begin") {
-			val swapT = tic("model swapper", enabled = false)
+			val swapT = tic("model swapper", enabled = true)
 			swapT.toc(0)
 			val model = this@loadSwapper
 			VBoxWrapperImpl<NodeWrapper>().apply {
@@ -217,6 +217,9 @@ class DeephysApp {
 	/*  scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/
 
 	testReadyScene.putLoadedValue(scene!!)
+
+	println("put loaded scene")
+
   }.runBlocking(t = t)
 
 }
