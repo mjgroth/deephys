@@ -8,9 +8,6 @@ import matt.math.jmath.sigFigs
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
 import matt.model.code.successorfail.FailableReturn
-import matt.model.code.successorfail.SuccessfulReturn
-import matt.model.code.successorfail.mightFail
-import matt.model.code.successorfail.resultOr
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
@@ -64,7 +61,7 @@ data class NormalizedAverageActivation(
 ): DeephysComputeInput<NormalActivation>() {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
-  override val cacheManager get() = images.firstOrNull()?.testLoader?.cacheMan ?: GlobalRAMComputeCacheManager
+  override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: GlobalRAMComputeCacheManager
 
   companion object {
 	const val normalizeTopNeuronsBlurb =
@@ -95,7 +92,7 @@ data class TopImages(
   private val num: Int
 ): DeephysComputeInput<List<ImageIndex>>() {
 
-  override val cacheManager get() = test.cacheMan
+  override val cacheManager get() = test.testRAMCache
 
   override fun timedCompute(): List<ImageIndex> = run {
 	val theTest = test.awaitFinishedTest()
@@ -121,7 +118,7 @@ data class TopNeurons(
 ): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
-  override val cacheManager get() = images.firstOrNull()?.testLoader?.cacheMan ?: FakeCacheManager
+  override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: FakeCacheManager
 
   override fun timedCompute(): List<NeuronWithActivation> {
 	if (images.isEmpty()) return listOf()
@@ -140,7 +137,7 @@ data class ActivationRatio(
   private val neuron: InterTestNeuron
 ): DeephysComputeInput<Float>() {
 
-  override val cacheManager get() = numTest.cacheMan /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
+  override val cacheManager get() = numTest.testRAMCache /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
   companion object {
 	const val technique =
@@ -165,7 +162,7 @@ data class ImageSoftMaxDenom(
   private val testLoader: TestLoader
 ): DeephysComputeInput<Float>() {
 
-  override val cacheManager get() = testLoader.cacheMan
+  override val cacheManager get() = testLoader.testRAMCache
 
   override fun timedCompute(): Float {
 	val clsLay = testLoader.model.classificationLayer
@@ -179,7 +176,7 @@ data class ImageTopPredictions(
   private val testLoader: TestLoader
 ): DeephysComputeInput<List<Pair<Category, Float>>>() {
 
-  override val cacheManager get() = testLoader.cacheMan
+  override val cacheManager get() = testLoader.testRAMCache
 
   override fun timedCompute(): List<Pair<Category, Float>> {
 	val clsLay = testLoader.model.classificationLayer
@@ -202,7 +199,7 @@ data class CategoryAccuracy(
   private val testLoader: TestLoader
 ): DeephysComputeInput<Double>() {
 
-  override val cacheManager get() = testLoader.cacheMan
+  override val cacheManager get() = testLoader.testRAMCache
 
   override fun timedCompute(): Double {
 	val r = testLoader.awaitFinishedTest().imagesWithGroundTruth(category).map {
@@ -219,7 +216,7 @@ data class CategoryFalsePositivesSorted(
   private val testLoader: TestLoader
 ): DeephysComputeInput<List<DeephyImage>>() {
 
-  override val cacheManager get() = testLoader.cacheMan
+  override val cacheManager get() = testLoader.testRAMCache
 
   companion object {
 	const val blurb =
@@ -246,7 +243,7 @@ data class CategoryFalseNegativesSorted(
   private val testLoader: TestLoader
 ): DeephysComputeInput<List<DeephyImage>>() {
 
-  override val cacheManager get() = testLoader.cacheMan
+  override val cacheManager get() = testLoader.testRAMCache
 
   companion object {
 	const val blurb =

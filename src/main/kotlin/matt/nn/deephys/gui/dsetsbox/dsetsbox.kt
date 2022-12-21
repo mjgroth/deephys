@@ -10,6 +10,7 @@ import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
+import matt.obs.bind.MyBinding
 import matt.obs.prop.BindableProperty
 
 class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
@@ -90,5 +91,27 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	}
   }
 
+  val highlightedNeurons = MyBinding(children) {
+	children.flatMap { it.highlightedNeurons.value }
+  }.apply {
+	children.onChange {
+	  removeAllDependencies()
+	  children.forEach {
+		addDependency(it.highlightedNeurons)
+	  }
+	  markInvalid()
+	}
+	children.forEach {
+	  addDependency(it.highlightedNeurons)
+	}
+	/*	children.onChange {
+		  (it as? AdditionBase)?.addedElements?.forEach {
+			addDependency(it.highlightedNeurons)
+		  }
+		  (it as? RemovalBase)?.removedElements?.forEach {
+			removeDependency(it.highlightedNeurons)
+		  }
+		}*/
+  }
 }
 

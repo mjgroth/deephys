@@ -50,7 +50,7 @@ fun NW.neuronListViewSwapper(
 		  TopNeurons(
 			images = contents,
 			layer = lay,
-			test = viewer.testData.value!!,
+			test = deRefedViewer.testData.value!!,
 			normalized = deRefedViewer.normalizeTopNeuronActivations.value
 		  )
 		}

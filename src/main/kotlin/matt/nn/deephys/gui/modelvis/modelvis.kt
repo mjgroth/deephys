@@ -13,15 +13,14 @@ import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.modelvis.neuroncirc.NeuronCircle
 import matt.nn.deephys.model.importformat.Model
-import matt.obs.bind.MyBinding
-import matt.obs.col.change.AdditionBase
+import matt.obs.bind.binding
 import matt.obs.math.double.min
 import matt.obs.math.double.op.div
 import matt.obs.math.double.op.plus
 import matt.obs.math.double.op.times
 import matt.obs.prop.BindableProperty
 
-class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) {
+class ModelVisualizer(model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) {
 
   companion object {
 	private val ORIENTATION = VERTICAL
@@ -39,22 +38,21 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 	  require(value != null)
 	  require(circles!!.isNotEmpty())
 	  field = value
+	  @Suppress("SENSELESS_COMPARISON")
+	  if (value == null) {
+		circles!!.forEach { circ ->
+		  circ.isHighlighted.unbind()
+		  circ.isHighlighted v false
+		}
+	  }
 	  circles!!.forEach { circ ->
 		val n = circ.neuron
-		circ.isHighlighted.bind(MyBinding(value.children) {
-		  value.children.any { n.interTest in it.highlightedNeurons.value }
-		}.apply {
-		  value.children.forEach {
-			addDependency(it.highlightedNeurons)
+		circ.isHighlighted v (n in value.highlightedNeurons.value)
+		circ.isHighlighted.bind(
+		  value.highlightedNeurons.binding {
+			n in it
 		  }
-		  value.children.onChange {
-			if (it is AdditionBase) {
-			  it.addedElements.forEach {
-				addDependency(it.highlightedNeurons)
-			  }
-			}
-		  }
-		})
+		)
 	  }
 	}
 
@@ -134,7 +132,7 @@ class ModelVisualizer(val model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane
 			if (dvb.children.isEmpty()) return@setOnMouseClicked
 			if (dvb.bound.value == null) {
 			  dvb.myToggleGroup.selectedValue.value = dvb.children.first()
-//			  dvb.bound.value = /
+			  //			  dvb.bound.value = /
 			}
 			val b = dvb.bound.value!!
 			b.neuronSelection v null

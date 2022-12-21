@@ -1,6 +1,8 @@
 {
   "type" :         "matt.mstruct.bj.BasicJvmOnlyMod",
-  "jvmExec" :      {"type":"Typical"},
+  "jvmExec" :      {
+	"type" : "Typical"
+  },
   "dependencies" : [
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
@@ -43,11 +45,19 @@
 	  "path" : ":k:test"
 	},
 	{
-	  "type": "matt.mstruct.bj.BuildJsonAbsoluteFilesDependency",
-	  "cfg": "testImplementation",
-	  "files": [
-		"/Applications/YourKit-Java-Profiler-2022.9.app/Contents/Resources/lib/yjp-controller-api-redist.jar"
-	  ]
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "testImplementation",
+	  "path" : ":k:gui"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "testImplementation",
+	  "path" : ":k:log:profile:yk"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "cfg" :  "implementation",
+	  "key" :  "guava"
 	}
   ]
 }

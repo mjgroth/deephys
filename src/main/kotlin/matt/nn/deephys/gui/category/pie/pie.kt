@@ -44,6 +44,7 @@ class CategoryPie(
 	const val CENTER_X = 150.0
 	const val CENTER_Y = 150.0
 	const val MAX_SLICES = 25
+	var ANIMATE = true
   }
 
   init {
@@ -95,13 +96,16 @@ class CategoryPie(
 		).apply {
 		  highlighted.bind(hoverProperty)
 		  if (cat == selected) {
-			timeline {
+			if (ANIMATE) timeline {
 			  keyframe(Duration.millis(500.0)) {
 				keyvalue(theLabel.node.layoutXProperty(), theLabel.layoutX + 25*thetaX, MyInterpolator.EASE_OUT)
 				keyvalue(theLabel.node.layoutYProperty(), theLabel.layoutY + 25*thetaY, MyInterpolator.EASE_OUT)
 				keyvalue(node.layoutXProperty(), layoutX + 25*thetaX, MyInterpolator.EASE_OUT)
 				keyvalue(node.layoutYProperty(), layoutY + 25*thetaY, MyInterpolator.EASE_OUT)
 			  }
+			} else {
+			  node.layoutX = layoutX + 25*thetaX
+			  node.layoutY = layoutY + 25*thetaY
 			}
 		  }
 		}
@@ -111,9 +115,9 @@ class CategoryPie(
 	}
   }
 
-  private class CategorySlice(
-	cat: Category,
-	viewer: DatasetViewer,
+  class CategorySlice(
+	private val cat: Category,
+	private val viewer: DatasetViewer,
 	color: Color,
 	arcLength: Double,
 	startAngle: Double
@@ -125,6 +129,17 @@ class CategoryPie(
 	startAngle = startAngle,
 	length = arcLength
   ) {
+
+
+	fun click() {
+	  viewer.navigateTo(cat)
+	}
+
+	fun shiftClick() {
+	  viewer.navigateTo(CategoryConfusion(viewer.categorySelection.value!!.primaryCategory, cat))
+	}
+
+
 	init {
 	  deephyTooltip(cat.label + " (shift-click for Confusion View)")
 	  fill = color
@@ -135,11 +150,8 @@ class CategoryPie(
 	  cursor = Cursor.HAND
 	  strokeWidth = 0.0
 	  setOnMouseClicked {
-		if (it.isShiftDown) {
-		  viewer.navigateTo(CategoryConfusion(viewer.categorySelection.value!!.primaryCategory, cat))
-		} else {
-		  viewer.navigateTo(cat)
-		}
+		if (it.isShiftDown) shiftClick()
+		else click()
 	  }
 
 	}
@@ -156,6 +168,7 @@ class CategoryPie(
 
 
   }
+
 }
 
 

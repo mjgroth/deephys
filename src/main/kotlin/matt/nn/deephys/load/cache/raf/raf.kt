@@ -6,10 +6,16 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 
+class EvenlySizedRAFCache(private val rafCache: RAFCacheImpl, private val deedSize: Int): RAFCache {
+  constructor(f: MFile, deedSize: Int): this(rafCache = RAFCacheImpl(f), deedSize = deedSize)
 
-@Suppress("BlockingMethodInNonBlockingContext") class RAFCache(
+  fun rent() = rafCache.rent(deedSize)
+}
+
+
+@Suppress("BlockingMethodInNonBlockingContext") class RAFCacheImpl(
   private val f: MFile
-) {
+): RAFCache {
 
   //  companion object {
   //	val instances = mutableListOf<RAFCache>()
@@ -49,7 +55,7 @@ import java.nio.channels.FileChannel
 	val stopIndexExclusive: Long get() = startIndexInclusive + size
 
 	override fun read(): ByteArray {
-	  synchronized(this@RAFCache) {
+	  synchronized(this@RAFCacheImpl) {
 		val buff = ByteArray(size)
 		raf.seek(startIndexInclusive)
 		raf.readFully(buff)
@@ -91,28 +97,28 @@ import java.nio.channels.FileChannel
 	}
 
 	override fun write(bytes: ByteArray) {
-	  synchronized(this@RAFCache) {
+	  synchronized(this@RAFCacheImpl) {
 		raf.seek(startIndexInclusive)
 		raf.write(bytes)
 	  }
 	}
 
 	override fun write(bytes: ByteArray, destOffset: Int) {
-	  synchronized(this@RAFCache) {
+	  synchronized(this@RAFCacheImpl) {
 		raf.seek(startIndexInclusive + destOffset)
 		raf.write(bytes)
 	  }
 	}
 
 	fun write(bytes: ByteArray, srcOffset: Int, srcLen: Int, destOffset: Int) {
-	  synchronized(this@RAFCache) {
+	  synchronized(this@RAFCacheImpl) {
 		raf.seek(startIndexInclusive + destOffset)
 		raf.write(bytes, srcOffset, srcLen)
 	  }
 	}
 
 	override fun write(bytes: ByteBuffer) {
-	  synchronized(this@RAFCache) {
+	  synchronized(this@RAFCacheImpl) {
 		//		profSeek.with {
 		raf.seek(startIndexInclusive)
 		//		}
@@ -123,7 +129,7 @@ import java.nio.channels.FileChannel
 	}
 
 	override fun write(bytes: ByteBuffer, destOffset: Int) {
-	  synchronized(this@RAFCache) {
+	  synchronized(this@RAFCacheImpl) {
 		//		profSeek.with {
 		raf.seek(startIndexInclusive + destOffset)
 		//		}
@@ -153,6 +159,8 @@ import java.nio.channels.FileChannel
 
   }
 }
+
+interface RAFCache
 
 sealed interface Deed {
   fun write(bytes: ByteArray)

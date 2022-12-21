@@ -9,7 +9,8 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.kjlib.git.hub.GitHub
-import matt.kjlib.git.hub.GitHubRepo
+import matt.kjlib.git.hub.GitHubClient
+import matt.kjlib.git.hub.GitHubClient.GitHubRepo
 import matt.log.warn.warn
 import matt.log.warn.warnOnce
 import matt.model.data.release.Release
@@ -23,11 +24,13 @@ import java.net.ConnectException
 
 object VersionChecker {
   private var checking = false
+  private val gh by lazy { GitHubClient() }
+  private val ghUser by lazy { gh.me }
   fun checkForUpdatesInBackground() = daemon {
 	if (!checking) {
 	  every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
 		try {
-		  val releases = GitHubRepo(appName).releases()
+		  val releases = gh.GitHubRepo(ghUser, appName).releases()
 		  if (releases == null) {
 			warnOnce("releases == null")
 		  } else {
@@ -54,7 +57,7 @@ object VersionChecker {
 		else if (new.version > myVersion) {
 		  deephyText("Version ${new.version} Available: ")
 		  deephyHyperlink("Click here to update") {
-			opens(GitHub.mainPageOf(appName).jURL.toURI())
+			opens(ghUser.mainPageOf(appName).jURL.toURI())
 		  }
 		} else if (new.version < myVersion) {
 		  deephyText("developing unreleased version (last pushed was ${new.version})")

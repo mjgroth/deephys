@@ -11,6 +11,9 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 
 class DeephyImView(im: DeephyImage, viewer: DatasetViewer): ScaledCanvas() {
 
+  val weakViewer = WeakRef(viewer)
+  val weakIm = WeakRef(im)
+
   init {
 	todoOnce("combine draw methods for V1 and deephy")
 	draw(im)
@@ -18,14 +21,19 @@ class DeephyImView(im: DeephyImage, viewer: DatasetViewer): ScaledCanvas() {
 	deephyTooltip(im.category.label, im)
 
 
-	val weakIm = WeakRef(im)
+
 	hoverProperty.onChangeWithAlreadyWeak(weakIm) { derefedIm, h ->
 	  if (h) drawBorder()
 	  else draw(derefedIm)
 	}
-	val weakViewer = WeakRef(viewer)
+
 	onLeftClick {
-	  weakViewer.deref()!!.navigateTo(weakIm.deref()!!)
+	  click()
 	}
   }
+
+  fun click() {
+	weakViewer.deref()!!.navigateTo(weakIm.deref()!!)
+  }
+
 }

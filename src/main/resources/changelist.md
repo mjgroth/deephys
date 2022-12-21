@@ -13,14 +13,26 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 - Slightly faster loading time
   - removed redundant threads
 - Reduced memory usage
-    - predictions: LinkedHashMap with no capacity -> HashMap with initial capacity 
+    - predictions: LinkedHashMap with no capacity -> HashMap with initial capacity
+- Fixed memory leaks from
+  - `layoutProxy`
+  - `activationsByNeuron`
+  - `tooltips`
+  - `neuronListViewSwapper`
+  - `ModelVisualizer`
+- greatly improved data file loading times by making all caches into RAFs
 
 [//]: # (### Cosmetic Changes)
 
 ### Bug Fixes
-- Fixed a "file load stream broken" bug 
+- Fixed a "file load stream broken" bug
+- Increased max JavaFX vram from 500MB to 2GB to avoid some bugs
 
-[//]: # (### Internal Development)
+### Internal Development
+- During tests, app now automatically navigates between many images and categories to simulate prolonged usage of the app. This will help identify memory leaks.
+- Tests now affirm that loading times are below 5 seconds for CIFARX2 and 30 seconds for INX3
+
+
 [//]: # (### New Tests)
 [//]: # (### Notes)
 [//]: # (### Todo)

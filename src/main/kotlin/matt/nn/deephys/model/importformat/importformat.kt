@@ -1,6 +1,8 @@
 package matt.nn.deephys.model.importformat
 
+import com.google.common.collect.MapMaker
 import kotlinx.serialization.Serializable
+import matt.collect.dmap.withStoringDefault
 import matt.collect.weak.lazyWeakMap
 import matt.collect.weak.soft.lazySoftMap
 import matt.log.profile.mem.throttle
@@ -42,17 +44,17 @@ sealed interface DeephyFileObject {
 	resolvedLayers.first { it.isClassification }
   }
 
-  fun infoString()= string {
-	  lineDelimited {
-		+"Model:"
-		+"\tname=$name"
-		+"\tsuffix=$suffix"
-		+"\tlayers:"
-		layers.forEach {
-		  +"\t\t${it.layerID} (${it.neurons.size} neurons)"
-		}
+  fun infoString() = string {
+	lineDelimited {
+	  +"Model:"
+	  +"\tname=$name"
+	  +"\tsuffix=$suffix"
+	  +"\tlayers:"
+	  layers.forEach {
+		+"\t\t${it.layerID} (${it.neurons.size} neurons)"
 	  }
 	}
+  }
 
 
 }
@@ -100,21 +102,42 @@ class Test(
   }
 
 
-  val activationsByNeuron = lazyWeakMap<InterTestNeuron, MultiArray<Float, D1>> {
+  val activationsByNeuron = MapMaker()
+	.weakKeys().apply {
 
-	testNeurons!![it]!!.activations.await().asList().toNDArray()
+	}
+	.weakValues()
+	.makeMap<InterTestNeuron, MultiArray<Float, D1>>()
+	.withStoringDefault {
+	  testNeurons!![it]!!.activations.await().asList().toNDArray()
+	  /*val myMat = activationsMatByLayerIndex[it.layer.index]
+myMat[0 until myMat.shape[0], it.index]*/
+	}
+
+  /*	lazyWeakMap<InterTestNeuron, MultiArray<Float, D1>> {
 
 
-	/*val myMat = activationsMatByLayerIndex[it.layer.index]
-	myMat[0 until myMat.shape[0], it.index]*/
+	  //	error("todo: fix this memory leak")
 
 
-  }
+	  testNeurons!![it]!!.activations.await().asList().toNDArray()
+
+
+	  //	WeakReference(actData)
+
+
+
+
+
+	}*/
 
 
   val maxActivations = lazySoftMap<InterTestNeuron, Float> { neuron ->
+
 	/*activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!*/
+
 	activationsByNeuron[neuron].max()!!
+
   }
 
   val preds = run {

@@ -33,6 +33,7 @@ import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.mstruct.rstruct.appName
 import matt.nn.deephys.gui.Arg.`erase-settings`
 import matt.nn.deephys.gui.Arg.`erase-state`
+import matt.nn.deephys.gui.Arg.reset
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyText
@@ -48,7 +49,7 @@ import matt.obs.subscribe.Pager
 import java.util.prefs.Preferences
 
 enum class Arg {
-  `erase-state`, `erase-settings`
+  `erase-state`, `erase-settings`, reset
 }
 
 class DeephysApp {
@@ -60,6 +61,9 @@ class DeephysApp {
 	if (args.size == 1 && args[0] == `erase-state`.name) {
 	  DeephyState.delete()
 	} else if (args.size == 1 && args[0] == `erase-settings`.name) {
+	  DeephySettingsNode.delete()
+	} else if (args.size == 1 && args[0] == reset.name) {
+	  DeephyState.delete()
 	  DeephySettingsNode.delete()
 	} else {
 	  warmupJvmThreading()
