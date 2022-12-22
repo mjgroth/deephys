@@ -4,6 +4,7 @@
 *.hprof
 *.zip
 *.tgz
+__pycache__
 .private
 .gradle/
 /gradlew.bat

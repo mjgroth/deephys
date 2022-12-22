@@ -63,6 +63,21 @@ class Model(DEEPHYSData):
         activations: List[bytearray]  # float32
 
 
+"""
+Prepare test results from PyTorch for Deephys
+		@param name: the name of the dataset
+		@param dataset: the `DataLoader` from pytorch
+		@param classes: an ordered list of strings representing class names
+		@param state: a 3D array of floats. 
+			- Dimension 1: layers
+			- Dimension 2: neurons
+			- Dimension 3: activations
+		@param model: a `deephys.Model`
+		
+		@returns a `deephys.Test`
+"""
+
+
 def import_torch_dataset(name, dataset, classes, state, model):
     imageList = []
     for i in range(len(dataset)):
