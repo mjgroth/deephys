@@ -69,17 +69,17 @@ def import_torch_dataset(name, dataset, classes, state, model):
 
     :param name: the name of the dataset
     :type name: str
-    :param model: contains pixel data of images
-    :type dataset: class:`torch.utils.data.DataLoader`
+    :param dataset: contains pixel data of images
+    :type dataset: torch.utils.data.DataLoader
     :param classes: an ordered list of strings representing class names
     :type classes: list
     :param state: a 3D array of floats [layers,neurons,activations]
     :type state: list
     :param model: the model structure
-    :type model: class:`deephys.deephys.Model`
+    :type model: deephys.deephys.Model
 
     :return: a formatted data object which may be saved to a file
-    :rtype: class:`deephys.deephys.Test`
+    :rtype: deephys.deephys.Test
     """
     imageList = []
     for i in range(len(dataset)):
