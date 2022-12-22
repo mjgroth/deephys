@@ -67,16 +67,16 @@ def import_torch_dataset(name, dataset, classes, state, model):
     """
     Prepare test results from PyTorch for Deephys
 
-    @param name: the name of the dataset
-    @param dataset: the `DataLoader` from pytorch
-    @param classes: an ordered list of strings representing class names
-    @param state: a 3D array of floats.
-        - Dimension 1: layers
-        - Dimension 2: neurons
-        - Dimension 3: activations
-    @param model: a `deephys.Model`
+    :param name: the name of the dataset
+    :type name: str
+    :type dataset: class:`torch.utils.data.DataLoader`
+    :type classes: an ordered list of strings representing class names
+    :param classes: list
+    :param state: a 3D array of floats [layers,neurons,activations]
+    :param state: list
+    :type model: class:`deephys.deephys.Model`
 
-    @returns a `deephys.Test`
+    :rtype: class:`deephys.deephys.Test`
     """
     imageList = []
     for i in range(len(dataset)):
