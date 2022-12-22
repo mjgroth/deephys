@@ -16,12 +16,9 @@ Extracting Activations
 ----------------------
 
 To extract data from a test,
-you can use the ``deephys.deephys.import_torch_dataset()`` function:
+you can use the :py:func:`deephys.deephys.import_torch_dataset` function:
 
-.. autofunction:: deephys.deephys.import_torch_dataset
-
-The ``state`` parameter should be a 3D float array layers, neurons, and activations respectively.
-Otherwise, :py:func:`deephys.deephys.import_torch_dataset` will raise an exception.
+Parameter ``state`` in :func:`deephys.deephys.import_torch_dataset` should be a 3D float array layers, neurons, and activations respectively.
 
 For example:
 
