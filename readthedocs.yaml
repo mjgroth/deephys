@@ -3,4 +3,4 @@ version: 2
 python:
   install:
     - method: pip
-    path: src/main/python
+      path: src/main/python
