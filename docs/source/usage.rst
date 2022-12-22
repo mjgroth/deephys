@@ -23,7 +23,7 @@ you can use the ``deephys.import_torch_dataset()`` function:
 The ``state`` parameter should be a 3D float array layers, neurons, and activations respectively.
 Otherwise, :py:func:`deephys.import_torch_dataset` will raise an exception.
 
-.. autoexception:: lumache.InvalidKindError
+.. autoexception:: Exception
 
 For example:
 
