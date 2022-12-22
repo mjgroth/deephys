@@ -1,8 +1,12 @@
+
 API
 ===
 
 .. autosummary::
    :toctree: generated
+   :recursive:
 
    deephys
-   deephys.deephys
+   
+.. automodule:: deephys.deephys
+   :members:
