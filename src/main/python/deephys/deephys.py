@@ -65,16 +65,17 @@ class Model(DEEPHYSData):
 
 """
 Prepare test results from PyTorch for Deephys
-		@param name: the name of the dataset
-		@param dataset: the `DataLoader` from pytorch
-		@param classes: an ordered list of strings representing class names
-		@param state: a 3D array of floats. 
-			- Dimension 1: layers
-			- Dimension 2: neurons
-			- Dimension 3: activations
-		@param model: a `deephys.Model`
-		
-		@returns a `deephys.Test`
+
+@param name: the name of the dataset
+@param dataset: the `DataLoader` from pytorch
+@param classes: an ordered list of strings representing class names
+@param state: a 3D array of floats. 
+	- Dimension 1: layers
+	- Dimension 2: neurons
+	- Dimension 3: activations
+@param model: a `deephys.Model`
+
+@returns a `deephys.Test`
 """
 
 

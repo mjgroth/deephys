@@ -1,5 +1,5 @@
-    Welcome to Deephys' python documentation!
-===================================
+Welcome to Deephys' python documentation!
+=========================================
 
 **Deephys**, short for **Deep Physiology**, is a software tool accompanying the paper __. 
  

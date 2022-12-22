@@ -13,7 +13,7 @@ To use Deephys, first install it using pip:
    (.venv) $ pip install deephys
 
 Extracting Activations
-----------------
+----------------------
 
 To extract data from a test,
 you can use the ``deephys.import_torch_dataset()`` function:
@@ -23,7 +23,7 @@ you can use the ``deephys.import_torch_dataset()`` function:
 The ``state`` parameter should be a 3D float array layers, neurons, and activations respectively.
 Otherwise, :py:func:`deephys.import_torch_dataset` will raise an exception.
 
-.. autoexception:: Exception
+.. autoexception:: py:Exception
 
 For example:
 
