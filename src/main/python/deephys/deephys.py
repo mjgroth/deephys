@@ -70,7 +70,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
     :param name: the name of the dataset
     :type name: str
     :param dataset: contains pixel data of images
-    :type dataset: class:`torch.utils.data.DataLoader`
+    :type dataset: torch.utils.data.DataLoader
     :param classes: an ordered list of strings representing class names
     :type classes: list
     :param state: a 3D array of floats [layers,neurons,activations]
