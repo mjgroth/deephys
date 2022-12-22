@@ -21,22 +21,16 @@ you can use the ``deephys.import_torch_dataset()`` function:
 .. autofunction:: deephys.import_torch_dataset
 
 The ``state`` parameter should be a 3D float array layers, neurons, and activations respectively.
-or ``"veggies"``. Otherwise, :py:func:`deephys.import_torch_dataset`
-will raise an exception.
+Otherwise, :py:func:`deephys.import_torch_dataset` will raise an exception.
 
 .. autoexception:: lumache.InvalidKindError
 
 For example:
 
->>> import lumache
->>> lumache.get_random_ingredients()
-
 >>> test_data_2 = np.transpose(test_data['images'], (0, 3, 1, 2))/255.
 >>> test_data_2 = TensorDataset(torch.FloatTensor(test_data_2), torch.LongTensor(test_data['labels']))
-
 >>> testloader = torch.utils.data.DataLoader(test_data_2,
     batch_size=args['batch_size'], shuffle=False, **kwargs)
-
 >>> testV2 = import_torch_dataset(
     "CIFARV2",
     testloader.dataset,
