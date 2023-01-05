@@ -9,6 +9,10 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 [//]: # (### PIP Python Package Updated to 0.6.0)
 [//]: # (### New Features)
 
+
+
+
+
 ### Performance Improvements
 - Slightly faster loading time
   - removed redundant threads
@@ -36,3 +40,8 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 [//]: # (### New Tests)
 [//]: # (### Notes)
 [//]: # (### Todo)
+
+
+
+[//]: # (CHANGELIST CANDIDATES)
+[//]: # (python tests)

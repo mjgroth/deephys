@@ -77,7 +77,6 @@ def import_torch_dataset(name, dataset, classes, state, model):
     :type state: list
     :param model: the model structure
     :type model: deephys.deephys.Model
-
     :return: a formatted data object which may be saved to a file
     :rtype: deephys.deephys.Test
     """
@@ -97,7 +96,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
             raise Exception(
                 f"image pixel values should be integers between 0 and 255, but a value of {mn} was received"
             )
-        chan_to_bytes = lambda chan: [matt.model.im.bytes(row) for row in chan]
+        chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
         im_as_list = image.numpy().astype(numpy.uint8).tolist()
         im_activations = list(map(lambda x: x[i, :].tolist(), state))
