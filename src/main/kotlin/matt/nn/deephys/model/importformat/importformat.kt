@@ -111,7 +111,7 @@ class Test(
 	.withStoringDefault {
 	  testNeurons!![it]!!.activations.await().asList().toNDArray()
 	  /*val myMat = activationsMatByLayerIndex[it.layer.index]
-myMat[0 until myMat.shape[0], it.index]*/
+myMat[0 ..< myMat.shape[0], it.index]*/
 	}
 
   /*	lazyWeakMap<InterTestNeuron, MultiArray<Float, D1>> {

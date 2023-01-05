@@ -211,7 +211,7 @@ class TestLoader(
 				  val siz = imageActBytes.size
 				  val buff = ByteArray(FLOAT_BYTE_LEN*siz)
 
-				  (0 until imageActBytes[0].size step FLOAT_BYTE_LEN).forEach { n ->
+				  (0 ..< imageActBytes[0].size step FLOAT_BYTE_LEN).forEach { n ->
 					val tool = toolItr.next()
 					imageActBytes.forEachIndexed { idx, it ->
 					  System.arraycopy(it, n, buff, idx*FLOAT_BYTE_LEN, FLOAT_BYTE_LEN)

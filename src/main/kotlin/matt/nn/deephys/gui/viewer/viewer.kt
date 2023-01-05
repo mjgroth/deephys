@@ -233,7 +233,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   fun navigateTo(im: DeephyImage) {
 	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
 	imageSelection.value = im
-	for (i in (historyIndex.value + 1) until history.size) {
+	for (i in (historyIndex.value + 1) ..< history.size) {
 	  history.removeAt(historyIndex.value + 1)
 	}
 	history.add(SelectImage(im))
