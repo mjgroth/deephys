@@ -20,7 +20,18 @@ class TestDeephys(unittest.TestCase):
         )
         model = dp.Model("model", None, [])
         state = []
-        classes = ["dog"]
+        classes = (
+            "plane",
+            "car",
+            "bird",
+            "cat",
+            "deer",
+            "dog",
+            "frog",
+            "horse",
+            "ship",
+            "truck",
+        )
         torch_test = dp.import_torch_dataset(
             "torch_test", testloader.dataset, classes, state, model
         )
