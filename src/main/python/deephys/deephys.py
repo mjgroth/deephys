@@ -88,7 +88,14 @@ def import_torch_dataset(name, dataset, classes, state, model):
             target = target.item()
         pixelDataList.append(image)
         groundTruthList.append(target)
-    return import_test_data(name, pixelDataList, groundTruthList, classes, state, model)
+    return import_test_data(
+        name=name,
+        pixel_data=pixelDataList,
+        ground_truth=groundTruthList,
+        classes=classes,
+        state=state,
+        model=model,
+    )
 
 
 def import_test_data(name, classes, state, model, pixel_data, ground_truths):

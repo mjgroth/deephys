@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "main", "pyt
 import deephys as dp
 
 
-class TestStringMethods(unittest.TestCase):
+class TestDeephys(unittest.TestCase):
     def test_deephys(self):
         os.chdir("/Users/matthewgroth/registered/tmp")
         testset = torchvision.datasets.CIFAR10(
