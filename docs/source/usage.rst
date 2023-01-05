@@ -37,4 +37,4 @@ For example:
 >>> testV2.save()
 The data is now saved to a file called "CIFARV2.test"
 
-Please see `Google Colab <https://github.com/mjgroth/deephys-aio>`_ for the full tutorial
+Please see `Google Colab <https://github.com/mjgroth/deephys-aio/blob/master/Python_Tutorial_0_6_0.ipynb>`_ for the full tutorial

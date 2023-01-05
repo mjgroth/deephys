@@ -65,7 +65,7 @@ class Model(DEEPHYSData):
 
 def import_torch_dataset(name, dataset, classes, state, model):
     """
-    Prepare test results from PyTorch for Deephys
+    Conveniently calls import_test_data with PyTorch data.
 
     :param name: the name of the dataset
     :type name: str
@@ -80,11 +80,40 @@ def import_torch_dataset(name, dataset, classes, state, model):
     :return: a formatted data object which may be saved to a file
     :rtype: deephys.deephys.Test
     """
-    imageList = []
+    pixelDataList = []
+    groundTruthList = []
     for i in range(len(dataset)):
         image, target = dataset[i]
         if torch.is_tensor(target):
             target = target.item()
+        pixelDataList.append(image)
+        groundTruthList.append(target)
+    return import_test_data(name, pixelDataList, groundTruthList, classes, state, model)
+
+
+def import_test_data(name, classes, state, model, pixel_data, ground_truths):
+    """
+    Prepare test results for Deephys
+
+    :param name: the name of the dataset
+    :type name: str
+    :param classes: an ordered list of strings representing class names
+    :type classes: list
+    :param state: a 3D array of floats [layers,neurons,activations]
+    :type state: list
+    :param model: the model structure
+    :type model: deephys.deephys.Model
+    :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2]
+    :type pixel_data: List[List[List[List]]]
+    :param ground_truths: an ordered list of ground truths
+    :type ground_truths: List[int]
+    :return: a formatted data object which may be saved to a file
+    :rtype: deephys.deephys.Test
+    """
+    imageList = []
+    for i in range(len(pixel_data)):
+        image = pixel_data[i]
+        target = ground_truths[i]
         image = image * 255
         mn = torch.min(image)
         mx = torch.max(image)

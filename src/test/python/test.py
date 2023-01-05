@@ -1,23 +1,17 @@
 import unittest
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "main", "python"))
+import deephys as dp
 
 
 class TestStringMethods(unittest.TestCase):
-    def test_upper(self):
-        self.assertEqual("foo".upper(), "FOO")
-
-    def test_isupper(self):
-        self.assertTrue("FOO".isupper())
-        self.assertFalse("Foo".isupper())
-
-    def test_split(self):
-        s = "hello world"
-        self.assertEqual(s.split(), ["hello", "world"])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
-
-    def test_fail(self):
-        self.assertEqual(1, 2)
+    def test_deephys(self):
+        test = dp.import_test_data(
+            [[[0.5], [0.5], [0.5]]], [0], ["dog"], [], dp.Model([])
+        )
+        test.save()
 
 
 if __name__ == "__main__":
