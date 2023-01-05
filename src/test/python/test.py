@@ -9,7 +9,7 @@ import deephys as dp
 class TestStringMethods(unittest.TestCase):
     def test_deephys(self):
         test = dp.import_test_data(
-            [[[0.5], [0.5], [0.5]]], [0], ["dog"], [], dp.Model([])
+            [[[0.5], [0.5], [0.5]]], [0], ["dog"], [], dp.Model("model", None, [])
         )
         test.save()
 
