@@ -91,7 +91,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
     return import_test_data(
         name=name,
         pixel_data=pixelDataList,
-        ground_truth=groundTruthList,
+        ground_truths=groundTruthList,
         classes=classes,
         state=state,
         model=model,
