@@ -6,6 +6,7 @@ from deephys.deephys import (
     Test,
     Stopwatch,
     import_torch_dataset,
+    import_test_data,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "Test",
     "Stopwatch",
     "import_torch_dataset",
+    "import_test_data",
 ]
