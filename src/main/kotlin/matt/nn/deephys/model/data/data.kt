@@ -10,7 +10,7 @@ import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 data class InterTestLayer(
   val index: Int, override val layerID: String, val neuronCount: Int
 ): LayerLike {
-  val neurons get() = (0 ..< neuronCount).map { InterTestNeuron(this, it) }
+  @OptIn(ExperimentalStdlibApi::class) val neurons get() = (0 ..< neuronCount).map { InterTestNeuron(this, it) }
   override val isClassification get() = layerID == "classification"
   override fun toString() = layerID
 }

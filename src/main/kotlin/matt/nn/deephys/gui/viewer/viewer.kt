@@ -230,7 +230,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	view.value = ByNeuron
   }
 
-  fun navigateTo(im: DeephyImage) {
+  @OptIn(ExperimentalStdlibApi::class) fun navigateTo(im: DeephyImage) {
 	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
 	imageSelection.value = im
 	for (i in (historyIndex.value + 1) ..< history.size) {

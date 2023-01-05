@@ -95,7 +95,7 @@ class TestLoader(
 	}
   }
 
-  val start = SingleCall {
+  @OptIn(ExperimentalStdlibApi::class) val start = SingleCall {
 	daemon("TestLoader-${file.name}") {
 	  if (!file.exists()) {
 		signalFileNotFound()
