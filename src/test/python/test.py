@@ -16,7 +16,7 @@ class TestStringMethods(unittest.TestCase):
             root="./data", train=False, download=True, transform=transforms.ToTensor()
         )
         testloader = torch.utils.data.DataLoader(
-            testset, batch_size=args["batch_size"], shuffle=False, num_workers=2
+            testset, batch_size=128, shuffle=False, num_workers=2
         )
         model = dp.Model("model", None, [])
         state = []
