@@ -1,6 +1,7 @@
 Metadata-Version: 2.1
 Name: deephys
-Version: 0.6.0
+Version: 0.7.0
 Author-email: Matt Groth <mjgroth@mit.edu>
 Project-URL: Homepage, https://github.com/mgroth0/deephys
-Project-URL: Bug Tracker, https://github.com/mgroth0/deephys/issues
+Project-URL: Documentation, https://matt-groth-deephys.readthedocs-hosted.com/en/latest/
+Project-URL: Bug Tracker, https://deephys.youtrack.cloud/

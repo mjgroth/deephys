@@ -1,6 +1,6 @@
 [project]
 name = "deephys"
-version = "0.6.0"
+version = "0.7.1"
 authors = [
     { name = "Matt Groth", email = "mjgroth@mit.edu" },
 ]
@@ -11,4 +11,5 @@ dependencies = [
 ]
 [project.urls]
 "Homepage" = "https://github.com/mgroth0/deephys"
-"Bug Tracker" = "https://github.com/mgroth0/deephys/issues"
+"Documentation" = "https://matt-groth-deephys.readthedocs-hosted.com/en/latest/"
+"Bug Tracker" = "https://deephys.youtrack.cloud/"

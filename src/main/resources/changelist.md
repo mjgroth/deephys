@@ -4,13 +4,13 @@
 
 
 Compatible pip package
-version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https://colab.research.google.com/drive/1aR5lnpVMxda7wUj1RZ6YODX5N2FA8YRn))
+version: [0.7.1](https://pypi.org/project/deephys/0.7.1/) ([instructions](https://colab.research.google.com/drive/1vOfau2lS004ilX6aIAASMKhFnzfi3uQ-))
 
-[//]: # (### PIP Python Package Updated to 0.6.0)
+### PIP Python Package Updated to 0.7.0
+- Set up first python tests to better ensure bug-free python updates
+- Added `import_test_data` function
+
 [//]: # (### New Features)
-
-
-
 
 
 ### Performance Improvements
@@ -41,8 +41,4 @@ version: [0.6.0](https://pypi.org/project/deephys/0.6.0/) ([instructions](https:
 [//]: # (### Notes)
 [//]: # (### Todo)
 
-
-
 [//]: # (CHANGELIST CANDIDATES)
-[//]: # (python tests)
-[//]: # (import_test_data)
