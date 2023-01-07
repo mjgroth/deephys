@@ -26,7 +26,8 @@ version: [0.7.2](https://pypi.org/project/deephys/0.7.2/) ([instructions](https:
   - `ModelVisualizer`
 - greatly improved data file loading times by making all caches into RAFs
 
-[//]: # (### Cosmetic Changes)
+### Cosmetic Changes
+- Added app logo to .app, dock, and title bar
 
 ### Bug Fixes
 - Fixed a "file load stream broken" bug

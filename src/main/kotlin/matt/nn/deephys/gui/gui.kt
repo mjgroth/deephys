@@ -4,10 +4,12 @@ import javafx.application.Platform.runLater
 import javafx.geometry.Pos.BOTTOM_LEFT
 import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
+import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.async.thread.daemon
+import matt.auto.ICON_SIZES
 import matt.collect.itr.mapToArray
 import matt.exec.app.myVersion
 import matt.file.construct.toMFile
@@ -31,6 +33,7 @@ import matt.log.profile.stopwatch.Stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.mstruct.rstruct.appName
+import matt.mstruct.rstruct.resourceURL
 import matt.nn.deephys.gui.Arg.`erase-settings`
 import matt.nn.deephys.gui.Arg.`erase-state`
 import matt.nn.deephys.gui.Arg.reset
@@ -108,6 +111,14 @@ class DeephysApp {
 	val myStageTitle = stageTitle.await()
 	stage.title = myStageTitle
 
+
+
+	stage.icons.addAll(
+	  ICON_SIZES.map {
+		Image(resourceURL("logo_$it.png").toString())
+	  }
+	)
+
 	//	println("start app 2")
 
 	stage.node.minWidth = 1000.0
@@ -121,6 +132,8 @@ class DeephysApp {
 	//	println("start app 3")
 
 	root<VBoxWrapperImpl<NodeWrapper>> {
+
+
 	  alignment = TOP_CENTER
 
 	  hotkeys {
