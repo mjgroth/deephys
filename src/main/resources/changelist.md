@@ -39,7 +39,10 @@ version: [0.7.2](https://pypi.org/project/deephys/0.7.2/) ([instructions](https:
 
 
 [//]: # (### New Tests)
-[//]: # (### Notes)
+
+### Notes
+- MIT License Added
+
 [//]: # (### Todo)
 
 [//]: # (CHANGELIST CANDIDATES)
