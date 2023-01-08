@@ -32,6 +32,7 @@ class CategoryView(
   init {
 
 
+
 	deephyLabel(
 	  selection.title.addNewLinesUntilNumLinesIs(3) /*so switching to confusion title with 3 lines isn't as jarring*/
 	).titleBoldFont()
@@ -99,7 +100,8 @@ class CategoryView(
 		  },
 		  viewer,
 		  colorMap = colorMap,
-		  selected = (selection as? CategoryConfusion)?.second
+		  selected = (selection as? CategoryConfusion)?.second,
+		  showAsList = viewer.showAsList1
 		)
 		+CategoryPie(
 		  "False Negatives",
@@ -111,7 +113,8 @@ class CategoryView(
 		  },
 		  viewer,
 		  colorMap = colorMap,
-		  selected = (selection as? CategoryConfusion)?.second
+		  selected = (selection as? CategoryConfusion)?.second,
+		  showAsList = viewer.showAsList2
 		)
 	  }
 

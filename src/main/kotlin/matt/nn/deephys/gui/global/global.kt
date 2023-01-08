@@ -30,6 +30,7 @@ import matt.fx.graphics.wrapper.text.textlike.MONO_FONT
 import matt.fx.graphics.wrapper.text.textlike.TextLike
 import matt.obs.bindings.str.ObsS
 import matt.obs.prop.BindableProperty
+import matt.obs.prop.Var
 
 
 fun EventTargetWrapper.deephyText(s: String = "", op: DeephyText.()->Unit = {}) =
@@ -74,10 +75,11 @@ fun EventTargetWrapper.deephyHyperlink(s: String = "", op: HyperlinkWrapper.()->
 }
 
 
-fun EventTargetWrapper.deephyCheckbox(s: String = "", op: CheckBoxWrapper.()->Unit = {}) = checkbox(s) {
-  font = DEEPHY_FONT_DEFAULT
-  op()
-}
+fun EventTargetWrapper.deephyCheckbox(s: String = "", prop: Var<Boolean>? = null, op: CheckBoxWrapper.()->Unit = {}) =
+  checkbox(s, property = prop) {
+	font = DEEPHY_FONT_DEFAULT
+	op()
+  }
 
 fun EventTargetWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = button(s) {
   font = DEEPHY_FONT_DEFAULT

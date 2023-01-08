@@ -59,9 +59,13 @@ import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
 
-class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
+@OptIn(ExperimentalStdlibApi::class) class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
+	TitledPaneWrapper() {
 
   private val initStopwatch = tic("viewer init", enabled = false)
+
+  val showAsList1 = BindableProperty(false)
+  val showAsList2 = BindableProperty(false)
 
   init {
 	initStopwatch.toc(1)
@@ -208,8 +212,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	view, topNeurons, neuronSelection
   ) {
 	when (view.value) {
-	  ByNeuron -> listOf(neuronSelection.value).filterNotNull()
-	  ByImage -> topNeurons.value?.findOrCompute() ?: listOf()
+	  ByNeuron   -> listOf(neuronSelection.value).filterNotNull()
+	  ByImage    -> topNeurons.value?.findOrCompute() ?: listOf()
 	  ByCategory -> listOf<InterTestNeuron>().apply {
 		warn("did not make highlighted neurons from category view work yet")
 	  }
@@ -236,30 +240,37 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	initStopwatch.toc(5)
   }
 
-  fun navigateTo(neuron: InterTestNeuron) {
+  private fun appendHistory(historyAction: TestViewerAction) {
+	for (i in (historyIndex.value + 1)..<history.size) {
+	  history.removeAt(historyIndex.value + 1)
+	}
+	history.add(historyAction)
+	historyIndex.value += 1
+  }
+
+  fun navigateTo(neuron: InterTestNeuron, addHistory: Boolean = true) {
 	require(!isBoundToDSet.value)
 	neuronSelection.value = null
 	layerSelection.value = neuron.layer
 	neuronSelection.value = neuron
+	if (addHistory) appendHistory(SelectNeuron(neuron))
 	view.value = ByNeuron
   }
 
-  @OptIn(ExperimentalStdlibApi::class) fun navigateTo(im: DeephyImage) {
+
+  fun navigateTo(im: DeephyImage, addHistory: Boolean = true) {
 	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	imageSelection.value = im
-	for (i in (historyIndex.value + 1)..<history.size) {
-	  history.removeAt(historyIndex.value + 1)
-	}
-	history.add(SelectImage(im))
-	historyIndex.value += 1
+	if (addHistory) appendHistory(SelectImage(im))
 	view.value = ByImage
   }
 
-  fun navigateTo(category: CategorySelection) {
+  fun navigateTo(category: CategorySelection, addHistory: Boolean = true) {
 	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	neuronSelection.value = null
 	neuronSelection.value = null
 	categorySelection.value = category
+	if (addHistory) appendHistory(SelectCategory(category))
 	view.value = ByCategory
   }
 
@@ -311,17 +322,33 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  }
 	  this@DatasetViewer.initStopwatch.toc(8.3)
 
+	  fun redoHistory(action: TestViewerAction) {
+		when (action) {
+		  is SelectImage    -> {
+			this@DatasetViewer.navigateTo(action.image, addHistory = false)
+		  }
+
+		  is SelectCategory -> {
+			this@DatasetViewer.navigateTo(action.cat, addHistory = false)
+		  }
+
+		  is SelectNeuron   -> {
+			this@DatasetViewer.navigateTo(action.neuron, addHistory = false)
+		  }
+		}
+	  }
+
 	  button("back") {
 		enableProperty.bind(
 		  this@DatasetViewer.history.binding(
-			this@DatasetViewer.historyIndex, this@DatasetViewer.view, this@DatasetViewer.boundToDSet
+			this@DatasetViewer.historyIndex, this@DatasetViewer.boundToDSet
 		  ) {
-			this@DatasetViewer.isUnboundToDSet.value && this@DatasetViewer.view.value == ByImage && it.isNotEmpty() && this@DatasetViewer.historyIndex.value > 0
+			this@DatasetViewer.isUnboundToDSet.value && it.isNotEmpty() && this@DatasetViewer.historyIndex.value > 0
 		  })
 		setOnAction {
 		  this@DatasetViewer.historyIndex.value -= 1
 		  val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
-		  this@DatasetViewer.imageSelection.value = (action as SelectImage).image
+		  redoHistory(action)
 		}
 
 	  }
@@ -329,14 +356,14 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  button("forward") {
 		enableProperty.bind(
 		  this@DatasetViewer.history.binding(
-			this@DatasetViewer.historyIndex, this@DatasetViewer.view, this@DatasetViewer.boundToDSet
+			this@DatasetViewer.historyIndex, this@DatasetViewer.boundToDSet
 		  ) {
-			this@DatasetViewer.isUnboundToDSet.value && this@DatasetViewer.view.value == ByImage && it.isNotEmpty() && this@DatasetViewer.historyIndex.value < it.size - 1
+			this@DatasetViewer.isUnboundToDSet.value && it.isNotEmpty() && this@DatasetViewer.historyIndex.value < it.size - 1
 		  })
 		setOnAction {
 		  this@DatasetViewer.historyIndex.value += 1
 		  val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
-		  this@DatasetViewer.imageSelection.value = (action as SelectImage).image
+		  redoHistory(action)
 		}
 	  }
 	  this@DatasetViewer.initStopwatch.toc(8.5)
@@ -403,3 +430,5 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
 sealed interface TestViewerAction
 class SelectImage(val image: DeephyImage): TestViewerAction
+class SelectNeuron(val neuron: InterTestNeuron): TestViewerAction
+class SelectCategory(val cat: CategorySelection): TestViewerAction

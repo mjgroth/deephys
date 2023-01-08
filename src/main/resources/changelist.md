@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephys/releases -->
 
-[//]: # (VERSION:1.23.2)
+[//]: # (VERSION:1.24.0)
 
 
 Compatible pip package
@@ -8,13 +8,18 @@ version: [0.7.2](https://pypi.org/project/deephys/0.7.2/)
 
 [//]: # (### PIP Python Package Updated to 0.7.2)
 
-[//]: # (### New Features)
+### New Features
+
+- Allow manually setting the "InD" and "OOD" datasets via toggle buttons
+- History now works for neurons and categories (was previously images only)
+- Added a list view alternative to the category pie charts
 
 [//]: # (### Performance Improvements)
 
 [//]: # (### Cosmetic Changes)
 
-[//]: # (### Bug Fixes)
+### Bug Fixes
+- Category Pie Charts now correctly show largest instead of the smallest slices
 
 [//]: # (### Internal Development)
 
