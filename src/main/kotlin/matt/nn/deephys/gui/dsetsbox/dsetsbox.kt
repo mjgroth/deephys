@@ -1,16 +1,22 @@
 package matt.nn.deephys.gui.dsetsbox
 
 import javafx.application.Platform.runLater
+import javafx.scene.paint.Color
 import matt.file.CborFile
 import matt.file.toSFile
 import matt.fx.control.toggle.mech.ToggleMechanism
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.model.data.message.FileList
+import matt.nn.deephys.gui.global.DEEPHY_FONT_MONO
+import matt.nn.deephys.gui.global.deephyToggleButton
+import matt.nn.deephys.gui.global.deephysSelectColor
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
+import matt.obs.bind.binding
 import matt.obs.prop.BindableProperty
 
 class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
@@ -38,41 +44,59 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   }
 
 
-  val myToggleGroup = ToggleMechanism<DatasetViewer>()/*.apply {
-	this.selectedValue.onChange {
-	  isChangingBindingM.value = true
-	  runLater {
-		isChangingBindingM.value = false
-	  }
-	  *//*prevents infinite recursion stack overflows in some cases*//*
-	  *//*must be the first listener for "myToggleGroup"... and I'm concerned this enforced enough*//*
-	  *//*maybe not the best solution*//*
-	  *//*or maybe is the best solution but needs to be generalized / canonicalize better*//*
-	}
-  }*/
-
-  //  private val isChangingBindingM = BindableProperty(false)
-  //  val isChangingBinding = isChangingBindingM.readOnly()
+  private val bindToggleGroup = ToggleMechanism<DatasetViewer>()
   private val boundM = BindableProperty<DatasetViewer?>(null)
   val bound = boundM.readOnly()
-
   init {
-	myToggleGroup.selectedValue.onChange {
+	bindToggleGroup.selectedValue.onChange {
 	  boundM.value =
 		null /*necessary to remove all binding and reset everything before adding new binding or risk weird infinite recursions while changing binding and DatasetViewers are looking at each other infinitely looking for topNeurons*/
 	  boundM.value = it
 	}
   }
+  fun createBindToggleButton(
+	parent: NodeWrapper,
+	viewer: DatasetViewer
+  ) = parent.deephyToggleButton(
+	"bind",
+	group = bindToggleGroup,
+	value = viewer
+  ) {
+	setupSelectionColor(deephysSelectColor)
+  }
+
+  private val inDToggleGroup = ToggleMechanism<DatasetViewer>()
+  val inD = inDToggleGroup.selectedValue.readOnly()
+
+  fun createInDToggleButton(
+	parent: NodeWrapper,
+	viewer: DatasetViewer
+  ) = parent.deephyToggleButton(
+	"",
+	group = inDToggleGroup,
+	value = viewer
+  ) {
+	setupSelectionColor(Color.rgb(255, 255, 0, 0.1))
+	textProperty.bind(selectedProperty.binding {
+	  if (it) "InD" else "OOD"
+	})
+	font = DEEPHY_FONT_MONO
+  }
 
 
-  //  val bound: Var<DatasetViewer?> = myToggleGroup.selectedValue
+  fun selectViewerToBind(viewer: DatasetViewer?) {
+	bindToggleGroup.selectedValue v viewer
+  }
+
+
 
   fun addTest() = DatasetViewer(null, this).also { plusAssign(it) }
 
 
   fun removeTest(t: DatasetViewer) {
 	println("removing test: ${t.file.value}")
-	if (bound.value == t) myToggleGroup.selectedValue.value = null
+	if (bound.value == t) bindToggleGroup.selectedValue.value = null
+	if (inD.value == t) inDToggleGroup.selectedValue.value = null
 	t.removeFromParent()
 	t.normalizeTopNeuronActivations.unbind()
 	t.numImagesPerNeuronInByImage.unbind()
@@ -104,14 +128,6 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	children.forEach {
 	  addDependency(it.highlightedNeurons)
 	}
-	/*	children.onChange {
-		  (it as? AdditionBase)?.addedElements?.forEach {
-			addDependency(it.highlightedNeurons)
-		  }
-		  (it as? RemovalBase)?.removedElements?.forEach {
-			removeDependency(it.highlightedNeurons)
-		  }
-		}*/
   }
 }
 

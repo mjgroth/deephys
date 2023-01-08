@@ -211,7 +211,7 @@ class TestLoader(
 				  val siz = imageActBytes.size
 				  val buff = ByteArray(FLOAT_BYTE_LEN*siz)
 
-				  (0 ..< imageActBytes[0].size step FLOAT_BYTE_LEN).forEach { n ->
+				  (0..<imageActBytes[0].size step FLOAT_BYTE_LEN).forEach { n ->
 					val tool = toolItr.next()
 					imageActBytes.forEachIndexed { idx, it ->
 					  System.arraycopy(it, n, buff, idx*FLOAT_BYTE_LEN, FLOAT_BYTE_LEN)
@@ -288,7 +288,11 @@ class TestLoader(
 
 
 			finishedTest.putLoadedValue(Test(
-			  name = name, suffix = suffix, images = finishedImages.await(), model = this@TestLoader.model
+			  name = name,
+			  suffix = suffix,
+			  images = finishedImages.await(),
+			  model = this@TestLoader.model,
+			  testRAMCache = testRAMCache
 			).apply {
 			  testNeurons = localTestNeurons
 			  preds.startLoading()
@@ -308,7 +312,7 @@ class TestLoader(
   }
 
 
-  val testRAMCache by lazy { TestRAMCache() }
+  override val testRAMCache by lazy { TestRAMCache() }
 
 }
 

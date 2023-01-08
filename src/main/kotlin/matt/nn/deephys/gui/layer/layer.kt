@@ -8,7 +8,7 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.fx.graphics.wrapper.region.border.FXBorder
+import matt.fx.graphics.style.border.FXBorder
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.StringConverter

@@ -8,6 +8,7 @@ import matt.collect.weak.soft.lazySoftMap
 import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
+import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
 import matt.nn.deephys.model.data.Category
@@ -64,7 +65,8 @@ class Test(
   override val name: String,
   override val suffix: String?,
   val images: List<DeephyImage>,
-  val model: Model
+  val model: Model,
+  override val testRAMCache: TestRAMCache
 ): DeephyFileObject, TestOrLoader {
 
   override val test = this

@@ -8,7 +8,6 @@ sealed interface Activation<T: Activation<T>>: FloatWrapper<T> {
   val formatted: String
   override val asFloat: Float
 	get() = value
-
 }
 
 @JvmInline
@@ -45,3 +44,25 @@ value class NormalActivation(override val value: Float): Activation<NormalActiva
 	return NormalActivation(value/n.toFloat())
   }
 }
+
+@JvmInline
+value class ActivationRatio(override val value: Float): Activation<ActivationRatio> {
+  companion object {
+	const val ACT_RATIO_SYMBOL = "%"
+  }
+
+  override val formatted get() = " $ACT_RATIO_SYMBOL=${value.sigFigs(3)}"
+  override fun plus(m: ActivationRatio): ActivationRatio {
+	return ActivationRatio(value + m.value)
+  }
+
+  override fun fromFloat(d: Float): ActivationRatio {
+	return ActivationRatio(d)
+  }
+
+  override fun div(n: Number): ActivationRatio {
+	return ActivationRatio(value/n.toFloat())
+  }
+}
+
+

@@ -4,16 +4,13 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
-import matt.math.jmath.sigFigs
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
-import matt.model.code.successorfail.FailableReturn
 import matt.nn.deephys.calc.act.Activation
+import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
 import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
-import matt.nn.deephys.gui.global.DeephyText
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
@@ -23,36 +20,6 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.state.DeephySettings
 import kotlin.math.exp
-
-
-/*
-data class NormalizedActivation(
-  private val neuron: InterTestNeuron,
-  private val image: matt.nn.deephys.model.importformat.im.DeephyImage,
-  private val test: Test
-): DeephysComputeInput<NormalActivation>() {
-
-
-
-  override fun timedCompute(): NormalActivation {
-	return NormalActivation(neuron.activation(image).value/test.maxActivations[neuron])
-  }
-}
-*/
-
-
-//
-//data class NormalizedAverageActivation(
-//  private val neuron: InterTestNeuron,
-//  private val cat: Category,
-//  private val test: matt.nn.deephys.model.importformat.testlike.TestOrLoader,
-//
-//  ): DeephysComputeInput<NormalActivation>() {
-//  override fun timedCompute(): NormalActivation {
-//	return NormalActivation(cat.averageActivationFor(neuron, test).value/test.test.maxActivations[neuron])
-//  }
-//}
-
 
 data class NormalizedAverageActivation(
   private val neuron: InterTestNeuron,
@@ -114,28 +81,47 @@ data class TopNeurons(
   private val images: Contents<DeephyImage>,
   private val layer: InterTestLayer,
   private val test: TestOrLoader,
-  val normalized: Boolean
+  private val denomTest: TestOrLoader?,
+  val normalized: Boolean,
+  val forcedNeuronIndices: List<Int>? = null
 ): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
   override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: FakeCacheManager
 
   override fun timedCompute(): List<NeuronWithActivation> {
-	if (images.isEmpty()) return listOf()
-	return layer.neurons.map {
-	  if (normalized) NeuronWithActivation(
-		it, NormalizedAverageActivation(it, images, test)()
-	  ) else NeuronWithActivation(it, it.averageActivation(images))
-	}.filterNot { it.activation.value.isNaN() }.sortedBy { it.activation.value }.reversed().take(NUM_TOP_NEURONS)
+	if (images.isEmpty() && denomTest == null) return listOf()
+
+	val neurons = forcedNeuronIndices?.let {
+	  it.map { layer.neurons[it] }
+	} ?: layer.neurons
+
+	val neuronsWithActs = neurons.map { neuron ->
+	  val act = if (denomTest != null) ActivationRatioCalc(numTest = test, denomTest = denomTest, neuron = neuron)()
+	  else if (normalized) NormalizedAverageActivation(neuron, images, test)()
+	  else neuron.averageActivation(images)
+	  NeuronWithActivation(neuron, act)
+	}
+
+	return if (forcedNeuronIndices == null) {
+	  neuronsWithActs.filterNot { it.activation.value.isNaN() }
+		.sortedBy { it.activation.value }
+		.reversed()
+		.take(NUM_TOP_NEURONS)
+	} else {
+	  neuronsWithActs
+	}
+
+
   }
 }
 
 
-data class ActivationRatio(
-  val numTest: TestLoader,
-  val denomTest: TestLoader,
+data class ActivationRatioCalc(
+  val numTest: TestOrLoader,
+  val denomTest: TestOrLoader,
   private val neuron: InterTestNeuron
-): DeephysComputeInput<Float>() {
+): DeephysComputeInput<ActivationRatio>() {
 
   override val cacheManager get() = numTest.testRAMCache /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
@@ -146,15 +132,7 @@ data class ActivationRatio(
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
   override fun timedCompute() =
-	numTest.awaitFinishedTest().maxActivations[neuron]/denomTest.awaitFinishedTest().maxActivations[neuron]
-
-  private val formattedResult by lazy {
-	" %=${findOrCompute().sigFigs(3)}"
-  }
-
-  fun text() = DeephyText(formattedResult).apply {
-	deephyTooltip(technique)
-  }
+	ActivationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
 }
 
 data class ImageSoftMaxDenom(
@@ -185,11 +163,7 @@ data class ImageTopPredictions(
 	return preds.withIndex().sortedBy { it.value }.reversed().take(5).map { thePred ->
 	  val exactPred = (exp(thePred.value)/softMaxDenom)
 	  val theCategory = testLoader.category(thePred.index)
-	  theCategory to exactPred    /* val predClassNameString = theCategory.let {
-		 if (", texture :" in it.label) {
-		   it.label.substringBefore(",")
-		 } else it.label
-	   }*/
+	  theCategory to exactPred
 	}
   }
 }
@@ -204,7 +178,6 @@ data class CategoryAccuracy(
   override fun timedCompute(): Double {
 	val r = testLoader.awaitFinishedTest().imagesWithGroundTruth(category).map {
 	  if (testLoader.awaitFinishedTest().preds.await()[it] == category) 1.0 else 0.0
-	  /*if (ImageTopPredictions(it, testLoader)().first().first == category) 1.0 else 0.0*/
 	}.let { it.sum()/it.size }
 
 	return r
@@ -225,10 +198,10 @@ data class CategoryFalsePositivesSorted(
 
   override fun timedCompute(): List<DeephyImage> =
 	testLoader.awaitFinishedTest().imagesWithoutGroundTruth(category)
-	  .map {    /*it to ImageTopPredictions(it, testLoader)().first()*/
+	  .map {
 		it to testLoader.awaitFinishedTest().preds.await()[it]
 	  }.filter {
-		it.second/*.first*/ == category
+		it.second == category
 	  }.map {
 		it.first to ImageTopPredictions(it.first, testLoader)().first()
 	  }.sortedBy {
@@ -251,10 +224,10 @@ data class CategoryFalseNegativesSorted(
   }
 
   override fun timedCompute() = testLoader.awaitFinishedTest().imagesWithGroundTruth(category)
-	.map {    /*it to ImageTopPredictions(it, testLoader)().first()*/
+	.map {
 	  it to testLoader.awaitFinishedTest().preds.await()[it]
 	}.filter {
-	  it.second/*.first*/ != category
+	  it.second != category
 	}.map {
 	  it.first to ImageTopPredictions(it.first, testLoader)().first()
 	}.sortedBy {
@@ -265,28 +238,6 @@ data class CategoryFalseNegativesSorted(
 }
 
 
-/*data class MatthewCorrelationCoefficient(
-  private val test: TestLoader,
-  private val category: Category,
-): ComputeInput<Float>() {
-
-  companion object {
-	const val SYMBOL = "MCC"
-	const val mccBlurb = "Matthew Correlation Coefficient ($SYMBOL) = "
-  }
-
-  override fun compute()
-}*/
-
-
-
 abstract class DeephysComputeInput<O>(): TimedComputeInput<O>() {
   override val stopwatchEnabled get() = DeephySettings.verboseLogging.value
-}
-
-abstract class DeephysFailableComputeInput<O>(): DeephysComputeInput<FailableReturn<O>>() {
-  //  override fun timedCompute(): FailableReturn<O> {
-  //	TODO("Not yet implemented")
-  //  }
-  //  abstract fun failableTimedCompute(): FailableReturn<O>
 }

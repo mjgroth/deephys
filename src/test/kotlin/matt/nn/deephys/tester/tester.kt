@@ -157,7 +157,7 @@ class DeephysTestSession {
 	  tocAndSampleRam("selected layer")
 
 	  runLaterReturn {
-		dSetViewsBox.myToggleGroup.selectedValue.value = firstViewer
+		dSetViewsBox.selectViewerToBind(firstViewer)
 	  }
 	}
 	val totalTime = tocAndSampleRam("set binding")!!

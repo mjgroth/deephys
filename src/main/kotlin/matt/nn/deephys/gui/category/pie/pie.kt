@@ -11,7 +11,7 @@ import matt.fx.graphics.anim.animation.keyframe
 import matt.fx.graphics.anim.animation.timeline
 import matt.fx.graphics.anim.interp.MyInterpolator
 import matt.fx.graphics.style.DarkModeController
-import matt.fx.graphics.style.backgroundFromColor
+import matt.fx.graphics.style.background.backgroundFromColor
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl

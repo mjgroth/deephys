@@ -6,6 +6,7 @@ import matt.fx.control.wrapper.scroll.ScrollPaneWrapper
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
@@ -13,10 +14,11 @@ import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.lang.go
 import matt.lang.weak.WeakRef
-import matt.nn.deephys.calc.ActivationRatio
+import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.NormalizedAverageActivation
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.TopNeuronsCalcType
+import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProgressPopUp
@@ -28,6 +30,7 @@ import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.bind.MyBinding
+import matt.obs.bind.binding
 import matt.obs.prop.ObsVal
 
 fun NW.neuronListViewSwapper(
@@ -43,7 +46,8 @@ fun NW.neuronListViewSwapper(
 	top = MyBinding(
 	  viewer.layerSelection,
 	  viewer.normalizeTopNeuronActivations,
-	  viewer.testData
+	  viewer.testData,
+	  viewer.outerBox.inD
 	) {
 	  weakViewer.deref()?.let { deRefedViewer ->
 		deRefedViewer.layerSelection.value?.let { lay ->
@@ -51,11 +55,11 @@ fun NW.neuronListViewSwapper(
 			images = contents,
 			layer = lay,
 			test = deRefedViewer.testData.value!!,
-			normalized = deRefedViewer.normalizeTopNeuronActivations.value
+			normalized = deRefedViewer.normalizeTopNeuronActivations.value,
+			denomTest = viewer.outerBox.inD.value.takeIf { it != viewer }?.testData?.value
 		  )
 		}
 	  }
-
 	}.apply {
 	  /*  viewer.onGarbageCollected {
 		  markInvalid()
@@ -157,29 +161,36 @@ class NeuronListView(
 				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
 				viewerToChange.navigateTo(neuronWithAct.neuron)
 			  }
-			  val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value
+			  /*val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value*/
 
 
-			  if (image != null) {
-
-
-				deephyText(neuronWithAct.activation.formatted) {
+			  val normalize = viewer.normalizeTopNeuronActivations
+			  swapperRNullable(viewer.outerBox.inD.binding(normalize) { it }) {
+				/*val inD = it*/
+				/*if (inD == null || inD == viewer) {*/
+				deephyText(
+				  neuronWithAct.activation.formatted
+				) {
 				  deephyTooltip(
 					when (neuronWithAct.activation) {
 					  is RawActivation -> "raw activation value for the selected image"
 					  is NormalActivation -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
+					  is ActivationRatio -> ActivationRatioCalc.technique
 					}
 				  )
 				}
-
-
-			  } else viewer.boundToDSet.value?.testData?.value?.let { tst ->
-				ActivationRatio(
-				  numTest = testLoader,
-				  denomTest = tst,
-				  neuron = neuronWithAct.neuron
-				).text().also { +it }
-			  } ?: deephyText("error: no activation info")
+				/*} else inD.testData.value?.let { inDTest ->
+				  deephyText(
+					ActivationRatioCalc(
+					  numTest = testLoader,
+					  denomTest = inDTest,
+					  neuron = neuronWithAct.neuron
+					)().formatted
+				  ) {
+					deephyTooltip(ActivationRatioCalc.technique)
+				  }*/
+				/*}*/ /*?: deephyText("error: no activation info")*/
+			  }
 
 
 			}

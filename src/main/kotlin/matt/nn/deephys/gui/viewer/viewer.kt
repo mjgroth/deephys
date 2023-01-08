@@ -2,11 +2,8 @@ package matt.nn.deephys.gui.viewer
 
 import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
-import javafx.scene.layout.Background
-import javafx.scene.layout.BackgroundFill
 import javafx.scene.paint.Color
 import javafx.scene.paint.CycleMethod.NO_CYCLE
-import javafx.scene.paint.CycleMethod.REFLECT
 import javafx.scene.paint.LinearGradient
 import javafx.scene.paint.RadialGradient
 import javafx.scene.paint.Stop
@@ -14,7 +11,7 @@ import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.Contents
-import matt.collect.weak.WeakSet
+import matt.collect.set.contents.contentsOf
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
@@ -37,7 +34,6 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.deephyToggleButton
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.load.asyncLoadSwapper
@@ -169,20 +165,38 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	imageSelection.binding(
 	  testData,
 	  layerSelection,
-	  normalizeTopNeuronActivations
+	  normalizeTopNeuronActivations,
+	  outerBox.inD
 	) { im ->
 	  layerSelection.value?.let { lay ->
-		im?.let {
+		im?.let { theIm ->
 		  TopNeurons(
-			Contents(setOf(it)),
+			Contents(setOf(theIm)),
 			lay,
 			normalized = normalizeTopNeuronActivations.value,
-			test = testData.value!!
+			test = testData.value!!,
+			denomTest = outerBox.inD.value.takeIf { it != this }?.testData?.value
 		  )
 		}
 	  }
 	}
-  val boundTopNeurons: MyBinding<TopNeurons?> = boundToDSet.deepBinding { (it?.topNeurons ?: BindableProperty(null)) }
+  val boundTopNeurons: MyBinding<TopNeurons?> = boundToDSet.deepBinding(normalizeTopNeuronActivations, outerBox.inD) {
+	it?.topNeurons?.binding(
+	  normalizeTopNeuronActivations,
+	  outerBox.inD
+	) {
+	  it?.let {
+		it.copy(
+		  forcedNeuronIndices = it().map { it.neuron.index },
+		  images = contentsOf(),
+		  test = this@DatasetViewer.testData.value!!,
+		  normalized = normalizeTopNeuronActivations.value,
+		  denomTest = outerBox.inD.value?.testData?.value
+		)
+	  }
+	}
+	?: BindableProperty(null)
+  }
   val topNeurons = boundTopNeurons coalesceNull topNeuronsFromMyImage
 
 
@@ -231,9 +245,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   @OptIn(ExperimentalStdlibApi::class) fun navigateTo(im: DeephyImage) {
-	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
+	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	imageSelection.value = im
-	for (i in (historyIndex.value + 1) ..< history.size) {
+	for (i in (historyIndex.value + 1)..<history.size) {
 	  history.removeAt(historyIndex.value + 1)
 	}
 	history.add(SelectImage(im))
@@ -242,9 +256,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
   }
 
   fun navigateTo(category: CategorySelection) {
-	if (isBoundToDSet.value) outerBox.myToggleGroup.selectToggle(null)
-	//	outerBox.myToggleGroup.selectToggle(null)
-	//	outerBox.bound.value = null
+	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	neuronSelection.value = null
 	neuronSelection.value = null
 	categorySelection.value = category
@@ -354,78 +366,16 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		)
 	  }
 
-	  deephyToggleButton(
-		"bind", group = this@DatasetViewer.outerBox.myToggleGroup, value = this@DatasetViewer
-	  ) {
-		val selectColor = LinearGradient(
-		  0.0,
-		  0.0,
-		  0.1,
-		  0.1,
-		  true,
-		  REFLECT,
-		  Stop(0.0, Color.YELLOW.deriveColor(0.0, 1.0, 1.0, 0.5)),
-		  Stop(1.0, Color.TRANSPARENT),
-		  //		  Stop(1.0, Color.TRANSPARENT)
-		)
+	  this@DatasetViewer.outerBox.createBindToggleButton(this, this@DatasetViewer)
+	  this@DatasetViewer.outerBox.createInDToggleButton(this, this@DatasetViewer)
 
-		val shouldBes = WeakSet<BackgroundFill>()
-		val shouldBe = selectedProperty.binding {
-		  if (it == true) selectColor else Color.TRANSPARENT
-		}
-
-
-		//		backgroundProperty.value?.fills?.add(shouldBe.value)
-		fun update() {
-		  val currentBG = backgroundProperty.value
-		  val latestShouldBe = shouldBe.value
-		  //		  println("currentBG=${currentBG}")
-		  if (currentBG != null) {
-			if (currentBG.fills.last().fill !== latestShouldBe) {
-			  //			  println("appending to background")
-
-			  val standards = currentBG.fills.filter { it !in shouldBes }
-			  val example = standards.first()
-			  val cool = BackgroundFill(latestShouldBe, example.radii, example.insets)
-			  shouldBes += cool
-			  backgroundProperty.value = Background(*standards.toTypedArray(), cool)
-			}
-		  }
-		}
-		update()
-		shouldBe.onChange {
-		  update()
-		}
-		backgroundProperty.onChange {
-		  update()
-		}
-
-		/*	backgroundProperty.bind(shouldBe)
-			backgroundProperty.onChange {
-			  if (it != shouldBe.value) {
-				backgroundProperty.value = shouldBe.value
-			  }
-			}*/
-
-
-	  }
-	  this@DatasetViewer.initStopwatch.toc(8.6)
 	  deephyText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {
 		titleFont()
 	  }
 	  progressbar {
-		/*visibleAndManagedProp.bind(progressProperty.neq(1.0))*/
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
 		  it?.progress ?: 0.0.toVarProp()
 		})
-		/*	this@DatasetViewer.testData.value?.progress?.let {
-			  progressProperty.bind(it)
-			}
-			this@DatasetViewer.testData.onChange {
-			  it?.progress?.go {
-				progressProperty.bind(it)
-			  }
-			}*/
 	  }
 	  progressbar {
 		style = "-fx-accent: green"
@@ -446,7 +396,6 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	}.node
 	this@DatasetViewer.initStopwatch.toc(10)
   }
-
 
 
 }
