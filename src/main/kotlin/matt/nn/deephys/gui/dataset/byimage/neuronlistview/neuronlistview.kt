@@ -47,7 +47,7 @@ fun NW.neuronListViewSwapper(
 	  viewer.layerSelection,
 	  viewer.normalizeTopNeuronActivations,
 	  viewer.testData,
-	  viewer.outerBox.inD
+	  viewer.inD
 	) {
 	  weakViewer.deref()?.let { deRefedViewer ->
 		deRefedViewer.layerSelection.value?.let { lay ->
@@ -56,7 +56,7 @@ fun NW.neuronListViewSwapper(
 			layer = lay,
 			test = deRefedViewer.testData.value!!,
 			normalized = deRefedViewer.normalizeTopNeuronActivations.value,
-			denomTest = viewer.outerBox.inD.value.takeIf { it != viewer }?.testData?.value
+			denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value
 		  )
 		}
 	  }
@@ -165,7 +165,7 @@ class NeuronListView(
 
 
 			  val normalize = viewer.normalizeTopNeuronActivations
-			  swapperRNullable(viewer.outerBox.inD.binding(normalize) { it }) {
+			  swapperRNullable(viewer.inD.binding(normalize) { it }) {
 				/*val inD = it*/
 				/*if (inD == null || inD == viewer) {*/
 				deephyText(

@@ -91,6 +91,9 @@ import matt.obs.prop.withNonNullUpdatesFrom
 	bind(DeephySettings.predictionSigFigs)
   }
 
+  val inD = BindableProperty(outerBox.inD.value).apply {
+	bind(outerBox.inD)
+  }
 
   val testData = file.binding { f ->
 	val t = tic(prefix = "dataBinding2", enabled = false)
@@ -165,12 +168,14 @@ import matt.obs.prop.withNonNullUpdatesFrom
   val imageSelection = VarProp<DeephyImage?>(null)
 
 
-  private val topNeuronsFromMyImage =
+
+
+  private val topNeuronsFromMyImage = run {
 	imageSelection.binding(
 	  testData,
 	  layerSelection,
 	  normalizeTopNeuronActivations,
-	  outerBox.inD
+	  inD
 	) { im ->
 	  layerSelection.value?.let { lay ->
 		im?.let { theIm ->
@@ -179,23 +184,24 @@ import matt.obs.prop.withNonNullUpdatesFrom
 			lay,
 			normalized = normalizeTopNeuronActivations.value,
 			test = testData.value!!,
-			denomTest = outerBox.inD.value.takeIf { it != this }?.testData?.value
+			denomTest = inD.value.takeIf { it != this }?.testData?.value
 		  )
 		}
 	  }
 	}
-  val boundTopNeurons: MyBinding<TopNeurons?> = boundToDSet.deepBinding(normalizeTopNeuronActivations, outerBox.inD) {
+  }
+  val boundTopNeurons: MyBinding<TopNeurons?> = boundToDSet.deepBinding(normalizeTopNeuronActivations, inD) {
 	it?.topNeurons?.binding(
 	  normalizeTopNeuronActivations,
-	  outerBox.inD
+	  inD
 	) {
 	  it?.let {
 		it.copy(
 		  forcedNeuronIndices = it().map { it.neuron.index },
 		  images = contentsOf(),
-		  test = this@DatasetViewer.testData.value!!,
+		  test = testData.value!!,
 		  normalized = normalizeTopNeuronActivations.value,
-		  denomTest = outerBox.inD.value?.testData?.value
+		  denomTest = inD.value?.testData?.value
 		)
 	  }
 	}

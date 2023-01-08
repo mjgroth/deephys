@@ -99,6 +99,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	if (inD.value == t) inDToggleGroup.selectedValue.value = null
 	t.removeFromParent()
 	t.normalizeTopNeuronActivations.unbind()
+	t.inD.unbind()
 	t.numImagesPerNeuronInByImage.unbind()
 	t.predictionSigFigs.unbind()
 	t.topNeurons.removeAllDependencies()
