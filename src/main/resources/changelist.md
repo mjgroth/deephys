@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephys/releases -->
 
-[//]: # (VERSION:1.24.1)
+[//]: # (VERSION:1.24.2)
 
 
 Compatible pip package

@@ -8,6 +8,7 @@ import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.ActivationRatio
+import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
 import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
@@ -97,7 +98,12 @@ data class TopNeurons(
 	} ?: layer.neurons
 
 	val neuronsWithActs = neurons.map { neuron ->
-	  val act = if (denomTest != null) ActivationRatioCalc(numTest = test, denomTest = denomTest, neuron = neuron)()
+	  val act = if (denomTest != null) ActivationRatioCalc(
+		numTest = test,
+		denomTest = denomTest,
+		neuron = neuron,
+		images = images
+	  )()
 	  else if (normalized) NormalizedAverageActivation(neuron, images, test)()
 	  else neuron.averageActivation(images)
 	  NeuronWithActivation(neuron, act)
@@ -119,9 +125,10 @@ data class TopNeurons(
 
 data class ActivationRatioCalc(
   val numTest: TestOrLoader,
+  private val images: Contents<DeephyImage>,
   val denomTest: TestOrLoader,
   private val neuron: InterTestNeuron
-): DeephysComputeInput<ActivationRatio>() {
+): DeephysComputeInput<Activation<*>>() {
 
   override val cacheManager get() = numTest.testRAMCache /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
@@ -131,8 +138,13 @@ data class ActivationRatioCalc(
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
-  override fun timedCompute() =
-	ActivationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
+  override fun timedCompute() = if (images.isEmpty()) {
+	if (numTest==denomTest) AlwaysOneActivation
+	else ActivationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
+  } else {
+	ActivationRatio(neuron.averageActivation(images).value/denomTest.test.maxActivations[neuron])
+  }
+
 }
 
 data class ImageSoftMaxDenom(

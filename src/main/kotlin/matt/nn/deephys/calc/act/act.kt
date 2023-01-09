@@ -10,6 +10,16 @@ sealed interface Activation<T: Activation<T>>: FloatWrapper<T> {
 	get() = value
 }
 
+object AlwaysOneActivation: Activation<AlwaysOneActivation> {
+  override fun fromFloat(d: Float): AlwaysOneActivation {
+	require(d == 1f)
+	return AlwaysOneActivation
+  }
+
+  override val value = 1f
+  override val formatted: String get() = ""
+}
+
 @JvmInline
 value class RawActivation(override val value: Float): Activation<RawActivation> {
 
@@ -64,5 +74,7 @@ value class ActivationRatio(override val value: Float): Activation<ActivationRat
 	return ActivationRatio(value/n.toFloat())
   }
 }
+
+
 
 

@@ -19,6 +19,7 @@ import matt.nn.deephys.calc.NormalizedAverageActivation
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.TopNeuronsCalcType
 import matt.nn.deephys.calc.act.ActivationRatio
+import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProgressPopUp
@@ -173,6 +174,7 @@ class NeuronListView(
 				) {
 				  deephyTooltip(
 					when (neuronWithAct.activation) {
+					  AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
 					  is RawActivation -> "raw activation value for the selected image"
 					  is NormalActivation -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
 					  is ActivationRatio -> ActivationRatioCalc.technique
