@@ -15,7 +15,7 @@ To use Deephys, first install it using pip:
 Extracting Activations From Data
 --------------------------------
 
-To extract data from a test, please see the steps provided `here <https://colab.research.google.com/drive/1vOfau2lS004ilX6aIAASMKhFnzfi3uQ-#scrollTo=Ky2zpklwpN1W>`_
+To extract data from a test, please see the steps provided  `here <https://colab.research.google.com/github/mjgroth/deephys-aio/blob/master/Python_Tutorial.ipynb>`_
 
 Here ``act_extract`` function takes dataloader and model as parameters. For example: 
 
