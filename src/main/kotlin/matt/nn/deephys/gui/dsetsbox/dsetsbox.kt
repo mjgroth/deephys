@@ -5,6 +5,7 @@ import javafx.scene.paint.Color
 import matt.file.CborFile
 import matt.file.toSFile
 import matt.fx.control.toggle.mech.ToggleMechanism
+import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.model.data.message.FileList
@@ -14,6 +15,7 @@ import matt.nn.deephys.gui.global.deephysSelectColor
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
+import matt.nn.deephys.state.DeephySettings
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
@@ -47,6 +49,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   private val bindToggleGroup = ToggleMechanism<DatasetViewer>()
   private val boundM = BindableProperty<DatasetViewer?>(null)
   val bound = boundM.readOnly()
+
   init {
 	bindToggleGroup.selectedValue.onChange {
 	  boundM.value =
@@ -54,6 +57,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	  boundM.value = it
 	}
   }
+
   fun createBindToggleButton(
 	parent: NodeWrapper,
 	viewer: DatasetViewer
@@ -84,10 +88,12 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   }
 
 
-  fun selectViewerToBind(viewer: DatasetViewer?) {
+  fun selectViewerToBind(viewer: DatasetViewer?, makeInDToo: Boolean = false) {
 	bindToggleGroup.selectedValue v viewer
+	if (makeInDToo) {
+	  inDToggleGroup.selectedValue v viewer
+	}
   }
-
 
 
   fun addTest() = DatasetViewer(null, this).also { plusAssign(it) }
@@ -107,6 +113,8 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	t.boundToDSet.removeAllDependencies()
 	t.outerBox.save()
 	requestFocus() /*make this into scene.oldFocusOwner to remove possibility of that causing memory leak*/
+	DeephySettings.millisecondsBeforeTooltipsVanish.cleanWeakListeners()
+	DarkModeController.darkModeProp.cleanWeakListeners()
   }
 
   fun removeAllTests() {

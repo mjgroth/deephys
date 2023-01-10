@@ -22,7 +22,11 @@ import kotlin.time.Duration.Companion.seconds
 
 
 /*cant have op here since it will operate on the tooltip for other nodes*/
-fun NodeWrapper.deephyTooltip(s: String, im: DeephyImage? = null/*, op: Tooltip.()->Unit = {}*/): TooltipWrapper {
+fun NodeWrapper.deephyTooltip(
+  s: String,
+  im: DeephyImage? = null
+  /*, op: Tooltip.()->Unit = {}*/
+): TooltipWrapper {
 
   if (im == null) {
 	return DeephyTooltip(s, null).also {
@@ -61,22 +65,31 @@ class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
   init {
 	font = DEEPHY_FONT_DEFAULT
 
+	var didFirstShow = false
 
 	comfortableShowAndHideSettingsForMatt()
-	val ms = DeephySettings.millisecondsBeforeTooltipsVanish.value
-	if (ms != 0) {
-	  hideDelay = Duration.millis(ms.toDouble())
-	}
-	DeephySettings.millisecondsBeforeTooltipsVanish.onChangeWithWeak(this) { tt, newMS ->
-	  if (newMS == 0) {
-		tt.hideDelay = Duration.INDEFINITE
-	  } else {
-		tt.hideDelay = Duration.millis(newMS.toDouble())
-	  }
-	}
 
 
 	node.setOnShown {
+
+	  /*putting this stuff in setOnShown to reduce the amount of CPU and memory resources used by tooltips that never show*/
+	  if (!didFirstShow) {
+		val ms = DeephySettings.millisecondsBeforeTooltipsVanish.value
+		if (ms != 0) {
+		  hideDelay = Duration.millis(ms.toDouble())
+		}
+		DeephySettings.millisecondsBeforeTooltipsVanish.onChangeWithWeak(this) { tt, newMS ->
+		  if (newMS == 0) {
+			tt.hideDelay = Duration.INDEFINITE
+		  } else {
+			tt.hideDelay = Duration.millis(newMS.toDouble())
+		  }
+		}
+	  }
+
+	  didFirstShow = true
+
+
 	  val screenMaxX = screen!!.bounds.maxX
 	  val screenMaxY = screen!!.bounds.maxY
 

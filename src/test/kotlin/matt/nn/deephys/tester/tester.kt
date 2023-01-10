@@ -157,7 +157,7 @@ class DeephysTestSession {
 	  tocAndSampleRam("selected layer")
 
 	  runLaterReturn {
-		dSetViewsBox.selectViewerToBind(firstViewer)
+		dSetViewsBox.selectViewerToBind(firstViewer, makeInDToo = true)
 	  }
 	}
 	val totalTime = tocAndSampleRam("set binding")!!
@@ -272,10 +272,13 @@ class DeephysTestSession {
 	println("finished waiting for delete caches thread")
 	println("sleeping for 1 sec")
 	sleep(1.seconds)
-	println("running gc")
-	Runtime.getRuntime().gc()
-	println("sleeping for another sec")
-	sleep(1.seconds)
+	val postGCWaitSecs = 10
+	println("running gc for $postGCWaitSecs sec")
+	(0..postGCWaitSecs).forEach {
+	  /*ahh... finally found a solution. A loop with multiple collections instead of just one collections followed by endless pointless waiting. I best I know what happened: I was doing the gc too early and some things were still strongly reachable for whatever reasons deep in some internal libs*/
+	  Runtime.getRuntime().gc()
+	  sleep(1.seconds)
+	}
 	val threshold = 500.megabytes
 	val u = MemReport().used
 	println("u=$u")
