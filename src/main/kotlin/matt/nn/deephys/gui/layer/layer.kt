@@ -37,7 +37,7 @@ class LayerView(
 	  //	  property = viewer.neuronSelection,
 	  enableScroll = false
 	) {
-	  valueFactory.converter = object: StringConverter<InterTestNeuron> {
+	  valueFactory!!.converter = object: StringConverter<InterTestNeuron> {
 		override fun toString(t: InterTestNeuron): String {
 		  return "${t.index}"
 		}
@@ -52,8 +52,8 @@ class LayerView(
 		}
 	  }
 	  /*try to force gui update so first one converts to correct string...*/
-	  valueFactory.increment(1)
-	  valueFactory.decrement(1)
+	  valueFactory!!.increment(1)
+	  valueFactory!!.decrement(1)
 
 	  //	  valueProperty.matt.hurricanefx.eye.wrapper.obs.collect.list.onChange {
 	  //		println("v:$it")
@@ -80,11 +80,11 @@ class LayerView(
 
 
 
-	  valueFactory.value = viewer.neuronSelection.value ?: neurons[0]
+	  valueFactory!!.value = viewer.neuronSelection.value ?: neurons[0]
 	  val rBlocker = RecursionBlocker()
 	  viewer.neuronSelection.onChange {
 		rBlocker {
-		  valueFactory.value = it ?: neurons[0]
+		  valueFactory!!.value = it ?: neurons[0]
 		}
 	  }
 	  valueProperty.onChange {

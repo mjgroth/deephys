@@ -38,6 +38,16 @@ class DEEPHYSData:
 
 @dataclass
 class Model(DEEPHYSData):
+    """
+
+    :param name: name of the model (e.g.: `"resnet18"`)
+    :type name: str
+    :param suffix: optional suffix for the model
+    :type suffix: Optional[str]
+    :param layers: A List of layers in the model. The app is guaranteed to support cases where there are 2 layers and one of them is called `"classification"`.
+    :type layers: List[deephys.deephys.Layer]
+    """
+
     layers: List[Layer]
 
     def __post_init__(self):
@@ -73,7 +83,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
     :type dataset: torch.utils.data.DataLoader
     :param classes: an ordered list of strings representing class names
     :type classes: list
-    :param state: a 3D array of floats [layers,neurons,activations]
+    :param state: a 3D array of floats [layers,neurons,activations]. length of activations must be the same as the number of images.
     :type state: list
     :param model: the model structure
     :type model: deephys.deephys.Model
@@ -106,7 +116,7 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
     :type name: str
     :param classes: an ordered list of strings representing class names
     :type classes: list
-    :param state: a 3D array of floats [layers,neurons,activations]
+    :param state: a 3D array of floats [layers,neurons,activations]. length of activations must be the same as the number of images.
     :type state: list
     :param model: the model structure
     :type model: deephys.deephys.Model
