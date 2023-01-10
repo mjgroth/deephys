@@ -47,14 +47,16 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	  jsonObject["verboseLogging"]?.bool?.go {
 		verboseLogging.value = it
 	  }
+	  jsonObject["millisecondsBeforeTooltipsVanish"]?.int?.go {
+		millisecondsBeforeTooltipsVanish.value = it
+	  }
 	}
   }
 
   override fun serialize(value: DeephySettingsData) = jsonObj(
-	"numImagesPerNeuronInByImage" to value.numImagesPerNeuronInByImage,
-	"normalizeTopNeuronActivations" to value.normalizeTopNeuronActivations,
-	"predictionSigFigs" to value.predictionSigFigs,
-	"verboseLogging" to value.verboseLogging,
+	*value.namedObservables().map {
+	  it.key to it.value
+	}.toTypedArray()
   )
 
 }
@@ -63,13 +65,6 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 @Serializable(DeephySettingsSerializer::class) class DeephySettingsData: SettingsData() {
 
 
-  val numImagesPerNeuronInByImage by IntSettingProv(
-	defaultValue = 9,
-	label = "Number of images per neuron in top neurons row",
-	tooltip = "Number of images per neuron in top neurons row",
-	min = 9,
-	max = 18
-  )
   val normalizeTopNeuronActivations by BoolSettingProv(
 	defaultValue = false,
 	label = "Normalize activations of top neurons",
@@ -81,6 +76,20 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	tooltip = "Prediction value significant figures",
 	min = 3,
 	max = 10
+  )
+  val numImagesPerNeuronInByImage by IntSettingProv(
+	defaultValue = 9,
+	label = "Number of images per neuron in top neurons row",
+	tooltip = "Number of images per neuron in top neurons row",
+	min = 9,
+	max = 18
+  )
+  val millisecondsBeforeTooltipsVanish by IntSettingProv(
+	defaultValue = 0,
+	label = "tooltip hide delay (ms)",
+	tooltip = "Milliseconds before tooltips vanish. 0 means infinite (hit ESCAPE to make them go away)",
+	min = 0,
+	max = 5000
   )
   val verboseLogging by BoolSettingProv(
 	defaultValue = false,

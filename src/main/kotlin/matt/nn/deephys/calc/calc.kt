@@ -79,7 +79,7 @@ interface TopNeuronsCalcType {
 data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation<*>)
 
 data class TopNeurons(
-  private val images: Contents<DeephyImage>,
+  val images: Contents<DeephyImage>,
   private val layer: InterTestLayer,
   private val test: TestOrLoader,
   private val denomTest: TestOrLoader?,

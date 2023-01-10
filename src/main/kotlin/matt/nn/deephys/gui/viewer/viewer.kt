@@ -2,11 +2,6 @@ package matt.nn.deephys.gui.viewer
 
 import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
-import javafx.scene.paint.Color
-import javafx.scene.paint.CycleMethod.NO_CYCLE
-import javafx.scene.paint.LinearGradient
-import javafx.scene.paint.RadialGradient
-import javafx.scene.paint.Stop
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
@@ -19,8 +14,9 @@ import matt.fx.control.wrapper.control.button.button
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.enableWhen
 import matt.fx.graphics.wrapper.pane.hbox.hbox
-import matt.lang.disabledCode
+import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
@@ -50,7 +46,10 @@ import matt.obs.bind.binding
 import matt.obs.bind.coalesceNull
 import matt.obs.bind.deepBinding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
+import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.not
+import matt.obs.bindings.comp.gt
+import matt.obs.bindings.comp.lt
 import matt.obs.col.olist.basicMutableObservableListOf
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
@@ -168,14 +167,9 @@ import matt.obs.prop.withNonNullUpdatesFrom
   val imageSelection = VarProp<DeephyImage?>(null)
 
 
-
-
   private val topNeuronsFromMyImage = run {
 	imageSelection.binding(
-	  testData,
-	  layerSelection,
-	  normalizeTopNeuronActivations,
-	  inD
+	  testData, layerSelection, normalizeTopNeuronActivations, inD
 	) { im ->
 	  layerSelection.value?.let { lay ->
 		im?.let { theIm ->
@@ -192,8 +186,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
   }
   val boundTopNeurons: MyBinding<TopNeurons?> = boundToDSet.deepBinding(normalizeTopNeuronActivations, inD) {
 	it?.topNeurons?.binding(
-	  normalizeTopNeuronActivations,
-	  inD
+	  normalizeTopNeuronActivations, inD
 	) {
 	  it?.let {
 		it.copy(
@@ -204,8 +197,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
 		  denomTest = inD.value?.testData?.value
 		)
 	  }
-	}
-	?: BindableProperty(null)
+	} ?: BindableProperty(null)
   }
   val topNeurons = boundTopNeurons coalesceNull topNeuronsFromMyImage
 
@@ -287,8 +279,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
   init {
 	initStopwatch.toc(7)
 	contentDisplay = ContentDisplay.LEFT
-	isExpanded = true
-	/*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
+	isExpanded = true	/*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
 	initStopwatch.toc(8)
 	graphic = hbox<NodeWrapper> {
 	  alignment = Pos.CENTER
@@ -328,7 +319,8 @@ import matt.obs.prop.withNonNullUpdatesFrom
 	  }
 	  this@DatasetViewer.initStopwatch.toc(8.3)
 
-	  fun redoHistory(action: TestViewerAction) {
+	  fun redoHistory() {
+		val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
 		when (action) {
 		  is SelectImage    -> {
 			this@DatasetViewer.navigateTo(action.image, addHistory = false)
@@ -344,59 +336,31 @@ import matt.obs.prop.withNonNullUpdatesFrom
 		}
 	  }
 
+	  val canUseHistory = this@DatasetViewer.history.binding(
+		this@DatasetViewer.historyIndex, this@DatasetViewer.boundToDSet
+	  ) {
+		this@DatasetViewer.isUnboundToDSet.value && it.isNotEmpty()
+	  }
+
 	  button("back") {
-		enableProperty.bind(
-		  this@DatasetViewer.history.binding(
-			this@DatasetViewer.historyIndex, this@DatasetViewer.boundToDSet
-		  ) {
-			this@DatasetViewer.isUnboundToDSet.value && it.isNotEmpty() && this@DatasetViewer.historyIndex.value > 0
-		  })
+		enableWhen {
+		  canUseHistory and this@DatasetViewer.historyIndex.gt(0)
+		}
 		setOnAction {
 		  this@DatasetViewer.historyIndex.value -= 1
-		  val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
-		  redoHistory(action)
+		  redoHistory()
 		}
 
 	  }
 	  this@DatasetViewer.initStopwatch.toc(8.4)
 	  button("forward") {
-		enableProperty.bind(
-		  this@DatasetViewer.history.binding(
-			this@DatasetViewer.historyIndex, this@DatasetViewer.boundToDSet
-		  ) {
-			this@DatasetViewer.isUnboundToDSet.value && it.isNotEmpty() && this@DatasetViewer.historyIndex.value < it.size - 1
-		  })
+		enableWhen {
+		  canUseHistory and this@DatasetViewer.historyIndex.lt(this@DatasetViewer.history.lastIndexProperty)
+		}
 		setOnAction {
 		  this@DatasetViewer.historyIndex.value += 1
-		  val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
-		  redoHistory(action)
+		  redoHistory()
 		}
-	  }
-	  this@DatasetViewer.initStopwatch.toc(8.5)
-	  @Suppress("UNUSED_VARIABLE")
-	  disabledCode {
-		val coolColor = LinearGradient(
-		  0.0,
-		  0.0,
-		  1.0,
-		  1.0,
-		  true,
-		  NO_CYCLE,
-		  Stop(0.0, Color.YELLOW),
-		  Stop(0.5, Color.TRANSPARENT),
-		  //		  Stop(1.0, Color.TRANSPARENT)
-		)
-		val coolColor2 = RadialGradient(
-		  0.0,
-		  1.0,
-		  0.0,
-		  0.0,
-		  1.0,
-		  true,
-		  NO_CYCLE,
-		  Stop(0.0, Color.TRANSPARENT),
-		  Stop(1.0, Color.YELLOW),
-		)
 	  }
 
 	  this@DatasetViewer.outerBox.createBindToggleButton(this, this@DatasetViewer)
@@ -423,11 +387,9 @@ import matt.obs.prop.withNonNullUpdatesFrom
 		})
 	  }
 	}
-	this@DatasetViewer.initStopwatch.toc(9)
 	content = asyncLoadSwapper(testData, nullMessage = "select a test to view it") {
 	  DatasetNode(this, this@DatasetViewer)
 	}.node
-	this@DatasetViewer.initStopwatch.toc(10)
   }
 
 

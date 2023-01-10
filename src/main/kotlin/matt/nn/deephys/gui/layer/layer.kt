@@ -3,12 +3,12 @@ package matt.nn.deephys.gui.layer
 import javafx.scene.paint.Color
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.fxthread.runLater
+import matt.fx.graphics.style.border.FXBorder
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.fx.graphics.style.border.FXBorder
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.StringConverter
@@ -55,7 +55,7 @@ class LayerView(
 	  valueFactory.increment(1)
 	  valueFactory.decrement(1)
 
-	  //	  valueProperty.onChange {
+	  //	  valueProperty.matt.hurricanefx.eye.wrapper.obs.collect.list.onChange {
 	  //		println("v:$it")
 	  //	  }
 	  editor.textProperty.onChange {
@@ -108,7 +108,7 @@ class LayerView(
 	}
 	/*NEVER NULL*/
 	swapper(neuronSpinner.valueProperty, nullMessage = "select a neuron") {
-	  NeuronView(this, testLoader = testLoader, viewer = viewer)
+	  NeuronView(this, testLoader = testLoader, viewer = viewer, showActivationRatio = true, layoutForList = false)
 	}
   }
 }

@@ -25,7 +25,9 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNonNullableProp
+import matt.math.jmath.sigFigs
 import matt.model.code.idea.MChartIdea
+import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.deephyText
@@ -37,6 +39,7 @@ import matt.nn.deephys.model.data.CategoryConfusion
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.not
 import matt.obs.bindings.bool.or
+import matt.obs.bindings.str.mybuildobs.obsString
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.VarProp
 import matt.prim.str.truncateWithElipses
@@ -99,6 +102,7 @@ class CategoryPie(
 		var nextStart = 0.0
 		nonZeroCats.sortedBy { nums[it] }.reversed().mapIndexed { catIndex, cat ->
 		  val ratio = nums[cat]!!/total
+		  val percent = Percent(ratio*100)
 		  val color = colorMap[cat]!!
 
 		  val arcLength = ratio*360.0
@@ -127,7 +131,18 @@ class CategoryPie(
 			)
 
 			node.viewOrder = -1.0
-			val t = deephyLabel(cat.label.truncateWithElipses(20))
+			val t = deephyLabel(cat.label.truncateWithElipses(20)) {
+			  textProperty.bind(obsString {
+				append(this@CategoryPie.showAsList.binding {
+				  if (it) "(${percent.percent.sigFigs(2)}%) " else ""
+				})
+				appendStatic(cat.label)
+			  }.binding(this@CategoryPie.showAsList) {
+				if (this@CategoryPie.showAsList.value) {
+				  it.truncateWithElipses(30)
+				} else it.truncateWithElipses(20)
+			  })
+			}
 
 			layoutXProperty.bind(
 			  this@CategoryPie.showAsList.binding(

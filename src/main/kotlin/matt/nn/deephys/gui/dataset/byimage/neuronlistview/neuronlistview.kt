@@ -41,77 +41,62 @@ fun NW.neuronListViewSwapper(
 ) = run {
 
   val weakViewer = WeakRef(viewer)
-  neuronListViewSwapper(
-	bindScrolling = bindScrolling,
-	viewer = viewer,
-	top = MyBinding(
-	  viewer.layerSelection,
-	  viewer.normalizeTopNeuronActivations,
-	  viewer.testData,
-	  viewer.inD
-	) {
-	  weakViewer.deref()?.let { deRefedViewer ->
-		deRefedViewer.layerSelection.value?.let { lay ->
-		  TopNeurons(
-			images = contents,
-			layer = lay,
-			test = deRefedViewer.testData.value!!,
-			normalized = deRefedViewer.normalizeTopNeuronActivations.value,
-			denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value
-		  )
-		}
+  neuronListViewSwapper(bindScrolling = bindScrolling, viewer = viewer, top = MyBinding(
+	viewer.layerSelection, viewer.normalizeTopNeuronActivations, viewer.testData, viewer.inD
+  ) {
+	weakViewer.deref()?.let { deRefedViewer ->
+	  deRefedViewer.layerSelection.value?.let { lay ->
+		TopNeurons(
+		  images = contents,
+		  layer = lay,
+		  test = deRefedViewer.testData.value!!,
+		  normalized = deRefedViewer.normalizeTopNeuronActivations.value,
+		  denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value
+		)
 	  }
-	}.apply {
-	  /*  viewer.onGarbageCollected {
+	}
+  }.apply {	/*  viewer.onGarbageCollected {
 		  markInvalid()
 		  removeAllDependencies()
 		}*/
-	}
-  )
+  })
 }
 
 fun NW.neuronListViewSwapper(
-  viewer: DatasetViewer,
-  top: ObsVal<out TopNeuronsCalcType?>,
-  bindScrolling: Boolean = false
+  viewer: DatasetViewer, top: ObsVal<out TopNeuronsCalcType?>, bindScrolling: Boolean = false
 ) = run {
   val weakViewer = WeakRef(viewer)
   swapper(
 	MyBinding(
-	  viewer.normalizeTopNeuronActivations,
-	  viewer.testData,
-	  top
+	  viewer.normalizeTopNeuronActivations, viewer.testData, top
 	) {
 	  weakViewer.deref()?.let { deRefedViewer ->
 		deRefedViewer.testData.value?.let { tst ->
 		  top.value?.let { topCalc ->
 			NeuronListViewConfig(
-			  viewer = deRefedViewer,
-			  testLoader = tst,
-			  tops = topCalc
+			  viewer = deRefedViewer, testLoader = tst, tops = topCalc
 			)
 		  }
 		}
 	  }
-	},
-	nullMessage = "no top neurons"
+	}, nullMessage = "no top neurons"
   ) {
 	NeuronListView(this, bindScrolling = bindScrolling)
   }
 }
 
 data class NeuronListViewConfig(
-  val viewer: DatasetViewer,
-  val tops: TopNeuronsCalcType,
-  val testLoader: TestLoader
+  val viewer: DatasetViewer, val tops: TopNeuronsCalcType, val testLoader: TestLoader
 )
 
 class NeuronListView(
-  cfg: NeuronListViewConfig,
-  bindScrolling: Boolean = false
+  cfg: NeuronListViewConfig, bindScrolling: Boolean = false
 ): ScrollPaneWrapper<HBoxWrapperImpl<NodeWrapper>>(HBoxWrapperImpl()) {
 
 
+  companion object {
+	const val NEURON_LIST_VIEW_WIDTH = 150.0
+  }
 
 
   init {
@@ -121,7 +106,6 @@ class NeuronListView(
 	vmax = 0.0
 
 
-	val myWidth = 150.0
 	@Suppress("UNUSED_VARIABLE") val myHeight = 150.0
 	cfg.apply {
 	  if (bindScrolling) {
@@ -161,26 +145,30 @@ class NeuronListView(
 				val deReffedViewer = weakViewer.deref()!!
 				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
 				viewerToChange.navigateTo(neuronWithAct.neuron)
-			  }
-			  /*val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value*/
+			  }			/*val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value*/
 
 
 			  val normalize = viewer.normalizeTopNeuronActivations
-			  swapperRNullable(viewer.inD.binding(normalize) { it }) {
-				/*val inD = it*/
-				/*if (inD == null || inD == viewer) {*/
-				deephyText(
-				  neuronWithAct.activation.formatted
-				) {
-				  deephyTooltip(
-					when (neuronWithAct.activation) {
-					  AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
-					  is RawActivation -> "raw activation value for the selected image"
-					  is NormalActivation -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
-					  is ActivationRatio -> ActivationRatioCalc.technique
-					}
-				  )
+			  swapperRNullable(viewer.inD.binding(normalize) { it }) {				/*val inD = it*/				/*if (inD == null || inD == viewer) {*/
+
+
+				/*anirban and xavier asked to hide the activation text in this case since it doesn't pertain to a specific image*/
+				if (neuronWithAct.activation !is ActivationRatio || (tops as TopNeurons).images.isNotEmpty()) {
+				  deephyText(
+					neuronWithAct.activation.formatted
+				  ) {
+					deephyTooltip(
+					  when (neuronWithAct.activation) {
+						AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
+						is RawActivation    -> "raw activation value for the selected image"
+						is NormalActivation -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
+						is ActivationRatio  -> ActivationRatioCalc.technique
+					  }
+					)
+				  }
 				}
+
+
 				/*} else inD.testData.value?.let { inDTest ->
 				  deephyText(
 					ActivationRatioCalc(
@@ -190,8 +178,7 @@ class NeuronListView(
 					)().formatted
 				  ) {
 					deephyTooltip(ActivationRatioCalc.technique)
-				  }*/
-				/*}*/ /*?: deephyText("error: no activation info")*/
+				  }*/				/*}*/ /*?: deephyText("error: no activation info")*/
 			  }
 
 
@@ -200,15 +187,13 @@ class NeuronListView(
 			  neuronWithAct.neuron,
 			  numImages = cfg.viewer.numImagesPerNeuronInByImage,
 			  testLoader = testLoader,
-			  viewer = viewer
-			).apply {
-			  prefWrapLength = myWidth
-			  hgap = 10.0
-			  vgap = 10.0
-			}
+			  viewer = viewer,
+			  showActivationRatio = false,
+			  layoutForList = true
+			)
 
 			spacer() /*space for the hbar*/
-			prefWidth = myWidth
+			prefWidth = NEURON_LIST_VIEW_WIDTH
 		  }
 		}
 	  }

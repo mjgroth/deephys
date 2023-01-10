@@ -1,8 +1,18 @@
 package matt.nn.deephys.gui.neuron
 
+import matt.collect.set.contents.contentsOf
+import matt.fx.graphics.wrapper.node.NW
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
+import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.lang.go
 import matt.lang.weak.WeakPair
+import matt.lang.weak.WeakRef
+import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.TopImages
+import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
+import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
@@ -16,29 +26,56 @@ class NeuronView(
   numImages: BindableProperty<Int> = BindableProperty(100),
   testLoader: TestLoader,
   viewer: DatasetViewer,
-
-  ): ImageFlowPane(viewer) {
+  showActivationRatio: Boolean,
+  layoutForList: Boolean
+): VBoxWrapperImpl<NW>() {
   init {
+	val weakViewer = WeakRef(viewer)
+	if (showActivationRatio) {
+	  swapperR(viewer.inD) {
+		weakViewer.deref()!!.testData.value?.go { numTest ->
+		  it.testData.value?.go { denomTest ->
+			deephyText(
+			  ActivationRatioCalc(
+				numTest = numTest,
+				images = contentsOf(),
+				denomTest = denomTest,
+				neuron = neuron
+			  )().formatted
+			) {
+			  deephyTooltip(ActivationRatioCalc.technique)
+			}
+		  }
 
-	/*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
-	prefWrapLengthProperty.bind(viewer.widthProperty*0.8)
-
-	fun update(testLoaderAndViewer: Pair<TestLoader, DatasetViewer>) {
-	  val localTestLoader = testLoaderAndViewer.first
-	  val localViewer = testLoaderAndViewer.second
-	  clear()
-	  val realNumImages = min(numImages.value.toULong(), localTestLoader.numImages.await())
-	  val topImages = TopImages(neuron, localTestLoader, realNumImages.toInt())()
-
-
-	  topImages.forEach {
-		val im = localTestLoader.awaitImage(it.index)
-		+DeephyImView(im, localViewer)
+		}
 	  }
 	}
-	update(testLoader to viewer)
-	numImages.onChangeWithAlreadyWeak(WeakPair(testLoader, viewer)) { tl, _ ->
-	  update(tl)
+	+ImageFlowPane(viewer).apply {
+	  /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
+	  prefWrapLengthProperty.bind(viewer.widthProperty*0.8)
+
+	  fun update(testLoaderAndViewer: Pair<TestLoader, DatasetViewer>) {
+		val localTestLoader = testLoaderAndViewer.first
+		val localViewer = testLoaderAndViewer.second
+		clear()
+		val realNumImages = min(numImages.value.toULong(), localTestLoader.numImages.await())
+		val topImages = TopImages(neuron, localTestLoader, realNumImages.toInt())()
+
+
+		topImages.forEach {
+		  val im = localTestLoader.awaitImage(it.index)
+		  +DeephyImView(im, localViewer)
+		}
+	  }
+	  update(testLoader to viewer)
+	  numImages.onChangeWithAlreadyWeak(WeakPair(testLoader, viewer)) { tl, _ ->
+		update(tl)
+	  }
+	  if (layoutForList) {
+		prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH
+		hgap = 10.0
+		vgap = 10.0
+	  }
 	}
   }
 }

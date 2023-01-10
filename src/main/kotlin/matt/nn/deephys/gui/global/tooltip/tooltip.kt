@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.global.tooltip
 
 import javafx.scene.control.ContentDisplay.BOTTOM
+import javafx.util.Duration
 import matt.async.queue.QueueWorker
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
@@ -15,6 +16,7 @@ import matt.model.flowlogic.controlflowstatement.ControlFlow.CONTINUE
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.DEEPHY_FONT_DEFAULT
 import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.nn.deephys.state.DeephySettings
 import matt.sys.loopthread.DaemonLoop
 import kotlin.time.Duration.Companion.seconds
 
@@ -23,7 +25,9 @@ import kotlin.time.Duration.Companion.seconds
 fun NodeWrapper.deephyTooltip(s: String, im: DeephyImage? = null/*, op: Tooltip.()->Unit = {}*/): TooltipWrapper {
 
   if (im == null) {
-	return DeephyTooltip(s, null)
+	return DeephyTooltip(s, null).also {
+	  install(it)
+	}
   }
 
   return im.testLoader.testRAMCache.tooltips[im][s]!!.also {
@@ -56,7 +60,21 @@ class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
 
   init {
 	font = DEEPHY_FONT_DEFAULT
+
+
 	comfortableShowAndHideSettingsForMatt()
+	val ms = DeephySettings.millisecondsBeforeTooltipsVanish.value
+	if (ms != 0) {
+	  hideDelay = Duration.millis(ms.toDouble())
+	}
+	DeephySettings.millisecondsBeforeTooltipsVanish.onChangeWithWeak(this) { tt, newMS ->
+	  if (newMS == 0) {
+		tt.hideDelay = Duration.INDEFINITE
+	  } else {
+		tt.hideDelay = Duration.millis(newMS.toDouble())
+	  }
+	}
+
 
 	node.setOnShown {
 	  val screenMaxX = screen!!.bounds.maxX

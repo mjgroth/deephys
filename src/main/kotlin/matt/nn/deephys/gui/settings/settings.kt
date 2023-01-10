@@ -44,12 +44,15 @@ val settingsWindow by lazy {
 	CLOSE,
 	EscClosable = true,
 	decorated = true,
-	title = "Deephy Options"
-  )
+	title = "Deephy Options",
+  ).apply {
+	width = 1000.0
+  }
 }
 
 object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
   init {
+
 
 	DeephySettings.settings.forEach { sett ->
 
@@ -83,9 +86,10 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 			graphic = spinner(
 			  min = sett.min,
 			  max = sett.max,
-			  initialValue = sett.prop.value
+			  initialValue = sett.prop.value,
+			  editable = true
 			) {
-			  prefWidth = 55.0
+			  prefWidth = 150.0
 			  valueProperty.onChange {
 				require(it != null)
 				sett.prop.value = it
