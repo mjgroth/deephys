@@ -58,6 +58,6 @@ For example:
 test.suffix = None
 >>> test.suffix = None
 >>> test.save()
-The data is now saved to a file called "CIFARV2.test"
+The data is now saved to a file called "CIFAR10.test"
 
 Please see `here <https://github.com/mjgroth/deephys-aio/blob/master/Python_Tutorial.ipynb>`_ for the full tutorial
