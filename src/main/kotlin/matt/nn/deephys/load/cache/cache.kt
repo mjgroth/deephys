@@ -2,6 +2,7 @@ package matt.nn.deephys.load.cache
 
 import matt.file.MFile
 import matt.file.commons.APP_SUPPORT_FOLDER
+import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.lang.function.Produce
 import matt.model.flowlogic.await.Awaitable
 import matt.model.flowlogic.latch.asyncloaded.DelegatedSlot
@@ -12,7 +13,7 @@ import matt.sys.idgen.IDGenerator
 
 
 object DeephysCacheManager {
-  private val DEEPHY_USER_DATA_DIR = APP_SUPPORT_FOLDER.mkdir("Deephys")
+  private val DEEPHY_USER_DATA_DIR = PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkdir("Deephys")
   private val DEEPHY_CACHE_DIR = DEEPHY_USER_DATA_DIR.mkdir("Cache")
 
   init {
