@@ -1,9 +1,9 @@
-on:
-  release:
-    types: [published]
+#on:
+ # release:
+  #  types: [published]
 
-on:
-  workflow-dispatch
+on: workflow-dispatch
+
     
     
 jobs:
