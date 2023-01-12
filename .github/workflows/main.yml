@@ -1,18 +1,10 @@
-#on:
- # release:
-  #  types: [published]
-
 on: workflow_dispatch
-
-    
-    
-    
 jobs:
   build_intel_mac_app:
     runs-on: macos-12
     steps:
-      - env:
-         EXAMPLE_TOKEN: my-token
-#         GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
-        run: |
-          echo "hello gh action"
+    - env:
+        EXAMPLE_TOKEN: my-token
+      run: |-
+        echo "hello gh action 2"
+        echo "hello gh action 3"
