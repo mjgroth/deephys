@@ -1,11 +1,11 @@
 <!--- https://github.com/mgroth0/deephys/releases -->
 
-[//]: # (VERSION:1.26.0-dev)
-
-This is not a real release. I am testing GitHub Workflows.
+[//]: # (VERSION:1.26.0)
 
 Compatible pip package
 version: [0.7.2](https://pypi.org/project/deephys/0.7.2/)
+
+### Source Code Compatible with Windows OS
 
 [//]: # (### PIP Python Package Updated to 0.7.2)
 [//]: # (### New Features)
