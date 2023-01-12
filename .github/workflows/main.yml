@@ -2,7 +2,7 @@
  # release:
   #  types: [published]
 
-on: workflow-dispatch
+on: workflow_dispatch
 
     
     
