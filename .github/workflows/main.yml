@@ -16,7 +16,7 @@ jobs:
       run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
         \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@71159560"
+        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@327c2e9a"
   build_linux_app:
     runs-on: ubuntu-22.04
     steps:
@@ -32,7 +32,7 @@ jobs:
       run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
         \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@14e5ba86"
+        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@2783bec7"
   build_windows_app:
     runs-on: windows-2022
     steps:
@@ -48,4 +48,4 @@ jobs:
       run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
         \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@3ab7ac49"
+        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@455d35ed"
