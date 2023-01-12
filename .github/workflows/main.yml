@@ -4,52 +4,51 @@ jobs:
   build_intel_mac_app:
     runs-on: macos-12
     steps:
-    - !<matt.mbuild.admin.ghwf.model.GHUseAction>
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
         latest: true
         fileName: nn-deephys-intel-0-all.jar
-    - !<matt.mbuild.admin.ghwf.model.GHRunAction>
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: |-
-        echo "hello gh action 2"
-        echo "hello gh action 3"
-        ls
-        [Ljava.io.Serializable;@7045f85a
-        ls
+      run: "\t\t\t  /usr/bin/bash\n-i\n-c\n\"echo hello gh action 2 && echo hello\
+        \ gh action 3 && ls && jpackage --type app-image --verbose --name deephys\
+        \ --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options -Xmx6144m\
+        \ --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon logo.icns\
+        \ --input input --temp temp [Ljava.lang.String;@3f131caf\""
   build_linux_app:
     runs-on: ubuntu-22.04
     steps:
-    - !<matt.mbuild.admin.ghwf.model.GHUseAction>
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
         latest: true
         fileName: nn-deephys-linux-0-all.jar
-    - !<matt.mbuild.admin.ghwf.model.GHRunAction>
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: |-
-        echo "hello gh action 2"
-        echo "hello gh action 3"
-        ls
-        [Ljava.io.Serializable;@21145613
+      run: "\t\t\t  /usr/bin/bash\n-i\n-c\n\"echo hello gh action 2 && echo hello\
+        \ gh action 3 && ls && jpackage --type app-image --verbose --name deephys\
+        \ --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options -Xmx6144m\
+        \ --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon logo.icns\
+        \ --input input --temp temp [Ljava.lang.String;@e2ad08b\""
   build_windows_app:
     runs-on: windows-2022
     steps:
-    - !<matt.mbuild.admin.ghwf.model.GHUseAction>
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
         latest: true
         fileName: nn-deephys-windows-0-all.jar
-    - !<matt.mbuild.admin.ghwf.model.GHRunAction>
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: |-
-        echo "hello gh action 2"
-        echo "hello gh action 3"
-        ls
-        [Ljava.io.Serializable;@6cc015ec
+      run: "\t\t\t  /usr/bin/bash\n-i\n-c\n\"echo hello gh action 2 && echo hello\
+        \ gh action 3 && ls && jpackage --type app-image --verbose --name deephys\
+        \ --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options -Xmx6144m\
+        \ --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon logo.icns\
+        \ --input input --temp temp [Ljava.lang.String;@762b01c\""
