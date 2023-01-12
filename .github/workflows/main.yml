@@ -13,11 +13,10 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  /usr/bin/bash\n-i\n-c\n\"echo hello gh action 2 && echo hello\
-        \ gh action 3 && ls && jpackage --type app-image --verbose --name deephys\
-        \ --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options -Xmx6144m\
-        \ --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon logo.icns\
-        \ --input input --temp temp [Ljava.lang.String;@3f131caf\""
+      run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
+        \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
+        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@71159560"
   build_linux_app:
     runs-on: ubuntu-22.04
     steps:
@@ -30,11 +29,10 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  /usr/bin/bash\n-i\n-c\n\"echo hello gh action 2 && echo hello\
-        \ gh action 3 && ls && jpackage --type app-image --verbose --name deephys\
-        \ --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options -Xmx6144m\
-        \ --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon logo.icns\
-        \ --input input --temp temp [Ljava.lang.String;@e2ad08b\""
+      run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
+        \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
+        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@14e5ba86"
   build_windows_app:
     runs-on: windows-2022
     steps:
@@ -47,8 +45,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  /usr/bin/bash\n-i\n-c\n\"echo hello gh action 2 && echo hello\
-        \ gh action 3 && ls && jpackage --type app-image --verbose --name deephys\
-        \ --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options -Xmx6144m\
-        \ --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon logo.icns\
-        \ --input input --temp temp [Ljava.lang.String;@762b01c\""
+      run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
+        \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
+        \ . --icon logo.icns --input input --temp temp [Ljava.lang.String;@3ab7ac49"
