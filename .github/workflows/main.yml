@@ -1,0 +1,13 @@
+on:
+  release:
+    types: [published]
+    
+    
+jobs:
+  build_intel_mac_app:
+    runs-on: macos-12
+    steps:
+      - env:
+#         GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
+      run: |
+        echo "hello gh action"
