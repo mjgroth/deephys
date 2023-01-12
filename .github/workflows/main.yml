@@ -4,7 +4,14 @@ jobs:
   build_intel_mac_app:
     runs-on: macos-12
     steps:
-    - env:
+    - !<matt.mbuild.admin.ghaction.model.GHUseAction>
+      uses: robinraju/release-downloader@v1.7
+      with:
+        repository: mjgroth/deephys
+        latest: true
+        fileName: todo
+    - !<matt.mbuild.admin.ghaction.model.GHRunAction>
+      env:
         EXAMPLE_TOKEN: my-token
       run: |-
         echo "hello gh action 2"
