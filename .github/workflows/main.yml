@@ -1,6 +1,9 @@
 on:
   release:
     types: [published]
+
+on:
+  workflow-dispatch
     
     
 jobs:
