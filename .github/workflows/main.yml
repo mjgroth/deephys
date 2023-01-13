@@ -1,9 +1,15 @@
 on:
   workflow_dispatch: {}
 jobs:
-  build_intel_mac_app:
+  build_intel_app:
     runs-on: macos-12
     steps:
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
+      uses: actions/setup-java@v3
+      with:
+        distribution: corretto
+        java-version: 17
+        java-package: jdk
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
       with:
@@ -13,14 +19,20 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
-        \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
-        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy\
-        \ --mac-package-signing-prefix lab.sinha.deephy --mac-sign\nls"
+      run: "\t\t\t  nn-deephys-intel-0-all.jar input\njpackage --type app-image --verbose\
+        \ --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options\
+        \ -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon\
+        \ logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy\
+        \ --mac-package-signing-prefix lab.sinha.deephy --mac-sign"
   build_linux_app:
     runs-on: ubuntu-22.04
     steps:
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
+      uses: actions/setup-java@v3
+      with:
+        distribution: corretto
+        java-version: 17
+        java-package: jdk
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
       with:
@@ -30,13 +42,19 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
-        \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
-        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp\nls"
+      run: "\t\t\t  nn-deephys-linux-0-all.jar input\njpackage --type app-image --verbose\
+        \ --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options\
+        \ -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon\
+        \ logo.icns --input input --temp temp"
   build_windows_app:
     runs-on: windows-2022
     steps:
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
+      uses: actions/setup-java@v3
+      with:
+        distribution: corretto
+        java-version: 17
+        java-package: jdk
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
       with:
@@ -46,7 +64,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  echo hello gh action 2\necho hello gh action 3\nls\njpackage --type\
-        \ app-image --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+      run: "\t\t\t  nn-deephys-windows-0-all.jar input\njpackage --type app-image\
+        \ --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp\nls"
+        \ . --icon logo.icns --input input --temp temp"
