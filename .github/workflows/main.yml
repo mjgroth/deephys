@@ -34,7 +34,7 @@ jobs:
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer -o cer/developerID_installer.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer -o cer/developerID_application.cer
         security create-keychain -p ${{ secrets.CER }} build.keychain
-        security default-keychain build.keychain
+        security default-keychain -s build.keychain
         security unlock-keychain -p ${{ secrets.CER }} build.keychain
         security import cer/Certificates.p12 build.keychain -P ${{ secrets.CER }} -T /usr/bin/codesign
         security set-key-partition-list apple-tool:,apple:,codesign: -s -k ${{ secrets.CER }} build.keychain
@@ -83,6 +83,9 @@ jobs:
         mv nn-deephys-linux-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png -o logo.png
         jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.png --input input --temp temp
+        cd output
+        zip -r deephys.zip deephys
+        cd ..
         echo ls output:
         ls -al output
         echo ls output/deephys:
@@ -90,7 +93,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys.rpm
+        file: output/deephys.zip
         tag: 1.25.0
   build_windows_app:
     runs-on: windows-2022
@@ -128,5 +131,5 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys
+        file: output/deephys/deephys.exe
         tag: 1.25.0
