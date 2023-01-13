@@ -19,29 +19,30 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  mkdir input\nmkdir temp\nmkdir output\nmkdir cer\ncurl -H \"Authorization:\
-        \ Bearer ${{ secrets.CER }}\" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest1.certSigningRequest\
-        \ -o cer/CertificateSigningRequest1.certSigningRequest\ncurl -H \"Authorization:\
-        \ Bearer ${{ secrets.CER }}\" https://cer.nyc3.digitaloceanspaces.com/cer/DeveloperIDG2CA.cer\
-        \ -o cer/DeveloperIDG2CA.cer\ncurl -H \"Authorization: Bearer ${{ secrets.CER\
-        \ }}\" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest2.certSigningRequest\
-        \ -o cer/CertificateSigningRequest2.certSigningRequest\ncurl -H \"Authorization:\
-        \ Bearer ${{ secrets.CER }}\" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG4.cer\
-        \ -o cer/AppleWWDRCAG4.cer\ncurl -H \"Authorization: Bearer ${{ secrets.CER\
-        \ }}\" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCA.cer -o cer/AppleWWDRCA.cer\n\
-        curl -H \"Authorization: Bearer ${{ secrets.CER }}\" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG3.cer\
-        \ -o cer/AppleWWDRCAG3.cer\ncurl -H \"Authorization: Bearer ${{ secrets.CER\
-        \ }}\" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer\
-        \ -o cer/developerID_installer.cer\ncurl -H \"Authorization: Bearer ${{ secrets.CER\
-        \ }}\" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer\
-        \ -o cer/developerID_application.cer\nmv nn-deephys-intel-0-all.jar input\n\
-        curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.icns\
-        \ -o logo.icns\njpackage --type app-image --verbose --name deephys --app-version\
-        \ 1.26.0 --main-jar nn-deephys-intel-0-all.jar --java-options \"-Dprism.maxvram=2G\"\
-        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ output --icon logo.icns --input input --temp temp --mac-package-identifier\
-        \ lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign\
-        \ --mac-signing-keychain cer\nls -al output\nls -al output/deephys"
+      run: |-
+        mkdir input
+        mkdir temp
+        mkdir output
+        mkdir cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest1.certSigningRequest -o cer/CertificateSigningRequest1.certSigningRequest
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/DeveloperIDG2CA.cer -o cer/DeveloperIDG2CA.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest2.certSigningRequest -o cer/CertificateSigningRequest2.certSigningRequest
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG4.cer -o cer/AppleWWDRCAG4.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCA.cer -o cer/AppleWWDRCA.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG3.cer -o cer/AppleWWDRCAG3.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer -o cer/developerID_installer.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer -o cer/developerID_application.cer
+        echo ls:
+        ls -al
+        echo ls input:
+        ls -al input
+        mv nn-deephys-intel-0-all.jar input
+        curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.icns -o logo.icns
+        jpackage --type app-image --verbose --name deephys --app-version 1.26.0 --main-jar nn-deephys-intel-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign --mac-signing-keychain cer
+        echo ls output:
+        ls -al output
+        echo ls output/deephys:
+        ls -al output/deephys
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
@@ -65,13 +66,21 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  mkdir input\nmkdir temp\nmkdir output\nmv nn-deephys-linux-0-all.jar\
-        \ input\ncurl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png\
-        \ -o logo.png\njpackage --type app-image --verbose --name deephys --app-version\
-        \ 1.26.0 --main-jar nn-deephys-linux-0-all.jar --java-options \"-Dprism.maxvram=2G\"\
-        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ output --icon logo.png --input input --temp temp\nls -al output\nls -al\
-        \ output/deephys"
+      run: |-
+        mkdir input
+        mkdir temp
+        mkdir output
+        echo ls:
+        ls -al
+        echo ls input:
+        ls -al input
+        mv nn-deephys-linux-0-all.jar input
+        curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png -o logo.png
+        jpackage --type app-image --verbose --name deephys --app-version 1.26.0 --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.png --input input --temp temp
+        echo ls output:
+        ls -al output
+        echo ls output/deephys:
+        ls -al output/deephys
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
@@ -95,13 +104,21 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  mkdir input\nmkdir temp\nmkdir output\nmv nn-deephys-windows-0-all.jar\
-        \ input\ncurl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.ico\
-        \ -o logo.ico\njpackage --type app-image --verbose --name deephys --app-version\
-        \ 1.26.0 --main-jar nn-deephys-windows-0-all.jar --java-options \"-Dprism.maxvram=2G\"\
-        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ output --icon logo.ico --input input --temp temp\nls -al output\nls -al\
-        \ output/deephys"
+      run: |-
+        mkdir input
+        mkdir temp
+        mkdir output
+        echo ls:
+        ls -al
+        echo ls input:
+        ls -al input
+        mv nn-deephys-windows-0-all.jar input
+        curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.ico -o logo.ico
+        jpackage --type app-image --verbose --name deephys --app-version 1.26.0 --main-jar nn-deephys-windows-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.ico --input input --temp temp
+        echo ls output:
+        ls -al output
+        echo ls output/deephys:
+        ls -al output/deephys
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
