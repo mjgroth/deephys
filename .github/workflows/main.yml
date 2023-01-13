@@ -35,6 +35,7 @@ jobs:
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer -o cer/developerID_application.cer
         security create-keychain -p ${{ secrets.CER }} build.keychain
         security default-keychain -s build.keychain
+        security unlock-keychain -p ${{ secrets.CER }} build.keychain
         echo ls:
         ls -al
         echo ls input:
@@ -92,7 +93,7 @@ jobs:
         mv nn-deephys-linux-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png -o logo.png
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
-      uses: actions/run-on-arch@v2
+      uses: uraimo/run-on-arch-action@v2
       with:
         arch: aarch64
         distro: ubuntu20.04
@@ -157,7 +158,7 @@ jobs:
         EXAMPLE_TOKEN: my-token
       run: |-
         cd output
-        zip -r deephys.zip deephys
+        Compress-Archive deephys deephys.zip
         cd ..
         echo ls output:
         ls output
