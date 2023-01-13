@@ -19,10 +19,10 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  nn-deephys-intel-0-all.jar input\njpackage --type app-image --verbose\
-        \ --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options\
-        \ -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon\
-        \ logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy\
+      run: "\t\t\t  mv nn-deephys-intel-0-all.jar input\njpackage --type app-image\
+        \ --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
+        \ . --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy\
         \ --mac-package-signing-prefix lab.sinha.deephy --mac-sign"
   build_linux_app:
     runs-on: ubuntu-22.04
@@ -42,10 +42,10 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  nn-deephys-linux-0-all.jar input\njpackage --type app-image --verbose\
-        \ --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G --java-options\
-        \ -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest . --icon\
-        \ logo.icns --input input --temp temp"
+      run: "\t\t\t  mv nn-deephys-linux-0-all.jar input\njpackage --type app-image\
+        \ --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+        \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
+        \ . --icon logo.icns --input input --temp temp"
   build_windows_app:
     runs-on: windows-2022
     steps:
@@ -64,7 +64,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  nn-deephys-windows-0-all.jar input\njpackage --type app-image\
+      run: "\t\t\t  mv nn-deephys-windows-0-all.jar input\njpackage --type app-image\
         \ --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
         \ . --icon logo.icns --input input --temp temp"
