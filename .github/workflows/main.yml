@@ -36,6 +36,7 @@ jobs:
         security create-keychain -p ${{ secrets.CER }} build.keychain
         security default-keychain -s build.keychain
         security unlock-keychain -p ${{ secrets.CER }} build.keychain
+        security import cer/Certificates.p12 build.keychain -P ${{ secrets.CER }} -T /usr/bin/codesign
         echo ls:
         ls -al
         echo ls input:
@@ -92,15 +93,60 @@ jobs:
         ls -al input
         mv nn-deephys-linux-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png -o logo.png
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env:
+        EXAMPLE_TOKEN: my-token
+      run: jpackage --type app-image --verbose --name deephys --app-version 1.25.0
+        --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G"
+        --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
+        output --icon logo.png --input input --temp temp
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env:
+        EXAMPLE_TOKEN: my-token
+      run: |-
+        cd output
+        zip -r deephys.zip deephys
+        cd ..
+        echo ls output:
+        ls -al output
+        echo ls output/deephys:
+        ls -al output/deephys
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
+      uses: svenstaro/upload-release-action@v2
+      with:
+        file: output/deephys.zip
+        tag: 1.25.0
+        overwrite: true
+  build_linux-arm64_app:
+    runs-on: ubuntu-22.04
+    steps:
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
+      uses: robinraju/release-downloader@v1.7
+      with:
+        repository: mjgroth/deephys
+        latest: true
+        fileName: nn-deephys-linux-0-all.jar
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env:
+        EXAMPLE_TOKEN: my-token
+      run: |-
+        mkdir input
+        mkdir temp
+        mkdir output
+        echo ls:
+        ls -al
+        echo ls input:
+        ls -al input
+        mv nn-deephys-linux-0-all.jar input
+        curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png -o logo.png
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: uraimo/run-on-arch-action@v2
       with:
         arch: aarch64
         distro: ubuntu20.04
-        run: jpackage --type app-image --verbose --name deephys --app-version 1.25.0
-          --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G"
-          --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
-          output --icon logo.png --input input --temp temp
+        run: |-
+          apt install openjdk-17-jdk -y
+          jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.png --input input --temp temp
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
@@ -158,7 +204,7 @@ jobs:
         EXAMPLE_TOKEN: my-token
       run: |-
         cd output
-        Compress-Archive deephys deephys.zip
+        Compress-Archive deephys deephys.zip.windows
         cd ..
         echo ls output:
         ls output
@@ -167,6 +213,6 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys.zip
+        file: output/deephys.zip.windows
         tag: 1.25.0
         overwrite: true
