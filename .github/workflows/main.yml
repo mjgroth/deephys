@@ -24,6 +24,7 @@ jobs:
         mkdir temp
         mkdir output
         mkdir cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/Certificates.p12 -o cer/Certificates.p12
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest1.certSigningRequest -o cer/CertificateSigningRequest1.certSigningRequest
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/DeveloperIDG2CA.cer -o cer/DeveloperIDG2CA.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest2.certSigningRequest -o cer/CertificateSigningRequest2.certSigningRequest
@@ -32,13 +33,18 @@ jobs:
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG3.cer -o cer/AppleWWDRCAG3.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer -o cer/developerID_installer.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer -o cer/developerID_application.cer
+        security create-keychain -p ${{ secrets.CER }} build.keychain
+        security default-keychain build.keychain
+        security unlock-keychain -p ${{ secrets.CER }} build.keychain
+        security import cer/Certificates.p12 build.keychain -P ${{ secrets.CER }} -T /usr/bin/codesign
+        security set-key-partition-list apple-tool:,apple:,codesign: -s -k ${{ secrets.CER }} build.keychain
         echo ls:
         ls -al
         echo ls input:
         ls -al input
         mv nn-deephys-intel-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.icns -o logo.icns
-        jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-intel-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign --mac-signing-keychain cer
+        jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-intel-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign
         echo ls output:
         ls -al output
         echo ls output/deephys:
@@ -84,7 +90,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys
+        file: output/deephys.rpm
         tag: 1.25.0
   build_windows_app:
     runs-on: windows-2022
@@ -109,16 +115,16 @@ jobs:
         mkdir temp
         mkdir output
         echo ls:
-        ls -al
+        ls
         echo ls input:
-        ls -al input
+        ls input
         mv nn-deephys-windows-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.ico -o logo.ico
         jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-windows-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.ico --input input --temp temp
         echo ls output:
-        ls -al output
+        ls output
         echo ls output/deephys:
-        ls -al output/deephys
+        ls output/deephys
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
