@@ -8,7 +8,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: corretto
-        java-version: 17
+        java-version: 18
         java-package: jdk
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
@@ -17,8 +17,7 @@ jobs:
         latest: true
         fileName: nn-deephys-intel-0-all.jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         mkdir input
         mkdir temp
@@ -26,7 +25,7 @@ jobs:
       name: mkdirs
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
-        EXAMPLE_TOKEN: my-token
+        BUILD_CERTIFICATE_BASE64: '"${{ secrets.BUILD_CERTIFICATE_BASE64 }}"'
       run: |-
         mkdir cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/Certificates.p12 -o cer/Certificates.p12
@@ -42,10 +41,10 @@ jobs:
         security default-keychain -s build.keychain
         security unlock-keychain -p ${{ secrets.CER }} build.keychain
         security import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER }} -T /usr/bin/codesign
+        security set-key-partition-list apple-tool:,apple:,codesign: -s -k ${{ secrets.CER }} build.keychain
       name: prepare certificates
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         echo ls:
         ls -al
@@ -55,8 +54,7 @@ jobs:
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.icns -o logo.icns
       name: prepare files for jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: jpackage --type app-image --verbose --name deephys --app-version 1.25.0
         --main-jar nn-deephys-intel-0-all.jar --java-options "-Dprism.maxvram=2G"
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
@@ -64,8 +62,7 @@ jobs:
         lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign
       name: jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         echo ls output:
         ls -al output
@@ -85,7 +82,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: corretto
-        java-version: 17
+        java-version: 18
         java-package: jdk
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
@@ -94,16 +91,14 @@ jobs:
         latest: true
         fileName: nn-deephys-linux-0-all.jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         mkdir input
         mkdir temp
         mkdir output
       name: mkdirs
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         echo ls:
         ls -al
@@ -113,16 +108,14 @@ jobs:
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png -o logo.png
       name: prepare files for jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: jpackage --type app-image --verbose --name deephys --app-version 1.25.0
         --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G"
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
         output --icon logo.png --input input --temp temp
       name: jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         cd output
         zip -r deephys.zip deephys
@@ -148,16 +141,14 @@ jobs:
         latest: true
         fileName: nn-deephys-linux-0-all.jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         mkdir input
         mkdir temp
         mkdir output
       name: mkdirs
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         echo ls:
         ls -al
@@ -172,12 +163,13 @@ jobs:
         arch: aarch64
         distro: ubuntu20.04
         run: |-
+          cd outer
           apt update
-          apt install openjdk-17-jdk -y
+          apt install openjdk-18-jdk -y
           jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.png --input input --temp temp
+        dockerRunArgs: --volume "${PWD}:/outer"
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         cd output
         zip -r deephys.zip.linux_arm64 deephys
@@ -200,7 +192,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: corretto
-        java-version: 17
+        java-version: 18
         java-package: jdk
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: robinraju/release-downloader@v1.7
@@ -209,16 +201,14 @@ jobs:
         latest: true
         fileName: nn-deephys-windows-0-all.jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         mkdir input
         mkdir temp
         mkdir output
       name: mkdirs
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         echo ls:
         ls
@@ -228,16 +218,14 @@ jobs:
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.ico -o logo.ico
       name: prepare files for jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: jpackage --type app-image --verbose --name deephys --app-version 1.25.0
         --main-jar nn-deephys-windows-0-all.jar --java-options "-Dprism.maxvram=2G"
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
         output --icon logo.ico --input input --temp temp
       name: jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        EXAMPLE_TOKEN: my-token
+      env: {}
       run: |-
         cd output
         Compress-Archive deephys deephys.zip.windows
