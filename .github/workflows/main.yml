@@ -19,11 +19,13 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  mv nn-deephys-intel-0-all.jar input\njpackage --type app-image\
-        \ --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+      run: "\t\t\t  mv nn-deephys-intel-0-all.jar input\nmkdir temp\nmkdir output\n\
+        curl -LJ0 https://github.com/mjgroth/deephys/blob/4743f4adc089228c0cd1a93ab6058b0da5e711ff/src/main/resources/logo.icns\
+        \ -o logo.icns\njpackage --type app-image --verbose --name deephys --app-version\
+        \ 1.26.0 --main-jar nn-deephys-intel-0-all.jar --java-options \"-Dprism.maxvram=2G\"\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy\
-        \ --mac-package-signing-prefix lab.sinha.deephy --mac-sign"
+        \ output --icon logo.icns --input input --temp temp --mac-package-identifier\
+        \ lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign"
   build_linux_app:
     runs-on: ubuntu-22.04
     steps:
@@ -42,10 +44,12 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  mv nn-deephys-linux-0-all.jar input\njpackage --type app-image\
-        \ --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+      run: "\t\t\t  mv nn-deephys-linux-0-all.jar input\nmkdir temp\nmkdir output\n\
+        curl -LJ0 https://github.com/mjgroth/deephys/blob/4743f4adc089228c0cd1a93ab6058b0da5e711ff/src/main/resources/logo.icns\
+        \ -o logo.icns\njpackage --type app-image --verbose --name deephys --app-version\
+        \ 1.26.0 --main-jar nn-deephys-linux-0-all.jar --java-options \"-Dprism.maxvram=2G\"\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp"
+        \ output --icon logo.icns --input input --temp temp"
   build_windows_app:
     runs-on: windows-2022
     steps:
@@ -64,7 +68,9 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         EXAMPLE_TOKEN: my-token
-      run: "\t\t\t  mv nn-deephys-windows-0-all.jar input\njpackage --type app-image\
-        \ --verbose --name deephys --app-version 1.26.0 --java-options -Dprism.maxvram=2G\
+      run: "\t\t\t  mv nn-deephys-windows-0-all.jar input\nmkdir temp\nmkdir output\n\
+        curl -LJ0 https://github.com/mjgroth/deephys/blob/4743f4adc089228c0cd1a93ab6058b0da5e711ff/src/main/resources/logo.icns\
+        \ -o logo.icns\njpackage --type app-image --verbose --name deephys --app-version\
+        \ 1.26.0 --main-jar nn-deephys-windows-0-all.jar --java-options \"-Dprism.maxvram=2G\"\
         \ --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest\
-        \ . --icon logo.icns --input input --temp temp"
+        \ output --icon logo.icns --input input --temp temp"
