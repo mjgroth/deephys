@@ -1,6 +1,6 @@
 <!--- https://github.com/mgroth0/deephys/releases -->
 
-[//]: # (VERSION:1.26.0)
+[//]: # (VERSION:1.25.0)
 
 Compatible pip package
 version: [0.7.2](https://pypi.org/project/deephys/0.7.2/)

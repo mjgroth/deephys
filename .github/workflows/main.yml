@@ -38,7 +38,7 @@ jobs:
         ls -al input
         mv nn-deephys-intel-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.icns -o logo.icns
-        jpackage --type app-image --verbose --name deephys --app-version 1.26.0 --main-jar nn-deephys-intel-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign --mac-signing-keychain cer
+        jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-intel-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.icns --input input --temp temp --mac-package-identifier lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign --mac-signing-keychain cer
         echo ls output:
         ls -al output
         echo ls output/deephys:
@@ -47,7 +47,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: output/deephys.app
-        tag: 1.26.0
+        tag: 1.25.0
   build_linux_app:
     runs-on: ubuntu-22.04
     steps:
@@ -76,7 +76,7 @@ jobs:
         ls -al input
         mv nn-deephys-linux-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.png -o logo.png
-        jpackage --type app-image --verbose --name deephys --app-version 1.26.0 --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.png --input input --temp temp
+        jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.png --input input --temp temp
         echo ls output:
         ls -al output
         echo ls output/deephys:
@@ -85,7 +85,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: output/deephys
-        tag: 1.26.0
+        tag: 1.25.0
   build_windows_app:
     runs-on: windows-2022
     steps:
@@ -114,7 +114,7 @@ jobs:
         ls -al input
         mv nn-deephys-windows-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.ico -o logo.ico
-        jpackage --type app-image --verbose --name deephys --app-version 1.26.0 --main-jar nn-deephys-windows-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.ico --input input --temp temp
+        jpackage --type app-image --verbose --name deephys --app-version 1.25.0 --main-jar nn-deephys-windows-0-all.jar --java-options "-Dprism.maxvram=2G" --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest output --icon logo.ico --input input --temp temp
         echo ls output:
         ls -al output
         echo ls output/deephys:
@@ -123,4 +123,4 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: output/deephys
-        tag: 1.26.0
+        tag: 1.25.0
