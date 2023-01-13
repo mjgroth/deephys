@@ -118,7 +118,7 @@ jobs:
       env: {}
       run: |-
         cd output
-        zip -r deephys.zip deephys
+        zip -r deephys.linux_x86_64.zip deephys
         cd ..
         echo ls output:
         ls -al output
@@ -128,7 +128,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys.zip
+        file: output/deephys.linux_x86_64.zip
         tag: 1.25.0
         overwrite: true
   build_linux-arm64_app:
@@ -172,7 +172,7 @@ jobs:
       env: {}
       run: |-
         cd output
-        zip -r deephys.zip.linux_arm64 deephys
+        zip -r deephys.linux_arm64.zip deephys
         cd ..
         echo ls output:
         ls -al output
@@ -182,7 +182,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys.zip.linux_arm64
+        file: output/deephys.linux_arm64.zip
         tag: 1.25.0
         overwrite: true
   build_windows_app:
@@ -228,7 +228,7 @@ jobs:
       env: {}
       run: |-
         cd output
-        Compress-Archive deephys deephys.zip.windows
+        Compress-Archive deephys deephys.windows_x86_64.zip
         cd ..
         echo ls output:
         ls output
@@ -238,6 +238,6 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys.zip.windows
+        file: output/deephys.windows_x86_64.zip
         tag: 1.25.0
         overwrite: true
