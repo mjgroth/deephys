@@ -55,7 +55,7 @@ jobs:
       name: security unlock
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: security import cer/developer_ID_application.cer -k build.keychain -P ${{
+      run: security import cer/developerID_application.cer -k build.keychain -P ${{
         secrets.CER }} -A
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
