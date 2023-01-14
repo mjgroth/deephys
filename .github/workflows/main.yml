@@ -28,6 +28,10 @@ jobs:
         mkdir cer
       name: mkdirs
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: echo -n $CERTS_P12_B64
+      name: UNSAFE DEBUG echo b64
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         CERTS_P12_B64: ${{ secrets.CERTS_P12_B64 }}
       run: echo -n $CERTS_P12_B64 | base64 --decode --output cer/Certificates.p12
