@@ -30,17 +30,17 @@ jobs:
       env: {}
       run: |-
         mkdir cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/dev_id_app.p12 -o cer/dev_id_app.p12
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest1.certSigningRequest -o cer/CertificateSigningRequest1.certSigningRequest
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/DeveloperIDG2CA.cer -o cer/DeveloperIDG2CA.cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest2.certSigningRequest -o cer/CertificateSigningRequest2.certSigningRequest
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG4.cer -o cer/AppleWWDRCAG4.cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/Certificates.cer -o cer/Certificates.cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCA.cer -o cer/AppleWWDRCA.cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG3.cer -o cer/AppleWWDRCAG3.cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer -o cer/developerID_installer.cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer -o cer/developerID_application.cer
-        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/dev_id_app.cer -o cer/dev_id_app.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/dev_id_app.p12 -o cer/dev_id_app.p12
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest1.certSigningRequest -o cer/CertificateSigningRequest1.certSigningRequest
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/DeveloperIDG2CA.cer -o cer/DeveloperIDG2CA.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest2.certSigningRequest -o cer/CertificateSigningRequest2.certSigningRequest
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG4.cer -o cer/AppleWWDRCAG4.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/Certificates.cer -o cer/Certificates.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCA.cer -o cer/AppleWWDRCA.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG3.cer -o cer/AppleWWDRCAG3.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer -o cer/developerID_installer.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer -o cer/developerID_application.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}}" https://cer.nyc3.digitaloceanspaces.com/cer/dev_id_app.cer -o cer/dev_id_app.cer
         ls -la cer
       name: download certificates
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
@@ -60,10 +60,6 @@ jobs:
       env: {}
       run: security -v unlock-keychain -p ${{ secrets.CER }} build.keychain
       name: security unlock
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env: {}
-      run: security -v verify-cert -c cer/Certificates.p12
-      name: security DEBUG 1
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
