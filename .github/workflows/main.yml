@@ -63,7 +63,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
-        }} -A
+        }} -T /usr/bin/codesign
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
