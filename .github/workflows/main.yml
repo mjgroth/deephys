@@ -59,7 +59,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
-        }} -t cert -f pkcs12 -A
+        }} -A
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
