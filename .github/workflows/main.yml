@@ -50,25 +50,25 @@ jobs:
       name: decode base64 cert
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: security create-keychain -p ${{ secrets.CER }} build.keychain
+      run: security -v create-keychain -p ${{ secrets.CER }} build.keychain
       name: security create
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: security default-keychain -s build.keychain
+      run: security -v default-keychain -s build.keychain
       name: security default
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: security unlock-keychain -p ${{ secrets.CER }} build.keychain
+      run: security -v unlock-keychain -p ${{ secrets.CER }} build.keychain
       name: security unlock
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: security import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
+      run: security -v import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
         }} -T /usr/bin/codesign
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'security set-key-partition-list apple-tool:,apple:,codesign: -s -k ${{
-        secrets.CER }} build.keychain'
+      run: 'security -v set-key-partition-list apple-tool:,apple:,codesign: -s -k
+        ${{ secrets.CER }} build.keychain'
       name: security partition list
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
