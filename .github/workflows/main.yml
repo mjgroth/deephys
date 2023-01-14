@@ -179,30 +179,26 @@ jobs:
       name: notarize 17
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: xcrun notarytool
+      run: bash -c xcrun notarytool log "$(cat /Users/runner/work/deephys/deephys/temp/notary_id.txt)"
+        --keychain-profile matthewgroth
       name: notarize 18
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c xcrun notarytool log $(cat /Users/runner/work/deephys/deephys/temp/notary_id.txt)
-        --keychain-profile matthewgroth
-      name: notarize 19
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env: {}
       run: xcrun stapler staple /Users/runner/work/deephys/deephys/output/deephys.app
-      name: notarize 20
+      name: notarize 19
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ditto -c -k --keepParent /Users/runner/work/deephys/deephys/output/deephys.app
         /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
-      name: notarize 21
+      name: notarize 20
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: codesign -dv --verbose=4 /Users/runner/work/deephys/deephys/output/deephys.app
-      name: notarize 22
+      name: notarize 21
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: spctl -a -t open --context context:primary-signature -v /Users/runner/work/deephys/deephys/output/deephys.app
-      name: notarize 23
+      name: notarize 22
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
