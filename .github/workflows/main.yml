@@ -156,7 +156,7 @@ jobs:
       name: notarize 13
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: jar cf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
+      run: bash -c jar cf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
         *
       name: notarize 14
       working-directory: /Users/runner/work/deephys/deephys/output/jar
@@ -173,32 +173,44 @@ jobs:
       name: notarize 16
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c $(xcrun notarytool submit /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
-        --keychain-profile matthewgroth --wait) | awk '{if ($1 == "id:") print $2}'
-        > "/Users/runner/work/deephys/deephys/temp/notary_id.txt"
+      run: bash -c "xcrun notarytool submit /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
+        --keychain-profile matthewgroth --wait -f json > /Users/runner/work/deephys/deephys/temp/notary_submit_result.json"
       name: notarize 17
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: cat /Users/runner/work/deephys/deephys/temp/notary_submit_result.json
+      name: notarize 18
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: bash -c jq -r '.id' /Users/runner/work/deephys/deephys/temp/notary_submit_result.json
+        > /Users/runner/work/deephys/deephys/temp/notary_id.txt
+      name: notarize 19
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: cat /Users/runner/work/deephys/deephys/temp/notary_id.txt
+      name: notarize 20
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: bash -c xcrun notarytool log "$(cat /Users/runner/work/deephys/deephys/temp/notary_id.txt)"
         --keychain-profile matthewgroth
-      name: notarize 18
+      name: notarize 21
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: xcrun stapler staple /Users/runner/work/deephys/deephys/output/deephys.app
-      name: notarize 19
+      name: notarize 22
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ditto -c -k --keepParent /Users/runner/work/deephys/deephys/output/deephys.app
         /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
-      name: notarize 20
+      name: notarize 23
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: codesign -dv --verbose=4 /Users/runner/work/deephys/deephys/output/deephys.app
-      name: notarize 21
+      name: notarize 24
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: spctl -a -t open --context context:primary-signature -v /Users/runner/work/deephys/deephys/output/deephys.app
-      name: notarize 22
+      name: notarize 25
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
