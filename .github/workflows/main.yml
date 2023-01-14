@@ -76,8 +76,8 @@ jobs:
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'security -v set-key-partition-list apple-tool:,apple:,codesign: -s -k
-        ${{ secrets.CER }} build.keychain'
+      run: 'security -v set-key-partition-list -S apple-tool:,apple:,codesign: -s
+        -k ${{ secrets.CER }} build.keychain'
       name: security partition list
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
