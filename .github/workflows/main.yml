@@ -99,107 +99,98 @@ jobs:
       name: jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: mkdir /Users/runner/work/deephys/deephys/output/jar
+      run: '[Ljava.lang.Object;@2a680df7'
       name: notarize 1
+      working-dir: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c cd /Users/runner/work/deephys/deephys/output/jar; jar xf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
+      run: '[Ljava.lang.Object;@16451064'
       name: notarize 2
+      working-dir: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: pwd
+      run: '[Ljava.lang.Object;@5ff1dcc1'
       name: notarize 3
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls
+      run: '[Ljava.lang.Object;@6b59dd34'
       name: notarize 4
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output
+      run: '[Ljava.lang.Object;@134621d'
       name: notarize 5
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna
+      run: '[Ljava.lang.Object;@3fcc946f'
       name: notarize 6
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com
+      run: '[Ljava.lang.Object;@6e8a5083'
       name: notarize 7
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com/sun
+      run: '[Ljava.lang.Object;@4b9f901b'
       name: notarize 8
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com/sun/jna
+      run: '[Ljava.lang.Object;@691927ff'
       name: notarize 9
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com/sun/jna/darwin-aarch64
+      run: '[Ljava.lang.Object;@322da95f'
       name: notarize 10
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
-        Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
-        /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-aarch64/libjnidispatch.jnilib'
+      run: '[Ljava.lang.Object;@e1fe9d1'
       name: notarize 11
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
-        Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
-        /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-x86-64/libjnidispatch.jnilib'
+      run: '[Ljava.lang.Object;@3937bf41'
       name: notarize 12
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: rm -rf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
+      run: '[Ljava.lang.Object;@19b14147'
       name: notarize 13
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c cd /Users/runner/work/deephys/deephys/output/jar; jar cf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
-        *
+      run: '[Ljava.lang.Object;@20c8e45f'
       name: notarize 14
+      working-dir: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
-        Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
-        /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/deephys.app/Contents/MacOS/deephys'
+      run: '[Ljava.lang.Object;@2defc6a5'
       name: notarize 15
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ditto -c -k --keepParent /Users/runner/work/deephys/deephys/output/deephys.app
-        /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
+      run: '[Ljava.lang.Object;@50db36ba'
       name: notarize 16
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c $(xcrun notarytool submit /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
-        --keychain-profile matthewgroth --wait) | awk '{if ($1 == "id:") print $2}'
-        > "/Users/runner/work/deephys/deephys/temp/notary_id.txt"
+      run: '[Ljava.lang.Object;@628984f4'
       name: notarize 17
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: xcrun notarytool
+      run: '[Ljava.lang.Object;@5846ee6'
       name: notarize 18
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c xcrun notarytool log $(cat /Users/runner/work/deephys/deephys/temp/notary_id.txt)
-        --keychain-profile matthewgroth
+      run: '[Ljava.lang.Object;@560d5a1d'
       name: notarize 19
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: xcrun stapler staple /Users/runner/work/deephys/deephys/output/deephys.app
+      run: '[Ljava.lang.Object;@5fead880'
       name: notarize 20
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ditto -c -k --keepParent /Users/runner/work/deephys/deephys/output/deephys.app
-        /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
+      run: '[Ljava.lang.Object;@71ea49ad'
       name: notarize 21
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: codesign -dv --verbose=4 /Users/runner/work/deephys/deephys/output/deephys.app
+      run: '[Ljava.lang.Object;@573fea28'
       name: notarize 22
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: spctl -a -t open --context context:primary-signature -v /Users/runner/work/deephys/deephys/output/deephys.app
+      run: '[Ljava.lang.Object;@6bde8f60'
       name: notarize 23
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
