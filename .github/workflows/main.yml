@@ -63,7 +63,27 @@ jobs:
       name: security unlock
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: certtool i cer/dev_id_app.pemm v
+      run: security -v list-keychains
+      name: security list-keychains
+      continueOnError: true
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: security -v show-keychain-info build.keychain
+      name: security show-keychain-info
+      continueOnError: true
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: security -v dump-trust-settings
+      name: security dump-trust-settings
+      continueOnError: true
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: security -v requirement-evaluate cer/dev_id_app.pem
+      name: security requirement-evaluate
+      continueOnError: true
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: certtool i cer/dev_id_app.pem v
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
