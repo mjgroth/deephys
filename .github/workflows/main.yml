@@ -132,11 +132,11 @@ jobs:
       name: notarize 8
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar
+      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna
       name: notarize 9
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/darwin-aarch64
+      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-aarch64
       name: notarize 10
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
