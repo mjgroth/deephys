@@ -30,22 +30,12 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         CERTS_P12_B64: ${{ secrets.CERTS_P12_B64 }}
-      run: echo -n $CERTS_P12_B64
-      name: UNSAFE DEBUG echo b64
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        DEV_ID_APP_PEM: ${{ secrets.DEV_ID_APP_PEM }}
-      run: echo -n $DEV_ID_APP_PEM
-      name: UNSAFE DEBUG echo pem
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env:
-        CERTS_P12_B64: ${{ secrets.CERTS_P12_B64 }}
-      run: echo -n $CERTS_P12_B64 | base64 --decode --output cer/Certificates.p12
+      run: echo -n "$CERTS_P12_B64" | base64 --decode --output cer/Certificates.p12
       name: decode base64 cert
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         DEV_ID_APP_PEM: ${{ secrets.DEV_ID_APP_PEM }}
-      run: echo -n $DEV_ID_APP_PEM > cer/dev_id_app.pem
+      run: echo -n "$DEV_ID_APP_PEM" > cer/dev_id_app.pem
       name: write pem cert
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
@@ -81,8 +71,13 @@ jobs:
       continue-on-error: true
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: certtool i cer/dev_id_app.pem v
+      run: security -v import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
+        }} -T /usr/bin/codesign
       name: security import
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
+      run: certtool i cer/dev_id_app.pem v
+      name: certtool import (alternative)
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: 'security -v set-key-partition-list apple-tool:,apple:,codesign: -s -k
