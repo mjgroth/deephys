@@ -120,23 +120,23 @@ jobs:
       name: notarize 5
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna
+      run: ls /Users/runner/work/deephys/deephys/output/jar
       name: notarize 6
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com
+      run: ls /Users/runner/work/deephys/deephys/output/jar/com
       name: notarize 7
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com/sun
+      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun
       name: notarize 8
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com/sun/jna
+      run: ls /Users/runner/work/deephys/deephys/output/jar
       name: notarize 9
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/com/sun/jna/darwin-aarch64
+      run: ls /Users/runner/work/deephys/deephys/output/jar/darwin-aarch64
       name: notarize 10
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
