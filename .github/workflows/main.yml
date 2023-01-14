@@ -76,10 +76,6 @@ jobs:
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: certtool i cer/dev_id_app.pem v
-      name: certtool import (alternative)
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env: {}
       run: 'security -v set-key-partition-list apple-tool:,apple:,codesign: -s -k
         ${{ secrets.CER }} build.keychain'
       name: security partition list
