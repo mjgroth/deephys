@@ -28,9 +28,15 @@ jobs:
         mkdir cer
       name: mkdirs
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
-      env: {}
+      env:
+        CERTS_P12_B64: ${{ secrets.CERTS_P12_B64 }}
       run: echo -n $CERTS_P12_B64
       name: UNSAFE DEBUG echo b64
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env:
+        DEV_ID_APP_PEM: ${{ secrets.DEV_ID_APP_PEM }}
+      run: echo -n $DEV_ID_APP_PEM
+      name: UNSAFE DEBUG echo pem
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         CERTS_P12_B64: ${{ secrets.CERTS_P12_B64 }}
@@ -39,7 +45,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         DEV_ID_APP_PEM: ${{ secrets.DEV_ID_APP_PEM }}
-      run: echo -n $CERTS_P12_B64 > cer/dev_id_app.pem
+      run: echo -n $DEV_ID_APP_PEM > cer/dev_id_app.pem
       name: write pem cert
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
