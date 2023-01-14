@@ -62,6 +62,10 @@ jobs:
       name: security unlock
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
+      run: security -v verify-cert -c cer/Certificates.p12
+      name: security DEBUG 1
+    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
+      env: {}
       run: security -v import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
         }} -T /usr/bin/codesign
       name: security import
