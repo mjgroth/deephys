@@ -30,6 +30,7 @@ jobs:
       env: {}
       run: |-
         mkdir cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/dev_id_app.p12 -o cer/dev_id_app.p12
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/Certificates.p12 -o cer/Certificates.p12
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest1.certSigningRequest -o cer/CertificateSigningRequest1.certSigningRequest
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/DeveloperIDG2CA.cer -o cer/DeveloperIDG2CA.cer
@@ -40,6 +41,8 @@ jobs:
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG3.cer -o cer/AppleWWDRCAG3.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer -o cer/developerID_installer.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_application.cer -o cer/developerID_application.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/dev_id_app.cer -o cer/dev_id_app.cer
+        ls -la cer
       name: download certificates
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
@@ -55,8 +58,8 @@ jobs:
       name: security unlock
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: security import cer/developerID_application.cer -k build.keychain -P ${{
-        secrets.CER }} -A
+      run: security import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
+        }} -t cert -f pkcs12 -A
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
