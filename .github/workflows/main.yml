@@ -35,6 +35,7 @@ jobs:
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/DeveloperIDG2CA.cer -o cer/DeveloperIDG2CA.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/CertificateSigningRequest2.certSigningRequest -o cer/CertificateSigningRequest2.certSigningRequest
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG4.cer -o cer/AppleWWDRCAG4.cer
+        curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/Certificates.cer -o cer/Certificates.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCA.cer -o cer/AppleWWDRCA.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/AppleWWDRCAG3.cer -o cer/AppleWWDRCAG3.cer
         curl -H "Authorization: Bearer ${{ secrets.CER }}" https://cer.nyc3.digitaloceanspaces.com/cer/developerID_installer.cer -o cer/developerID_installer.cer
@@ -55,7 +56,7 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security import cer/Certificates.p12 -k build.keychain -P ${{ secrets.CER
-        }} -T /usr/bin/codesign
+        }} -t cert -f pkcs12 -A
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
