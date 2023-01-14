@@ -63,7 +63,7 @@ jobs:
       name: security unlock
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: certtool i cer/dev_id_app.pem v
+      run: certtool i cer/dev_id_app.pemm v
       name: security import
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
