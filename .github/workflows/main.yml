@@ -103,7 +103,7 @@ jobs:
       name: notarize 1
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: jar xf -C /Users/runner/work/deephys/deephys/output/jar /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
+      run: jar xf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
       name: notarize 2
       working-directory: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
