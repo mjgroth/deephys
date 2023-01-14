@@ -107,14 +107,14 @@ jobs:
       name: notarize 2
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'codesign --timestamp --options runtime --force -s Developer ID Application:
-        Matthew Groth (4GAZMDTC2M) --prefix lab.sinha.deephy -vvvv --entitlements
+      run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
+        Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
         /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-aarch64/libjnidispatch.jnilib'
       name: notarize 3
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'codesign --timestamp --options runtime --force -s Developer ID Application:
-        Matthew Groth (4GAZMDTC2M) --prefix lab.sinha.deephy -vvvv --entitlements
+      run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
+        Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
         /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-x86-64/libjnidispatch.jnilib'
       name: notarize 4
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
@@ -128,8 +128,8 @@ jobs:
       name: notarize 6
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: 'codesign --timestamp --options runtime --force -s Developer ID Application:
-        Matthew Groth (4GAZMDTC2M) --prefix lab.sinha.deephy -vvvv --entitlements
+      run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
+        Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
         /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/deephys.app/Contents/MacOS/deephys'
       name: notarize 7
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
