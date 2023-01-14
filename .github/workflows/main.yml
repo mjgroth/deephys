@@ -101,12 +101,12 @@ jobs:
       env: {}
       run: mkdir /Users/runner/work/deephys/deephys/output/jar
       name: notarize 1
-      working-dir: /Users/runner/work/deephys/deephys/output/jar
+      working-directory: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: jar xf -C /Users/runner/work/deephys/deephys/output/jar /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
       name: notarize 2
-      working-dir: /Users/runner/work/deephys/deephys/output/jar
+      working-directory: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: pwd
@@ -160,7 +160,7 @@ jobs:
       run: jar cf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
         *
       name: notarize 14
-      working-dir: /Users/runner/work/deephys/deephys/output/jar
+      working-directory: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
