@@ -47,15 +47,18 @@ jobs:
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
+        cd output
+        zip -r deephys-mac-intel.zip deephys.app
+        cd ..
         echo ls output:
         ls -al output
-        echo ls output/deephys:
-        ls -al output/deephys
+        echo ls output/deephys.app:
+        ls -al output/deephys.app
       name: compress
     - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       uses: svenstaro/upload-release-action@v2
       with:
-        file: output/deephys.app
+        file: output/deephys-mac-intel.zip
         tag: 1.25.1
         overwrite: true
   build_linux_app:
