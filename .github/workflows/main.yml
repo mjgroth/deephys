@@ -156,8 +156,8 @@ jobs:
       name: notarize 13
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c jar cf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
-        *
+      run: bash -c "jar cf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
+        *"
       name: notarize 14
       working-directory: /Users/runner/work/deephys/deephys/output/jar
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
@@ -191,8 +191,8 @@ jobs:
       name: notarize 20
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: bash -c xcrun notarytool log "$(cat /Users/runner/work/deephys/deephys/temp/notary_id.txt)"
-        --keychain-profile matthewgroth
+      run: bash -c "xcrun notarytool log $(cat /Users/runner/work/deephys/deephys/temp/notary_id.txt)
+        --keychain-profile matthewgroth"
       name: notarize 21
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
