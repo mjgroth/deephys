@@ -45,7 +45,7 @@ jobs:
       name: download certificates
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
-        BUILD_CERTIFICATE_BASE64: '"${{ secrets.BUILD_CERTIFICATE_BASE64 }}"'
+        BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
       run: echo -n $BUILD_CERTIFICATE_BASE64 | base64 --decode --output cer/Certificates.p12
       name: decode base64 cert
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
