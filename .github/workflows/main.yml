@@ -2,7 +2,7 @@ on:
   workflow_dispatch: {}
   release:
     types:
-    - published
+    - released
 jobs:
   build_intel_app:
     runs-on: macos-12
@@ -91,7 +91,7 @@ jobs:
       name: prepare files for jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: jpackage --type app-image --verbose --name deephys --app-version 1.26.0
+      run: jpackage --type app-image --verbose --name deephys --app-version 1.26.1
         --main-jar nn-deephys-intel-0-all.jar --java-options "-Dprism.maxvram=2G"
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
         output --icon logo.icns --input input --temp temp --mac-package-identifier
@@ -220,7 +220,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: output/deephys-mac-intel.zip
-        tag: 1.26.0
+        tag: 1.26.1
         overwrite: true
   build_linux_app:
     runs-on: ubuntu-22.04
@@ -257,7 +257,7 @@ jobs:
       name: prepare files for jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: jpackage --type app-image --verbose --name deephys --app-version 1.26.0
+      run: jpackage --type app-image --verbose --name deephys --app-version 1.26.1
         --main-jar nn-deephys-linux-0-all.jar --java-options "-Dprism.maxvram=2G"
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
         output --icon logo_64.png --input input --temp temp
@@ -277,7 +277,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: output/deephys.linux_x86_64.zip
-        tag: 1.26.0
+        tag: 1.26.1
         overwrite: true
   build_windows_app:
     runs-on: windows-2022
@@ -314,7 +314,7 @@ jobs:
       name: prepare files for jPackage
     - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
-      run: jpackage --type app-image --verbose --name deephys --app-version 1.26.0
+      run: jpackage --type app-image --verbose --name deephys --app-version 1.26.1
         --main-jar nn-deephys-windows-0-all.jar --java-options "-Dprism.maxvram=2G"
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
         output --icon logo.ico --input input --temp temp
@@ -334,5 +334,5 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: output/deephys.windows.zip
-        tag: 1.26.0
+        tag: 1.26.1
         overwrite: true
