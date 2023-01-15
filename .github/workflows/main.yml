@@ -1,5 +1,8 @@
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
 jobs:
   build_intel_app:
     runs-on: macos-12
@@ -334,6 +337,3 @@ jobs:
         tag: ${{ github.event.inputs.version }}
         overwrite: true
 name: main
-inputs:
-  version:
-    required: true
