@@ -1,3 +1,4 @@
+name: main
 on:
   workflow_dispatch:
     inputs:
@@ -336,4 +337,3 @@ jobs:
         file: output/deephys.windows.zip
         tag: ${{ github.event.inputs.version }}
         overwrite: true
-name: main
