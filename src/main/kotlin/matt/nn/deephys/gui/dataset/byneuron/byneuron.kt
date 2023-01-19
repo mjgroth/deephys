@@ -12,7 +12,7 @@ class ByNeuronView(
   init {
 	setupSwapping(
 	  viewer.layerSelectionResolved,
-	  nullMessage = "select a layer"
+	  nullMessage = "no layer selected"
 	) {
 	  println("making LayerView")
 	  LayerView(this, testLoader, viewer)

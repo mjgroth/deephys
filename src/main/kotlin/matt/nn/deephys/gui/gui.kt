@@ -79,9 +79,6 @@ class DeephysApp {
 		initializeWhatICan()
 	  }
 
-
-	  VersionChecker.checkForUpdatesInBackground()
-
 	  daemon {
 		Preferences.userRoot().node("sinhalab.deephy.state").apply {
 		  removeNode()
@@ -94,6 +91,8 @@ class DeephysApp {
 	  }
 
 	  startDeephyApp()
+
+
 	}
   }
 
@@ -236,6 +235,8 @@ class DeephysApp {
 	testReadyScene.putLoadedValue(scene!!)
 
 	println("put loaded scene")
+
+	VersionChecker.checkForUpdatesInBackground()
 
   }.runBlocking(t = t)
 

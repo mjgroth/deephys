@@ -8,10 +8,7 @@ import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
-import matt.kjlib.git.hub.GitHub
 import matt.kjlib.git.hub.GitHubClient
-import matt.kjlib.git.hub.GitHubClient.GitHubRepo
-import matt.log.warn.warn
 import matt.log.warn.warnOnce
 import matt.model.data.release.Release
 import matt.model.data.release.Version
@@ -23,50 +20,62 @@ import matt.time.dur.sec
 import java.net.ConnectException
 
 object VersionChecker {
-  private var checking = false
   private val gh by lazy { GitHubClient() }
   private val ghUser by lazy { gh.me }
+  private var error = false
+  private var checking = false
   fun checkForUpdatesInBackground() = daemon {
-	if (!checking) {
-	  every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
-		try {
-		  val releases = gh.GitHubRepo(ghUser, appName).releases()
-		  if (releases == null) {
-			warnOnce("releases == null")
-		  } else {
-			val newest = releases.maxBy { it.version }
-			runLater {
-			  newestRelease.setIfDifferent(newest)
-			}
+	every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
+	  checking = true
+	  try {
+		val releases = gh.GitHubRepo(ghUser, appName).releases()
+		if (releases == null) {
+		  warnOnce("releases == null")
+		  error = true
+		  runLater { update(null) }
+		  cancel()
+		} else {
+		  val newest = releases.maxBy { it.version }
+		  runLater {
+			newestRelease.setIfDifferent(newest)
 		  }
-		} catch (e: ConnectException) {
-		  println("no internet to check version")
 		}
+	  } catch (e: ConnectException) {
+		println("no internet to check version")
+	  } finally {
+		checking = false
 	  }
 	}
-	checking = true
   }
 
   private val newestRelease by lazy { BindableProperty<Release?>(null) }
 
   val statusNode by lazy {
 	TextFlowWrapper<NodeWrapper>().apply {
-	  fun update(new: Release?) {
-		clear()
-		if (new == null) text("checking for updates...")
-		else if (new.version > myVersion) {
-		  deephyText("Version ${new.version} Available: ")
-		  deephyHyperlink("Click here to update") {
-			opens(ghUser.mainPageOf(appName).jURL.toURI())
-		  }
-		} else if (new.version < myVersion) {
-		  deephyText("developing unreleased version (last pushed was ${new.version})")
-		}
-	  }
-	  update(newestRelease.value)
-	  newestRelease.onChange { update(it) }
+
 	}
   }
+
+  private fun update(new: Release?) = statusNode.apply {
+	clear()
+	if (!error) {
+	  if (new == null && checking) text("checking for updates...")
+	  else if (new != null && new.version > myVersion) {
+		deephyText("Version ${new.version} Available: ")
+		deephyHyperlink("Click here to update") {
+		  opens(ghUser.mainPageOf(appName).jURL.toURI())
+		}
+	  } else if (new != null && new.version < myVersion) {
+		deephyText("developing unreleased version (last pushed was ${new.version})")
+	  }
+	}
+  }
+
+  init {
+	update(newestRelease.value)
+	newestRelease.onChange { update(it) }
+  }
+
 }
 
 class VersionStatus(

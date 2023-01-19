@@ -1,13 +1,20 @@
 package matt.nn.deephys.gui.dsetsbox
 
 import javafx.application.Platform.runLater
+import javafx.scene.layout.Border
 import javafx.scene.paint.Color
+import javafx.util.Duration
 import matt.file.CborFile
 import matt.file.toSFile
 import matt.fx.control.toggle.mech.ToggleMechanism
+import matt.fx.control.wrapper.control.ControlWrapper
+import matt.fx.graphics.anim.animation.keyframe
+import matt.fx.graphics.anim.animation.timeline
 import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.style.FXColor
+import matt.math.ranges.step
 import matt.model.data.message.FileList
 import matt.nn.deephys.gui.global.DEEPHY_FONT_MONO
 import matt.nn.deephys.gui.global.deephyToggleButton
@@ -51,6 +58,8 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   val bound = boundM.readOnly()
 
   init {
+
+
 	bindToggleGroup.selectedValue.onChange {
 	  boundM.value =
 		null /*necessary to remove all binding and reset everything before adding new binding or risk weird infinite recursions while changing binding and DatasetViewers are looking at each other infinitely looking for topNeurons*/
@@ -71,6 +80,16 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 
   private val inDToggleGroup = ToggleMechanism<DatasetViewer>()
   val inD = inDToggleGroup.selectedValue.readOnly()
+  //
+  //  init {
+  //	bindToggleGroup.selectedValue.onChange {
+  //	  println("boundM=$it")
+  //	}
+  //	inDToggleGroup.selectedValue.onChange {
+  //	  println("inD=$it")
+  //	}
+  //
+  //  }
 
   fun createInDToggleButton(
 	parent: NodeWrapper,
@@ -108,6 +127,8 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	t.inD.unbind()
 	t.numImagesPerNeuronInByImage.unbind()
 	t.predictionSigFigs.unbind()
+	t.showCacheBars.unbind()
+	t.showTutorials.unbind()
 	t.topNeurons.removeAllDependencies()
 	t.boundTopNeurons.removeAllDependencies()
 	t.boundToDSet.removeAllDependencies()
@@ -121,6 +142,59 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	/*need the toList here since concurrent modification exception is NOT being thrown and actually causing bugs*/
 	children.toList().forEach {
 	  removeTest(it)
+	}
+  }
+
+  fun flashBindButtons() {
+	@Suppress("UselessCallOnCollection")
+		/*might have debug children*/
+	val buttons = children.filterIsInstance<DatasetViewer>().mapNotNull { it.bindButton }
+	flashControls(buttons)
+  }
+
+  fun flashOODButtons() {
+	@Suppress("UselessCallOnCollection")
+		/*might have debug children*/
+	val buttons = children.filterIsInstance<DatasetViewer>().mapNotNull { it.oodButton }
+	flashControls(buttons)
+  }
+
+  fun flashControls(controls: Collection<ControlWrapper>) {
+	val t = timeline {
+	  val theStep = 1000
+	  (0..2000 step theStep).forEach { millis ->
+
+		val range = (0.0..1.0 step 0.1)
+
+		val base1 = millis.toDouble()
+		range.forEach { valu ->
+		  keyframe(Duration.millis(base1 + theStep*valu*0.5)) {
+			this.setOnFinished {
+			  val b = Border.stroke(FXColor.rgb(255, 255, 0, valu))
+			  controls.forEach {
+				it.border = b
+			  }
+			}
+		  }
+		}
+		val base2 = base1 + theStep*0.5
+		range.forEach { tim ->
+		  val valu = 1.0 - tim
+		  keyframe(Duration.millis(base2 + theStep*tim*0.5)) {
+			this.setOnFinished {
+			  val b = Border.stroke(FXColor.rgb(255, 255, 0, valu))
+			  controls.forEach {
+				it.border = b
+			  }
+			}
+		  }
+		}
+	  }
+	}
+	t.setOnFinished {
+	  controls.forEach {
+		it.border = null
+	  }
 	}
   }
 

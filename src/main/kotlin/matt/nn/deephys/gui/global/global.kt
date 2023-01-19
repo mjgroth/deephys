@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.global
 
 import javafx.scene.Cursor
+import javafx.scene.layout.Border
 import javafx.scene.paint.Color
 import javafx.scene.paint.CycleMethod
 import javafx.scene.paint.LinearGradient
@@ -17,6 +18,7 @@ import matt.fx.control.wrapper.button.toggle.togglebutton
 import matt.fx.control.wrapper.checkbox.CheckBoxWrapper
 import matt.fx.control.wrapper.checkbox.checkbox
 import matt.fx.control.wrapper.control.button.ButtonWrapper
+import matt.fx.control.wrapper.control.button.base.ButtonBaseWrapper
 import matt.fx.control.wrapper.control.button.button
 import matt.fx.control.wrapper.label.LabelWrapper
 import matt.fx.control.wrapper.label.label
@@ -82,8 +84,14 @@ fun EventTargetWrapper.deephyCheckbox(s: String = "", prop: Var<Boolean>? = null
   }
 
 fun EventTargetWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = button(s) {
-  font = DEEPHY_FONT_DEFAULT
+  deephysButtonStyle()
   theOp()
+}
+
+fun ButtonBaseWrapper<*>.deephysButtonStyle() {
+  font = DEEPHY_FONT_DEFAULT
+  /*so when I highlight the button later, the layout does not change. Also the bit of space is nice.*/
+  border = Border.stroke(Color.TRANSPARENT)
 }
 
 fun <V: Any> EventTargetWrapper.deephyRadioButton(
@@ -92,7 +100,7 @@ fun <V: Any> EventTargetWrapper.deephyRadioButton(
   value: V,
   theOp: RadioButtonWrapper.()->Unit = {}
 ) = radiobutton<V>(s, group, value) {
-  font = DEEPHY_FONT_DEFAULT
+  deephysButtonStyle()
   theOp()
 }
 
@@ -102,14 +110,14 @@ fun <V: Any> NodeWrapper.deephyToggleButton(
   group: ToggleMechanism<V>,
   op: ToggleButtonWrapper.()->Unit = {}
 ) = togglebutton(s, value = value, group = group) {
-  font = DEEPHY_FONT_DEFAULT
+  deephysButtonStyle()
   op()
 }
 
 fun NodeWrapper.deephyActionButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = actionbutton(s) {
   theOp()
 }.apply {
-  font = DEEPHY_FONT_DEFAULT
+  deephysButtonStyle()
 }
 
 val DEEPHY_FONT_DEFAULT: Font by lazy { Font.font("Georgia") }

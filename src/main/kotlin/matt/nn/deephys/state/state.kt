@@ -96,7 +96,16 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	label = "Verbose Logging",
 	tooltip = "Extra logging to standard out. May impact performance."
   )
-
+  val showCacheBars by BoolSettingProv(
+	defaultValue = false,
+	label = "Cache Progress Bars",
+	tooltip = "Extra progress bars indicating the progress of data caching."
+  )
+  val showTutorials by BoolSettingProv(
+	defaultValue = true,
+	label = "Show Tutorials",
+	tooltip = "Show Interactive Tutorials Throughout the app"
+  )
 
   init {
 	observe {

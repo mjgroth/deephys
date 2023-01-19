@@ -10,12 +10,19 @@ import matt.collect.set.contents.contentsOf
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
+import matt.fx.control.wrapper.checkbox.checkbox
+import matt.fx.control.wrapper.control.ControlWrapper
 import matt.fx.control.wrapper.control.button.button
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.enableWhen
+import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
+import matt.fx.graphics.wrapper.node.visibleWhen
+import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.hbox.hbox
+import matt.fx.graphics.wrapper.pane.spacer
+import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
@@ -28,6 +35,7 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
+import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.titleFont
@@ -48,6 +56,7 @@ import matt.obs.bind.deepBinding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.not
+import matt.obs.bindings.bool.or
 import matt.obs.bindings.comp.gt
 import matt.obs.bindings.comp.lt
 import matt.obs.col.olist.basicMutableObservableListOf
@@ -88,6 +97,12 @@ import matt.obs.prop.withNonNullUpdatesFrom
   }
   val predictionSigFigs = BindableProperty(DeephySettings.predictionSigFigs.value).apply {
 	bind(DeephySettings.predictionSigFigs)
+  }
+  val showCacheBars = BindableProperty(DeephySettings.showCacheBars.value).apply {
+	bind(DeephySettings.showCacheBars)
+  }
+  val showTutorials = BindableProperty(DeephySettings.showTutorials.value).apply {
+	bind(DeephySettings.showTutorials)
   }
 
   val inD = BindableProperty(outerBox.inD.value).apply {
@@ -276,10 +291,13 @@ import matt.obs.prop.withNonNullUpdatesFrom
 	initStopwatch.toc(6)
   }
 
+  var bindButton: ControlWrapper? = null
+  var oodButton: ControlWrapper? = null
+
   init {
 	initStopwatch.toc(7)
 	contentDisplay = ContentDisplay.LEFT
-	isExpanded = true	/*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
+	isExpanded = true    /*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
 	initStopwatch.toc(8)
 	graphic = hbox<NodeWrapper> {
 	  alignment = Pos.CENTER
@@ -363,8 +381,8 @@ import matt.obs.prop.withNonNullUpdatesFrom
 		}
 	  }
 
-	  this@DatasetViewer.outerBox.createBindToggleButton(this, this@DatasetViewer)
-	  this@DatasetViewer.outerBox.createInDToggleButton(this, this@DatasetViewer)
+	  this@DatasetViewer.bindButton = this@DatasetViewer.outerBox.createBindToggleButton(this, this@DatasetViewer)
+	  this@DatasetViewer.oodButton = this@DatasetViewer.outerBox.createInDToggleButton(this, this@DatasetViewer)
 
 	  deephyText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {
 		titleFont()
@@ -375,21 +393,65 @@ import matt.obs.prop.withNonNullUpdatesFrom
 		})
 	  }
 	  progressbar {
+		visibleWhen { this@DatasetViewer.showCacheBars }
 		style = "-fx-accent: green"
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
 		  it?.cacheProgressPixels ?: 0.0.toVarProp()
 		})
 	  }
 	  progressbar {
+		visibleWhen { this@DatasetViewer.showCacheBars }
 		style = "-fx-accent: yellow"
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
 		  it?.cacheProgressActs ?: 0.0.toVarProp()
 		})
 	  }
 	}
-	content = asyncLoadSwapper(testData, nullMessage = "select a test to view it") {
-	  DatasetNode(this, this@DatasetViewer)
-	}.node
+	content = v {
+	  asyncLoadSwapper(this@DatasetViewer.testData, nullMessage = "select a test to view it") {
+		DatasetNode(this, this@DatasetViewer)
+	  }
+	  v {
+		//		this@DatasetViewer.outerBox.bound.onChange {
+		//		  println("bound: $it")
+		//		}
+		//		this@DatasetViewer.outerBox.inD.onChange {
+		//		  println("inD: $it")
+		//		}
+		visibleAndManagedWhen {
+		  this@DatasetViewer.showTutorials and
+			  (this@DatasetViewer.isUnboundToDSet or this@DatasetViewer.inD.isNull)
+		}
+		spacer()
+		deephyText("In order to visualize this dataset in comparison to other datasets:")
+		h {
+		  spacer()
+		  v {
+			h {
+			  checkbox("\"bind\" one dataset") {
+				isDisable = true
+				selectedProperty.bind(this@DatasetViewer.isUnboundToDSet)
+			  }
+			  spacer()
+			  deephyActionText("show me how") {
+				this@DatasetViewer.outerBox.flashBindButtons()
+			  }
+			}
+			h {
+			  checkbox("Select one dataset as \"InD\"") {
+				isDisable = true
+				selectedProperty.bind(this@DatasetViewer.inD.isNotNull)
+			  }
+			  spacer()
+			  deephyActionText("show me how") {
+				this@DatasetViewer.outerBox.flashOODButtons()
+			  }
+			}
+		  }
+		}
+	  }
+
+	}
   }
 
 
