@@ -141,6 +141,8 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
         im_as_list = image.numpy().astype(numpy.uint8).tolist()
+        if isinstance(state, list):
+            state = numpy.array(state)
         im_activations = list(map(lambda x: x[i, :].tolist(), state))
         imageList.append(
             ImageFile(

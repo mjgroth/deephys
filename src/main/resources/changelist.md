@@ -8,6 +8,7 @@ version: [0.7.2](https://pypi.org/project/deephys/0.7.2/)
 
 ### PIP Python Package Updated to 0.7.3
 - Fixed misleading error message which incorrectly told users to give image data between 0-255
+  - clarified documentation for this too
 
 ### New Features
 - Added helpful interactive guide to app to help people learn about the "OOD" and "bind" buttons for the first time

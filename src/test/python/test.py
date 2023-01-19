@@ -33,7 +33,11 @@ class TestDeephys(unittest.TestCase):
             "truck",
         )
         torch_test = dp.import_torch_dataset(
-            "torch_test", testloader.dataset, classes, state, model
+            name="torch_test",
+            dataset=testloader.dataset,
+            classes=classes,
+            state=state,
+            model=model,
         )
         torch_test.save()
         pixel_data = [[[0.5], [0.5], [0.5]]]
