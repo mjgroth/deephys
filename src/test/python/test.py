@@ -19,7 +19,7 @@ class TestDeephys(unittest.TestCase):
             testset, batch_size=128, shuffle=False, num_workers=2
         )
         model = dp.Model("model", None, [])
-        state = []
+        state = [[[0.5]]]
         classes = (
             "plane",
             "car",
@@ -36,8 +36,23 @@ class TestDeephys(unittest.TestCase):
             "torch_test", testloader.dataset, classes, state, model
         )
         torch_test.save()
+        pixel_data = [[[0.5], [0.5], [0.5]]]
         test = dp.import_test_data(
-            "test", [[[0.5], [0.5], [0.5]]], [0], classes, state, model
+            name="test",
+            classes=classes,
+            pixel_data=pixel_data,
+            ground_truths=[0],
+            state=state,
+            model=model,
+        )
+        pixel_data = torch.zeros([32, 32, 3], dtype=torch.int32)
+        test = dp.import_test_data(
+            name="test",
+            classes=classes,
+            pixel_data=pixel_data,
+            ground_truths=[0],
+            state=state,
+            model=model,
         )
         test.save()
 

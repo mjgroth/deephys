@@ -83,7 +83,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
     :type dataset: torch.utils.data.DataLoader
     :param classes: an ordered list of strings representing class names
     :type classes: list
-    :param state: a 3D array of floats [layers,neurons,activations]. length of activations must be the same as the number of images.
+    :param state: a 3D array of floats [layers,neurons,activations]. Length of activations must be the same as the number of images.
     :type state: list
     :param model: the model structure
     :type model: deephys.deephys.Model
@@ -116,11 +116,11 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
     :type name: str
     :param classes: an ordered list of strings representing class names
     :type classes: list
-    :param state: a 3D array of floats [layers,neurons,activations]. length of activations must be the same as the number of images.
+    :param state: a 3D array of floats [layers,neurons,activations]. Length of activations must be the same as the number of images.
     :type state: list
     :param model: the model structure
     :type model: deephys.deephys.Model
-    :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2]
+    :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2]. Pixels must be floats within the range 0.0:1.0
     :type pixel_data: List[List[List[List]]]
     :param ground_truths: an ordered list of ground truths
     :type ground_truths: List[int]
@@ -131,17 +131,13 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
     for i in range(len(pixel_data)):
         image = pixel_data[i]
         target = ground_truths[i]
-        image = image * 255
         mn = torch.min(image)
         mx = torch.max(image)
-        if mx > 255:
+        if mx > 1 or mn < 0:
             raise Exception(
-                f"image pixel values should be integers between 0 and 255, but a value of {mx} was received"
+                f"image pixel values must be floats between 0 and 1, but values given range from {mn} to {mx}"
             )
-        if mn < 0:
-            raise Exception(
-                f"image pixel values should be integers between 0 and 255, but a value of {mn} was received"
-            )
+        image = image * 255
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
         im_as_list = image.numpy().astype(numpy.uint8).tolist()
