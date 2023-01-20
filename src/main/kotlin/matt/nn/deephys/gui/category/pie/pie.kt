@@ -20,6 +20,7 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.node.shape.rect.RectangleWrapper
+import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
@@ -237,6 +238,7 @@ class CategoryPie(
 		}
 	  }
 	}
+
 
   }
 

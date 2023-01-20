@@ -1,10 +1,14 @@
 package matt.nn.deephys.gui.category
 
+import javafx.geometry.Pos
+import javafx.scene.text.TextAlignment.CENTER
 import matt.collect.set.contents.Contents
 import matt.color.colorMap
 import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.hbox.hbox
+import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
+import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.style.toFXColor
@@ -15,6 +19,7 @@ import matt.nn.deephys.gui.category.pie.CategoryPie
 import matt.nn.deephys.gui.dataset.byimage.mult.MultipleImagesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.global.deephyLabel
+import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -30,7 +35,6 @@ class CategoryView(
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
-
 
 
 	deephyLabel(
@@ -74,8 +78,8 @@ class CategoryView(
 		is CategoryConfusion -> allFalseNegatives.filter { it.prediction == selection.second }
 	  }
 
-	  hbox<NodeWrapper> {
-		vbox<NodeWrapper> {
+	  h {
+		v {
 		  +MultipleImagesView(
 			viewer = viewer,
 			images = shownFalsePositives,
@@ -89,33 +93,50 @@ class CategoryView(
 			tooltip = CategoryFalseNegativesSorted.blurb
 		  )
 		}
-		val cats = (testLoader.awaitFinishedTest().categories - selection.primaryCategory)
-		val cMap = colorMap(cats.size)
-		val colorMap = cats.withIndex().associate { it.value to cMap[it.index]!!.toFXColor() }
-		+CategoryPie(
-		  "False Positives",
-		  cats,
-		  nums = cats.associateWith { cat ->
-			allFalsePositives.filter { it.category == cat }.size
-		  },
-		  viewer,
-		  colorMap = colorMap,
-		  selected = (selection as? CategoryConfusion)?.second,
-		  showAsList = viewer.showAsList1
-		)
-		+CategoryPie(
-		  "False Negatives",
-		  cats,
-		  nums = cats.associateWith { cat ->
-			allFalseNegatives.filter {
-			  it.prediction == cat
-			}.size
-		  },
-		  viewer,
-		  colorMap = colorMap,
-		  selected = (selection as? CategoryConfusion)?.second,
-		  showAsList = viewer.showAsList2
-		)
+		v {
+
+		  alignment = Pos.CENTER
+
+		  h {
+			val cats = (testLoader.awaitFinishedTest().categories - selection.primaryCategory)
+			val cMap = colorMap(cats.size)
+			val colorMap = cats.withIndex().associate { it.value to cMap[it.index]!!.toFXColor() }
+			+CategoryPie(
+			  "False Positives",
+			  cats,
+			  nums = cats.associateWith { cat ->
+				allFalsePositives.filter { it.category == cat }.size
+			  },
+			  viewer,
+			  colorMap = colorMap,
+			  selected = (selection as? CategoryConfusion)?.second,
+			  showAsList = viewer.showAsList1
+			)
+			+CategoryPie(
+			  "False Negatives",
+			  cats,
+			  nums = cats.associateWith { cat ->
+				allFalseNegatives.filter {
+				  it.prediction == cat
+				}.size
+			  },
+			  viewer,
+			  colorMap = colorMap,
+			  selected = (selection as? CategoryConfusion)?.second,
+			  showAsList = viewer.showAsList2
+			)
+
+		  }
+		  deephyText("tip: click colored areas to navigate to the class. Shift-click to analyze confusions with the current class.") {
+			textAlignment = CENTER
+			visibleAndManagedWhen {
+			  viewer.showTutorials
+			}
+		  }
+
+		}
+
+
 	  }
 
 	  val topNeuronsLabel = when (selection) {

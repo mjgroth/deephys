@@ -1,6 +1,7 @@
 import unittest
 import sys
 import os
+import numpy as np
 import torch
 import torchvision
 from torchvision import transforms
@@ -18,8 +19,12 @@ class TestDeephys(unittest.TestCase):
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=128, shuffle=False, num_workers=2
         )
-        model = dp.Model("model", None, [])
-        state = [[[0.5]]]
+        num_images = len(testloader.dataset)
+        model = dp.Model(
+            "model", None, [dp.Layer(layerID="layer", neurons=[dp.Neuron()])]
+        )
+        state = [[[0.5] * num_images]]
+        print(f"state={np.array(state).shape}")
         classes = (
             "plane",
             "car",
@@ -40,21 +45,31 @@ class TestDeephys(unittest.TestCase):
             model=model,
         )
         torch_test.save()
-        pixel_data = [[[0.5], [0.5], [0.5]]]
+        pixel_data = np.zeros([num_images, 3, 32, 32])
+        ground_truths = [0] * num_images
         test = dp.import_test_data(
             name="test",
             classes=classes,
             pixel_data=pixel_data,
-            ground_truths=[0],
+            ground_truths=ground_truths,
             state=state,
             model=model,
         )
-        pixel_data = torch.zeros([32, 32, 3], dtype=torch.int32)
+        pixel_data = pixel_data.tolist()
         test = dp.import_test_data(
             name="test",
             classes=classes,
             pixel_data=pixel_data,
-            ground_truths=[0],
+            ground_truths=ground_truths,
+            state=state,
+            model=model,
+        )
+        pixel_data = torch.zeros([num_images, 3, 32, 32])
+        test = dp.import_test_data(
+            name="test",
+            classes=classes,
+            pixel_data=pixel_data,
+            ground_truths=ground_truths,
             state=state,
             model=model,
         )

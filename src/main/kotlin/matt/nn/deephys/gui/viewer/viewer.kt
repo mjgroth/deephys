@@ -24,6 +24,7 @@ import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.hurricanefx.eye.prop.lastIndexProperty
+import matt.hurricanefx.eye.prop.sizeProperty
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
@@ -107,6 +108,10 @@ import matt.obs.prop.withNonNullUpdatesFrom
 
   val inD = BindableProperty(outerBox.inD.value).apply {
 	bind(outerBox.inD)
+  }
+
+  val numViewers = BindableProperty(outerBox.children.size).apply {
+	bind(outerBox.children.sizeProperty)
   }
 
   val testData = file.binding { f ->
@@ -420,6 +425,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
 		//		}
 		visibleAndManagedWhen {
 		  this@DatasetViewer.showTutorials and
+			  this@DatasetViewer.numViewers.gt(1) and
 			  (this@DatasetViewer.isUnboundToDSet or this@DatasetViewer.inD.isNull)
 		}
 		spacer()

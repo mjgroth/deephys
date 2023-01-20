@@ -7,7 +7,6 @@ import matt.fx.control.inter.graphic
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.mstage.ShowMode.DO_NOT_SHOW
 import matt.fx.control.mstage.WMode.CLOSE
-import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.win.interact.openInNewWindow
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
@@ -19,6 +18,7 @@ import matt.gui.option.BoolSetting
 import matt.gui.option.EnumSetting
 import matt.gui.option.IntSetting
 import matt.log.profile.mem.MemReport
+import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyLabel
@@ -50,6 +50,15 @@ val settingsWindow by lazy {
   }
 }
 
+fun <E: Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) = rec.apply {
+  val tm = createBoundToggleMechanism()
+  cls.java.enumConstants.forEach {
+	deephyRadioButton((it as Enum<*>).name, tm, it) {
+	  isSelected = prop.value == it
+	}
+  }
+}
+
 object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
   init {
 
@@ -58,23 +67,27 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 
 	  when (sett) {
 		is EnumSetting -> {
-		  val group = ToggleMechanism<Any>()
+//		  val group = sett.createBoundToggleMechanism()
 		  hbox<NW> {
 			deephyText(sett.label)
-			sett.cls.java.enumConstants.forEach {
-			  deephyRadioButton((it as Enum<*>).name, group, it) {
 
-				isSelected = sett.prop.value == it
-			  }
-			}
+			sett.createRadioButtons(this@hbox)
+
+//			sett.cls.java.enumConstants.forEach {
+//			  deephyRadioButton((it as Enum<*>).name, group, it) {
+//				isSelected = sett.prop.value == it
+//			  }
+//			}
 			deephyTooltip(sett.tooltip)
 		  }
 
-		  val prop = group.selectedValue/*<Any>().toNonNullableProp()*/
-		  prop.value = sett.prop.value
-		  prop.onChange {
-			sett.prop::value.set(it)
-		  }
+		  //		  group.selectedValue.bindBidirectional(sett.prop)
+
+		  //		  val prop = group.selectedValue/*<Any>().toNonNullableProp()*/
+		  //		  prop.value = sett.prop.value
+		  //		  prop.onChange {
+		  //			sett.prop::value.set(it)
+		  //		  }
 		}
 
 		is IntSetting  -> {
@@ -90,10 +103,19 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 			  editable = true
 			) {
 			  prefWidth = 150.0
-			  valueProperty.onChange {
-				require(it != null)
-				sett.prop.value = it
-			  }
+			  /* val rBlocker = RecursionBlocker()
+			   valueProperty.onChange {
+				 require(it != null)
+				 rBlocker.with {
+				   sett.prop.value = it
+				 }
+			   }
+			   sett.prop.onChange {
+				 rBlocker.with {
+
+				 }
+			   }*/
+			  this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)
 			}
 		  }
 		}
@@ -103,15 +125,22 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 			sett.label
 		  ) {
 			deephyTooltip(sett.tooltip)
-			isSelected = sett.prop.value
+			selectedProperty.bindBidirectional(sett.prop)
+			/*isSelected = sett.prop.value
 			selectedProperty.onChange {
 			  sett.prop.value = it
-			}
+			}*/
 		  }
 		}
 	  }
 
 
+	}
+
+	deephyActionButton("Reset all to default") {
+	  DeephySettings.settings.forEach {
+		it.resetToDefault()
+	  }
 	}
 
 

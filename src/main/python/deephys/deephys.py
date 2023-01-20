@@ -2,7 +2,7 @@
 from cbor2 import dump
 from dataclasses import dataclass, asdict
 from typing import List, Optional, Mapping
-import numpy
+import numpy as np
 import torch
 import struct
 from time import time
@@ -84,7 +84,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
     :param classes: an ordered list of strings representing class names
     :type classes: list
     :param state: a 3D array of floats [layers,neurons,activations]. Length of activations must be the same as the number of images.
-    :type state: list
+    :type state: Union[list,np.ndarray]
     :param model: the model structure
     :type model: deephys.deephys.Model
     :return: a formatted data object which may be saved to a file
@@ -98,6 +98,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
             target = target.item()
         pixelDataList.append(image)
         groundTruthList.append(target)
+    pixelDataList = torch.stack(pixelDataList)
     return import_test_data(
         name=name,
         pixel_data=pixelDataList,
@@ -117,17 +118,27 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
     :param classes: an ordered list of strings representing class names
     :type classes: list
     :param state: a 3D array of floats [layers,neurons,activations]. Length of activations must be the same as the number of images.
-    :type state: list
+    :type state: Union[list,np.ndarray]
     :param model: the model structure
     :type model: deephys.deephys.Model
     :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2]. Pixels must be floats within the range 0.0:1.0
-    :type pixel_data: List[List[List[List]]]
+    :type pixel_data: Union[list,np.ndarray,torch.FloatTensor]
     :param ground_truths: an ordered list of ground truths
     :type ground_truths: List[int]
     :return: a formatted data object which may be saved to a file
     :rtype: deephys.deephys.Test
     """
     imageList = []
+    if isinstance(state, list):
+        state = np.array(state)
+    if isinstance(pixel_data, list):
+        pixel_data = torch.tensor(pixel_data)
+    elif isinstance(pixel_data, np.ndarray):
+        pixel_data = torch.from_numpy(pixel_data)
+    if len(ground_truths) != len(pixel_data):
+        raise Exception(
+            f"ground_truths length ({len(ground_truths)}) must be same as the image length ({len(pixel_data)})"
+        )
     for i in range(len(pixel_data)):
         image = pixel_data[i]
         target = ground_truths[i]
@@ -140,10 +151,8 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
         image = image * 255
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
-        im_as_list = image.numpy().astype(numpy.uint8).tolist()
-        if isinstance(state, list):
-            state = numpy.array(state)
-        im_activations = list(map(lambda x: x[i, :].tolist(), state))
+        im_as_list = image.numpy().astype(np.uint8).tolist()
+        im_activations = state[:, :, i]
         imageList.append(
             ImageFile(
                 imageID=i,

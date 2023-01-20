@@ -46,6 +46,9 @@ class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
 	private val runLaterBunch = mutableSetOf<()->Unit>()
 
 	init {
+
+
+
 	  DaemonLoop(1.seconds, op = {
 		runLaterBunch.sync {
 		  if (runLaterBunch.isNotEmpty()) {
@@ -63,30 +66,41 @@ class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
   }
 
   init {
+
+	/*text = if (DeephySettings.showTutorials.value) "$s\t(press escape to close)" else s*/
+
+
 	font = DEEPHY_FONT_DEFAULT
 
 	var didFirstShow = false
 
 	comfortableShowAndHideSettingsForMatt()
-
+	val ms1 = DeephySettings.millisecondsBeforeTooltipsVanish.value
+	if (ms1 != 0) {
+	  hideDelay = Duration.millis(ms1.toDouble())
+	}
+//	println("hideDelay1=${hideDelay}")
 
 	node.setOnShown {
 
 	  /*putting this stuff in setOnShown to reduce the amount of CPU and memory resources used by tooltips that never show*/
 	  if (!didFirstShow) {
-		val ms = DeephySettings.millisecondsBeforeTooltipsVanish.value
-		if (ms != 0) {
-		  hideDelay = Duration.millis(ms.toDouble())
+		val ms2 = DeephySettings.millisecondsBeforeTooltipsVanish.value
+		if (ms2 != 0) {
+		  hideDelay = Duration.millis(ms2.toDouble())
 		}
+//		println("hideDelay1.5=${hideDelay}")
 		DeephySettings.millisecondsBeforeTooltipsVanish.onChangeWithWeak(this) { tt, newMS ->
 		  if (newMS == 0) {
 			tt.hideDelay = Duration.INDEFINITE
 		  } else {
 			tt.hideDelay = Duration.millis(newMS.toDouble())
 		  }
+//		  println("hideDelay1.7=${tt.hideDelay}")
 		}
 	  }
 
+//	  println("hideDelay2=${hideDelay}")
 	  didFirstShow = true
 
 
@@ -116,7 +130,15 @@ class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
 		}.also {
 		  synchronized(runLaterBunch) {
 			runLaterBunch += {
-			  graphic = it
+			  graphic = it/*v {
+				deephyText("(press escape to close this)") {
+				  visibleAndManaged = DeephySettings.showTutorials.value
+				  runLater {
+					fill = Color.GREEN *//*cant be seen otherwise on dark mode*//*
+				  }
+				}
+				+it
+			  }*/
 			}
 			if (runLaterBunch.size >= 100) {
 			  runLaterReturn {

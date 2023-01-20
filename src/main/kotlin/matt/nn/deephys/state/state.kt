@@ -85,11 +85,11 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	max = 18
   )
   val millisecondsBeforeTooltipsVanish by IntSettingProv(
-	defaultValue = 0,
+	defaultValue = 5000,
 	label = "tooltip hide delay (ms)",
 	tooltip = "Milliseconds before tooltips vanish. 0 means infinite (hit ESCAPE to make them go away)",
 	min = 0,
-	max = 5000
+	max = 10000
   )
   val verboseLogging by BoolSettingProv(
 	defaultValue = false,
