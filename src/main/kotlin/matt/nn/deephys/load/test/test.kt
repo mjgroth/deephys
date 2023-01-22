@@ -147,7 +147,8 @@ class TestLoader(
 				val category = nextValue<String>(requireKeyIs = "category")
 
 
-				require(nextKeyOnly<String>() == "data")
+
+				nextKeyOnly(requireIs = "data")
 				val imageData: ByteArray = if (numDataBytes == null) {
 				  withByteStoring {
 					val r = nextValueManualDontReadKey<ArrayReader, List2D<IntArray>> {
@@ -170,7 +171,7 @@ class TestLoader(
 				val activationsBytes = ImageActivationCborBytes(nextValueManual<MapReader, ByteArray>(
 				  requireKeyIs = "activations"
 				) {
-				  require(nextKeyOnly<String>() == "activations")
+				  nextKeyOnly(requireIs = "activations")
 				  if (numActivationBytes == null) {
 					withByteStoring {
 					  val r = nextValueManualDontReadKey<ArrayReader, ActivationData> {

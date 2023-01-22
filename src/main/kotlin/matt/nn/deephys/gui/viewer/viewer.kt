@@ -127,11 +127,14 @@ import matt.obs.prop.withNonNullUpdatesFrom
 	}
   }.apply {
 	stopwatch = "dataBinding"
+  }
 
+  val outerBoundDSet = BindableProperty(outerBox.bound.value).apply {
+	bind(outerBox.bound)
   }
 
   val boundToDSet by lazy {
-	outerBox.bound.binding {
+	outerBoundDSet.binding {
 	  if (it != this@DatasetViewer) it else null
 	}
   }
@@ -436,7 +439,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
 			h {
 			  checkbox("\"bind\" one dataset") {
 				isDisable = true
-				selectedProperty.bind(this@DatasetViewer.isUnboundToDSet)
+				selectedProperty.bind(this@DatasetViewer.outerBoundDSet.isNotNull)
 			  }
 			  spacer()
 			  deephyActionText("show me how") {

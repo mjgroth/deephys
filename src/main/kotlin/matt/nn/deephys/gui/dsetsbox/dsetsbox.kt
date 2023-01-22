@@ -125,6 +125,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	t.removeFromParent()
 	t.normalizeTopNeuronActivations.unbind()
 	t.inD.unbind()
+	t.outerBoundDSet.unbind()
 	t.numViewers.unbind()
 	t.numImagesPerNeuronInByImage.unbind()
 	t.predictionSigFigs.unbind()

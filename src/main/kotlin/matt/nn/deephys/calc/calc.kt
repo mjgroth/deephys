@@ -138,11 +138,23 @@ data class ActivationRatioCalc(
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
-  override fun timedCompute() = if (images.isEmpty()) {
-	if (numTest==denomTest) AlwaysOneActivation
-	else ActivationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
-  } else {
-	ActivationRatio(neuron.averageActivation(images).value/denomTest.test.maxActivations[neuron])
+  override fun timedCompute(): Activation<*> {
+	val r = if (images.isEmpty()) {
+	  if (numTest == denomTest) AlwaysOneActivation
+	  else ActivationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
+	} else {
+	  ActivationRatio(neuron.averageActivation(images).value/denomTest.test.maxActivations[neuron])
+	}
+	if (r.value.isNaN() || r.isInfinite) {
+	  println("""
+		f=${r.value}
+		images.size=${images.size}
+		numTest.test.maxActivations[neuron]=${numTest.test.maxActivations[neuron]}
+		denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}
+		${if (images.isNotEmpty()) "neuron.averageActivation(images).value=${neuron.averageActivation(images).value}, denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}" else ""}
+	  """.trimIndent())
+	}
+	return r
   }
 
 }

@@ -83,7 +83,7 @@ def import_torch_dataset(name, dataset, classes, state, model):
     :type dataset: torch.utils.data.DataLoader
     :param classes: an ordered list of strings representing class names
     :type classes: list
-    :param state: a 3D array of floats [layers,neurons,activations]. Length of activations must be the same as the number of images.
+    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images.
     :type state: Union[list,np.ndarray]
     :param model: the model structure
     :type model: deephys.deephys.Model
@@ -109,6 +109,12 @@ def import_torch_dataset(name, dataset, classes, state, model):
     )
 
 
+def _to_mat(d):
+    if isinstance(d, list):
+        return np.array(d)
+    return d
+
+
 def import_test_data(name, classes, state, model, pixel_data, ground_truths):
     """
     Prepare test results for Deephys
@@ -117,7 +123,7 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
     :type name: str
     :param classes: an ordered list of strings representing class names
     :type classes: list
-    :param state: a 3D array of floats [layers,neurons,activations]. Length of activations must be the same as the number of images.
+    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images.
     :type state: Union[list,np.ndarray]
     :param model: the model structure
     :type model: deephys.deephys.Model
@@ -129,15 +135,22 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
     :rtype: deephys.deephys.Test
     """
     imageList = []
-    if isinstance(state, list):
-        state = np.array(state)
+    state = list(map(_to_mat, state))
     if isinstance(pixel_data, list):
         pixel_data = torch.tensor(pixel_data)
     elif isinstance(pixel_data, np.ndarray):
         pixel_data = torch.from_numpy(pixel_data)
+    if len(pixel_data.shape) != (4):
+        raise Exception(
+            f"pixel_data should be a 4D array-like collection [images,channels,dim1,dim2], but a shape of {pixel_data.shape} was received"
+        )
     if len(ground_truths) != len(pixel_data):
         raise Exception(
             f"ground_truths length ({len(ground_truths)}) must be same as the image length ({len(pixel_data)})"
+        )
+    if pixel_data.shape[1] != 3:
+        raise Exception(
+            f"pixel_data should have 3 color channels, but {pixel_data.shape[1]} were received"
         )
     for i in range(len(pixel_data)):
         image = pixel_data[i]
@@ -152,7 +165,7 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
         im_as_list = image.numpy().astype(np.uint8).tolist()
-        im_activations = state[:, :, i]
+        im_activations = list(map(lambda l: l[i, :], state))
         imageList.append(
             ImageFile(
                 imageID=i,
