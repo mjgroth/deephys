@@ -6,6 +6,7 @@ import matt.async.thread.daemon
 import matt.cbor.err.CborParseException
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.map.MapReader
+import matt.cbor.read.major.txtstr.TextStringReader
 import matt.cbor.read.streamman.cborReader
 import matt.cbor.read.withByteStoring
 import matt.collect.list.awaitlist.BlockList
@@ -14,6 +15,7 @@ import matt.collect.queue.pollUntilEnd
 import matt.file.CborFile
 import matt.lang.List2D
 import matt.lang.disabledCode
+import matt.lang.err
 import matt.lang.l
 import matt.log.profile.mem.throttle
 import matt.model.code.errreport.ThrowReport
@@ -23,24 +25,25 @@ import matt.nn.deephys.load.async.AsyncLoader
 import matt.nn.deephys.load.cache.Cacher
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
+import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
-import matt.nn.deephys.model.importformat.im.ActivationData
 import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.nn.deephys.model.importformat.im.eephyImage
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytes
-import matt.nn.deephys.model.importformat.im.readActivations
+import matt.nn.deephys.model.importformat.im.readFloatActivations
 import matt.nn.deephys.model.importformat.im.readPixels
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.obs.prop.BindableProperty
-import matt.prim.float.FLOAT_BYTE_LEN
 import matt.prim.str.elementsToString
 import matt.prim.str.mybuild.string
 import java.io.IOException
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
+
 
 
 class TestLoader(
@@ -109,7 +112,20 @@ class TestLoader(
 			val name = nextValue<String>(requireKeyIs = "name")
 			val suffix = nextValue<String?>(requireKeyIs = "suffix")
 
-			nextValueManual<ArrayReader, Unit>(requireKeyIs = "images") {
+			val nextKey = nextKeyOnly<String>()
+
+
+			val dtype = if (nextKey == "dtype") {
+			  nextValueManualDontReadKey<TextStringReader, DType> {
+				DType.valueOf(this.read().raw)
+			  }
+			} else if (nextKey == "images") {
+			  DType.float32
+			} else {
+			  err("nextKey == $nextKey")
+			}
+
+			nextValueManualDontReadKey<ArrayReader, Unit>() {
 			  val numberOfIms = count
 			  val numImsDouble = numberOfIms.toDouble()
 			  val numImsInt = numberOfIms.toInt()
@@ -119,7 +135,7 @@ class TestLoader(
 			  val finishedImagesBuilder = BlockListBuilder<DeephyImage>(numImsInt)
 			  finishedImages.putLoadedValue(finishedImagesBuilder.blockList)
 
-			  val actsCacheSize = numImsInt*FLOAT_BYTE_LEN
+			  val actsCacheSize = numImsInt*dtype.byteLen
 			  val evenRAF = EvenlySizedRAFCache(datasetHDCache.neuronsRAF, actsCacheSize)
 
 			  localTestNeurons = model.neurons.associate {
@@ -169,8 +185,8 @@ class TestLoader(
 				  nextKeyOnly(requireIs = "activations")
 				  if (numActivationBytes == null) {
 					withByteStoring {
-					  val r = nextValueManualDontReadKey<ArrayReader, ActivationData> {
-						readActivations()
+					  val r = nextValueManualDontReadKey<ArrayReader, FloatActivationData> {
+						readFloatActivations()
 					  }
 					  activationsShapePerImage.putLoadedValue(r.map { it.size })
 					  println(infoString)
@@ -201,16 +217,16 @@ class TestLoader(
 				  val toolItr = neuronActCacheTools!!.iterator()
 
 				  val imageActBytes = activationByteMultiImBuffer.pollUntilEnd().map {
-					it.floatBytes()
+					it.rawBytes()
 				  }
 
 				  val siz = imageActBytes.size
-				  val buff = ByteArray(FLOAT_BYTE_LEN*siz)
+				  val buff = ByteArray(dtype.byteLen*siz)
 
-				  (0..<imageActBytes[0].size step FLOAT_BYTE_LEN).forEach { n ->
+				  (0..<imageActBytes[0].size step dtype.byteLen).forEach { n ->
 					val tool = toolItr.next()
 					imageActBytes.forEachIndexed { idx, it ->
-					  System.arraycopy(it, n, buff, idx*FLOAT_BYTE_LEN, FLOAT_BYTE_LEN)
+					  System.arraycopy(it, n, buff, idx*dtype.byteLen, dtype.byteLen)
 					}
 					tool.write(buff)
 				  }
@@ -234,7 +250,10 @@ class TestLoader(
 				  daemonPool.execute {
 					disabledCode {
 					  activations.strong {
-						activationsBytes.parse2DFloatArray()
+						when (dtype) {
+						  float32 -> activationsBytes.parse2DFloatArray()
+						  float64 -> activationsBytes.parse2DDoubleArray()
+						}
 					  }
 					}
 				  }

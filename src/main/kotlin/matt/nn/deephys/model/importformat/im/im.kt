@@ -11,11 +11,14 @@ import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.dtype.DoubleActivationData
+import matt.nn.deephys.load.test.dtype.FloatActivationData
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
+import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
@@ -48,8 +51,8 @@ class DeephyImage(
   }
 
 
-  val activations = object: CachedRAFProp<ActivationData>(activationsRAF) {
-	override fun decode(bytes: ByteArray): ActivationData {
+  val activations = object: CachedRAFProp<FloatActivationData>(activationsRAF) {
+	override fun decode(bytes: ByteArray): FloatActivationData {
 	  return ImageActivationCborBytes(bytes).parse2DFloatArray()
 	}
   }
@@ -76,7 +79,10 @@ class DeephyImage(
 
 }
 
-typealias ActivationData = List<FloatArray>
+
+
+
+
 typealias PixelData2 = List<IntArray>
 typealias PixelData3 = List<PixelData2>
 
@@ -97,18 +103,28 @@ fun readPixels(cborPixelBytes3d: ByteArray): PixelData3 {
 }
 
 
-
-fun ArrayReader.readActivations() = readEachManually<ByteStringReader, FloatArray> {
+fun ArrayReader.readFloatActivations() = readEachManually<ByteStringReader, FloatArray> {
   val r = FloatArray(count.toInt()/FLOAT_BYTE_LEN)
   ByteBuffer.wrap(read().raw).asFloatBuffer().get(r)
   r
 }
 
+fun ArrayReader.readDoubleActivations() = readEachManually<ByteStringReader, DoubleArray> {
+  val r = DoubleArray(count.toInt()/DOUBLE_BYTE_LEN)
+  ByteBuffer.wrap(read().raw).asDoubleBuffer().get(r)
+  r
+}
+
 @JvmInline value class ImageActivationCborBytes(val bytes: ByteArray) {
 
-  fun parse2DFloatArray(): ActivationData {
+  fun parse2DFloatArray(): FloatActivationData {
 	bytes.cborReader().readManually<ArrayReader, Unit> {
-	  return readActivations()
+	  return readFloatActivations()
+	}
+  }
+  fun parse2DDoubleArray(): DoubleActivationData {
+	bytes.cborReader().readManually<ArrayReader, Unit> {
+	  return readDoubleActivations()
 	}
   }
 
@@ -124,7 +140,7 @@ fun ArrayReader.readActivations() = readEachManually<ByteStringReader, FloatArra
 	}
   }
 
-  fun floatBytes() = bytes.cborReader().readManually<ArrayReader, ByteArray> {
+  fun rawBytes() = bytes.cborReader().readManually<ArrayReader, ByteArray> {
 	readEachManually<ByteStringReader, ByteArray> {
 	  read().raw
 	}.reduce { acc, bytes -> acc + bytes }
