@@ -56,11 +56,8 @@ class TestLoader(
   private val finishedImages = LoadedValueSlot<BlockList<DeephyImage>>()
   override val finishedLoadingAwaitable = finishedTest
   private val datasetHDCache = DeephysCacheManager.newDatasetCache()
-
   fun awaitNonUniformRandomImage() = finishedImages.await().random()
-
   fun awaitImage(index: Int) = finishedImages.await()[index]
-
   fun awaitFinishedTest(): Test = finishedTest.await()
   val numImages = LoadedValueSlot<ULong>()
   val progress by lazy { BindableProperty(0.0) }
@@ -77,9 +74,7 @@ class TestLoader(
 
   private var numDataBytes: Int? = null
   private var numActivationBytes: Int? = null
-
   private val numRead = AtomicInteger(0)
-
   private val pixelsShapePerImage = LoadedValueSlot<List<Int>>()
   private val activationsShapePerImage = LoadedValueSlot<List<Int>>()
 
@@ -95,7 +90,7 @@ class TestLoader(
 	}
   }
 
-  @OptIn(ExperimentalStdlibApi::class) val start = SingleCall {
+  val start = SingleCall {
 	daemon("TestLoader-${file.name}") {
 	  if (!file.exists()) {
 		signalFileNotFound()
