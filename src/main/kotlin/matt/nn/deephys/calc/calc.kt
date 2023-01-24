@@ -22,11 +22,11 @@ import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.state.DeephySettings
 import kotlin.math.exp
 
-data class NormalizedAverageActivation(
+data class NormalizedAverageActivation<N: Number>(
   private val neuron: InterTestNeuron,
-  private val images: Contents<DeephyImage<*>>,
+  private val images: Contents<DeephyImage<N>>,
   private val test: TestOrLoader,
-): DeephysComputeInput<NormalActivation<*, *>>() {
+): DeephysComputeInput<NormalActivation<N, *>>() {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
   override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: GlobalRAMComputeCacheManager
@@ -36,7 +36,7 @@ data class NormalizedAverageActivation(
 	  "Normalized Activation ($NORMALIZED_ACT_SYMBOL) = Raw Activation ($RAW_ACT_SYMBOL) / max(activation for each image for this neuron)"
   }
 
-  override fun timedCompute(): NormalActivation<*, *> {
+  override fun timedCompute(): NormalActivation<N, *> {
 	return test.dtype.normalActivation(neuron.averageActivation(images).value/test.test.maxActivations[neuron])
   }
 

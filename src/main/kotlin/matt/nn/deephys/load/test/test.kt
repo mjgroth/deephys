@@ -39,6 +39,7 @@ import matt.nn.deephys.model.importformat.im.readFloatActivations
 import matt.nn.deephys.model.importformat.im.readPixels
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.prop.BindableProperty
 import matt.prim.str.elementsToString
 import matt.prim.str.mybuild.string
@@ -57,13 +58,13 @@ class TestLoader(
 
   override val test get() = awaitFinishedTest()
   override val dtype get() = test.dtype
-  private var finishedTest = LoadedValueSlot<Test>()
+  private var finishedTest = LoadedValueSlot<Test<*>>()
   private val finishedImages = LoadedValueSlot<BlockList<DeephyImage<*>>>()
   override val finishedLoadingAwaitable = finishedTest
   private val datasetHDCache = DeephysCacheManager.newDatasetCache()
   fun awaitNonUniformRandomImage() = finishedImages.await().random()
   fun awaitImage(index: Int) = finishedImages.await()[index]
-  fun awaitFinishedTest(): Test = finishedTest.await()
+  fun awaitFinishedTest(): Test<*> = finishedTest.await()
   val numImages = LoadedValueSlot<ULong>()
   val progress by lazy { BindableProperty(0.0) }
   val cacheProgressPixels by lazy { BindableProperty(0.0) }
@@ -256,7 +257,7 @@ class TestLoader(
 				  features = features,
 				  activationsRAF = activationsRAF!!,
 				  pixelsRAF = pixelsRAF!!,
-				  dtype = dtype
+//				  dtype = dtype
 				).apply {
 
 
@@ -340,6 +341,11 @@ class TestLoader(
 
   override val testRAMCache by lazy { TestRAMCache() }
 
+}
+
+class PreppedTestLoader<N: Number>(val tl: TestLoader, override val dtype: DType<N>): TestOrLoader {
+  override val test: Test<N> get() = tl.test
+  override val testRAMCache: TestRAMCache get() = tl.testRAMCache
 }
 
 

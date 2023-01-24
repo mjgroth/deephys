@@ -5,12 +5,13 @@ import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 
 
 data class InterTestLayer(
   val index: Int, override val layerID: String, val neuronCount: Int
 ): LayerLike {
-  @OptIn(ExperimentalStdlibApi::class) val neurons get() = (0 ..< neuronCount).map { InterTestNeuron(this, it) }
+  @OptIn(ExperimentalStdlibApi::class) val neurons get() = (0..<neuronCount).map { InterTestNeuron(this, it) }
   override val isClassification get() = layerID == "classification"
   override fun toString() = layerID
 }
@@ -40,9 +41,14 @@ data class Category(val id: Int, val label: String): CategorySelection {
   override val allCategories get() = sequence { yield(this@Category) }
 
 
-  fun averageActivationFor(neuron: InterTestNeuron, testLoader: TestOrLoader): RawActivation {
-	return RawActivation(
-	  testLoader.test.imagesWithGroundTruth(this).map { it.activationFor(neuron).value }.average().toFloat()
+  fun <A: Number> averageActivationFor(neuron: InterTestNeuron, testLoader: TypedTestLike<A>): RawActivation<A, *> {
+	val acts = testLoader.test.imagesWithGroundTruth(this).map {
+	  it.activationFor(neuron).value
+	}
+
+
+	return testLoader.dtype.rawActivation(
+	  acts.average().toFloat()
 	)
   }
 

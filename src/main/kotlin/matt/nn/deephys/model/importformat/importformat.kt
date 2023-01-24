@@ -18,6 +18,7 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.layer.Layer
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.nn.deephys.state.DeephySettings
 import matt.prim.str.mybuild.string
 import org.jetbrains.kotlinx.multik.api.mk
@@ -65,11 +66,11 @@ sealed interface DeephyFileObject {
 class Test<N: Number>(
   override val name: String,
   override val suffix: String?,
-  val images: List<DeephyImage<*>>,
+  val images: List<DeephyImage<N>>,
   val model: Model,
   override val testRAMCache: TestRAMCache,
   override val dtype: DType<N>
-): DeephyFileObject, TestOrLoader {
+): DeephyFileObject, TypedTestLike<N> {
 
   override val test = this
 
@@ -95,14 +96,23 @@ class Test<N: Number>(
 	}
   }
 
-  fun imagesWithGroundTruth(category: Category) = imagesByCategoryID[category.id] ?: setOf()
+  fun imagesWithGroundTruth(category: Category): Set<DeephyImage<N>> = imagesByCategoryID[category.id] ?: setOf()
   fun imagesWithoutGroundTruth(category: Category) = images - (imagesByCategoryID[category.id] ?: setOf())
 
 
+  init {
+	listOf(listOf(1.0)).toNDArray()
+  }
+
   private val activationsMatByLayerIndex = lazyWeakMap<Int, D2Array<N>> { lay ->
+
+
+
 	images.map {
 	  it.weakActivations[lay].asList()
 	}.toNDArray()
+
+
   }
 
 

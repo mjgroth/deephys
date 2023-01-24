@@ -9,3 +9,9 @@ interface TestOrLoader {
   val testRAMCache: TestRAMCache
   val dtype: DType<*>
 }
+
+interface TypedTestLike<A: Number>: TestOrLoader {
+  override val test: Test<A>
+  override val testRAMCache: TestRAMCache
+  override val dtype: DType<A>
+}
