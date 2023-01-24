@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 /*cant have op here since it will operate on the tooltip for other nodes*/
 fun NodeWrapper.deephyTooltip(
   s: String,
-  im: DeephyImage? = null
+  im: DeephyImage<*>? = null
   /*, op: Tooltip.()->Unit = {}*/
 ): TooltipWrapper {
 
@@ -40,7 +40,7 @@ fun NodeWrapper.deephyTooltip(
 }
 
 
-class DeephyTooltip(s: String, im: DeephyImage?): TooltipWrapper(s) {
+class DeephyTooltip(s: String, im: DeephyImage<*>?): TooltipWrapper(s) {
   companion object {
 	private val drawQueue = QueueWorker()
 	private val runLaterBunch = mutableSetOf<()->Unit>()

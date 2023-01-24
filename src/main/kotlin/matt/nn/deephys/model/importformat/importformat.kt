@@ -149,9 +149,9 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 	val ims = images
 	val nam = name
 	val weakTest = WeakReference(test)
-	DaemonLoadedValueOp<Map<DeephyImage, Category>> {
+	DaemonLoadedValueOp<Map<DeephyImage<*>, Category>> {
 	  val localCatsByID = weakTest.get()!!.catsByID
-	  val m = HashMap<DeephyImage, Category>(ims.size)
+	  val m = HashMap<DeephyImage<*>, Category>(ims.size)
 	  val chunkSize = 1000
 	  ims.chunked(chunkSize).forEachIndexed { chunkIndex, imageChunk ->
 		val actsMat = imageChunk.map {

@@ -9,7 +9,7 @@ import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
 
-class DeephyImView(im: DeephyImage, viewer: DatasetViewer): ScaledCanvas() {
+class DeephyImView(im: DeephyImage<*>, viewer: DatasetViewer): ScaledCanvas() {
 
   val weakViewer = WeakRef(viewer)
   val weakIm = WeakRef(im)

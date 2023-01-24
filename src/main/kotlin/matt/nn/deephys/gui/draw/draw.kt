@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.draw
 import matt.fx.graphics.wrapper.canvas.Canv
 import matt.nn.deephys.model.importformat.im.DeephyImage
 
-fun Canv.draw(image: DeephyImage) {
+fun Canv.draw(image: DeephyImage<*>) {
   val mat = image.matrix
   pixelWidth = mat.size.toDouble()
   pixelHeight = mat.size.toDouble()

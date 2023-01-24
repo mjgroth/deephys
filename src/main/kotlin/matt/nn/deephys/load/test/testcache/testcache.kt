@@ -10,7 +10,7 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 
 class TestRAMCache: RAMComputeCacheManager() {
   /*a single tooltip can be installed on multiple nodes, (and this seems important for performance)*/
-  val tooltips = lazyWeakMap<DeephyImage, Map<String, TooltipWrapper>> { im ->
+  val tooltips = lazyWeakMap<DeephyImage<*>, Map<String, TooltipWrapper>> { im ->
 	val weakIm = WeakRef(im) /*prevents the tooltip map from leaking DeephyImages into memory*/
 	lazyMap { str ->
 	  DeephyTooltip(

@@ -187,7 +187,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
   }
 
 
-  val imageSelection = VarProp<DeephyImage?>(null)
+  val imageSelection = VarProp<DeephyImage<*>?>(null)
 
 
   private val topNeuronsFromMyImage = run {
@@ -279,7 +279,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
   }
 
 
-  fun navigateTo(im: DeephyImage, addHistory: Boolean = true) {
+  fun navigateTo(im: DeephyImage<*>, addHistory: Boolean = true) {
 	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	imageSelection.value = im
 	if (addHistory) appendHistory(SelectImage(im))
@@ -468,6 +468,6 @@ import matt.obs.prop.withNonNullUpdatesFrom
 
 
 sealed interface TestViewerAction
-class SelectImage(val image: DeephyImage): TestViewerAction
+class SelectImage(val image: DeephyImage<*>): TestViewerAction
 class SelectNeuron(val neuron: InterTestNeuron): TestViewerAction
 class SelectCategory(val cat: CategorySelection): TestViewerAction

@@ -36,7 +36,7 @@ import matt.obs.prop.ObsVal
 
 fun NW.neuronListViewSwapper(
   viewer: DatasetViewer,
-  contents: Contents<DeephyImage>,
+  contents: Contents<DeephyImage<*>>,
   bindScrolling: Boolean = false
 ) = run {
 
@@ -159,7 +159,7 @@ class NeuronListView(
 				  ) {
 					deephyTooltip(
 					  when (neuronWithAct.activation) {
-						AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
+						is AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
 						is RawActivation    -> "raw activation value for the selected image"
 						is NormalActivation -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
 						is ActivationRatio  -> ActivationRatioCalc.technique

@@ -6,6 +6,7 @@ import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
+import matt.model.data.index.withIndex
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.AlwaysOneActivation
@@ -37,6 +38,7 @@ data class NormalizedAverageActivation(
   }
 
   override fun timedCompute(): NormalActivation<*, *> {
+	BAD
 	return test.dtype.normalActivation(neuron.averageActivation(images).value/test.test.maxActivations[neuron])
   }
 
@@ -143,6 +145,7 @@ data class ActivationRatioCalc(
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
   override fun timedCompute(): Activation<*,*> {
+	BAD
 	val dtype = numTest.dtype
 	val r = if (images.isEmpty()) {
 	  if (numTest == denomTest) dtype.alwaysOneActivation()

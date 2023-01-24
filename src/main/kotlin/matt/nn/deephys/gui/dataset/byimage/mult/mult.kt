@@ -15,7 +15,7 @@ import matt.obs.math.op.times
 
 class MultipleImagesView(
   viewer: DatasetViewer,
-  images: List<DeephyImage>,
+  images: List<DeephyImage<*>>,
   title: String,
   tooltip: String
 ): VBoxWrapperImpl<NW>() {
