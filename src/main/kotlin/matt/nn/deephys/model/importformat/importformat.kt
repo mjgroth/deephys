@@ -62,13 +62,13 @@ sealed interface DeephyFileObject {
 }
 
 /*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
-class Test(
+class Test<N: Number>(
   override val name: String,
   override val suffix: String?,
   val images: List<DeephyImage<*>>,
   val model: Model,
   override val testRAMCache: TestRAMCache,
-  override val dtype: DType<*>
+  override val dtype: DType<N>
 ): DeephyFileObject, TestOrLoader {
 
   override val test = this
@@ -99,7 +99,7 @@ class Test(
   fun imagesWithoutGroundTruth(category: Category) = images - (imagesByCategoryID[category.id] ?: setOf())
 
 
-  private val activationsMatByLayerIndex = lazyWeakMap<Int, D2Array<Float>> { lay ->
+  private val activationsMatByLayerIndex = lazyWeakMap<Int, D2Array<N>> { lay ->
 	images.map {
 	  it.weakActivations[lay].asList()
 	}.toNDArray()
@@ -111,7 +111,7 @@ class Test(
 
 	}
 	.weakValues()
-	.makeMap<InterTestNeuron, MultiArray<Float, D1>>()
+	.makeMap<InterTestNeuron, MultiArray<N, D1>>()
 	.withStoringDefault {
 	  testNeurons!![it]!!.activations.await().asList().toNDArray()
 	  /*val myMat = activationsMatByLayerIndex[it.layer.index]
@@ -136,7 +136,7 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 	}*/
 
 
-  val maxActivations = lazySoftMap<InterTestNeuron, Float> { neuron ->
+  val maxActivations = lazySoftMap<InterTestNeuron, N> { neuron ->
 
 	/*activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!*/
 

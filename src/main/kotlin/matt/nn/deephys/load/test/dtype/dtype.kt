@@ -19,8 +19,20 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat64
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
 
+
 @Serializable
 sealed interface DType<N: Number> {
+  companion object {
+	fun leastPrecise(type: DType<*>, vararg types: DType<*>): DType<*> {
+      return if (types.isEmpty()) type
+      else {
+        val all = setOf(type,*types)
+        if (Float32 in types) Float32
+        else Float64
+      }
+	}
+  }
+
   val byteLen: Int
   fun bytesThing(bytes: ByteArray): ImageActivationCborBytes<N>
   fun rawActivation(act: N): RawActivation<N, *>

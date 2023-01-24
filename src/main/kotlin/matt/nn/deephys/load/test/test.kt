@@ -317,7 +317,8 @@ class TestLoader(
 			  suffix = suffix,
 			  images = finishedImages.await(),
 			  model = this@TestLoader.model,
-			  testRAMCache = testRAMCache
+			  testRAMCache = testRAMCache,
+			  dtype = dtype
 			).apply {
 			  testNeurons = localTestNeurons
 			  preds.startLoading()

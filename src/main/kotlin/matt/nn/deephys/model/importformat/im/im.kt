@@ -34,10 +34,9 @@ class DeephyImage<A: Number>(
   val index: Int,
   val model: Model,
   val features: Map<String, String>?,
-  test: LoadedValueSlot<Test>,
+  test: LoadedValueSlot<Test<A>>,
   activationsRAF: EvenlySizedRAFCache,
   pixelsRAF: EvenlySizedRAFCache,
-  val dtype: DType<A>
 ): RAFCaches() {
 
   val category = Category(id = categoryID, label = category)
@@ -80,6 +79,8 @@ class DeephyImage<A: Number>(
   val prediction by lazy {
 	weakTest.get()!!.await().preds.await()[this]!!
   }
+
+  val dtype get() = weakTest.get()!!.await().dtype
 
 
 }

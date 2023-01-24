@@ -8,12 +8,11 @@ import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
 import matt.model.data.index.withIndex
 import matt.nn.deephys.calc.act.Activation
-import matt.nn.deephys.calc.act.ActivationRatio
-import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
 import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
@@ -38,7 +37,6 @@ data class NormalizedAverageActivation(
   }
 
   override fun timedCompute(): NormalActivation<*, *> {
-	BAD
 	return test.dtype.normalActivation(neuron.averageActivation(images).value/test.test.maxActivations[neuron])
   }
 
@@ -134,7 +132,7 @@ data class ActivationRatioCalc(
   private val images: Contents<DeephyImage<*>>,
   val denomTest: TestOrLoader,
   private val neuron: InterTestNeuron
-): DeephysComputeInput<Activation<*,*>>() {
+): DeephysComputeInput<Activation<*, *>>() {
 
   override val cacheManager get() = numTest.testRAMCache /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
@@ -144,14 +142,20 @@ data class ActivationRatioCalc(
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
-  override fun timedCompute(): Activation<*,*> {
-	BAD
-	val dtype = numTest.dtype
+  override fun timedCompute(): Activation<*, *> {
+	val dType = DType.leastPrecise(numTest.dtype,denomTest.dtype)
 	val r = if (images.isEmpty()) {
-	  if (numTest == denomTest) dtype.alwaysOneActivation()
-	  else dtype.activationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
+	  if (numTest == denomTest) dType.alwaysOneActivation()
+	  else {
+		val num = numTest.test.maxActivations[neuron]
+		val denom = denomTest.test.maxActivations[neuron]
+		val n = num/denom
+		dType.activationRatio(n)
+	  }
 	} else {
-	  dtype.activationRatio(neuron.averageActivation(images).value/denomTest.test.maxActivations[neuron])
+	  val num = neuron.averageActivation(images).value
+	  val denom = denomTest.test.maxActivations[neuron]
+	  dType.activationRatio(num/denom)
 	}
 	if (r.isNaN || r.isInfinite) {
 	  println(
