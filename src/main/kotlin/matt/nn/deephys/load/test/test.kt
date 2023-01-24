@@ -56,6 +56,7 @@ class TestLoader(
   }
 
   override val test get() = awaitFinishedTest()
+  override val dtype get() = test.dtype
   private var finishedTest = LoadedValueSlot<Test>()
   private val finishedImages = LoadedValueSlot<BlockList<DeephyImage<*>>>()
   override val finishedLoadingAwaitable = finishedTest

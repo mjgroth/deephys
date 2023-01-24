@@ -18,12 +18,14 @@ sealed interface ActivationFloat32<T: ActivationFloat32<T>>: Activation<Float, T
   override val value: Float
   override val asFloat: Float
 	get() = value
+
 }
 
 sealed interface ActivationFloat64<T: ActivationFloat64<T>>: Activation<Double, T>, DoubleWrapper<T> {
   override val value: Double
   override val asDouble: Double
 	get() = value
+
 }
 
 

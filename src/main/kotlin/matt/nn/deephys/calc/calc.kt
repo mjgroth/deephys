@@ -24,9 +24,9 @@ import kotlin.math.exp
 
 data class NormalizedAverageActivation(
   private val neuron: InterTestNeuron,
-  private val images: Contents<DeephyImage>,
-  private val test: TestOrLoader
-): DeephysComputeInput<NormalActivation>() {
+  private val images: Contents<DeephyImage<*>>,
+  private val test: TestOrLoader,
+): DeephysComputeInput<NormalActivation<*, *>>() {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
   override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: GlobalRAMComputeCacheManager
@@ -36,8 +36,8 @@ data class NormalizedAverageActivation(
 	  "Normalized Activation ($NORMALIZED_ACT_SYMBOL) = Raw Activation ($RAW_ACT_SYMBOL) / max(activation for each image for this neuron)"
   }
 
-  override fun timedCompute(): NormalActivation {
-	return NormalActivation(neuron.averageActivation(images).value/test.test.maxActivations[neuron])
+  override fun timedCompute(): NormalActivation<*, *> {
+	return test.dtype.normalActivation(neuron.averageActivation(images).value/test.test.maxActivations[neuron])
   }
 
   override fun equals(other: Any?): Boolean {
@@ -76,10 +76,10 @@ interface TopNeuronsCalcType {
   operator fun invoke(): List<NeuronWithActivation>
 }
 
-data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation<*>)
+data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation<*, *>)
 
 data class TopNeurons(
-  val images: Contents<DeephyImage>,
+  val images: Contents<DeephyImage<*>>,
   private val layer: InterTestLayer,
   private val test: TestOrLoader,
   private val denomTest: TestOrLoader?,
@@ -110,8 +110,12 @@ data class TopNeurons(
 	}
 
 	return if (forcedNeuronIndices == null) {
-	  neuronsWithActs.filterNot { it.activation.value.isNaN() }
-		.sortedBy { it.activation.value }
+	  neuronsWithActs.filterNot {
+		it.activation.isNaN
+	  }
+		.sortedBy {
+		  it.activation.value
+		}
 		.reversed()
 		.take(NUM_TOP_NEURONS)
 	} else {
@@ -125,10 +129,10 @@ data class TopNeurons(
 
 data class ActivationRatioCalc(
   val numTest: TestOrLoader,
-  private val images: Contents<DeephyImage>,
+  private val images: Contents<DeephyImage<*>>,
   val denomTest: TestOrLoader,
   private val neuron: InterTestNeuron
-): DeephysComputeInput<Activation<*>>() {
+): DeephysComputeInput<Activation<*,*>>() {
 
   override val cacheManager get() = numTest.testRAMCache /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
@@ -138,21 +142,24 @@ data class ActivationRatioCalc(
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
-  override fun timedCompute(): Activation<*> {
+  override fun timedCompute(): Activation<*,*> {
+	val dtype = numTest.dtype
 	val r = if (images.isEmpty()) {
-	  if (numTest == denomTest) AlwaysOneActivation
-	  else ActivationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
+	  if (numTest == denomTest) dtype.alwaysOneActivation()
+	  else dtype.activationRatio(numTest.test.maxActivations[neuron]/denomTest.test.maxActivations[neuron])
 	} else {
-	  ActivationRatio(neuron.averageActivation(images).value/denomTest.test.maxActivations[neuron])
+	  dtype.activationRatio(neuron.averageActivation(images).value/denomTest.test.maxActivations[neuron])
 	}
-	if (r.value.isNaN() || r.isInfinite) {
-	  println("""
+	if (r.isNaN || r.isInfinite) {
+	  println(
+		"""
 		f=${r.value}
 		images.size=${images.size}
 		numTest.test.maxActivations[neuron]=${numTest.test.maxActivations[neuron]}
 		denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}
 		${if (images.isNotEmpty()) "neuron.averageActivation(images).value=${neuron.averageActivation(images).value}, denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}" else ""}
-	  """.trimIndent())
+	  """.trimIndent()
+	  )
 	}
 	return r
   }
@@ -160,7 +167,7 @@ data class ActivationRatioCalc(
 }
 
 data class ImageSoftMaxDenom(
-  private val image: DeephyImage,
+  private val image: DeephyImage<*>,
   private val testLoader: TestLoader
 ): DeephysComputeInput<Float>() {
 
@@ -174,7 +181,7 @@ data class ImageSoftMaxDenom(
 }
 
 data class ImageTopPredictions(
-  private val image: DeephyImage,
+  private val image: DeephyImage<*>,
   private val testLoader: TestLoader
 ): DeephysComputeInput<List<Pair<Category, Float>>>() {
 
@@ -211,7 +218,7 @@ data class CategoryAccuracy(
 data class CategoryFalsePositivesSorted(
   private val category: Category,
   private val testLoader: TestLoader
-): DeephysComputeInput<List<DeephyImage>>() {
+): DeephysComputeInput<List<DeephyImage<*>>>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
@@ -220,7 +227,7 @@ data class CategoryFalsePositivesSorted(
 	  "false positives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute(): List<DeephyImage> =
+  override fun timedCompute(): List<DeephyImage<*>> =
 	testLoader.awaitFinishedTest().imagesWithoutGroundTruth(category)
 	  .map {
 		it to testLoader.awaitFinishedTest().preds.await()[it]
@@ -238,7 +245,7 @@ data class CategoryFalsePositivesSorted(
 data class CategoryFalseNegativesSorted(
   private val category: Category,
   private val testLoader: TestLoader
-): DeephysComputeInput<List<DeephyImage>>() {
+): DeephysComputeInput<List<DeephyImage<*>>>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 

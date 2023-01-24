@@ -1,6 +1,15 @@
 package matt.nn.deephys.load.test.dtype
 
 import kotlinx.serialization.Serializable
+import matt.nn.deephys.calc.act.ActivationRatio
+import matt.nn.deephys.calc.act.ActivationRatioFloat32
+import matt.nn.deephys.calc.act.ActivationRatioFloat64
+import matt.nn.deephys.calc.act.AlwaysOneActivation
+import matt.nn.deephys.calc.act.AlwaysOneActivationFloat32
+import matt.nn.deephys.calc.act.AlwaysOneActivationFloat64
+import matt.nn.deephys.calc.act.NormalActivation
+import matt.nn.deephys.calc.act.NormalActivationFloat32
+import matt.nn.deephys.calc.act.NormalActivationFloat64
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.calc.act.RawActivationFloat32
 import matt.nn.deephys.calc.act.RawActivationFloat64
@@ -15,6 +24,9 @@ sealed interface DType<N: Number> {
   val byteLen: Int
   fun bytesThing(bytes: ByteArray): ImageActivationCborBytes<N>
   fun rawActivation(act: N): RawActivation<N, *>
+  fun normalActivation(act: N): NormalActivation<N, *>
+  fun activationRatio(act: N): ActivationRatio<N, *>
+  fun alwaysOneActivation(): AlwaysOneActivation<N, *>
 }
 
 @Serializable
@@ -22,6 +34,9 @@ object Float32: DType<Float> {
   override val byteLen = FLOAT_BYTE_LEN
   override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat32(bytes)
   override fun rawActivation(act: Float) = RawActivationFloat32(act)
+  override fun activationRatio(act: Float) = ActivationRatioFloat32(act)
+  override fun normalActivation(act: Float) = NormalActivationFloat32(act)
+  override fun alwaysOneActivation() = AlwaysOneActivationFloat32
 }
 
 @Serializable
@@ -29,6 +44,9 @@ object Float64: DType<Double> {
   override val byteLen = DOUBLE_BYTE_LEN
   override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat64(bytes)
   override fun rawActivation(act: Double) = RawActivationFloat64(act)
+  override fun activationRatio(act: Double) = ActivationRatioFloat64(act)
+  override fun normalActivation(act: Double) = NormalActivationFloat64(act)
+  override fun alwaysOneActivation() = AlwaysOneActivationFloat64
 }
 
 
@@ -56,6 +74,7 @@ value class DoubleArrayWrapper(private val v: DoubleArray): ArrayWrapper<Double>
   override fun get(index: Int): Double {
 	return v[index]
   }
+
   override val size get() = v.size
 }
 
