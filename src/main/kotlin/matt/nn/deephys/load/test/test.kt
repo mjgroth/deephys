@@ -26,12 +26,14 @@ import matt.nn.deephys.load.cache.Cacher
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.dtype.DType
+import matt.nn.deephys.load.test.dtype.Float32
+import matt.nn.deephys.load.test.dtype.Float64
+import matt.nn.deephys.load.test.dtype.FloatActivationData
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.nn.deephys.model.importformat.im.eephyImage
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytes
 import matt.nn.deephys.model.importformat.im.readFloatActivations
 import matt.nn.deephys.model.importformat.im.readPixels
@@ -45,7 +47,6 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
 
 
-
 class TestLoader(
   file: CborFile, val model: Model
 ): AsyncLoader(file), TestOrLoader {
@@ -56,7 +57,7 @@ class TestLoader(
 
   override val test get() = awaitFinishedTest()
   private var finishedTest = LoadedValueSlot<Test>()
-  private val finishedImages = LoadedValueSlot<BlockList<DeephyImage>>()
+  private val finishedImages = LoadedValueSlot<BlockList<DeephyImage<*>>>()
   override val finishedLoadingAwaitable = finishedTest
   private val datasetHDCache = DeephysCacheManager.newDatasetCache()
   fun awaitNonUniformRandomImage() = finishedImages.await().random()
@@ -116,11 +117,16 @@ class TestLoader(
 
 
 			val dtype = if (nextKey == "dtype") {
-			  nextValueManualDontReadKey<TextStringReader, DType> {
-				DType.valueOf(this.read().raw)
+			  nextValueManualDontReadKey<TextStringReader, DType<*>> {
+				val str = this.read().raw
+				when (str) {
+				  "float32" -> Float32
+				  "float64" -> Float64
+				  else      -> err("str == $str")
+				}
 			  }
 			} else if (nextKey == "images") {
-			  DType.float32
+			  Float32
 			} else {
 			  err("nextKey == $nextKey")
 			}
@@ -132,7 +138,7 @@ class TestLoader(
 			  val lastImageIndex = numImsInt - 1
 			  var nextImageIndex = 0
 			  numImages.putLoadedValue(count)
-			  val finishedImagesBuilder = BlockListBuilder<DeephyImage>(numImsInt)
+			  val finishedImagesBuilder = BlockListBuilder<DeephyImage<*>>(numImsInt)
 			  finishedImages.putLoadedValue(finishedImagesBuilder.blockList)
 
 			  val actsCacheSize = numImsInt*dtype.byteLen
@@ -151,7 +157,9 @@ class TestLoader(
 
 
 			  val ACTS_FOR_NEURONS_BUFF_SIZE = 1000
-			  val activationByteMultiImBuffer = ArrayBlockingQueue<ImageActivationCborBytes>(ACTS_FOR_NEURONS_BUFF_SIZE)
+			  val activationByteMultiImBuffer = ArrayBlockingQueue<ImageActivationCborBytes<*>>(
+				ACTS_FOR_NEURONS_BUFF_SIZE
+			  )
 			  readEachManually<MapReader, Unit> {
 				val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
 				val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
@@ -179,7 +187,8 @@ class TestLoader(
 				  features = nextValue(requireKeyIs = "features")
 				}
 
-				val activationsBytes = ImageActivationCborBytes(nextValueManual<MapReader, ByteArray>(
+
+				val bytes = nextValueManual<MapReader, ByteArray>(
 				  requireKeyIs = "activations"
 				) {
 				  nextKeyOnly(requireIs = "activations")
@@ -197,7 +206,9 @@ class TestLoader(
 					  it.second
 					}
 				  } else readNBytes(numActivationBytes!!)
-				})
+				}
+
+				val activationsBytes = dtype.bytesThing(bytes)
 
 
 
@@ -243,20 +254,18 @@ class TestLoader(
 				  test = finishedTest,
 				  features = features,
 				  activationsRAF = activationsRAF!!,
-				  pixelsRAF = pixelsRAF!!
+				  pixelsRAF = pixelsRAF!!,
+				  dtype = dtype
 				).apply {
 
 
-				  daemonPool.execute {
+				/*  daemonPool.execute {
 					disabledCode {
 					  activations.strong {
-						when (dtype) {
-						  float32 -> activationsBytes.parse2DFloatArray()
-						  float64 -> activationsBytes.parse2DDoubleArray()
-						}
+						activationsBytes.parse2DArray()
 					  }
 					}
-				  }
+				  }*/
 				  daemonPool.executeLowPriority {
 					activations.cache(activationsBytes.bytes)
 					val n = numCachedActs.incrementAndGet()

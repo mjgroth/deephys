@@ -7,12 +7,15 @@ import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.PhaseOut
 import matt.lang.weak.lazyWeak
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
-import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.dtype.ArrayWrapper
+import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.DoubleActivationData
+import matt.nn.deephys.load.test.dtype.DoubleArrayWrapper
 import matt.nn.deephys.load.test.dtype.FloatActivationData
+import matt.nn.deephys.load.test.dtype.FloatArrayWrapper
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
@@ -23,7 +26,7 @@ import matt.prim.float.FLOAT_BYTE_LEN
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 
-class DeephyImage(
+class DeephyImage<A: Number>(
   val imageID: Int,
   categoryID: Int,
   category: String,
@@ -34,6 +37,7 @@ class DeephyImage(
   test: LoadedValueSlot<Test>,
   activationsRAF: EvenlySizedRAFCache,
   pixelsRAF: EvenlySizedRAFCache,
+  val dtype: DType<A>
 ): RAFCaches() {
 
   val category = Category(id = categoryID, label = category)
@@ -51,9 +55,10 @@ class DeephyImage(
   }
 
 
-  val activations = object: CachedRAFProp<FloatActivationData>(activationsRAF) {
-	override fun decode(bytes: ByteArray): FloatActivationData {
-	  return ImageActivationCborBytes(bytes).parse2DFloatArray()
+  val activations = object: CachedRAFProp<List<ArrayWrapper<A>>>(activationsRAF) {
+	override fun decode(bytes: ByteArray): List<ArrayWrapper<A>> {
+	  val byteThing = dtype.bytesThing(bytes)
+	  return byteThing.parse2DArray()
 	}
   }
 
@@ -61,8 +66,8 @@ class DeephyImage(
 	activations.await()
   }
 
-  fun activationsFor(rLayer: InterTestLayer): FloatArray = weakActivations[rLayer.index]
-  fun activationFor(neuron: InterTestNeuron) = RawActivation(weakActivations[neuron.layer.index][neuron.index])
+  fun activationsFor(rLayer: InterTestLayer): ArrayWrapper<A> = weakActivations[rLayer.index]
+  fun activationFor(neuron: InterTestNeuron) = dtype.rawActivation(weakActivations[neuron.layer.index][neuron.index])
 
   val data = object: CachedRAFProp<PixelData3>(pixelsRAF) {
 	override fun decode(bytes: ByteArray): PixelData3 {
@@ -78,9 +83,6 @@ class DeephyImage(
 
 
 }
-
-
-
 
 
 typealias PixelData2 = List<IntArray>
@@ -103,32 +105,42 @@ fun readPixels(cborPixelBytes3d: ByteArray): PixelData3 {
 }
 
 
-fun ArrayReader.readFloatActivations() = readEachManually<ByteStringReader, FloatArray> {
+fun ArrayReader.readFloatActivations() = readEachManually<ByteStringReader, FloatArrayWrapper> {
   val r = FloatArray(count.toInt()/FLOAT_BYTE_LEN)
   ByteBuffer.wrap(read().raw).asFloatBuffer().get(r)
-  r
+  FloatArrayWrapper(r)
 }
 
-fun ArrayReader.readDoubleActivations() = readEachManually<ByteStringReader, DoubleArray> {
+fun ArrayReader.readDoubleActivations() = readEachManually<ByteStringReader, DoubleArrayWrapper> {
   val r = DoubleArray(count.toInt()/DOUBLE_BYTE_LEN)
   ByteBuffer.wrap(read().raw).asDoubleBuffer().get(r)
-  r
+  DoubleArrayWrapper(r)
 }
 
-@JvmInline value class ImageActivationCborBytes(val bytes: ByteArray) {
 
-  fun parse2DFloatArray(): FloatActivationData {
+sealed interface ImageActivationCborBytes<A: Number> {
+  val bytes: ByteArray
+  fun parse2DArray(): List<ArrayWrapper<A>>
+  fun rawBytes() = bytes.cborReader().readManually<ArrayReader, ByteArray> {
+	readEachManually<ByteStringReader, ByteArray> {
+	  read().raw
+	}.reduce { acc, bytes -> acc + bytes }
+  }
+
+  fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer>
+
+}
+
+@JvmInline value class ImageActivationCborBytesFloat32(override val bytes: ByteArray): ImageActivationCborBytes<Float> {
+
+  override fun parse2DArray(): FloatActivationData {
 	bytes.cborReader().readManually<ArrayReader, Unit> {
 	  return readFloatActivations()
 	}
   }
-  fun parse2DDoubleArray(): DoubleActivationData {
-	bytes.cborReader().readManually<ArrayReader, Unit> {
-	  return readDoubleActivations()
-	}
-  }
 
-  fun floatByteReadyBufferSequence() = sequence {
+
+  override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> = sequence {
 	bytes.cborReader().readManually<ArrayReader, Unit> {
 	  readEachManually<ByteStringReader, Unit> {
 		val buffer = ByteBuffer.wrap(read().raw)
@@ -140,11 +152,26 @@ fun ArrayReader.readDoubleActivations() = readEachManually<ByteStringReader, Dou
 	}
   }
 
-  fun rawBytes() = bytes.cborReader().readManually<ArrayReader, ByteArray> {
-	readEachManually<ByteStringReader, ByteArray> {
-	  read().raw
-	}.reduce { acc, bytes -> acc + bytes }
+
+}
+
+@JvmInline value class ImageActivationCborBytesFloat64(override val bytes: ByteArray): ImageActivationCborBytes<Double> {
+  override fun parse2DArray(): DoubleActivationData {
+	bytes.cborReader().readManually<ArrayReader, Unit> {
+	  return readDoubleActivations()
+	}
   }
 
+  override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> = sequence {
+	bytes.cborReader().readManually<ArrayReader, Unit> {
+	  readEachManually<ByteStringReader, Unit> {
+		val buffer = ByteBuffer.wrap(read().raw)
+		(DOUBLE_BYTE_LEN until buffer.capacity() step DOUBLE_BYTE_LEN).forEach {
+		  buffer.limit(it)
+		  yield(buffer)
+		}
+	  }
+	}
+  }
 
 }
