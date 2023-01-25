@@ -70,6 +70,13 @@ class Test<N: Number>(
   override val testRAMCache: TestRAMCache,
   override val dtype: DType<N>
 ): DeephyFileObject, TypedTestLike<N> {
+  override fun numberOfImages(): ULong {
+	return images.size.toULong()
+  }
+
+  override fun imageAtIndex(i: Int): DeephyImage<N> {
+	return images[i]
+  }
 
   override val test = this
 

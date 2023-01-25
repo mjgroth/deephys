@@ -15,7 +15,6 @@ import matt.model.op.convert.StringConverter
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
