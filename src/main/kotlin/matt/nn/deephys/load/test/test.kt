@@ -346,6 +346,8 @@ class TestLoader(
 
   override val testRAMCache by lazy { TestRAMCache() }
 
+
+
 }
 
 class PreppedTestLoader<N: Number>(
@@ -353,6 +355,15 @@ class PreppedTestLoader<N: Number>(
   override val dtype: DType<N>
 ): TypedTestLike<N> {
   private var finishedTest = LoadedValueSlot<Test<N>>()
+  override fun numberOfImages(): ULong {
+	return tl.numImages.await()
+  }
+
+  override fun imageAtIndex(i: Int): DeephyImage<N> {
+	@Suppress("UNCHECKED_CAST")
+	return tl.awaitImage(i) as DeephyImage<N>
+  }
+
   override val test: Test<N> get() = finishedTest.await()
   override val testRAMCache: TestRAMCache get() = tl.testRAMCache
   override val model: Model get() = tl.model

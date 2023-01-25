@@ -9,6 +9,7 @@ import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.go
 import matt.lang.weak.WeakRef
+import matt.log.warn.warn
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.dataset.byimage.feat.FeaturesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
@@ -17,18 +18,17 @@ import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.PreppedTestLoader
-import matt.nn.deephys.load.test.TestLoader
-import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.bindings.bool.and
 
 
-class ByImageView(
-  testLoader: PreppedTestLoader<*>,
+class ByImageView<A: Number>(
+  testLoader: PreppedTestLoader<A>,
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	val weakViewer = WeakRef(viewer)
-	val weakTest = WeakRef(testLoader)
+	val weakTest = WeakRef<PreppedTestLoader<A>>(testLoader)
 	deephyButton("select random image") {
 	  setOnAction {
 		weakViewer.deref()!!.imageSelection.value = weakTest.deref()!!.tl.awaitNonUniformRandomImage()
@@ -43,6 +43,9 @@ class ByImageView(
 			scale.value = 4.0
 		  }
 		  spacer(10.0)
+		  warn("smelly")
+		  @Suppress("UNCHECKED_CAST")
+		  img as DeephyImage<A>
 		  +PredictionsView(
 			img.category, ImageTopPredictions(img, weakTest.deref()!!), weakViewer
 		  )
