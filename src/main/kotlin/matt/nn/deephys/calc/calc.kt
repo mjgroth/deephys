@@ -92,8 +92,8 @@ data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Act
 data class TopNeurons<N: Number>(
   val images: Contents<DeephyImage<N>>,
   private val layer: InterTestLayer,
-  private val test: TestOrLoader,
-  private val denomTest: TestOrLoader?,
+  private val test: TypedTestLike<N>,
+  private val denomTest: TypedTestLike<N>?,
   val normalized: Boolean,
   val forcedNeuronIndices: List<Int>? = null
 ): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
