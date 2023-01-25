@@ -320,6 +320,7 @@ class TestLoader(
 			progress.value = 1.0
 
 
+			warnOnce("REALY BAD")
 			finishedTest.putLoadedValue(Test(
 			  name = name,
 			  suffix = suffix,
