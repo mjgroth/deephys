@@ -12,6 +12,18 @@ interface TestOrLoader {
   val model: Model
 }
 
+
+//
+//fun <N: Number> Test<N>.argmaxn2OfNeuron(neuron: InterTestNeuron, num: Int) {
+//  val acts = activationsByNeuron[neuron]
+//
+//  test.dtype
+//
+//  acts
+//
+//  val indices = acts.argmaxn2(num)
+//}
+
 interface TypedTestLike<A: Number>: TestOrLoader {
   override val test: Test<A>
   override val dtype: DType<A>

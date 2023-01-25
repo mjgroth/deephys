@@ -5,7 +5,6 @@ import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.dtype.ArrayWrapper
 import matt.nn.deephys.load.test.dtype.DType
-import java.nio.ByteBuffer
 
 @Serializable class Neuron
 

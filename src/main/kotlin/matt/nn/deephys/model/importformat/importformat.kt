@@ -9,6 +9,7 @@ import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
 import matt.nn.deephys.load.test.dtype.DType
+import matt.nn.deephys.load.test.dtype.MultiArrayWrapper
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
@@ -116,6 +117,8 @@ class Test<N: Number>(
   }
 
 
+
+
   val activationsByNeuron = MapMaker()
 	.weakKeys().apply {
 
@@ -144,6 +147,10 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 
 
 	}*/
+
+  fun activationsByNeuronValueWrapped(key: InterTestNeuron): MultiArrayWrapper<N> {
+	dtype.wr
+  }
 
 
   val maxActivations = lazySoftMap<InterTestNeuron, N> { neuron ->

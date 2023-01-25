@@ -20,6 +20,7 @@ import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.nn.deephys.model.importformat.testlike.argmaxn2OfNeuron
 import matt.nn.deephys.state.DeephySettings
 import java.lang.reflect.Type
 import kotlin.math.exp
@@ -59,19 +60,27 @@ data class NormalizedAverageActivation<N: Number>(
 }
 
 
-data class TopImages(
+data class TopImages<A: Number>(
   private val neuron: InterTestNeuron,
-  private val test: TestLoader,
+  private val test: TypedTestLike<A>,
   private val num: Int
 ): DeephysComputeInput<List<ImageIndex>>() {
 
   override val cacheManager get() = test.testRAMCache
 
   override fun timedCompute(): List<ImageIndex> = run {
-	val theTest = test.awaitFinishedTest()
+	val theTest = test.test
+
+//	theTest.argmaxn2OfNeuron(neuron,num)
+
 	val acts = theTest.activationsByNeuron[neuron]
 
-	val indices = acts.argmaxn2(num)
+//	acts
+
+
+	val indices = 	test.dtype.wrap(acts).argmaxn2(num)
+
+	/*val indices = acts.argmaxn2(num)*/
 	indices.map { ImageIndex(it) }
   }
 }

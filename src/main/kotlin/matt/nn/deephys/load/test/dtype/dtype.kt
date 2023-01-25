@@ -1,6 +1,7 @@
 package matt.nn.deephys.load.test.dtype
 
 import kotlinx.serialization.Serializable
+import matt.math.mat.argmaxn.argmaxn2
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.ActivationRatioFloat32
 import matt.nn.deephys.calc.act.ActivationRatioFloat64
@@ -18,6 +19,8 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat32
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat64
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
+import org.jetbrains.kotlinx.multik.ndarray.data.D1
+import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import java.nio.ByteBuffer
 
 
@@ -41,6 +44,7 @@ sealed interface DType<N: Number> {
   fun normalActivation(act: N): NormalActivation<N, *>
   fun activationRatio(act: N): ActivationRatio<N, *>
   fun alwaysOneActivation(): AlwaysOneActivation<N, *>
+  fun wrap(multiArray: MultiArray<N,D1>): MultiArrayWrapper<N>
 }
 
 @Serializable
@@ -57,6 +61,7 @@ object Float32: DType<Float> {
   override fun activationRatio(act: Float) = ActivationRatioFloat32(act)
   override fun normalActivation(act: Float) = NormalActivationFloat32(act)
   override fun alwaysOneActivation() = AlwaysOneActivationFloat32
+  override fun wrap(multiArray: MultiArray<Float,D1>) = FloatMultiArrayWrapper(multiArray)
 }
 
 @Serializable
@@ -72,6 +77,7 @@ object Float64: DType<Double> {
   override fun activationRatio(act: Double) = ActivationRatioFloat64(act)
   override fun normalActivation(act: Double) = NormalActivationFloat64(act)
   override fun alwaysOneActivation() = AlwaysOneActivationFloat64
+  override fun wrap(multiArray: MultiArray<Double,D1>) = DoubleMultiArrayWrapper(multiArray)
 }
 
 
@@ -154,3 +160,24 @@ value class DoubleArrayWrapper(private val v: DoubleArray): ArrayWrapper<Double>
   }
 }
 
+
+
+
+
+sealed interface MultiArrayWrapper<N: Number> {
+  fun argmaxn2(n: Int): List<Int>
+}
+
+@JvmInline
+value class FloatMultiArrayWrapper(val a: MultiArray<Float, D1>): MultiArrayWrapper<Float> {
+  override fun argmaxn2(n: Int): List<Int> {
+	return a.argmaxn2(n)
+  }
+}
+
+@JvmInline
+value class DoubleMultiArrayWrapper(val a: MultiArray<Double, D1>): MultiArrayWrapper<Double> {
+  override fun argmaxn2(n: Int): List<Int> {
+	return a.argmaxn2(n)
+  }
+}
