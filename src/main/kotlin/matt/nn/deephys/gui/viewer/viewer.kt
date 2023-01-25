@@ -6,7 +6,6 @@ import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.Contents
-import matt.collect.set.contents.contentsOf
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic

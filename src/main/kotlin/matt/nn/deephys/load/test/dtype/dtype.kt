@@ -37,7 +37,7 @@ sealed interface DType<N: Number> {
 	  return if (types.isEmpty()) type
 	  else {
 		val all = setOf(type, *types)
-		if (Float32 in types) Float32
+		if (Float32 in all) Float32
 		else Float64
 	  }
 	}
