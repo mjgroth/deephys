@@ -148,9 +148,9 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 
 	}*/
 
-  fun activationsByNeuronValueWrapped(key: InterTestNeuron): MultiArrayWrapper<N> {
-	dtype.wr
-  }
+//  fun activationsByNeuronValueWrapped(key: InterTestNeuron): MultiArrayWrapper<N> {
+//	dtype.wr
+//  }
 
 
   val maxActivations = lazySoftMap<InterTestNeuron, N> { neuron ->

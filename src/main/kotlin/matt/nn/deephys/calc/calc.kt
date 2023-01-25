@@ -36,9 +36,11 @@ data class NormalizedAverageActivation<N: Number>(
   }
 
   override fun timedCompute(): NormalActivation<N, *> {
-	val num = neuron.averageActivation(images).value
+	val num = neuron.averageActivation(images, dType = test.dtype).value
+
 	val denom = test.test.maxActivations[neuron]
-	val r = num/denom
+
+	val r = test.dtype.div(num, denom)
 	return test.dtype.normalActivation(r)
   }
 
@@ -108,6 +110,12 @@ data class TopNeurons<N: Number>(
 	  it.map { layer.neurons[it] }
 	} ?: layer.neurons
 
+	val dType = test.dtype
+	if (denomTest != null) {
+	  require(dType == denomTest.dtype)
+	}
+
+
 	val neuronsWithActs = neurons.map { neuron ->
 	  val act = if (denomTest != null) ActivationRatioCalc(
 		numTest = test,
@@ -116,19 +124,19 @@ data class TopNeurons<N: Number>(
 		images = images
 	  )()
 	  else if (normalized) NormalizedAverageActivation(neuron, images, test)()
-	  else neuron.averageActivation(images)
+	  else neuron.averageActivation(images, dType = dType)
 	  NeuronWithActivation(neuron, act)
 	}
 
-/*
+	/*
 
 
-	neuronsWithActs.filterNot {
-	  it.activation.isNaN
-	}.sortedBy {
-	  it.activation
-	}
-*/
+		neuronsWithActs.filterNot {
+		  it.activation.isNaN
+		}.sortedBy {
+		  it.activation
+		}
+	*/
 
 	return if (forcedNeuronIndices == null) {
 	  val r = neuronsWithActs.filterNot {
@@ -173,7 +181,7 @@ data class ActivationRatioCalc<A: Number>(
 	  else {
 		val num = numTest.test.maxActivations[neuron]
 		val denom = denomTest.test.maxActivations[neuron]
-		val n = num/denom
+		val n = dType.div(num, denom)
 		dType.activationRatio(n)
 	  }
 	} else {

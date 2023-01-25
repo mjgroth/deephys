@@ -47,6 +47,7 @@ sealed interface DType<N: Number> {
   fun alwaysOneActivation(): AlwaysOneActivation<N, *>
   fun wrap(multiArray: MultiArray<N,D1>): MultiArrayWrapper<N>
   fun mean(list: List<N>): N
+  fun div(num: N, denom: N): N
 }
 
 @Serializable
@@ -65,6 +66,9 @@ object Float32: DType<Float> {
   override fun alwaysOneActivation() = AlwaysOneActivationFloat32
   override fun wrap(multiArray: MultiArray<Float,D1>) = FloatMultiArrayWrapper(multiArray)
   override fun mean(list: List<Float>) = list.mean()
+  override fun div(num: Float, denom: Float): Float {
+	return num / denom
+  }
 }
 
 @Serializable
@@ -82,6 +86,9 @@ object Float64: DType<Double> {
   override fun alwaysOneActivation() = AlwaysOneActivationFloat64
   override fun wrap(multiArray: MultiArray<Double,D1>) = DoubleMultiArrayWrapper(multiArray)
   override fun mean(list: List<Double>) = list.mean()
+  override fun div(num: Double, denom: Double): Double {
+	return num / denom
+  }
 }
 
 
