@@ -38,7 +38,7 @@ data class NormalizedAverageActivation<N: Number>(
   override fun timedCompute(): NormalActivation<N, *> {
 	val num = neuron.averageActivation(images).value
 	val denom = test.test.maxActivations[neuron]
-	val r = num / denom
+	val r = num/denom
 	return test.dtype.normalActivation(r)
   }
 
@@ -67,14 +67,14 @@ data class TopImages<A: Number>(
   override fun timedCompute(): List<ImageIndex> = run {
 	val theTest = test.test
 
-//	theTest.argmaxn2OfNeuron(neuron,num)
+	//	theTest.argmaxn2OfNeuron(neuron,num)
 
 	val acts = theTest.activationsByNeuron[neuron]
 
-//	acts
+	//	acts
 
 
-	val indices = 	test.dtype.wrap(acts).argmaxn2(num)
+	val indices = test.dtype.wrap(acts).argmaxn2(num)
 
 	/*val indices = acts.argmaxn2(num)*/
 	indices.map { ImageIndex(it) }
@@ -84,10 +84,10 @@ data class TopImages<A: Number>(
 private const val NUM_TOP_NEURONS = 25
 
 interface TopNeuronsCalcType {
-  operator fun invoke(): List<NeuronWithActivation>
+  operator fun invoke(): List<NeuronWithActivation<*>>
 }
 
-data class NeuronWithActivation(val neuron: InterTestNeuron, val activation: Activation<*, *>)
+data class NeuronWithActivation<A: Number>(val neuron: InterTestNeuron, val activation: Activation<A, *>)
 
 data class TopNeurons<N: Number>(
   val images: Contents<DeephyImage<N>>,
@@ -96,12 +96,12 @@ data class TopNeurons<N: Number>(
   private val denomTest: TypedTestLike<N>?,
   val normalized: Boolean,
   val forcedNeuronIndices: List<Int>? = null
-): DeephysComputeInput<List<NeuronWithActivation>>(), TopNeuronsCalcType {
+): DeephysComputeInput<List<NeuronWithActivation<N>>>(), TopNeuronsCalcType {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
   override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: FakeCacheManager
 
-  override fun timedCompute(): List<NeuronWithActivation> {
+  override fun timedCompute(): List<NeuronWithActivation<N>> {
 	if (images.isEmpty() && denomTest == null) return listOf()
 
 	val neurons = forcedNeuronIndices?.let {
@@ -120,17 +120,30 @@ data class TopNeurons<N: Number>(
 	  NeuronWithActivation(neuron, act)
 	}
 
+/*
+
+
+	neuronsWithActs.filterNot {
+	  it.activation.isNaN
+	}.sortedBy {
+	  it.activation
+	}
+*/
+
 	return if (forcedNeuronIndices == null) {
-	  neuronsWithActs.filterNot {
+	  val r = neuronsWithActs.filterNot {
 		it.activation.isNaN
 	  }
 		.sortedBy {
-		  it.activation.value
+		  it.activation
 		}
 		.reversed()
 		.take(NUM_TOP_NEURONS)
+
+	  r
 	} else {
-	  neuronsWithActs
+	  val r = neuronsWithActs
+	  r
 	}
 
 
@@ -154,7 +167,7 @@ data class ActivationRatioCalc<A: Number>(
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
   override fun timedCompute(): Activation<*, *> {
-	val dType = DType.leastPrecise(numTest.dtype,denomTest.dtype)
+	val dType = DType.leastPrecise(numTest.dtype, denomTest.dtype)
 	val r = if (images.isEmpty()) {
 	  if (numTest == denomTest) dType.alwaysOneActivation()
 	  else {

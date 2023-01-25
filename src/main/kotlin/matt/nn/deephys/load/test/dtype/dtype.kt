@@ -2,6 +2,7 @@ package matt.nn.deephys.load.test.dtype
 
 import kotlinx.serialization.Serializable
 import matt.math.mat.argmaxn.argmaxn2
+import matt.math.reduce.mean
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.ActivationRatioFloat32
 import matt.nn.deephys.calc.act.ActivationRatioFloat64
@@ -45,6 +46,7 @@ sealed interface DType<N: Number> {
   fun activationRatio(act: N): ActivationRatio<N, *>
   fun alwaysOneActivation(): AlwaysOneActivation<N, *>
   fun wrap(multiArray: MultiArray<N,D1>): MultiArrayWrapper<N>
+  fun mean(list: List<N>): N
 }
 
 @Serializable
@@ -62,6 +64,7 @@ object Float32: DType<Float> {
   override fun normalActivation(act: Float) = NormalActivationFloat32(act)
   override fun alwaysOneActivation() = AlwaysOneActivationFloat32
   override fun wrap(multiArray: MultiArray<Float,D1>) = FloatMultiArrayWrapper(multiArray)
+  override fun mean(list: List<Float>) = list.mean()
 }
 
 @Serializable
@@ -78,6 +81,7 @@ object Float64: DType<Double> {
   override fun normalActivation(act: Double) = NormalActivationFloat64(act)
   override fun alwaysOneActivation() = AlwaysOneActivationFloat64
   override fun wrap(multiArray: MultiArray<Double,D1>) = DoubleMultiArrayWrapper(multiArray)
+  override fun mean(list: List<Double>) = list.mean()
 }
 
 

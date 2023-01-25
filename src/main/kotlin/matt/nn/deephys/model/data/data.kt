@@ -1,7 +1,7 @@
 package matt.nn.deephys.model.data
 
 import matt.nn.deephys.calc.act.RawActivation
-import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
@@ -19,12 +19,27 @@ data class InterTestLayer(
 data class InterTestNeuron(
   val layer: InterTestLayer, val index: Int
 ) {
-  fun activation(image: DeephyImage<*>) = image.activationFor(this)
-  fun averageActivation(category: Category, testLoader: TestLoader) = category.averageActivationFor(this, testLoader)
-  fun <A: Number> averageActivation(images: Set<DeephyImage<A>>) =
+  fun <A: Number> activation(image: DeephyImage<A>) = image.activationFor(this)
+  fun averageActivation(category: Category, testLoader: TypedTestLike<*>) = category.averageActivationFor(this, testLoader)
+  fun <A: Number> averageActivation(
+	images: Set<DeephyImage<A>>,
+	dType: DType<A>
+  ) = run {
+
+	val list = images.map { activation(it).value }
+
+	val m = dType.mean(list)
+	/*
+		RawActivation(images.map
+		{ activation(it).value }.average().toFloat()
+		)*/
+
+	dType.rawActivation(
+	  m
+	)
+  }
 
 
-	RawActivation(images.map { activation(it).value }.average().toFloat())
 }
 
 
@@ -50,7 +65,8 @@ data class Category(val id: Int, val label: String): CategorySelection {
 
 
 	return testLoader.dtype.rawActivation(
-	  acts.average().toFloat()
+	  testLoader.dtype.mean(acts)
+	  /*acts.average().toFloat()*/
 	)
   }
 
