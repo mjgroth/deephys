@@ -4,6 +4,8 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
+import matt.log.warn.warn
+import matt.log.warn.warnOnce
 import matt.math.reduce.sumOf
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
@@ -137,6 +139,15 @@ data class TopNeurons<N: Number>(
 		  it.activation
 		}
 	*/
+	//
+	//	val temp = neuronsWithActs.filterNot {
+	//	  it.activation.isNaN
+	//	}
+	//	  .sortedBy {
+	//		it.activation
+	//	  }
+	//	  .reversed()
+	//	  .take(NUM_TOP_NEURONS)
 
 	return if (forcedNeuronIndices == null) {
 	  val r = neuronsWithActs.filterNot {
@@ -160,11 +171,11 @@ data class TopNeurons<N: Number>(
 
 
 data class ActivationRatioCalc<A: Number>(
-  val numTest: TestOrLoader,
+  val numTest: TypedTestLike<A>,
   private val images: Contents<DeephyImage<A>>,
-  val denomTest: TestOrLoader,
+  val denomTest: TypedTestLike<A>,
   private val neuron: InterTestNeuron
-): DeephysComputeInput<Activation<*, *>>() {
+): DeephysComputeInput<Activation<A, *>>() {
 
   override val cacheManager get() = numTest.testRAMCache /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
@@ -174,18 +185,20 @@ data class ActivationRatioCalc<A: Number>(
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
-  override fun timedCompute(): Activation<*, *> {
-	val dType = DType.leastPrecise(numTest.dtype, denomTest.dtype)
+  override fun timedCompute(): Activation<A, *> {
+	/*val dType = DType.leastPrecise(numTest.dtype, denomTest.dtype)*/
+	val dType = numTest.dtype
 	val r = if (images.isEmpty()) {
 	  if (numTest == denomTest) dType.alwaysOneActivation()
 	  else {
 		val num = numTest.test.maxActivations[neuron]
 		val denom = denomTest.test.maxActivations[neuron]
+
 		val n = dType.div(num, denom)
 		dType.activationRatio(n)
 	  }
 	} else {
-	  val num = neuron.averageActivation(images).value
+	  val num = neuron.averageActivation(images, dType = dType).value
 	  val denom = denomTest.test.maxActivations[neuron]
 	  dType.activationRatio(num/denom)
 	}
@@ -196,7 +209,14 @@ data class ActivationRatioCalc<A: Number>(
 		images.size=${images.size}
 		numTest.test.maxActivations[neuron]=${numTest.test.maxActivations[neuron]}
 		denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}
-		${if (images.isNotEmpty()) "neuron.averageActivation(images).value=${neuron.averageActivation(images).value}, denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}" else ""}
+		${
+		  if (images.isNotEmpty()) "neuron.averageActivation(images).value=${
+			neuron.averageActivation(
+			  images,
+			  dType = dType
+			).value
+		  }, denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}" else ""
+		}
 	  """.trimIndent()
 	  )
 	}
@@ -215,23 +235,40 @@ data class ImageSoftMaxDenom<N: Number>(
   override fun timedCompute(): N {
 	val clsLay = testLoader.model.classificationLayer
 	val preds = image.activationsFor(clsLay.interTest)
-	return preds.sumOf { exp(it) }
+
+	val dtype = image.dtype
+	require(dtype == testLoader.dtype)
+
+	val li = preds.map { dtype.exp(it) }
+
+	val su = dtype.sum(li)
+
+	return su
+
+	//	return preds.sumOf {
+	//
+	//	}
   }
 }
 
 data class ImageTopPredictions<N: Number>(
   private val image: DeephyImage<N>,
-  private val testLoader: TestOrLoader
+  private val testLoader: TypedTestLike<N>
 ): DeephysComputeInput<List<Pair<Category, N>>>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
   override fun timedCompute(): List<Pair<Category, N>> {
+	val dtype = testLoader.dtype
 	val clsLay = testLoader.model.classificationLayer
 	val preds = image.activationsFor(clsLay.interTest)
 	val softMaxDenom = ImageSoftMaxDenom(image, testLoader)()
-	return preds.withIndex().sortedBy { it.value }.reversed().take(5).map { thePred ->
-	  val exactPred = (exp(thePred.value)/softMaxDenom)
+	warnOnce("bad toDouble x2")
+	preds.withIndex().sortedBy {
+	  it.value.toDouble()
+	}
+	return preds.withIndex().sortedBy { it.value.toDouble() }.reversed().take(5).map { thePred ->
+	  val exactPred = (dtype.div(dtype.exp(thePred.value), softMaxDenom))
 	  val theCategory = testLoader.category(thePred.index)
 	  theCategory to exactPred
 	}
@@ -266,7 +303,8 @@ data class CategoryFalsePositivesSorted<N: Number>(
 	  "false positives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute(): List<DeephyImage<N>> =
+  override fun timedCompute(): List<DeephyImage<N>> = run {
+	warnOnce("bad toDouble here")
 	testLoader.test.imagesWithoutGroundTruth(category)
 	  .map {
 		it to testLoader.test.preds.await()[it]
@@ -275,10 +313,11 @@ data class CategoryFalsePositivesSorted<N: Number>(
 	  }.map {
 		it.first to ImageTopPredictions(it.first, testLoader)().first()
 	  }.sortedBy {
-		it.second.second
+		it.second.second.toDouble()
 	  }.reversed().map {
 		it.first
 	  }
+  }
 }
 
 data class CategoryFalseNegativesSorted<N: Number>(
@@ -293,18 +332,21 @@ data class CategoryFalseNegativesSorted<N: Number>(
 	  "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute() = testLoader.test.imagesWithGroundTruth(category)
-	.map {
-	  it to testLoader.test.preds.await()[it]
-	}.filter {
-	  it.second != category
-	}.map {
-	  it.first to ImageTopPredictions(it.first, testLoader)().first()
-	}.sortedBy {
-	  it.second.second
-	}.reversed().map {
-	  it.first
-	}
+  override fun timedCompute() = run {
+	warnOnce("bad toDouble here")
+	testLoader.test.imagesWithGroundTruth(category)
+	  .map {
+		it to testLoader.test.preds.await()[it]
+	  }.filter {
+		it.second != category
+	  }.map {
+		it.first to ImageTopPredictions(it.first, testLoader)().first()
+	  }.sortedBy {
+		it.second.second.toDouble()
+	  }.reversed().map {
+		it.first
+	  }
+  }
 }
 
 

@@ -4,6 +4,8 @@ import kotlinx.serialization.Serializable
 import matt.lang.List2D
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.mean
+import matt.math.reduce.sumOf
+import matt.model.data.mathable.NumberWrapper
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.ActivationRatioFloat32
 import matt.nn.deephys.calc.act.ActivationRatioFloat64
@@ -54,6 +56,8 @@ sealed interface DType<N: Number> {
   fun div(num: N, denom: N): N
   fun d1array(list: List<N>): NDArray<N,D1>
   fun d2array(list: List2D<N>): NDArray<N, D2>
+  fun exp(v: N): N
+  fun sum(list: List<N>): N
 }
 
 @Serializable
@@ -78,6 +82,8 @@ object Float32: DType<Float> {
 
   override fun d1array(list: List<Float>) = list.toNDArray()
   override fun d2array(list: List2D<Float>) = list.toNDArray()
+  override fun exp(v: Float) = kotlin.math.exp(v)
+  override fun sum(list: List<Float>) = list.sumOf { it }
 }
 
 @Serializable
@@ -100,6 +106,8 @@ object Float64: DType<Double> {
   }
   override fun d1array(list: List<Double>) = list.toNDArray()
   override fun d2array(list: List2D<Double>) = list.toNDArray()
+  override fun exp(v: Double) = kotlin.math.exp(v)
+  override fun sum(list: List<Double>) = list.sum()
 }
 
 
