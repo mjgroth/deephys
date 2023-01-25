@@ -352,8 +352,10 @@ class PreppedTestLoader<N: Number>(
   val tl: TestLoader,
   override val dtype: DType<N>
 ): TestOrLoader {
-  override val test: Test<N> get() = tl.test
+  private var finishedTest = LoadedValueSlot<Test<N>>()
+  override val test: Test<N> get() = finishedTest.await()
   override val testRAMCache: TestRAMCache get() = tl.testRAMCache
+  override val model: Model get() = tl.model
 }
 
 
