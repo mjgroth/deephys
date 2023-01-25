@@ -217,7 +217,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
 	  it?.let {
 		it.copy(
 		  forcedNeuronIndices = it().map { it.neuron.index },
-		  images = contentsOf() as Contents<DeephyImage<Float>>,
+		  images = contentsOf<DeephyImage<Float>>(),
 		  test = testData.value!!.todoPreppedTest() as TypedTestLike<Float>,
 		  normalized = normalizeTopNeuronActivations.value,
 		  denomTest = inD.value?.testData?.value?.todoPreppedTest() as? TypedTestLike<Float>
