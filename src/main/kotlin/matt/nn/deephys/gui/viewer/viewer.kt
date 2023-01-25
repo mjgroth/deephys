@@ -25,6 +25,7 @@ import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.hurricanefx.eye.prop.sizeProperty
+import matt.lang.err
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
@@ -210,22 +211,25 @@ import matt.obs.prop.withNonNullUpdatesFrom
 	  }
 	}
   }
-  val boundTopNeurons: MyBinding<TopNeurons<*>?> = boundToDSet.deepBinding(normalizeTopNeuronActivations, inD) {
+  val boundTopNeurons: MyBinding<TopNeurons<Float>?> = boundToDSet.deepBinding(normalizeTopNeuronActivations, inD) {
 	it?.topNeurons?.binding(
 	  normalizeTopNeuronActivations, inD
 	) {
 	  it?.let {
-		it.copy(
+		err("""
+		  it.copy(
 		  forcedNeuronIndices = it().map { it.neuron.index },
 		  images = contentsOf<DeephyImage<Float>>(),
 		  test = testData.value!!.todoPreppedTest() as TypedTestLike<Float>,
 		  normalized = normalizeTopNeuronActivations.value,
 		  denomTest = inD.value?.testData?.value?.todoPreppedTest() as? TypedTestLike<Float>
 		)
+		""".trimIndent())
+
 	  }
 	} ?: BindableProperty(null)
   }
-  val topNeurons = boundTopNeurons coalesceNull topNeuronsFromMyImage
+  val topNeurons = boundTopNeurons coalesceNull (topNeuronsFromMyImage as ObsVal<TopNeurons<Float>?>)
 
 
   init {
