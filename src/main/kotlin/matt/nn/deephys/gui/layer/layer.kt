@@ -18,6 +18,7 @@ import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.data.InterTestNeuron
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.ObsB
 import matt.obs.col.olist.toBasicObservableList
@@ -25,7 +26,7 @@ import matt.prim.str.isInt
 
 class LayerView(
   layer: ResolvedLayer,
-  testLoader: TestLoader,
+  testLoader: TypedTestLike<*>,
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
