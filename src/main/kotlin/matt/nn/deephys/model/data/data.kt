@@ -21,7 +21,9 @@ data class InterTestNeuron(
 ) {
   fun activation(image: DeephyImage<*>) = image.activationFor(this)
   fun averageActivation(category: Category, testLoader: TestLoader) = category.averageActivationFor(this, testLoader)
-  fun averageActivation(images: Set<DeephyImage<*>>) =
+  fun <A: Number> averageActivation(images: Set<DeephyImage<A>>) =
+
+
 	RawActivation(images.map { activation(it).value }.average().toFloat())
 }
 
