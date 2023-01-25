@@ -47,12 +47,13 @@ fun <A: Number> NW.neuronListViewSwapper(
   ) {
 	weakViewer.deref()?.let { deRefedViewer ->
 	  deRefedViewer.layerSelection.value?.let { lay ->
+		@Suppress("UNCHECKED_CAST")
 		TopNeurons(
 		  images = contents,
 		  layer = lay,
-		  test = deRefedViewer.testData.value!!,
+		  test = deRefedViewer.testData.value!!.todoPreppedTest() as TypedTestLike<A>,
 		  normalized = deRefedViewer.normalizeTopNeuronActivations.value,
-		  denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value
+		  denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value?.todoPreppedTest() as TypedTestLike<A>?
 		)
 	  }
 	}
