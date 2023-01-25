@@ -35,11 +35,12 @@ class NeuronView<A: Number>(
 	  swapperR(viewer.inD) {
 		weakViewer.deref()!!.testData.value?.go { numTest ->
 		  it.testData.value?.go { denomTest ->
+			@Suppress("UNCHECKED_CAST")
 			deephyText(
 			  ActivationRatioCalc<A>(
-				numTest = numTest,
+				numTest = numTest.todoPreppedTest() as TypedTestLike<A>,
 				images = contentsOf(),
-				denomTest = denomTest,
+				denomTest = denomTest.todoPreppedTest() as TypedTestLike<A>,
 				neuron = neuron
 			  )().formatted
 			) {
