@@ -18,6 +18,7 @@ import matt.lang.disabledCode
 import matt.lang.err
 import matt.lang.l
 import matt.log.profile.mem.throttle
+import matt.log.warn.warnOnce
 import matt.model.code.errreport.ThrowReport
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
@@ -251,7 +252,7 @@ class TestLoader(
 
 
 				}
-				warn("SO BAD BELOW")
+				warnOnce("SO BAD BELOW")
 				val deephyImage = DeephyImage(
 				  imageID = imageID,
 				  categoryID = categoryID,
@@ -322,12 +323,13 @@ class TestLoader(
 			finishedTest.putLoadedValue(Test(
 			  name = name,
 			  suffix = suffix,
-			  images = finishedImages.await() /*as List<DeephyImage<*>>*/,
+			  images = finishedImages.await() as List<DeephyImage<Float>>,
 			  model = this@TestLoader.model,
 			  testRAMCache = testRAMCache,
-			  dtype = dtype
+			  /*dtype = dtype,*/
+				  dtype = Float32
 			).apply {
-			  testNeurons = localTestNeurons
+			  testNeurons = localTestNeurons as Map<InterTestNeuron,TestNeuron<Float>>
 			  preds.startLoading()
 			})
 			signalFinishedLoading()
