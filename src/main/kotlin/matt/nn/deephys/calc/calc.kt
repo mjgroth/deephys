@@ -4,15 +4,11 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
-import matt.log.warn.warn
 import matt.log.warn.warnOnce
-import matt.math.reduce.sumOf
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
 import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
-import matt.nn.deephys.load.test.TestLoader
-import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
@@ -21,7 +17,6 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.nn.deephys.state.DeephySettings
-import kotlin.math.exp
 
 data class NormalizedAverageActivation<N: Number>(
   private val neuron: InterTestNeuron,
@@ -150,11 +145,12 @@ data class TopNeurons<N: Number>(
 	//	  .take(NUM_TOP_NEURONS)
 
 	return if (forcedNeuronIndices == null) {
+	  warnOnce("bad toDouble here")
 	  val r = neuronsWithActs.filterNot {
 		it.activation.isNaN
 	  }
 		.sortedBy {
-		  it.activation
+		  it.activation.value.toDouble()
 		}
 		.reversed()
 		.take(NUM_TOP_NEURONS)
@@ -200,7 +196,7 @@ data class ActivationRatioCalc<A: Number>(
 	} else {
 	  val num = neuron.averageActivation(images, dType = dType).value
 	  val denom = denomTest.test.maxActivations[neuron]
-	  dType.activationRatio(num/denom)
+	  dType.activationRatio(dType.div(num,denom))
 	}
 	if (r.isNaN || r.isInfinite) {
 	  println(
@@ -269,7 +265,7 @@ data class ImageTopPredictions<N: Number>(
 	}
 	return preds.withIndex().sortedBy { it.value.toDouble() }.reversed().take(5).map { thePred ->
 	  val exactPred = (dtype.div(dtype.exp(thePred.value), softMaxDenom))
-	  val theCategory = testLoader.category(thePred.index)
+	  val theCategory = testLoader.test.category(thePred.index)
 	  theCategory to exactPred
 	}
   }
