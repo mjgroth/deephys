@@ -9,16 +9,16 @@ import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.nn.deephys.gui.category.CategoryView
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 
 class ByCategoryView(
-  testLoader: TestLoader,
+  testLoader: TypedTestLike<*>,
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	val categoryCB = choicebox(
 	  nullableProp = viewer.categorySelection,
-	  values = testLoader.awaitFinishedTest().categories
+	  values = testLoader.test.categories
 	) {
 	  //	  converter = toStringConverter<InterTestNeuron?> { "neuron ${it?.index}" }.toFXConverter()
 	}
