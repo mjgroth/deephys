@@ -21,12 +21,13 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.nn.deephys.state.DeephySettings
+import java.lang.reflect.Type
 import kotlin.math.exp
 
 data class NormalizedAverageActivation<N: Number>(
   private val neuron: InterTestNeuron,
   private val images: Contents<DeephyImage<N>>,
-  private val test: TestOrLoader,
+  private val test: TypedTestLike<N>,
 ): DeephysComputeInput<NormalActivation<N, *>>() {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
