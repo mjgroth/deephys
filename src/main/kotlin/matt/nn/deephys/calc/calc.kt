@@ -4,9 +4,7 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
-import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.sumOf
-import matt.model.data.index.withIndex
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
@@ -20,9 +18,7 @@ import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.nn.deephys.model.importformat.testlike.argmaxn2OfNeuron
 import matt.nn.deephys.state.DeephySettings
-import java.lang.reflect.Type
 import kotlin.math.exp
 
 data class NormalizedAverageActivation<N: Number>(
