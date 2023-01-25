@@ -13,9 +13,9 @@ import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.math.op.times
 
-class MultipleImagesView(
+class MultipleImagesView<A: Number>(
   viewer: DatasetViewer,
-  images: List<DeephyImage<*>>,
+  images: List<DeephyImage<A>>,
   title: String,
   tooltip: String
 ): VBoxWrapperImpl<NW>() {
