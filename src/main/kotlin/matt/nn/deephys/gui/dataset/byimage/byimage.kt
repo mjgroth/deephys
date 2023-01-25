@@ -16,12 +16,14 @@ import matt.nn.deephys.gui.dataset.byimage.preds.PredictionsView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.load.test.PreppedTestLoader
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bindings.bool.and
 
 
 class ByImageView(
-  testLoader: TestLoader,
+  testLoader: PreppedTestLoader<*>,
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
@@ -29,7 +31,7 @@ class ByImageView(
 	val weakTest = WeakRef(testLoader)
 	deephyButton("select random image") {
 	  setOnAction {
-		weakViewer.deref()!!.imageSelection.value = weakTest.deref()!!.awaitNonUniformRandomImage()
+		weakViewer.deref()!!.imageSelection.value = weakTest.deref()!!.tl.awaitNonUniformRandomImage()
 	  }
 	  visibleAndManagedProp.bind(viewer.imageSelection.isNull.and(viewer.isUnboundToDSet))
 	}

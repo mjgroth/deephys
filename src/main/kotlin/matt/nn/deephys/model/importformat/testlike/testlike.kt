@@ -30,4 +30,5 @@ interface TypedTestLike<A: Number>: TestOrLoader {
   fun imageAtIndex(i: Int): DeephyImage<A>
   override val test: Test<A>
   override val dtype: DType<A>
+
 }
