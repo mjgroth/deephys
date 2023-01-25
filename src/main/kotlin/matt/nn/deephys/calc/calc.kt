@@ -138,9 +138,9 @@ data class TopNeurons<N: Number>(
 }
 
 
-data class ActivationRatioCalc(
+data class ActivationRatioCalc<A: Number>(
   val numTest: TestOrLoader,
-  private val images: Contents<DeephyImage<out Number>>,
+  private val images: Contents<DeephyImage<A>>,
   val denomTest: TestOrLoader,
   private val neuron: InterTestNeuron
 ): DeephysComputeInput<Activation<*, *>>() {
