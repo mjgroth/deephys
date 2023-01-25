@@ -9,7 +9,6 @@ import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
 import matt.nn.deephys.load.test.dtype.DType
-import matt.nn.deephys.load.test.dtype.MultiArrayWrapper
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
@@ -18,7 +17,6 @@ import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.layer.Layer
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
-import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.nn.deephys.state.DeephySettings
 import matt.prim.str.mybuild.string
@@ -68,7 +66,7 @@ class Test<N: Number>(
   override val name: String,
   override val suffix: String?,
   val images: List<DeephyImage<N>>,
-  val model: Model,
+  override val model: Model,
   override val testRAMCache: TestRAMCache,
   override val dtype: DType<N>
 ): DeephyFileObject, TypedTestLike<N> {
@@ -76,7 +74,7 @@ class Test<N: Number>(
   override val test = this
 
 
-  var testNeurons: Map<InterTestNeuron, TestNeuron>? = null
+  var testNeurons: Map<InterTestNeuron, TestNeuron<N>>? = null
 
 
   fun category(id: Int) = images.find { it.category.id == id }!!.category
@@ -109,10 +107,15 @@ class Test<N: Number>(
 
 
 
-	images.map {
-	  it.weakActivations[lay].asList()
-	}.toNDArray()
+//	dtype.
+	val list = images.map {
+	  it.weakActivations[lay]/*.asList()*/
+	}/*.toNDArray()*/
 
+
+	dtype.d2array(list)
+
+//	1
 
   }
 
@@ -126,7 +129,10 @@ class Test<N: Number>(
 	.weakValues()
 	.makeMap<InterTestNeuron, MultiArray<N, D1>>()
 	.withStoringDefault {
-	  testNeurons!![it]!!.activations.await().asList().toNDArray()
+	  val something = testNeurons!![it]!!.activations.await()
+
+	  dtype.d1array(something)
+	  /*testNeurons!![it]!!.activations.await().asList().toNDArray()*/
 	  /*val myMat = activationsMatByLayerIndex[it.layer.index]
 myMat[0 ..< myMat.shape[0], it.index]*/
 	}
@@ -171,9 +177,10 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 	  val m = HashMap<DeephyImage<*>, Category>(ims.size)
 	  val chunkSize = 1000
 	  ims.chunked(chunkSize).forEachIndexed { chunkIndex, imageChunk ->
-		val actsMat = imageChunk.map {
-		  it.weakActivations[clsLayerIndex].asList()
-		}.toNDArray()
+		val lis = imageChunk.map {
+		  it.weakActivations[clsLayerIndex]/*.asList()*/
+		}
+		val actsMat = dtype.d2array(lis)
 		val argMaxResults = mk.math.argMaxD2(actsMat, 1)
 		val imageStartIndex = chunkIndex*chunkSize
 		argMaxResults.forEachIndexed { imageIndex, predIndex ->

@@ -1,6 +1,7 @@
 package matt.nn.deephys.load.test.dtype
 
 import kotlinx.serialization.Serializable
+import matt.lang.List2D
 import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.mean
 import matt.nn.deephys.calc.act.ActivationRatio
@@ -20,8 +21,11 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat32
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat64
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
+import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
+import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
+import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 import java.nio.ByteBuffer
 
 
@@ -48,6 +52,8 @@ sealed interface DType<N: Number> {
   fun wrap(multiArray: MultiArray<N,D1>): MultiArrayWrapper<N>
   fun mean(list: List<N>): N
   fun div(num: N, denom: N): N
+  fun d1array(list: List<N>): NDArray<N,D1>
+  fun d2array(list: List2D<N>): NDArray<N, D2>
 }
 
 @Serializable
@@ -69,6 +75,9 @@ object Float32: DType<Float> {
   override fun div(num: Float, denom: Float): Float {
 	return num / denom
   }
+
+  override fun d1array(list: List<Float>) = list.toNDArray()
+  override fun d2array(list: List2D<Float>) = list.toNDArray()
 }
 
 @Serializable
@@ -89,6 +98,8 @@ object Float64: DType<Double> {
   override fun div(num: Double, denom: Double): Double {
 	return num / denom
   }
+  override fun d1array(list: List<Double>) = list.toNDArray()
+  override fun d2array(list: List2D<Double>) = list.toNDArray()
 }
 
 
