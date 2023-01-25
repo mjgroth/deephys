@@ -97,7 +97,7 @@ class TestLoader(
 	}
   }
 
-  val start = SingleCall {
+  @Suppress("UNCHECKED_CAST") val start = SingleCall {
 	daemon("TestLoader-${file.name}") {
 	  if (!file.exists()) {
 		signalFileNotFound()
@@ -251,6 +251,7 @@ class TestLoader(
 
 
 				}
+				warn("SO BAD BELOW")
 				val deephyImage = DeephyImage(
 				  imageID = imageID,
 				  categoryID = categoryID,
@@ -258,11 +259,11 @@ class TestLoader(
 				  index = nextImageIndex++,
 				  testLoader = this@TestLoader,
 				  model = this@TestLoader.model,
-				  test = finishedTest,
+				  test = finishedTest as LoadedValueSlot<Test<Float>>,
 				  features = features,
 				  activationsRAF = activationsRAF!!,
 				  pixelsRAF = pixelsRAF!!,
-				  //				  dtype = dtype
+				  dtype = /*dtype*/ Float32
 				).apply {
 
 
@@ -321,7 +322,7 @@ class TestLoader(
 			finishedTest.putLoadedValue(Test(
 			  name = name,
 			  suffix = suffix,
-			  images = finishedImages.await(),
+			  images = finishedImages.await() /*as List<DeephyImage<*>>*/,
 			  model = this@TestLoader.model,
 			  testRAMCache = testRAMCache,
 			  dtype = dtype
@@ -346,6 +347,10 @@ class TestLoader(
 
   override val testRAMCache by lazy { TestRAMCache() }
 
+
+  fun todoPreppedTest(): PreppedTestLoader<*> {
+	throw NotImplementedError("TODO")
+  }
 
 
 }

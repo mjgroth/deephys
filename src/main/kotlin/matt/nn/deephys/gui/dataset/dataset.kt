@@ -6,7 +6,6 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.Swapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.fx.graphics.wrapper.text.text
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
@@ -26,9 +25,9 @@ class DatasetNode(
 ): Swapper<DatasetNodeView, RegionWrapper<*>>() {
 
 
-  private val byNeuronView by lazy { ByNeuronView(dataset, viewer) }
-  private val byImageView by lazy { ByImageView(dataset, viewer) }
-  private val byCategoryView by lazy { ByCategoryView(dataset, viewer) }
+  private val byNeuronView by lazy { ByNeuronView(dataset.todoPreppedTest(), viewer) }
+  private val byImageView by lazy { ByImageView(dataset.todoPreppedTest(), viewer) }
+  private val byCategoryView by lazy { ByCategoryView(dataset.todoPreppedTest(), viewer) }
 
   init {
 	setupSwapping(viewer.view) {

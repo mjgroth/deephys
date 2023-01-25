@@ -11,6 +11,7 @@ import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.load.test.dtype.ArrayWrapper
+import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.DoubleActivationData
 import matt.nn.deephys.load.test.dtype.DoubleArrayWrapper
 import matt.nn.deephys.load.test.dtype.FloatActivationData
@@ -36,6 +37,7 @@ class DeephyImage<A: Number>(
   test: LoadedValueSlot<Test<A>>,
   activationsRAF: EvenlySizedRAFCache,
   pixelsRAF: EvenlySizedRAFCache,
+  dtype: DType<A> /*just for generic*/
 ): RAFCaches() {
 
   val category = Category(id = categoryID, label = category)
