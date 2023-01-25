@@ -24,7 +24,7 @@ import matt.prim.str.truncateWithElipsesOrAddSpaces
 
 class PredictionsView(
   groundTruth: Category,
-  topPreds: ImageTopPredictions,
+  topPreds: ImageTopPredictions<*>,
   weakViewer: WeakRef<DatasetViewer>,
 ): VBoxW() {
   init {
@@ -60,7 +60,12 @@ class PredictionsView(
 		}
 		predValuesBox.deephyText {
 		  textProperty.bind(weakViewer.deref()!!.predictionSigFigs.binding {
-			pred.sigFigs(it).toString()
+			when (pred) {
+			  is Float  -> pred.sigFigs(it).toString()
+			  is Double -> pred.sigFigs(it).toString()
+			  else      -> error("not ready for different dtype")
+			}
+
 		  })
 		  deephyTooltip(fullString)
 		}
