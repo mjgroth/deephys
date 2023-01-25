@@ -49,6 +49,7 @@ import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
@@ -190,6 +191,7 @@ import matt.obs.prop.withNonNullUpdatesFrom
   val imageSelection = VarProp<DeephyImage<*>?>(null)
 
 
+
   @Suppress("UNCHECKED_CAST")
   private val topNeuronsFromMyImage = run {
 	imageSelection.binding(
@@ -201,8 +203,8 @@ import matt.obs.prop.withNonNullUpdatesFrom
 			Contents(setOf(theIm) as Set<DeephyImage<Float>>),
 			lay,
 			normalized = normalizeTopNeuronActivations.value,
-			test = testData.value!!.todoPreppedTest(),
-			denomTest = inD.value.takeIf { it != this }?.testData?.value?.todoPreppedTest()
+			test = testData.value!!.todoPreppedTest() as TypedTestLike<Float>,
+			denomTest = inD.value.takeIf { it != this }?.testData?.value?.todoPreppedTest() as? TypedTestLike<Float>
 		  )
 		}
 	  }
@@ -215,10 +217,10 @@ import matt.obs.prop.withNonNullUpdatesFrom
 	  it?.let {
 		it.copy(
 		  forcedNeuronIndices = it().map { it.neuron.index },
-		  images = contentsOf(),
-		  test = testData.value!!.todoPreppedTest(),
+		  images = contentsOf() as Contents<DeephyImage<Float>>,
+		  test = testData.value!!.todoPreppedTest() as TypedTestLike<Float>,
 		  normalized = normalizeTopNeuronActivations.value,
-		  denomTest = inD.value?.testData?.value?.todoPreppedTest()
+		  denomTest = inD.value?.testData?.value?.todoPreppedTest() as? TypedTestLike<Float>
 		)
 	  }
 	} ?: BindableProperty(null)
