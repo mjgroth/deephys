@@ -29,9 +29,9 @@ import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.str.addNewLinesUntilNumLinesIs
 
-class CategoryView(
+class CategoryView<A: Number>(
   selection: CategorySelection,
-  testLoader: TypedTestLike<*>,
+  testLoader: TypedTestLike<A>,
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
