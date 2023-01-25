@@ -27,11 +27,12 @@ import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.str.addNewLinesUntilNumLinesIs
 
 class CategoryView(
   selection: CategorySelection,
-  testLoader: TestLoader,
+  testLoader: TypedTestLike<*>,
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {

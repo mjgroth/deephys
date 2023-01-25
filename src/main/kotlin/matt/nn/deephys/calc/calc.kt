@@ -240,14 +240,14 @@ data class ImageTopPredictions<N: Number>(
 
 data class CategoryAccuracy(
   private val category: Category,
-  private val testLoader: TestLoader
+  private val testLoader: TypedTestLike<*>
 ): DeephysComputeInput<Double>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
   override fun timedCompute(): Double {
-	val r = testLoader.awaitFinishedTest().imagesWithGroundTruth(category).map {
-	  if (testLoader.awaitFinishedTest().preds.await()[it] == category) 1.0 else 0.0
+	val r = testLoader.test.imagesWithGroundTruth(category).map {
+	  if (testLoader.test.preds.await()[it] == category) 1.0 else 0.0
 	}.let { it.sum()/it.size }
 
 	return r
