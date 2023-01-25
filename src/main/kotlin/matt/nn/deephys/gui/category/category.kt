@@ -23,7 +23,6 @@ import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
@@ -99,7 +98,7 @@ class CategoryView(
 		  alignment = Pos.CENTER
 
 		  h {
-			val cats = (testLoader.awaitFinishedTest().categories - selection.primaryCategory)
+			val cats = (testLoader.test.categories - selection.primaryCategory)
 			val cMap = colorMap(cats.size)
 			val colorMap = cats.withIndex().associate { it.value to cMap[it.index]!!.toFXColor() }
 			+CategoryPie(
@@ -150,7 +149,7 @@ class CategoryView(
 	  neuronListViewSwapper(
 		viewer = viewer,
 		contents = Contents(
-		  selection.allCategories.flatMap { testLoader.awaitFinishedTest().imagesWithGroundTruth(it) }
+		  selection.allCategories.flatMap { testLoader.test.imagesWithGroundTruth(it) }
 		)
 	  )
 	}

@@ -49,7 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 
 class TestLoader(
-  file: CborFile, val model: Model
+  file: CborFile,
+  override val model: Model
 ): AsyncLoader(file), TestOrLoader {
 
   companion object {
@@ -103,7 +104,7 @@ class TestLoader(
 		return@daemon
 	  }
 	  try {
-		var localTestNeurons: Map<InterTestNeuron, TestNeuron>? = null
+		var localTestNeurons: Map<InterTestNeuron, TestNeuron<*>>? = null
 		var neuronActCacheTools: List<Cacher>? = null
 		val stream = file.inputStream()
 		try {
@@ -148,7 +149,11 @@ class TestLoader(
 
 			  localTestNeurons = model.neurons.associate {
 				it.interTest to TestNeuron(
-				  index = it.index, layerIndex = it.layer.index, activationsRAF = evenRAF, numIms = numImsInt
+				  index = it.index,
+				  layerIndex = it.layer.index,
+				  activationsRAF = evenRAF,
+				  numIms = numImsInt,
+				  dType = dtype
 				)
 			  }
 
@@ -257,17 +262,17 @@ class TestLoader(
 				  features = features,
 				  activationsRAF = activationsRAF!!,
 				  pixelsRAF = pixelsRAF!!,
-//				  dtype = dtype
+				  //				  dtype = dtype
 				).apply {
 
 
-				/*  daemonPool.execute {
-					disabledCode {
-					  activations.strong {
-						activationsBytes.parse2DArray()
+				  /*  daemonPool.execute {
+					  disabledCode {
+						activations.strong {
+						  activationsBytes.parse2DArray()
+						}
 					  }
-					}
-				  }*/
+					}*/
 				  daemonPool.executeLowPriority {
 					activations.cache(activationsBytes.bytes)
 					val n = numCachedActs.incrementAndGet()
@@ -343,7 +348,10 @@ class TestLoader(
 
 }
 
-class PreppedTestLoader<N: Number>(val tl: TestLoader, override val dtype: DType<N>): TestOrLoader {
+class PreppedTestLoader<N: Number>(
+  val tl: TestLoader,
+  override val dtype: DType<N>
+): TestOrLoader {
   override val test: Test<N> get() = tl.test
   override val testRAMCache: TestRAMCache get() = tl.testRAMCache
 }
