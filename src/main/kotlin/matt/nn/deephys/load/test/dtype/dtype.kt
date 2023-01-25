@@ -18,23 +18,25 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat32
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat64
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
+import java.nio.ByteBuffer
 
 
 @Serializable
 sealed interface DType<N: Number> {
   companion object {
 	fun leastPrecise(type: DType<*>, vararg types: DType<*>): DType<*> {
-      return if (types.isEmpty()) type
-      else {
-        val all = setOf(type,*types)
-        if (Float32 in types) Float32
-        else Float64
-      }
+	  return if (types.isEmpty()) type
+	  else {
+		val all = setOf(type, *types)
+		if (Float32 in types) Float32
+		else Float64
+	  }
 	}
   }
 
   val byteLen: Int
   fun bytesThing(bytes: ByteArray): ImageActivationCborBytes<N>
+  fun bytesToArray(bytes: ByteArray, numIms: Int): ArrayWrapper<N>
   fun rawActivation(act: N): RawActivation<N, *>
   fun normalActivation(act: N): NormalActivation<N, *>
   fun activationRatio(act: N): ActivationRatio<N, *>
@@ -45,6 +47,12 @@ sealed interface DType<N: Number> {
 object Float32: DType<Float> {
   override val byteLen = FLOAT_BYTE_LEN
   override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat32(bytes)
+  override fun bytesToArray(bytes: ByteArray, numIms: Int): FloatArrayWrapper {
+	return FloatArrayWrapper(FloatArray(numIms).also {
+	  ByteBuffer.wrap(bytes).asFloatBuffer().get(it)
+	})
+  }
+
   override fun rawActivation(act: Float) = RawActivationFloat32(act)
   override fun activationRatio(act: Float) = ActivationRatioFloat32(act)
   override fun normalActivation(act: Float) = NormalActivationFloat32(act)
@@ -55,6 +63,11 @@ object Float32: DType<Float> {
 object Float64: DType<Double> {
   override val byteLen = DOUBLE_BYTE_LEN
   override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat64(bytes)
+  override fun bytesToArray(bytes: ByteArray, numIms: Int): DoubleArrayWrapper {
+    return DoubleArrayWrapper(DoubleArray(numIms).also {
+      ByteBuffer.wrap(bytes).asDoubleBuffer().get(it)
+    })
+  }
   override fun rawActivation(act: Double) = RawActivationFloat64(act)
   override fun activationRatio(act: Double) = ActivationRatioFloat64(act)
   override fun normalActivation(act: Double) = NormalActivationFloat64(act)
@@ -71,35 +84,35 @@ sealed interface ArrayWrapper<T>: List<T> {
 
 
   override fun isEmpty(): Boolean {
-    return size == 0
+	return size == 0
   }
 
   override fun iterator(): Iterator<T> {
-    TODO("Not yet implemented")
+	TODO("Not yet implemented")
   }
 
   override fun listIterator(): ListIterator<T> {
-    TODO("Not yet implemented")
+	TODO("Not yet implemented")
   }
 
   override fun listIterator(index: Int): ListIterator<T> {
-    TODO("Not yet implemented")
+	TODO("Not yet implemented")
   }
 
   override fun subList(fromIndex: Int, toIndex: Int): List<T> {
-    TODO("Not yet implemented")
+	TODO("Not yet implemented")
   }
 
   override fun lastIndexOf(element: T): Int {
-    TODO("Not yet implemented")
+	TODO("Not yet implemented")
   }
 
   override fun indexOf(element: T): Int {
-    TODO("Not yet implemented")
+	TODO("Not yet implemented")
   }
 
   override fun containsAll(elements: Collection<T>): Boolean {
-    TODO("Not yet implemented")
+	TODO("Not yet implemented")
   }
 
 }
@@ -110,18 +123,16 @@ value class FloatArrayWrapper(private val v: FloatArray): ArrayWrapper<Float> {
   override fun get(index: Int): Float {
 	return v[index]
   }
+
   override val size get() = v.size
 
 
-
-
   override fun contains(element: Float): Boolean {
-    v.forEach {
-      if (it == element) return true
-    }
-    return false
+	v.forEach {
+	  if (it == element) return true
+	}
+	return false
   }
-
 
 
 }
@@ -136,10 +147,10 @@ value class DoubleArrayWrapper(private val v: DoubleArray): ArrayWrapper<Double>
   override val size get() = v.size
 
   override fun contains(element: Double): Boolean {
-    v.forEach {
-      if (it == element) return true
-    }
-    return false
+	v.forEach {
+	  if (it == element) return true
+	}
+	return false
   }
 }
 
