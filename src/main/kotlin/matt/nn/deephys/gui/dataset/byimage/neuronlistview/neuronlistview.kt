@@ -30,13 +30,14 @@ import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
 import matt.obs.prop.ObsVal
 
-fun NW.neuronListViewSwapper(
+fun <A: Number> NW.neuronListViewSwapper(
   viewer: DatasetViewer,
-  contents: Contents<DeephyImage<*>>,
+  contents: Contents<DeephyImage<A>>,
   bindScrolling: Boolean = false
 ) = run {
 
@@ -86,7 +87,7 @@ fun NW.neuronListViewSwapper(
 }
 
 data class NeuronListViewConfig(
-  val viewer: DatasetViewer, val tops: TopNeuronsCalcType, val testLoader: TestLoader
+  val viewer: DatasetViewer, val tops: TopNeuronsCalcType, val testLoader: TypedTestLike<*>
 )
 
 class NeuronListView(
@@ -153,7 +154,7 @@ class NeuronListView(
 
 
 				/*anirban and xavier asked to hide the activation text in this case since it doesn't pertain to a specific image*/
-				if (neuronWithAct.activation !is ActivationRatio || (tops as TopNeurons).images.isNotEmpty()) {
+				if (neuronWithAct.activation !is ActivationRatio || (tops as TopNeurons<*>).images.isNotEmpty()) {
 				  deephyText(
 					neuronWithAct.activation.formatted
 				  ) {
