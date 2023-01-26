@@ -72,23 +72,12 @@ sealed interface DType<N: Number> {
   val label: String
 
 
-  val actCompartator
-	get() = object: Comparator<Activation<N, *>> {
 
-
-	  override fun compare(o1: Activation<N, *>, o2: Activation<N, *>): Int {
-		o1.compareTo(o2)
-		TODO("Not yet implemented")
-	  }
-
-	}
 
 
 }
 
-fun <N: Number> DType<N>.comparableOf(a: Activation<N, *>): Comparable<N> {
-  return a.value
-}
+
 
 
 @Suppress("UNCHECKED_CAST") fun <N: Number> DType<N>.topNeurons(
