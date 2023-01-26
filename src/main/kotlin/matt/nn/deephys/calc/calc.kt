@@ -71,9 +71,7 @@ data class TopImages<A: Number>(
 	val acts = theTest.activationsByNeuron[neuron]
 
 	//	acts
-
-
-	val indices = test.dtype.wrap(acts).argmaxn2(num)
+	val indices = test.dtype.wrap(acts).argmaxn2(num, skipInfinite = true, skipNaN = true)
 
 	/*val indices = acts.argmaxn2(num)*/
 	indices.map { ImageIndex(it) }
@@ -90,7 +88,7 @@ data class NeuronWithActivation<A: Number>(val neuron: InterTestNeuron, val acti
 
 data class TopNeurons<N: Number>(
   val images: Contents<DeephyImage<N>>,
-  private val layer: InterTestLayer,
+  val layer: InterTestLayer,
   private val test: TypedTestLike<N>,
   private val denomTest: TypedTestLike<N>?,
   val normalized: Boolean,
@@ -145,9 +143,8 @@ data class TopNeurons<N: Number>(
 	//	  .take(NUM_TOP_NEURONS)
 
 	return if (forcedNeuronIndices == null) {
-	  warnOnce("bad toDouble here")
 	  val r = neuronsWithActs.filterNot {
-		it.activation.isNaN
+		it.activation.isNaN || it.activation.isInfinite
 	  }
 		.sortedBy {
 		  it.activation.value.toDouble()
@@ -196,7 +193,7 @@ data class ActivationRatioCalc<A: Number>(
 	} else {
 	  val num = neuron.averageActivation(images, dType = dType).value
 	  val denom = denomTest.test.maxActivations[neuron]
-	  dType.activationRatio(dType.div(num,denom))
+	  dType.activationRatio(dType.div(num, denom))
 	}
 	if (r.isNaN || r.isInfinite) {
 	  println(

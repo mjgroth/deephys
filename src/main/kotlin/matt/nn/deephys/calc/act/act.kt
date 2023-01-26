@@ -8,9 +8,10 @@ import matt.nn.deephys.calc.act.ActivationRatio.Companion.ACT_RATIO_SYMBOL
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
 import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
 
-sealed interface Activation<N: Number, T: Activation<N, T>>: NumberWrapper<T> {
+sealed interface Activation<N: Number, T: Activation<N, T>>: NumberWrapper<T>, Comparable<T> {
   val value: N
   val formatted: String
+  val extraInfo: String?
 }
 
 
@@ -29,7 +30,9 @@ sealed interface ActivationFloat64<T: ActivationFloat64<T>>: Activation<Double, 
 }
 
 
-sealed interface AlwaysOneActivation<N: Number, T: AlwaysOneActivation<N, T>>: Activation<N, T>
+sealed interface AlwaysOneActivation<N: Number, T: AlwaysOneActivation<N, T>>: Activation<N, T> {
+  override val extraInfo get() = null /*"In this case, the activation is always exactly 1"*/
+}
 
 object AlwaysOneActivationFloat32: AlwaysOneActivation<Float, AlwaysOneActivationFloat32>,
 								   ActivationFloat32<AlwaysOneActivationFloat32> {
@@ -40,6 +43,7 @@ object AlwaysOneActivationFloat32: AlwaysOneActivation<Float, AlwaysOneActivatio
 
   override val value = 1f
   override val formatted: String get() = ""
+
 }
 
 object AlwaysOneActivationFloat64: AlwaysOneActivation<Double, AlwaysOneActivationFloat64>,
@@ -51,6 +55,7 @@ object AlwaysOneActivationFloat64: AlwaysOneActivation<Double, AlwaysOneActivati
 
   override val value = 1.0
   override val formatted: String get() = ""
+
 }
 
 
@@ -60,6 +65,9 @@ sealed interface RawActivation<A: Number, T: RawActivation<A, T>>: Activation<A,
   companion object {
 	const val RAW_ACT_SYMBOL = "Y"
   }
+
+  override val extraInfo: String?
+	get() = null
 
 }
 
@@ -97,6 +105,9 @@ sealed interface NormalActivation<A: Number, T: NormalActivation<A, T>>: Activat
 	const val NORMALIZED_ACT_SYMBOL = "Ŷ"
   }
 
+  override val extraInfo: String?
+	get() = null
+
 }
 
 @JvmInline
@@ -116,6 +127,9 @@ value class NormalActivationFloat32(override val value: Float): NormalActivation
   override fun div(n: Number): NormalActivationFloat32 {
 	return NormalActivationFloat32(value/n.toFloat())
   }
+
+
+
 }
 
 
@@ -144,6 +158,9 @@ sealed interface ActivationRatio<A: Number, T: ActivationRatio<A, T>>: Activatio
   companion object {
 	const val ACT_RATIO_SYMBOL = "%"
   }
+
+  override val extraInfo: String?
+	get() =   if (isNaN || isInfinite)  "Ratio will be infinite or NaN if the corresponding activation in the InD network is absolute 0. If the activation was extremely small but non-zero in python and the current test is float32, it may have become zero when the precision was lost. You may try recreating the .test file with float64 precision to see if that fixes it." else null
 
 }
 

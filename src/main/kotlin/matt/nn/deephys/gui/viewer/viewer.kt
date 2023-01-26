@@ -4,8 +4,12 @@ import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import matt.async.thread.daemon
 import matt.collect.itr.filterNotNull
-import matt.collect.set.contents.Contents
+import matt.collect.set.contents.contentsOf
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
@@ -17,14 +21,12 @@ import matt.fx.control.wrapper.titled.TitledPaneWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.enableWhen
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
-import matt.fx.graphics.wrapper.node.visibleWhen
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.hurricanefx.eye.prop.sizeProperty
-import matt.lang.err
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
@@ -43,13 +45,13 @@ import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.load.asyncLoadSwapper
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.dtype.topNeurons
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
@@ -68,6 +70,7 @@ import matt.obs.prop.VarProp
 import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalStdlibApi::class) class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	TitledPaneWrapper() {
@@ -191,44 +194,54 @@ import matt.obs.prop.withNonNullUpdatesFrom
   val imageSelection = VarProp<DeephyImage<*>?>(null)
 
 
-
-  @Suppress("UNCHECKED_CAST")
   private val topNeuronsFromMyImage = run {
 	imageSelection.binding(
 	  testData, layerSelection, normalizeTopNeuronActivations, inD
 	) { im ->
 	  layerSelection.value?.let { lay ->
 		im?.let { theIm ->
-		  TopNeurons(
-			Contents(setOf(theIm) as Set<DeephyImage<Float>>),
-			lay,
+		  testData.value!!.dtype.topNeurons(
+			images = contentsOf(theIm),
+			layer = lay,
 			normalized = normalizeTopNeuronActivations.value,
-			test = testData.value!!.todoPreppedTest() as TypedTestLike<Float>,
-			denomTest = inD.value.takeIf { it != this }?.testData?.value?.todoPreppedTest() as? TypedTestLike<Float>
+			test = testData.value!!.preppedTest.await(),
+			denomTest = inD.value.takeIf { it != this }?.testData?.value?.preppedTest?.await()
 		  )
 		}
 	  }
 	}
   }
-  val boundTopNeurons: MyBinding<TopNeurons<Float>?> = boundToDSet.deepBinding(normalizeTopNeuronActivations, inD) {
+
+
+  val boundTopNeurons: MyBinding<TopNeurons<*>?> = boundToDSet.deepBinding(
+	normalizeTopNeuronActivations,
+	inD
+  ) {
+
+
 	it?.topNeurons?.binding(
 	  normalizeTopNeuronActivations, inD
 	) {
 	  it?.let {
-		err("""
-		  it.copy(
-		  forcedNeuronIndices = it().map { it.neuron.index },
-		  images = contentsOf<DeephyImage<Float>>(),
-		  test = testData.value!!.todoPreppedTest() as TypedTestLike<Float>,
+
+		testData.value!!.dtype.topNeurons(
+		  images = contentsOf(),
+		  layer = it.layer,
+		  test = testData.value!!.preppedTest.await(),
+		  denomTest = inD.value?.testData?.value?.preppedTest?.await(),
 		  normalized = normalizeTopNeuronActivations.value,
-		  denomTest = inD.value?.testData?.value?.todoPreppedTest() as? TypedTestLike<Float>
+		  forcedNeuronIndices = it().map { it.neuron.index }
 		)
-		""".trimIndent())
+
 
 	  }
 	} ?: BindableProperty(null)
+
+
   }
-  val topNeurons = boundTopNeurons coalesceNull (topNeuronsFromMyImage as ObsVal<TopNeurons<Float>?>)
+
+
+  val topNeurons: MyBinding<TopNeurons<*>?> = boundTopNeurons coalesceNull topNeuronsFromMyImage
 
 
   init {
@@ -407,18 +420,52 @@ import matt.obs.prop.withNonNullUpdatesFrom
 		})
 	  }
 	  progressbar {
-		visibleWhen { this@DatasetViewer.showCacheBars }
+		visibleAndManagedWhen { this@DatasetViewer.showCacheBars }
 		style = "-fx-accent: green"
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
 		  it?.cacheProgressPixels ?: 0.0.toVarProp()
 		})
 	  }
 	  progressbar {
-		visibleWhen { this@DatasetViewer.showCacheBars }
+		visibleAndManagedWhen { this@DatasetViewer.showCacheBars }
 		style = "-fx-accent: yellow"
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
 		  it?.cacheProgressActs ?: 0.0.toVarProp()
 		})
+	  }
+	  deephyText("") {
+		fun update(v: TestLoader?) {
+		  println("dtype text 1")
+		  text = ""
+		  println("dtype text 2")
+		  if (v != null) {
+			println("dtype text 3")
+			daemon {
+			  println("dtype text 4")
+			  try {
+				println("dtype text 5")
+				runBlocking {
+				  println("dtype text 6")
+				  withTimeout(1.seconds) {
+					println("dtype text 7")
+					val dtype = v.preppedTest.await().dtype
+					println("dtype text 8")
+					text = "dtype: ${dtype.label}"
+					println("dtype text 9")
+				  }
+				}
+			  } catch (e: TimeoutCancellationException) {
+				warn("timeout when getting dtype text!")
+			  }
+
+			}
+
+		  }
+		}
+		update(this@DatasetViewer.testData.value)
+		this@DatasetViewer.testData.onChange {
+			update(it)
+		}
 	  }
 	}
 	content = v {

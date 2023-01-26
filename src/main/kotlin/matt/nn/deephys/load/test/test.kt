@@ -18,7 +18,6 @@ import matt.lang.disabledCode
 import matt.lang.err
 import matt.lang.l
 import matt.log.profile.mem.throttle
-import matt.log.warn.warnOnce
 import matt.model.code.errreport.ThrowReport
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
@@ -31,6 +30,7 @@ import matt.nn.deephys.load.test.dtype.Float32
 import matt.nn.deephys.load.test.dtype.Float64
 import matt.nn.deephys.load.test.dtype.FloatActivationData
 import matt.nn.deephys.load.test.testcache.TestRAMCache
+import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
@@ -40,7 +40,6 @@ import matt.nn.deephys.model.importformat.im.readFloatActivations
 import matt.nn.deephys.model.importformat.im.readPixels
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
-import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.prop.BindableProperty
 import matt.prim.str.elementsToString
 import matt.prim.str.mybuild.string
@@ -120,20 +119,27 @@ class TestLoader(
 			val nextKey = nextKeyOnly<String>()
 
 
-			val dtype = if (nextKey == "dtype") {
-			  nextValueManualDontReadKey<TextStringReader, DType<*>> {
-				val str = this.read().raw
-				when (str) {
-				  "float32" -> Float32
-				  "float64" -> Float64
-				  else      -> err("str == $str")
+			val dtype = when (nextKey) {
+			  "dtype"  -> {
+				nextValueManualDontReadKey<TextStringReader, DType<*>> {
+				  val str = this.read().raw
+				  when (str) {
+					"float32" -> Float32
+					"float64" -> Float64
+					else      -> err("str == $str")
+				  }
 				}
 			  }
-			} else if (nextKey == "images") {
-			  Float32
-			} else {
-			  err("nextKey == $nextKey")
+			  "images" -> {
+				Float32
+			  }
+			  else     -> {
+				err("nextKey == $nextKey")
+			  }
 			}
+
+			println("load1")
+			preppedTest.putLoadedValue(PreppedTestLoader(this@TestLoader, dtype))
 
 			nextValueManualDontReadKey<ArrayReader, Unit>() {
 			  val numberOfIms = count
@@ -252,7 +258,7 @@ class TestLoader(
 
 
 				}
-				warnOnce("SO BAD BELOW")
+
 				val deephyImage = DeephyImage(
 				  imageID = imageID,
 				  categoryID = categoryID,
@@ -260,11 +266,11 @@ class TestLoader(
 				  index = nextImageIndex++,
 				  testLoader = this@TestLoader,
 				  model = this@TestLoader.model,
-				  test = finishedTest as LoadedValueSlot<Test<Float>>,
+				  test = finishedTest ,
 				  features = features,
 				  activationsRAF = activationsRAF!!,
 				  pixelsRAF = pixelsRAF!!,
-				  dtype = /*dtype*/ Float32
+				  dtype = dtype
 				).apply {
 
 
@@ -320,22 +326,24 @@ class TestLoader(
 			progress.value = 1.0
 
 
-			warnOnce("REALY BAD")
 			finishedTest.putLoadedValue(Test(
 			  name = name,
 			  suffix = suffix,
-			  images = finishedImages.await() as List<DeephyImage<Float>>,
+			  images = finishedImages.await() /*as List<DeephyImage<Float>>*/,
 			  model = this@TestLoader.model,
 			  testRAMCache = testRAMCache,
-			  /*dtype = dtype,*/
-				  dtype = Float32
+			  dtype = dtype,
+//				  dtype = Float32
 			).apply {
-			  testNeurons = localTestNeurons as Map<InterTestNeuron,TestNeuron<Float>>
+			  setTheTestNeurons(localTestNeurons)
+			  /*testNeurons = localTestNeurons*/ /*as Map<InterTestNeuron,TestNeuron<Float>>*/
 			  preds.startLoading()
 			})
+			println("load2")
 			signalFinishedLoading()
 		  }
 		} catch (e: CborParseException) {
+		  ThrowReport(Thread.currentThread(), e).print()
 		  signalParseError(e)
 		  return@daemon
 		}
@@ -351,30 +359,8 @@ class TestLoader(
   override val testRAMCache by lazy { TestRAMCache() }
 
 
-  fun todoPreppedTest(): PreppedTestLoader<*> {
-	throw NotImplementedError("TODO")
-  }
+  val preppedTest = LoadedValueSlot<PreppedTestLoader<*>>()
 
 
 }
-
-class PreppedTestLoader<N: Number>(
-  val tl: TestLoader,
-  override val dtype: DType<N>
-): TypedTestLike<N> {
-  private var finishedTest = LoadedValueSlot<Test<N>>()
-  override fun numberOfImages(): ULong {
-	return tl.numImages.await()
-  }
-
-  override fun imageAtIndex(i: Int): DeephyImage<N> {
-	@Suppress("UNCHECKED_CAST")
-	return tl.awaitImage(i) as DeephyImage<N>
-  }
-
-  override val test: Test<N> get() = finishedTest.await()
-  override val testRAMCache: TestRAMCache get() = tl.testRAMCache
-  override val model: Model get() = tl.model
-}
-
 

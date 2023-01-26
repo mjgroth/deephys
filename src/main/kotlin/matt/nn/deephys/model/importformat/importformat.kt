@@ -65,11 +65,16 @@ sealed interface DeephyFileObject {
 class Test<N: Number>(
   override val name: String,
   override val suffix: String?,
-  val images: List<DeephyImage<N>>,
+  images: List<DeephyImage<*>>,
   override val model: Model,
   override val testRAMCache: TestRAMCache,
   override val dtype: DType<N>
 ): DeephyFileObject, TypedTestLike<N> {
+
+  @Suppress("UNCHECKED_CAST")
+  val images = images as List<DeephyImage<N>>
+
+
   override fun numberOfImages(): ULong {
 	return images.size.toULong()
   }
@@ -81,6 +86,11 @@ class Test<N: Number>(
   override val test = this
 
 
+  fun setTheTestNeurons(value: Map<InterTestNeuron, TestNeuron<*>>?) {
+	@Suppress("UNCHECKED_CAST")
+	testNeurons = value as Map<InterTestNeuron, TestNeuron<N>>?
+  }
+
   var testNeurons: Map<InterTestNeuron, TestNeuron<N>>? = null
 
 
@@ -88,7 +98,7 @@ class Test<N: Number>(
 
   val categories by lazy {
 	stopwatch("categories", enabled = DeephySettings.verboseLogging.value) {
-	  images.map { it.category }.toSet().toList().sortedBy { it.id }
+	  this@Test.images.map { it.category }.toSet().toList().sortedBy { it.id }
 	}
   }
   val catsByID by lazy {
@@ -98,7 +108,7 @@ class Test<N: Number>(
 
   private val imagesByCategoryID by lazy {
 	stopwatch("imagesByCategoryID", enabled = DeephySettings.verboseLogging.value) {
-	  images.groupBy { it.category.id }.mapValues { it.value.toSet() }
+	  this@Test.images.groupBy { it.category.id }.mapValues { it.value.toSet() }
 	}
   }
 
@@ -115,7 +125,7 @@ class Test<N: Number>(
 
 
 //	dtype.
-	val list = images.map {
+	val list = this@Test.images.map {
 	  it.weakActivations[lay]/*.asList()*/
 	}/*.toNDArray()*/
 
@@ -176,7 +186,7 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 
   val preds = run {
 	val clsLayerIndex = model.classificationLayer.index /*attempt to remove ref to Test from thread below*/
-	val ims = images
+	val ims = this@Test.images
 	val nam = name
 	val weakTest = WeakReference(test)
 	DaemonLoadedValueOp<Map<DeephyImage<*>, Category>> {

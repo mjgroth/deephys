@@ -25,9 +25,9 @@ class DatasetNode(
 ): Swapper<DatasetNodeView, RegionWrapper<*>>() {
 
 
-  private val byNeuronView by lazy { ByNeuronView(dataset.todoPreppedTest(), viewer) }
-  private val byImageView by lazy { ByImageView(dataset.todoPreppedTest(), viewer) }
-  private val byCategoryView by lazy { ByCategoryView(dataset.todoPreppedTest(), viewer) }
+  private val byNeuronView by lazy { ByNeuronView(dataset.preppedTest.await(), viewer) }
+  private val byImageView by lazy { ByImageView(dataset.preppedTest.await(), viewer) }
+  private val byCategoryView by lazy { ByCategoryView(dataset.preppedTest.await(), viewer) }
 
   init {
 	setupSwapping(viewer.view) {

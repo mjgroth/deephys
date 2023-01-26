@@ -17,7 +17,7 @@ import matt.nn.deephys.gui.dataset.byimage.preds.PredictionsView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.nn.deephys.load.test.PreppedTestLoader
+import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.bindings.bool.and
 

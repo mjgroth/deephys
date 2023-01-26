@@ -74,7 +74,7 @@ class DeephyTooltip(s: String, im: DeephyImage<*>?): TooltipWrapper(s) {
 
 	var didFirstShow = false
 
-	comfortableShowAndHideSettingsForMatt()
+	comfortablyShowForeverUntilEscaped()
 	val ms1 = DeephySettings.millisecondsBeforeTooltipsVanish.value
 	if (ms1 != 0) {
 	  hideDelay = Duration.millis(ms1.toDouble())

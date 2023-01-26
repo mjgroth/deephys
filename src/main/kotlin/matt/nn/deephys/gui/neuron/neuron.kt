@@ -3,7 +3,9 @@ package matt.nn.deephys.gui.neuron
 import matt.collect.set.contents.contentsOf
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
+import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.lang.go
 import matt.lang.weak.WeakPair
 import matt.lang.weak.WeakRef
@@ -35,19 +37,22 @@ class NeuronView<A: Number>(
 	  swapperR(viewer.inD) {
 		weakViewer.deref()!!.testData.value?.go { numTest ->
 		  it.testData.value?.go { denomTest ->
-			@Suppress("UNCHECKED_CAST")
-			deephyText(
-			  ActivationRatioCalc<A>(
-				numTest = numTest.todoPreppedTest() as TypedTestLike<A>,
+			h {
+			  @Suppress("UNCHECKED_CAST")
+			  val ratio = ActivationRatioCalc(
+				numTest = numTest.preppedTest.await() as TypedTestLike<A>,
 				images = contentsOf(),
-				denomTest = denomTest.todoPreppedTest() as TypedTestLike<A>,
+				denomTest = denomTest.preppedTest.await() as TypedTestLike<A>,
 				neuron = neuron
-			  )().formatted
-			) {
-			  deephyTooltip(ActivationRatioCalc.technique)
+			  )()
+			  deephyText(
+				ratio.formatted
+			  ) {
+				deephyTooltip(ActivationRatioCalc.technique)
+			  }
+			  ratio.extraInfo?.go { infoSymbol(it) }
 			}
 		  }
-
 		}
 	  }
 	}

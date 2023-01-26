@@ -8,10 +8,12 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
+import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
+import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.lang.go
 import matt.lang.weak.WeakRef
 import matt.nn.deephys.calc.ActivationRatioCalc
@@ -28,7 +30,6 @@ import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.MyBinding
@@ -51,13 +52,13 @@ fun <A: Number> NW.neuronListViewSwapper(
 		TopNeurons(
 		  images = contents,
 		  layer = lay,
-		  test = deRefedViewer.testData.value!!.todoPreppedTest() as TypedTestLike<A>,
+		  test = deRefedViewer.testData.value!!.preppedTest.await() as TypedTestLike<A>,
 		  normalized = deRefedViewer.normalizeTopNeuronActivations.value,
-		  denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value?.todoPreppedTest() as TypedTestLike<A>?
+		  denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
 		)
 	  }
 	}
-  }.apply {	/*  viewer.onGarbageCollected {
+  }.apply {    /*  viewer.onGarbageCollected {
 		  markInvalid()
 		  removeAllDependencies()
 		}*/
@@ -76,7 +77,7 @@ fun NW.neuronListViewSwapper(
 		deRefedViewer.testData.value?.let { tst ->
 		  top.value?.let { topCalc ->
 			NeuronListViewConfig(
-			  viewer = deRefedViewer, testLoader = tst.todoPreppedTest(), tops = topCalc
+			  viewer = deRefedViewer, testLoader = tst.preppedTest.await(), tops = topCalc
 			)
 		  }
 		}
@@ -147,26 +148,30 @@ class NeuronListView(
 				val deReffedViewer = weakViewer.deref()!!
 				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
 				viewerToChange.navigateTo(neuronWithAct.neuron)
-			  }			/*val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value*/
+			  }            /*val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value*/
 
 
 			  val normalize = viewer.normalizeTopNeuronActivations
-			  swapperRNullable(viewer.inD.binding(normalize) { it }) {				/*val inD = it*/				/*if (inD == null || inD == viewer) {*/
+			  swapperRNullable(viewer.inD.binding(normalize) { it }) {                /*val inD = it*/                /*if (inD == null || inD == viewer) {*/
 
 
 				/*anirban and xavier asked to hide the activation text in this case since it doesn't pertain to a specific image*/
 				if (neuronWithAct.activation !is ActivationRatio || (tops as TopNeurons<*>).images.isNotEmpty()) {
-				  deephyText(
-					neuronWithAct.activation.formatted
-				  ) {
-					deephyTooltip(
-					  when (neuronWithAct.activation) {
-						is AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
-						is RawActivation    -> "raw activation value for the selected image"
-						is NormalActivation -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
-						is ActivationRatio  -> ActivationRatioCalc.technique
-					  }
-					)
+				  val act = neuronWithAct.activation
+				  h {
+					deephyText(
+					  act.formatted
+					) {
+					  deephyTooltip(
+						when (act) {
+						  is AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
+						  is RawActivation       -> "raw activation value for the selected image"
+						  is NormalActivation    -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
+						  is ActivationRatio     -> ActivationRatioCalc.technique
+						}
+					  )
+					}
+					act.extraInfo?.go { infoSymbol(it) }
 				  }
 				}
 
@@ -180,7 +185,7 @@ class NeuronListView(
 					)().formatted
 				  ) {
 					deephyTooltip(ActivationRatioCalc.technique)
-				  }*/				/*}*/ /*?: deephyText("error: no activation info")*/
+				  }*/                /*}*/ /*?: deephyText("error: no activation info")*/
 			  }
 
 

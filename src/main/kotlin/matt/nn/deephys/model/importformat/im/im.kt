@@ -34,11 +34,13 @@ class DeephyImage<A: Number>(
   val index: Int,
   val model: Model,
   val features: Map<String, String>?,
-  test: LoadedValueSlot<Test<A>>,
+  test: LoadedValueSlot<Test<*>>,
   activationsRAF: EvenlySizedRAFCache,
   pixelsRAF: EvenlySizedRAFCache,
   dtype: DType<A> /*just for generic*/
 ): RAFCaches() {
+
+
 
   val category = Category(id = categoryID, label = category)
 
@@ -75,7 +77,8 @@ class DeephyImage<A: Number>(
 	}
   }
 
-  @PhaseOut private val weakTest = WeakReference(test)
+  @Suppress("UNCHECKED_CAST")
+  @PhaseOut private val weakTest = WeakReference(test) as WeakReference<LoadedValueSlot<Test<A>>>
 
   val prediction by lazy {
 	weakTest.get()!!.await().preds.await()[this]!!
