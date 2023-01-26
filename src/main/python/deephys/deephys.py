@@ -1,14 +1,16 @@
 # @title DEEPHYS
 from cbor2 import dump
 from dataclasses import dataclass, asdict
-from typing import List, Optional, Mapping
+from typing import List, Optional, Mapping, Union
 import numpy as np
 import torch
 import struct
 from time import time
 
 # library already optimizes writes of int8
+# python cbor package has no way to make float32, also bytearray is smaller/faster
 float32 = lambda val: struct.pack("!f", val)
+float64 = lambda val: struct.pack("!d", val)
 
 
 @dataclass
@@ -41,11 +43,8 @@ class Model(DEEPHYSData):
     """
 
     :param name: name of the model (e.g.: `"resnet18"`)
-    :type name: str
     :param suffix: optional suffix for the model
-    :type suffix: Optional[str]
     :param layers: A List of layers in the model. The app is guaranteed to support cases where there are 2 layers and one of them is called `"classification"`.
-    :type layers: List[deephys.deephys.Layer]
     """
 
     layers: List[Layer]
@@ -73,20 +72,24 @@ class Model(DEEPHYSData):
         activations: List[bytearray]  # float32
 
 
-def import_torch_dataset(name, dataset, classes, state, model):
+def import_torch_dataset(
+    name: str,
+    dataset: torch.utils.data.DataLoader,
+    classes: list,
+    state: Union[list, np.ndarray, torch.FloatTensor],
+    model: Model,
+    dtype: str = "float32",
+):
     """
     Conveniently calls import_test_data with PyTorch data.
 
     :param name: the name of the dataset
-    :type name: str
     :param dataset: contains pixel data of images
-    :type dataset: torch.utils.data.DataLoader
     :param classes: an ordered list of strings representing class names
-    :type classes: list
     :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images.
-    :type state: Union[list,np.ndarray]
     :param model: the model structure
-    :type model: deephys.deephys.Model
+    :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
+                  Default: ``"float32"``
     :return: a formatted data object which may be saved to a file
     :rtype: deephys.deephys.Test
     """
@@ -109,40 +112,65 @@ def import_torch_dataset(name, dataset, classes, state, model):
     )
 
 
-def _to_mat(d):
+def _to_np(d):
     if isinstance(d, list):
         return np.array(d)
+    if torch.is_tensor(d):
+        return d.cpu().detach().numpy()
     return d
 
 
-def import_test_data(name, classes, state, model, pixel_data, ground_truths):
+def _to_torch(value):
+    if isinstance(value, list):
+        return torch.tensor(value)
+    elif isinstance(value, np.ndarray):
+        return torch.from_numpy(value)
+    return value
+
+
+def _to_list(value):
+    if isinstance(value, (np.ndarray, torch.IntTensor)):
+        return value.tolist()
+    return value
+
+
+def import_test_data(
+    name: str,
+    classes: list,
+    state: Union[list, np.ndarray, torch.FloatTensor],
+    model: Model,
+    pixel_data: Union[list, np.ndarray, torch.FloatTensor],
+    ground_truths: Union[List[int], np.ndarray, torch.IntTensor],
+    dtype: str = "float32",
+):
     """
     Prepare test results for Deephys
 
     :param name: the name of the dataset
-    :type name: str
     :param classes: an ordered list of strings representing class names
-    :type classes: list
     :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images.
-    :type state: Union[list,np.ndarray]
     :param model: the model structure
-    :type model: deephys.deephys.Model
-    :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2]. Pixels must be floats within the range 0.0:1.0
-    :type pixel_data: Union[list,np.ndarray,torch.FloatTensor]
-    :param ground_truths: an ordered list of ground truths
-    :type ground_truths: List[int]
+    :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2] or [images,dim1,dim2] for greyscale. Pixels must be floats within the range 0.0:1.0
+    :param ground_truths: an ordered list of ground truths. The length should be the same as the number of images. Each element should be an integer indicating the index of the class.
+    :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
+                  Default: ``"float32"``
     :return: a formatted data object which may be saved to a file
     :rtype: deephys.deephys.Test
     """
     imageList = []
-    state = list(map(_to_mat, state))
-    if isinstance(pixel_data, list):
-        pixel_data = torch.tensor(pixel_data)
-    elif isinstance(pixel_data, np.ndarray):
-        pixel_data = torch.from_numpy(pixel_data)
+    state = list(map(_to_np, state))
+    pixel_data = _to_torch(pixel_data)
+    if len(pixel_data.shape) == (3):
+        pixel_data = torch.unsqueeze(pixel_data, 1)
+        pixel_data = pixel_data.repeat(1, 3, 1, 1)
+    if isinstance(ground_truths, torch.FloatTensor):
+        raise Exception(
+            f"ground_truths should be a list-like of ints, but got a FloatTensor. Please make it an IntTensor."
+        )
+    ground_truths = _to_list(ground_truths)
     if len(pixel_data.shape) != (4):
         raise Exception(
-            f"pixel_data should be a 4D array-like collection [images,channels,dim1,dim2], but a shape of {pixel_data.shape} was received"
+            f"pixel_data should be a 3D or 4D array-like collection. Colored: [images,channels,dim1,dim2] or greyscale: [images,dim1,dim2], but a shape of {pixel_data.shape} was received"
         )
     if len(ground_truths) != len(pixel_data):
         raise Exception(
@@ -166,18 +194,25 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
         im_as_list = image.numpy().astype(np.uint8).tolist()
         im_activations = list(map(lambda l: l[i, :], state))
+        if dtype == "float32":
+            float_fun = float32
+        elif dtype == "float64":
+            float_fun = float64
+        else:
+            raise Exception(
+                f"dtype must be 'float32' or 'float64'. Input was '{dtype}'"
+            )
         imageList.append(
             ImageFile(
                 imageID=i,
                 categoryID=target,
                 category=classes[target],
                 data=im_to_bytes(im_as_list),
-                # python cbor package has no way to make float32, also bytearray is smaller/faster
                 activations=model.state(
                     list(
                         map(
                             lambda layer: bytearray(
-                                [b for a in layer for b in float32(a)]
+                                [b for a in layer for b in float_fun(a)]
                             ),
                             im_activations,
                         )
@@ -186,7 +221,7 @@ def import_test_data(name, classes, state, model, pixel_data, ground_truths):
                 features=None,
             )
         )
-    test = Test(name=name, suffix=None, images=imageList)
+    test = Test(name=name, suffix=None, dtype=dtype, images=imageList)
     return test
 
 
@@ -202,6 +237,7 @@ class ImageFile:
 
 @dataclass
 class Test(DEEPHYSData):
+    dtype: Optional[str]
     images: List[ImageFile]
 
     def __post_init__(self):

@@ -16,6 +16,8 @@ version: [0.9.0](https://pypi.org/project/deephys/0.9.0/)
 
 ### New Features
 - dtype: dtype for activations can now be either float32 or float64
+- If the app crashes, a crash report should now be written to a file. This file is located in a different place depending on what OS the user is running. 
+- Detailed info about the error logging above added to the readme, as it is critical for us to receive error logs in order to fix most crashes
 
 [//]: # (### Performance Improvements)
 [//]: # (### Cosmetic Changes)

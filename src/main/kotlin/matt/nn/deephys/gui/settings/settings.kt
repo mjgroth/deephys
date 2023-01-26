@@ -18,6 +18,7 @@ import matt.gui.option.BoolSetting
 import matt.gui.option.EnumSetting
 import matt.gui.option.IntSetting
 import matt.log.profile.mem.MemReport
+import matt.nn.deephys.gui.DEEPHY_USER_DATA_DIR
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
@@ -27,6 +28,7 @@ import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.init.gearImage
 import matt.nn.deephys.state.DeephySettings
+import java.awt.Desktop
 
 
 val settingsButton by lazy {
@@ -67,17 +69,17 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 
 	  when (sett) {
 		is EnumSetting -> {
-//		  val group = sett.createBoundToggleMechanism()
+		  //		  val group = sett.createBoundToggleMechanism()
 		  hbox<NW> {
 			deephyText(sett.label)
 
 			sett.createRadioButtons(this@hbox)
 
-//			sett.cls.java.enumConstants.forEach {
-//			  deephyRadioButton((it as Enum<*>).name, group, it) {
-//				isSelected = sett.prop.value == it
-//			  }
-//			}
+			//			sett.cls.java.enumConstants.forEach {
+			//			  deephyRadioButton((it as Enum<*>).name, group, it) {
+			//				isSelected = sett.prop.value == it
+			//			  }
+			//			}
 			deephyTooltip(sett.tooltip)
 		  }
 
@@ -155,7 +157,11 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 		println(ThreadReport())
 	  }
 	}
-
+	deephyButton("Open Log Folder") {
+	  setOnAction {
+		Desktop.getDesktop().browseFileDirectory(DEEPHY_USER_DATA_DIR)
+	  }
+	}
 
   }
 }

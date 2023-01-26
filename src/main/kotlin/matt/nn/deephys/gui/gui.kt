@@ -12,6 +12,8 @@ import matt.async.thread.daemon
 import matt.auto.ICON_SIZES
 import matt.collect.itr.mapToArray
 import matt.exec.app.myVersion
+import matt.file.commons.LogContext
+import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.file.construct.toMFile
 import matt.file.toSFile
 import matt.fx.control.mscene.MScene
@@ -50,6 +52,10 @@ import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
 import matt.obs.subscribe.Pager
 import java.util.prefs.Preferences
+
+ val DEEPHY_USER_DATA_DIR by lazy {
+  PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkdir("Deephys")
+}
 
 enum class Arg {
   `erase-state`, `erase-settings`, reset
@@ -238,6 +244,9 @@ class DeephysApp {
 
 	VersionChecker.checkForUpdatesInBackground()
 
-  }.runBlocking(t = t)
+  }.runBlocking(
+	logContext = LogContext(DEEPHY_USER_DATA_DIR),
+	t = t
+  )
 
 }
