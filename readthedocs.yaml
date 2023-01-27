@@ -4,3 +4,5 @@ python:
   install:
     - method: pip
       path: src/main/python
+    - method: pip
+      path: sphinx-autodoc-typehints
