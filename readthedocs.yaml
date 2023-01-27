@@ -1,8 +1,11 @@
 version: 2
 
+build:
+  jobs:
+    post_create_environment:
+      pip install sphinx-autodoc-typehints
+
 python:
   install:
     - method: pip
       path: src/main/python
-    - method: pip
-      path: sphinx-autodoc-typehints
