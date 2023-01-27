@@ -92,7 +92,7 @@ def import_torch_dataset(
     :param name: the name of the dataset
     :param dataset: contains pixel data of images
     :param classes: an ordered list of strings representing class names
-    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images.
+    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
     :param model: the model structure
     :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
                   Default: ``"float32"``
@@ -154,7 +154,7 @@ def import_test_data(
 
     :param name: the name of the dataset
     :param classes: an ordered list of strings representing class names
-    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images.
+    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
     :param model: the model structure
     :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2] or [images,dim1,dim2] for greyscale. Pixels must be floats within the range 0.0:1.0
     :param ground_truths: an ordered list of ground truths. The length should be the same as the number of images. Each element should be an integer indicating the index of the class.
