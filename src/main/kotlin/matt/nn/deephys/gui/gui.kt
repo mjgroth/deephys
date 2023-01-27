@@ -53,8 +53,11 @@ import matt.nn.deephys.version.VersionChecker
 import matt.obs.subscribe.Pager
 import java.util.prefs.Preferences
 
- val DEEPHY_USER_DATA_DIR by lazy {
+val DEEPHY_USER_DATA_DIR by lazy {
   PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkdir("Deephys")
+}
+val DEEPHYS_LOG_CONTEXT by lazy {
+  LogContext(DEEPHY_USER_DATA_DIR)
 }
 
 enum class Arg {
@@ -245,7 +248,7 @@ class DeephysApp {
 	VersionChecker.checkForUpdatesInBackground()
 
   }.runBlocking(
-	logContext = LogContext(DEEPHY_USER_DATA_DIR),
+	logContext = DEEPHYS_LOG_CONTEXT,
 	t = t
   )
 

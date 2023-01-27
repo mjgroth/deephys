@@ -174,7 +174,7 @@ data class ActivationRatioCalc<A: Number>(
 
   companion object {
 	const val technique =
-	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the bound neuron"
+	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the InD neuron"
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/

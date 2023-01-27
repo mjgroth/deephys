@@ -18,7 +18,7 @@ import matt.gui.option.BoolSetting
 import matt.gui.option.EnumSetting
 import matt.gui.option.IntSetting
 import matt.log.profile.mem.MemReport
-import matt.nn.deephys.gui.DEEPHY_USER_DATA_DIR
+import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
@@ -159,7 +159,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 	}
 	deephyButton("Open Log Folder") {
 	  setOnAction {
-		Desktop.getDesktop().browseFileDirectory(DEEPHY_USER_DATA_DIR)
+		Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder)
 	  }
 	}
 

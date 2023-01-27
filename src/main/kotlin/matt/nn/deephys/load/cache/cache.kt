@@ -15,14 +15,6 @@ object DeephysCacheManager {
 
   private val DEEPHY_CACHE_DIR = DEEPHY_USER_DATA_DIR.mkdir("Cache")
 
-  init {
-	DEEPHY_USER_DATA_DIR.listNonDSStoreFiles()!!.forEach {
-	  require(it == DEEPHY_CACHE_DIR) {
-		"unknown file $it found in the user data directory"
-	  }
-	}
-  }
-
   private val DATA_SETS_CACHE_DIR = DEEPHY_CACHE_DIR.mkdir("datasets")
 
   private val oldDatasetCaches = DATA_SETS_CACHE_DIR.listFiles()!!

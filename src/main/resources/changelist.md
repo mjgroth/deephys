@@ -25,6 +25,7 @@ version: [0.9.0](https://pypi.org/project/deephys/0.9.0/)
 ### Bug Fixes
 - In the "Top Images" calculation for the ByNeuron view, any activations that are NaN or Infinite (as a result of zeros in the activations) are now completely excluded. 
 - Checkbox in "bind" tutorial fixed
+- Tooltip for activation ratios now correctly replaced "bind" with "InD"
 
 [//]: # (### Internal Development)
 [//]: # (### New Tests)

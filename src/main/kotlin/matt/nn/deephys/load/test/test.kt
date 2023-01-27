@@ -97,8 +97,10 @@ class TestLoader(
 	}
   }
 
-  @Suppress("UNCHECKED_CAST") val start = SingleCall {
+  @Suppress("UNREACHABLE_CODE")
+   val start = SingleCall {
 	daemon("TestLoader-${file.name}") {
+
 	  if (!file.exists()) {
 		signalFileNotFound()
 		return@daemon
