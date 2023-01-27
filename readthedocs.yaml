@@ -6,4 +6,4 @@ python:
   install:
     - method: pip
       path: src/main/python
-    - requirements: docs/requirements.txt
+    
