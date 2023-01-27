@@ -112,7 +112,7 @@ class TestLoader(
 		  reader.readManually<MapReader, Unit> {
 
 
-			expectCount(3UL)
+			expectCount(3UL..4UL)
 			val name = nextValue<String>(requireKeyIs = "name")
 			val suffix = nextValue<String?>(requireKeyIs = "suffix")
 
@@ -120,7 +120,7 @@ class TestLoader(
 
 
 			val dtype = when (nextKey) {
-			  "dtype"  -> {
+			  "dtype" -> {
 				nextValueManualDontReadKey<TextStringReader, DType<*>> {
 				  val str = this.read().raw
 				  when (str) {
@@ -130,10 +130,12 @@ class TestLoader(
 				  }
 				}
 			  }
+
 			  "images" -> {
 				Float32
 			  }
-			  else     -> {
+
+			  else -> {
 				err("nextKey == $nextKey")
 			  }
 			}
@@ -266,7 +268,7 @@ class TestLoader(
 				  index = nextImageIndex++,
 				  testLoader = this@TestLoader,
 				  model = this@TestLoader.model,
-				  test = finishedTest ,
+				  test = finishedTest,
 				  features = features,
 				  activationsRAF = activationsRAF!!,
 				  pixelsRAF = pixelsRAF!!,
@@ -329,11 +331,11 @@ class TestLoader(
 			finishedTest.putLoadedValue(Test(
 			  name = name,
 			  suffix = suffix,
-			  images = finishedImages.await() /*as List<DeephyImage<Float>>*/,
+			  images = finishedImages.await(), /*as List<DeephyImage<Float>>*/
 			  model = this@TestLoader.model,
 			  testRAMCache = testRAMCache,
 			  dtype = dtype,
-//				  dtype = Float32
+			  //				  dtype = Float32
 			).apply {
 			  setTheTestNeurons(localTestNeurons)
 			  /*testNeurons = localTestNeurons*/ /*as Map<InterTestNeuron,TestNeuron<Float>>*/

@@ -9,7 +9,6 @@ import matt.math.mat.argmaxn.argmaxn2
 import matt.math.reduce.mean
 import matt.math.reduce.sumOf
 import matt.nn.deephys.calc.TopNeurons
-import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.ActivationRatioFloat32
 import matt.nn.deephys.calc.act.ActivationRatioFloat64
