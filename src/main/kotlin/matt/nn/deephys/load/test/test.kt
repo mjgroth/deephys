@@ -97,8 +97,7 @@ class TestLoader(
 	}
   }
 
-  @Suppress("UNREACHABLE_CODE")
-   val start = SingleCall {
+  val start = SingleCall {
 	daemon("TestLoader-${file.name}") {
 
 	  if (!file.exists()) {
@@ -118,12 +117,15 @@ class TestLoader(
 			val name = nextValue<String>(requireKeyIs = "name")
 			val suffix = nextValue<String?>(requireKeyIs = "suffix")
 
+
 			val nextKey = nextKeyOnly<String>()
 
+			println("nextKey=$nextKey")
 
 			val dtype = when (nextKey) {
 			  "dtype" -> {
-				nextValueManualDontReadKey<TextStringReader, DType<*>> {
+				println("doing dtype read")
+				val d = nextValueManualDontReadKey<TextStringReader, DType<*>> {
 				  val str = this.read().raw
 				  when (str) {
 					"float32" -> Float32
@@ -131,6 +133,8 @@ class TestLoader(
 					else      -> err("str == $str")
 				  }
 				}
+				nextKeyOnly(requireIs = "images")
+				d
 			  }
 
 			  "images" -> {

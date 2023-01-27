@@ -52,24 +52,30 @@ class Model(DEEPHYSData):
     def __post_init__(self):
         self.extension = f"model"
 
-    def state(self, activations):
+    def state(self, activations, dtype):
         if len(activations) != len(self.layers):
             raise Exception(
                 f"expected activations data with length of {len(self.layers)} (number of layers) but got {len(activations)}"
             )
+        if dtype == "float32":
+            b = 4
+        elif dtype == "float64":
+            b = 8
+        else:
+            raise Exception(f"invalid dtype: {dtype}")
         for index, sub in enumerate(activations):
-            subLen = len(sub) / 4
+            subLen = len(sub) / b
             neuronsLen = len(self.layers[index].neurons)
             if subLen != neuronsLen:
                 raise Exception(
-                    f"expected activations data with length of {neuronsLen} (number of neurons in layer {index}) but got {subLen / 4}"
+                    f"expected activations data with length of {neuronsLen} (number of neurons in layer {index}) but got {subLen / b}"
                 )
         ms = self.ModelState(activations)
         return ms
 
     @dataclass
     class ModelState:
-        activations: List[bytearray]  # float32
+        activations: List[bytearray]  # float32 or float64
 
 
 def import_torch_dataset(
@@ -216,7 +222,8 @@ def import_test_data(
                             ),
                             im_activations,
                         )
-                    )
+                    ),
+                    dtype,
                 ),
                 features=None,
             )

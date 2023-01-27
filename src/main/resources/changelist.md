@@ -4,9 +4,9 @@
 
 
 Compatible pip package
-version: [0.9.0](https://pypi.org/project/deephys/0.9.0/)
+version: [0.9.2](https://pypi.org/project/deephys/0.9.2/)
 
-### PIP Python Package Updated to 0.9.0
+### PIP Python Package Updated to 0.9.2
 - Added optional `dtype` parameter to `import_test_data`. See the docs.
 - `ground_truths` can now be a regular list, a numpy list, or a torch IntTensor
 - `pixel_data` can now be `[images,channels,dim1,dim2]` as before or [images,dim1,dim2]` for greyscale
