@@ -11,8 +11,6 @@ import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
-import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.fx.graphics.wrapper.textflow.textflow
 import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.lang.go
 import matt.lang.weak.WeakRef
@@ -142,7 +140,7 @@ class NeuronListView(
 		topNeurons.forEach { neuronWithAct ->
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {
-			textflow<TextWrapper> {
+			h {
 			  val weakViewer = WeakRef(viewer)
 			  deephyActionText("neuron $neuronIndex") {
 				val deReffedViewer = weakViewer.deref()!!
@@ -150,6 +148,8 @@ class NeuronListView(
 				viewerToChange.navigateTo(neuronWithAct.neuron)
 			  }            /*val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value*/
 
+
+			  spacer(10.0)
 
 			  val normalize = viewer.normalizeTopNeuronActivations
 			  swapperRNullable(viewer.inD.binding(normalize) { it }) {                /*val inD = it*/                /*if (inD == null || inD == viewer) {*/
@@ -171,6 +171,7 @@ class NeuronListView(
 						}
 					  )
 					}
+					infoSymbol("test")
 					act.extraInfo?.go { infoSymbol(it) }
 				  }
 				}

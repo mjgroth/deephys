@@ -28,7 +28,7 @@ class ByImageView<A: Number>(
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 	val weakViewer = WeakRef(viewer)
-	val weakTest = WeakRef<PreppedTestLoader<A>>(testLoader)
+	val weakTest = WeakRef(testLoader)
 	deephyButton("select random image") {
 	  setOnAction {
 		weakViewer.deref()!!.imageSelection.value = weakTest.deref()!!.tl.awaitNonUniformRandomImage()

@@ -50,6 +50,7 @@ class NeuronView<A: Number>(
 			  ) {
 				deephyTooltip(ActivationRatioCalc.technique)
 			  }
+			  infoSymbol("test")
 			  ratio.extraInfo?.go { infoSymbol(it) }
 			}
 		  }

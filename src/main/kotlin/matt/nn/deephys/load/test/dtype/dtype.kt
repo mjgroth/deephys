@@ -130,7 +130,7 @@ object Float32: DtypeBase<Float>() {
 
 @Serializable
 object Float64: DtypeBase<Double>() {
-  override val label = "float62"
+  override val label = "float64"
   override val byteLen = DOUBLE_BYTE_LEN
   override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat64(bytes)
   override fun bytesToArray(bytes: ByteArray, numIms: Int): DoubleArrayWrapper {
