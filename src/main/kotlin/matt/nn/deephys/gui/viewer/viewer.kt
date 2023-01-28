@@ -10,6 +10,7 @@ import kotlinx.coroutines.withTimeout
 import matt.async.thread.daemon
 import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.contentsOf
+import matt.collect.weak.lazyWeakMap
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
@@ -58,6 +59,7 @@ import matt.obs.bind.binding
 import matt.obs.bind.coalesceNull
 import matt.obs.bind.deepBinding
 import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
+import matt.obs.bind.weakBinding
 import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.not
 import matt.obs.bindings.bool.or
@@ -267,14 +269,24 @@ import kotlin.time.Duration.Companion.seconds
   }
 
 
-  private val boundCategory: ObsVal<CategorySelection?> = boundToDSet.deepBindingIgnoringFutureNullOuterChanges(testData) {
-	it?.categorySelection?.binding {
-	  testData.value?.let { tst ->
-		it?.forTest(tst)
-	  }
-	} ?: BindableProperty<CategorySelection?>(null)
-  }
+  private val boundCategory: ObsVal<CategorySelection?> = boundToDSet
+	.deepBindingIgnoringFutureNullOuterChanges(testData) {
+	  it?.categorySelection?.binding { cat ->
+		testData.value?.let { tst ->
+		  cat?.forTest(tst)
+		}
+	  } ?: BindableProperty(null)
+	}
+
+
   val categorySelection = VarProp<CategorySelection?>(null).withNonNullUpdatesFrom(boundCategory)
+  val catSelectionForViewer = lazyWeakMap<DatasetViewer, ObsVal<CategorySelection?>> { viewer ->
+	categorySelection.weakBinding(viewer) { v, cat ->
+	  v.testData.value?.let { tst ->
+		cat?.forTest(tst)
+	  }
+	}
+  }
 
 
   var currentByImageHScroll: VarProp<Double>? = null
@@ -470,7 +482,7 @@ import kotlin.time.Duration.Companion.seconds
 		}
 		update(this@DatasetViewer.testData.value)
 		this@DatasetViewer.testData.onChange {
-			update(it)
+		  update(it)
 		}
 	  }
 	}

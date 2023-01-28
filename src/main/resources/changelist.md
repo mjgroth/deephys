@@ -23,11 +23,15 @@ version: [0.9.2](https://pypi.org/project/deephys/0.9.2/)
 ### Performance Improvements
 - Greatly optimized the refreshing of the TopImages node (for when the user changes the number of top images to show in the settings). It used to be laggy, but now it should feel smooth.
 - Reduced memory usage
+- Reduced CPU usage
 - Notes:
   - Replaced strong refs with weak refs in property binding mechanisms, reducing memory usage
   - All functions in delegation.kt made inline
   - `get()` -> `lazy` for region and window props
   - Removed strong ref on mainDep in DepListenerSet when possible
+  - wrapped FX properties in lazy delegates, removing unused listeners
+  - reduced number of objects
+  - Added `weakBinding`
 
 [//]: # (### Cosmetic Changes)
 
