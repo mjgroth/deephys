@@ -2,6 +2,7 @@
 .git_knn
 /out/
 *.hprof
+*.hprof.idom
 *.zip
 *.tgz
 __pycache__
