@@ -8,6 +8,7 @@ import matt.fx.control.lang.actionbutton
 import matt.fx.control.mstage.ShowMode.DO_NOT_SHOW
 import matt.fx.control.mstage.WMode.CLOSE
 import matt.fx.control.win.interact.openInNewWindow
+import matt.fx.control.wrapper.control.slider.slider
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
 import matt.fx.graphics.wrapper.node.NW
@@ -15,6 +16,7 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.gui.option.BoolSetting
+import matt.gui.option.DoubleSetting
 import matt.gui.option.EnumSetting
 import matt.gui.option.IntSetting
 import matt.log.profile.mem.MemReport
@@ -68,8 +70,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 	DeephySettings.settings.forEach { sett ->
 
 	  when (sett) {
-		is EnumSetting -> {
-		  //		  val group = sett.createBoundToggleMechanism()
+		is EnumSetting   -> {		//		  val group = sett.createBoundToggleMechanism()
 		  hbox<NW> {
 			deephyText(sett.label)
 
@@ -92,20 +93,15 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 		  //		  }
 		}
 
-		is IntSetting  -> {
-
+		is IntSetting    -> {
 		  deephyLabel {
 			deephyTooltip(sett.tooltip)
 			text = sett.label
 			contentDisplay = RIGHT
 			graphic = spinner(
-			  min = sett.min,
-			  max = sett.max,
-			  initialValue = sett.prop.value,
-			  editable = true
+			  min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
 			) {
-			  prefWidth = 150.0
-			  /* val rBlocker = RecursionBlocker()
+			  prefWidth = 150.0			/* val rBlocker = RecursionBlocker()
 			   valueProperty.onChange {
 				 require(it != null)
 				 rBlocker.with {
@@ -122,13 +118,47 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 		  }
 		}
 
-		is BoolSetting -> {
+		is DoubleSetting -> {
+		  deephyLabel {
+			deephyTooltip(sett.tooltip)
+			text = sett.label
+			contentDisplay = RIGHT
+			graphic = slider(
+			  min = sett.min,
+			  max = sett.max,
+			  value = sett.prop.value,
+			) {
+			  prefWidth = 150.0
+			/*  val rBlocker = RecursionBlocker()
+			  valueChangingProperty.onChange {
+				rBlocker.with {
+				  sett.prop.value = value
+				}
+			  }			*//*  valueProperty.onChange {
+				  require(it != null)
+				  rBlocker.with {
+					sett.prop.value = it
+				  }
+				}*//*
+			  sett.prop.onChange {
+				rBlocker.with {
+				  value = it
+				}
+			  }
+*/
+			  valueProperty.bindBidirectional(sett.prop)
+
+			  /*this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)*/
+			}
+		  }
+		}
+
+		is BoolSetting   -> {
 		  deephyCheckbox(
 			sett.label
 		  ) {
 			deephyTooltip(sett.tooltip)
-			selectedProperty.bindBidirectional(sett.prop)
-			/*isSelected = sett.prop.value
+			selectedProperty.bindBidirectional(sett.prop)			/*isSelected = sett.prop.value
 			selectedProperty.onChange {
 			  sett.prop.value = it
 			}*/

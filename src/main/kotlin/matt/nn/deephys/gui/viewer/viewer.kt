@@ -94,6 +94,12 @@ import kotlin.time.Duration.Companion.seconds
 	outerBox.save()
   }
 
+  val smallImageScale = BindableProperty(DeephySettings.smallImageScale.value).apply {
+	bind(DeephySettings.smallImageScale)
+  }
+  val bigImageScale = BindableProperty(DeephySettings.bigImageScale.value).apply {
+	bind(DeephySettings.bigImageScale)
+  }
   val normalizeTopNeuronActivations = BindableProperty(DeephySettings.normalizeTopNeuronActivations.value).apply {
 	bind(DeephySettings.normalizeTopNeuronActivations)
   }

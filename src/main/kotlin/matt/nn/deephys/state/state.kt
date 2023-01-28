@@ -61,10 +61,26 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 
 }
 
+const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
+
 
 @Serializable(DeephySettingsSerializer::class) class DeephySettingsData: SettingsData() {
 
 
+  val smallImageScale by DoubleSettingProv(
+	defaultValue = 32.0,
+	label = "Small image scale",
+	tooltip = "the width (in pixels) for default images",
+	min = 10.0,
+	max = 100.0
+  )
+  val bigImageScale by DoubleSettingProv(
+	defaultValue = 128.0,
+	label = "Big image scale",
+	tooltip = "the width (in pixels) for big images",
+	min = 110.0,
+	max = 200.0
+  )
   val normalizeTopNeuronActivations by BoolSettingProv(
 	defaultValue = false,
 	label = "Normalize activations of top neurons",
@@ -82,7 +98,7 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 	label = "Number of images per neuron in top neurons row",
 	tooltip = "Number of images per neuron in top neurons row",
 	min = 9,
-	max = 18
+	max = MAX_NUM_IMAGES_IN_TOP_NEURONS
   )
   val millisecondsBeforeTooltipsVanish by IntSettingProv(
 	defaultValue = 5000,

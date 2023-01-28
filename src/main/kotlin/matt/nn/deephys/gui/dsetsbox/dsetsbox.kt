@@ -127,6 +127,8 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	t.inD.unbind()
 	t.outerBoundDSet.unbind()
 	t.numViewers.unbind()
+	t.smallImageScale.unbind()
+	t.bigImageScale.unbind()
 	t.numImagesPerNeuronInByImage.unbind()
 	t.predictionSigFigs.unbind()
 	t.showCacheBars.unbind()

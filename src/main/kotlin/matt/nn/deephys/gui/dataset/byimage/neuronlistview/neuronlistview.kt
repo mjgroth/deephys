@@ -171,7 +171,7 @@ class NeuronListView(
 						}
 					  )
 					}
-					infoSymbol("test")
+//					infoSymbol("test")
 					act.extraInfo?.go { infoSymbol(it) }
 				  }
 				}

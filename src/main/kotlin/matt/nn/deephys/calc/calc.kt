@@ -17,6 +17,8 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.nn.deephys.state.DeephySettings
+import matt.nn.deephys.state.MAX_NUM_IMAGES_IN_TOP_NEURONS
+import org.jetbrains.kotlinx.multik.ndarray.data.get
 
 data class NormalizedAverageActivation<N: Number>(
   private val neuron: InterTestNeuron,
@@ -54,6 +56,27 @@ data class NormalizedAverageActivation<N: Number>(
 
 }
 
+data class DescendingArgMaxMax<A: Number>(
+  private val neuron: InterTestNeuron,
+  private val test: TypedTestLike<A>,
+): DeephysComputeInput<List<ImageIndex>>() {
+  override val cacheManager get() = test.testRAMCache
+  override fun timedCompute(): List<ImageIndex> = run {
+	val theTest = test.test
+
+	//	theTest.argmaxn2OfNeuron(neuron,num)
+
+	val acts = theTest.activationsByNeuron[neuron]
+
+	//	acts
+	val indices = test.dtype.wrap(acts).argmaxn2(MAX_NUM_IMAGES_IN_TOP_NEURONS, skipInfinite = true, skipNaN = true)
+
+	/*val indices = acts.argmaxn2(num)*/
+	indices.sortedByDescending {
+	  acts[it].toDouble()
+	}.map { ImageIndex(it) }
+  }
+}
 
 data class TopImages<A: Number>(
   private val neuron: InterTestNeuron,
@@ -64,7 +87,13 @@ data class TopImages<A: Number>(
   override val cacheManager get() = test.testRAMCache
 
   override fun timedCompute(): List<ImageIndex> = run {
-	val theTest = test.test
+
+	DescendingArgMaxMax(
+	  neuron = neuron,
+	  test = test
+	)().take(num)/*.sortedBy { it.index }*/
+
+	/*val theTest = test.test
 
 	//	theTest.argmaxn2OfNeuron(neuron,num)
 
@@ -73,8 +102,8 @@ data class TopImages<A: Number>(
 	//	acts
 	val indices = test.dtype.wrap(acts).argmaxn2(num, skipInfinite = true, skipNaN = true)
 
-	/*val indices = acts.argmaxn2(num)*/
-	indices.map { ImageIndex(it) }
+	*//*val indices = acts.argmaxn2(num)*//*
+	indices.map { ImageIndex(it) }*/
   }
 }
 

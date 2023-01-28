@@ -39,8 +39,11 @@ class ByImageView<A: Number>(
 	  val img = this@swapper
 	  weakViewer.deref()?.let { deRefedViewer ->
 		HBoxWrapperImpl<NodeWrapper>().apply {
-		  +DeephyImView(img, deRefedViewer).apply {
-			scale.value = 4.0
+		  +DeephyImView(img, deRefedViewer, big = true).apply {
+			/*img.widthMaybe*/
+
+			/*scale.bind(deRefedViewer.bigImageScale / img.widthMaybe)*/
+			/*scale.value = 4.0*/
 		  }
 		  spacer(10.0)
 		  warn("smelly")

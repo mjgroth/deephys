@@ -1,5 +1,6 @@
 package matt.nn.deephys.gui.neuron
 
+import matt.collect.itr.subList
 import matt.collect.set.contents.contentsOf
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
@@ -50,7 +51,7 @@ class NeuronView<A: Number>(
 			  ) {
 				deephyTooltip(ActivationRatioCalc.technique)
 			  }
-			  infoSymbol("test")
+			  //			  infoSymbol("test")
 			  ratio.extraInfo?.go { infoSymbol(it) }
 			}
 		  }
@@ -61,22 +62,47 @@ class NeuronView<A: Number>(
 	  /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
 	  prefWrapLengthProperty.bind(viewer.widthProperty*0.8)
 
-	  fun update(testLoaderAndViewer: Pair<TypedTestLike<A>, DatasetViewer>) {
+	  fun update(
+		testLoaderAndViewer: Pair<TypedTestLike<A>, DatasetViewer>,
+		oldNumImages: Int?,
+		newNumImages: Int
+	  ) {
 		val localTestLoader = testLoaderAndViewer.first
 		val localViewer = testLoaderAndViewer.second
-		clear()
-		val realNumImages = min(numImages.value.toULong(), localTestLoader.numberOfImages())
+
+		val realOldNumImages = oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }?.toULong()
+		val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
 		val topImages = TopImages(neuron, localTestLoader, realNumImages.toInt())()
 
 
-		topImages.forEach {
-		  val im = localTestLoader.imageAtIndex(it.index)
-		  +DeephyImView(im, localViewer)
+		if (realOldNumImages == null) {
+		  topImages.forEach {
+			val im = localTestLoader.imageAtIndex(it.index)
+			+DeephyImView(im, localViewer).apply {
+//			  scale.bind(localViewer.smallImageScale / im.widthMaybe)
+			}
+		  }
+		} else if (realNumImages > realOldNumImages) {
+//		  topImages.forEach {
+//			println("ti: ${it}")
+//		  }
+//		  println("realOldNumImages=${realOldNumImages}")
+		  topImages.subList(realOldNumImages.toInt()).toList().forEach {
+//			println("it=$it")
+			val im = localTestLoader.imageAtIndex(it.index)
+			+DeephyImView(im, localViewer).apply {
+//			  scale.bind(localViewer.smallImageScale / im.widthMaybe)
+			}
+		  }
+		} else if (realNumImages < realOldNumImages) {
+		  children.subList(realNumImages.toInt()).toList().forEach {
+			it.removeFromParent()
+		  }
 		}
 	  }
-	  update(testLoader to viewer)
-	  numImages.onChangeWithAlreadyWeak(WeakPair(testLoader, viewer)) { tl, _ ->
-		update(tl)
+	  update(testLoader to viewer, null, numImages.value)
+	  numImages.onChangeWithAlreadyWeakAndOld(WeakPair(testLoader, viewer)) { tl, o, n ->
+		update(tl, o, n)
 	  }
 	  if (layoutForList) {
 		prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH

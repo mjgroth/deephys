@@ -8,8 +8,13 @@ import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.obs.math.double.op.div
 
-class DeephyImView(im: DeephyImage<*>, viewer: DatasetViewer): ScaledCanvas() {
+class DeephyImView(
+  im: DeephyImage<*>,
+  viewer: DatasetViewer,
+  big: Boolean = false
+): ScaledCanvas() {
 
   val weakViewer = WeakRef(viewer)
   val weakIm = WeakRef(im)
@@ -30,6 +35,14 @@ class DeephyImView(im: DeephyImage<*>, viewer: DatasetViewer): ScaledCanvas() {
 	onLeftClick {
 	  click()
 	}
+
+	if (big) {
+	  scale.bindWeakly(viewer.bigImageScale / im.widthMaybe)
+	} else {
+	  scale.bindWeakly(viewer.smallImageScale / im.widthMaybe)
+	}
+
+
   }
 
   fun click() {

@@ -42,7 +42,13 @@ class DeephyImage<A: Number>(
 
 
 
+
   val category = Category(id = categoryID, label = category)
+
+  /*totally guessing. This might actually be the height.*/
+  val widthMaybe by lazy {
+	matrix[0].size.toDouble()
+  }
 
   val matrix by lazyWeak {
 	val d = data.await()
