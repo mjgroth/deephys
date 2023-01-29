@@ -20,7 +20,6 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.arc.ArcWrapper
 import matt.fx.graphics.wrapper.node.shape.rect.RectangleWrapper
-import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
@@ -33,7 +32,7 @@ import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.subtitleFont
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
@@ -73,7 +72,7 @@ class CategoryPie(
 	deephyCheckbox("show as list", showAsList)
 	deephyText(title) {
 	  subtitleFont()
-	  deephyTooltip("only shows at most $MAX_SLICES slices (unless shown as list)")
+	  veryLazyDeephysTooltip("only shows at most $MAX_SLICES slices (unless shown as list)")
 	}
 	val total = nums.values.sum().toDouble()
 	scrollpane<NW> {
@@ -269,7 +268,7 @@ class CategoryPie(
 
 
 	init {
-	  deephyTooltip(cat.label + " (shift-click for Confusion View)")
+	  veryLazyDeephysTooltip(cat.label + " (shift-click for Confusion View)")
 	  fill = color
 	  stroke = color.invert()
 	  cursor = Cursor.HAND
@@ -320,7 +319,7 @@ class CategoryPie(
 
 
 	init {
-	  deephyTooltip(cat.label + " (shift-click for Confusion View)")
+	  veryLazyDeephysTooltip(cat.label + " (shift-click for Confusion View)")
 	  fill = color
 	  stroke = color.invert()
 	  node.apply {

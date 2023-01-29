@@ -23,6 +23,11 @@ class PreppedTestLoader<N: Number>(
 
   @Suppress("UNCHECKED_CAST")
   override val test: Test<N> get() = tl.awaitFinishedTest() as Test<N>
+
+  override fun isDoneLoading(): Boolean {
+	return tl.isDoneLoading()
+  }
+
   override val testRAMCache: TestRAMCache get() = tl.testRAMCache
   override val model: Model get() = tl.model
 }

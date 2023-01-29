@@ -12,6 +12,7 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dataset.bycategory.ByCategoryView
 import matt.nn.deephys.gui.dataset.byimage.ByImageView
 import matt.nn.deephys.gui.dataset.byneuron.ByNeuronView
+import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.TestLoader
@@ -30,7 +31,11 @@ class DatasetNode(
   private val byCategoryView by lazy { ByCategoryView(dataset.preppedTest.await(), viewer) }
 
   init {
-	setupSwapping(viewer.view) {
+	setupSwapping(
+	  viewer.view,
+	  fadeOutDur = DEEPHYS_FADE_DUR,
+	  fadeInDur = DEEPHYS_FADE_DUR
+	) {
 	  VBoxWrapperImpl<NodeWrapper>().apply {
 		val layerCB =
 		  choicebox(nullableProp = viewer.layerSelection, values = viewer.model.resolvedLayers.map { it.interTest }) {

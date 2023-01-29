@@ -14,7 +14,6 @@ import matt.collect.weak.lazyWeakMap
 import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
-import matt.fx.control.wrapper.checkbox.checkbox
 import matt.fx.control.wrapper.control.ControlWrapper
 import matt.fx.control.wrapper.control.button.button
 import matt.fx.control.wrapper.progressbar.progressbar
@@ -22,12 +21,11 @@ import matt.fx.control.wrapper.titled.TitledPaneWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.enableWhen
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
-import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.hbox.hbox
-import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.hurricanefx.eye.prop.sizeProperty
+import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
@@ -39,11 +37,12 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
-import matt.nn.deephys.gui.global.deephyActionText
+import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.titleFont
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.viewer.tutorial.bind.BindTutorial
 import matt.nn.deephys.load.asyncLoadSwapper
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.load.test.dtype.topNeurons
@@ -62,7 +61,6 @@ import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
 import matt.obs.bind.weakBinding
 import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.not
-import matt.obs.bindings.bool.or
 import matt.obs.bindings.comp.gt
 import matt.obs.bindings.comp.lt
 import matt.obs.col.olist.basicMutableObservableListOf
@@ -268,19 +266,21 @@ import kotlin.time.Duration.Companion.seconds
 	}
   }
 
+  val weakRef = MyWeakRef(this)
 
   private val boundCategory: ObsVal<CategorySelection?> = boundToDSet
 	.deepBindingIgnoringFutureNullOuterChanges(testData) {
-	  it?.categorySelection?.binding { cat ->
-		testData.value?.let { tst ->
-		  cat?.forTest(tst)
-		}
-	  } ?: BindableProperty(null)
+	  it?.catSelectionForViewer?.get(weakRef.deref()!!) ?: BindableProperty(null)
+	  //	  it?.categorySelection?.binding { cat ->
+	  //		testData.value?.let { tst ->
+	  //		  cat?.forTest(tst)
+	  //		}
+	  //	  } ?: BindableProperty(null)
 	}
 
 
   val categorySelection = VarProp<CategorySelection?>(null).withNonNullUpdatesFrom(boundCategory)
-  val catSelectionForViewer = lazyWeakMap<DatasetViewer, ObsVal<CategorySelection?>> { viewer ->
+  private val catSelectionForViewer = lazyWeakMap<DatasetViewer, ObsVal<CategorySelection?>> { viewer ->
 	categorySelection.weakBinding(viewer) { v, cat ->
 	  v.testData.value?.let { tst ->
 		cat?.forTest(tst)
@@ -351,7 +351,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 	  deephyButton("remove test") {
-		deephyTooltip("remove this test viewer")
+		veryLazyDeephysTooltip("remove this test viewer")
 		setOnAction {
 		  this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
 		}
@@ -366,7 +366,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 	  deephyButton("select test") {
-		deephyTooltip("choose test file")
+		veryLazyDeephysTooltip("choose test file")
 		setOnAction {
 		  val f = FileChooser().apply {
 			title = "choose test data"
@@ -453,23 +453,14 @@ import kotlin.time.Duration.Companion.seconds
 	  }
 	  deephyText("") {
 		fun update(v: TestLoader?) {
-		  println("dtype text 1")
 		  text = ""
-		  println("dtype text 2")
 		  if (v != null) {
-			println("dtype text 3")
 			daemon {
-			  println("dtype text 4")
 			  try {
-				println("dtype text 5")
 				runBlocking {
-				  println("dtype text 6")
 				  withTimeout(1.seconds) {
-					println("dtype text 7")
 					val dtype = v.preppedTest.await().dtype
-					println("dtype text 8")
 					text = "dtype: ${dtype.label}"
-					println("dtype text 9")
 				  }
 				}
 			  } catch (e: TimeoutCancellationException) {
@@ -487,50 +478,15 @@ import kotlin.time.Duration.Companion.seconds
 	  }
 	}
 	content = v {
-	  asyncLoadSwapper(this@DatasetViewer.testData, nullMessage = "select a test to view it") {
+	  asyncLoadSwapper(
+		this@DatasetViewer.testData,
+		nullMessage = "select a test to view it",
+		fadeOutDur = DEEPHYS_FADE_DUR,
+		fadeInDur = DEEPHYS_FADE_DUR
+	  ) {
 		DatasetNode(this, this@DatasetViewer)
 	  }
-	  v {
-		//		this@DatasetViewer.outerBox.bound.onChange {
-		//		  println("bound: $it")
-		//		}
-		//		this@DatasetViewer.outerBox.inD.onChange {
-		//		  println("inD: $it")
-		//		}
-		visibleAndManagedWhen {
-		  this@DatasetViewer.showTutorials and
-			  this@DatasetViewer.numViewers.gt(1) and
-			  (this@DatasetViewer.isUnboundToDSet or this@DatasetViewer.inD.isNull)
-		}
-		spacer()
-		deephyText("In order to visualize this dataset in comparison to other datasets:")
-		h {
-		  spacer()
-		  v {
-			h {
-			  checkbox("\"bind\" one dataset") {
-				isDisable = true
-				selectedProperty.bind(this@DatasetViewer.outerBoundDSet.isNotNull)
-			  }
-			  spacer()
-			  deephyActionText("show me how") {
-				this@DatasetViewer.outerBox.flashBindButtons()
-			  }
-			}
-			h {
-			  checkbox("Select one dataset as \"InD\"") {
-				isDisable = true
-				selectedProperty.bind(this@DatasetViewer.inD.isNotNull)
-			  }
-			  spacer()
-			  deephyActionText("show me how") {
-				this@DatasetViewer.outerBox.flashOODButtons()
-			  }
-			}
-		  }
-		}
-	  }
-
+	  +BindTutorial(this@DatasetViewer)
 	}
   }
 

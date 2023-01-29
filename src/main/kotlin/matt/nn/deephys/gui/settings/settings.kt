@@ -27,7 +27,7 @@ import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.deephyRadioButton
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.init.gearImage
 import matt.nn.deephys.state.DeephySettings
 import java.awt.Desktop
@@ -81,7 +81,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 			//				isSelected = sett.prop.value == it
 			//			  }
 			//			}
-			deephyTooltip(sett.tooltip)
+			veryLazyDeephysTooltip(sett.tooltip)
 		  }
 
 		  //		  group.selectedValue.bindBidirectional(sett.prop)
@@ -95,7 +95,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 
 		is IntSetting    -> {
 		  deephyLabel {
-			deephyTooltip(sett.tooltip)
+			veryLazyDeephysTooltip(sett.tooltip)
 			text = sett.label
 			contentDisplay = RIGHT
 			graphic = spinner(
@@ -120,7 +120,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 
 		is DoubleSetting -> {
 		  deephyLabel {
-			deephyTooltip(sett.tooltip)
+			veryLazyDeephysTooltip(sett.tooltip)
 			text = sett.label
 			contentDisplay = RIGHT
 			graphic = slider(
@@ -157,7 +157,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 		  deephyCheckbox(
 			sett.label
 		  ) {
-			deephyTooltip(sett.tooltip)
+			veryLazyDeephysTooltip(sett.tooltip)
 			selectedProperty.bindBidirectional(sett.prop)			/*isSelected = sett.prop.value
 			selectedProperty.onChange {
 			  sett.prop.value = it

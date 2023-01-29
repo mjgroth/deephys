@@ -46,6 +46,7 @@ import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.settings.settingsButton
 import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.init.modelBinding
+import matt.nn.deephys.init.warmupFxComponents
 import matt.nn.deephys.load.loadSwapper
 import matt.nn.deephys.state.DeephySettingsNode
 import matt.nn.deephys.state.DeephyState
@@ -113,6 +114,9 @@ class DeephysApp {
 
 
   fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
+
+
+	warmupFxComponents()
 
 	//	println("start app 1")
 

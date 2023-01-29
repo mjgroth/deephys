@@ -8,7 +8,7 @@ import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
-import matt.lang.weak.WeakRef
+import matt.lang.weak.MyWeakRef
 import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.global.deephyActionText
@@ -16,7 +16,7 @@ import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.global.titleFont
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.obs.bind.binding
@@ -25,7 +25,7 @@ import matt.prim.str.truncateWithElipsesOrAddSpaces
 class PredictionsView(
   groundTruth: Category,
   topPreds: ImageTopPredictions<*>,
-  weakViewer: WeakRef<DatasetViewer>,
+  weakViewer: MyWeakRef<DatasetViewer>,
 ): VBoxW() {
   init {
 	textflow<TextWrapper> {
@@ -56,7 +56,7 @@ class PredictionsView(
 		predNamesBox.deephyActionText(category.label.truncateWithElipsesOrAddSpaces(25)) {
 		  weakViewer.deref()!!.navigateTo(category)
 		}.apply {
-		  deephyTooltip(fullString)
+		  veryLazyDeephysTooltip(fullString)
 		}
 		predValuesBox.deephyText {
 		  textProperty.bind(weakViewer.deref()!!.predictionSigFigs.binding {
@@ -67,7 +67,7 @@ class PredictionsView(
 			}
 
 		  })
-		  deephyTooltip(fullString)
+		  veryLazyDeephysTooltip(fullString)
 		}
 	  }
 	}

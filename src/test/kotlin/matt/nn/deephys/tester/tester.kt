@@ -22,7 +22,7 @@ import matt.nn.deephys.NUM_IM_CLICKS
 import matt.nn.deephys.NUM_SLICE_CLICKS
 import matt.nn.deephys.TestDeephys
 import matt.nn.deephys.WAIT_FOR_GUI_INTERVAL
-import matt.nn.deephys.gui.Arg.`erase-state`
+import matt.nn.deephys.gui.Arg.reset
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.category.pie.CategoryPie.CategorySlice
 import matt.nn.deephys.gui.deephyimview.DeephyImView
@@ -52,7 +52,7 @@ class DeephysTestSession {
   }
 
   init {
-	app.boot(`erase-state`)
+	app.boot(reset) /*need this so tests are deterministic*/
 	thread {
 	  app.boot(arrayOf())
 	}
@@ -264,15 +264,19 @@ class DeephysTestSession {
   fun disposeAllTestsAndCheckMemory() {
 	val scene = app.testReadyScene.await()
 	val root = scene.root
-	Platform.runLater {
-	  root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
+	runLaterReturn {
+	  println("in runLaterReturn to removeAllTests")
+	  root.findRecursivelyFirstOrNull<DSetViewsVBox>()!!.removeAllTests()
+	  println("finished runLaterReturn to removeAllTests")
 	}
 	println("waiting for delete caches thread...")
 	DeephysCacheManager.cacheDeleter.await() /*can hold a significant amount of memory*/
 	println("finished waiting for delete caches thread")
+	//	println("sleeping forever 1")
+	//	sleep(1.days)
 	println("sleeping for 1 sec")
 	sleep(1.seconds)
-	val postGCWaitSecs = 10
+	val postGCWaitSecs = 20
 	println("running gc for $postGCWaitSecs sec")
 	(0..postGCWaitSecs).forEach {
 	  /*ahh... finally found a solution. A loop with multiple collections instead of just one collections followed by endless pointless waiting. I best I know what happened: I was doing the gc too early and some things were still strongly reachable for whatever reasons deep in some internal libs*/
@@ -283,6 +287,8 @@ class DeephysTestSession {
 	val u = MemReport().used
 	println("u=$u")
 	assertTrueLazyMessage(u < threshold) {
+	  //	  println("sleeping forever 2")
+	  //	  sleep(1.days)
 	  YourKit.captureAndOpenMemorySnapshot()
 	  "test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is $u"
 	}

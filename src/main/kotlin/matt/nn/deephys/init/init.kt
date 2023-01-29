@@ -35,7 +35,7 @@ fun initializeWhatICan() {
 	t.toc("END DarkModeController DAEMON")
   }
 
-  warmupFxComponents()
+
 
   t.toc("END")
 }
@@ -53,13 +53,24 @@ val modelBinding = DaemonLoadedValueOp(".model binding") {
   }
 }
 
-private fun warmupFxComponents() {
+fun warmupFxComponents() {
   HBoxWrapperImpl<NodeWrapper>().apply {
 	DeephyText("placeholder").apply {
 	  subtitleFont()
 	  titleFont()
 	  titleBoldFont()
+
+
 	  deephyTooltip("placeholder")
+
+	  /*
+	  Exception in thread "Thread-2" java.lang.ExceptionInInitializerError
+		at matt.fx.control.wrapper.tooltip.TooltipWrapper.<init>(tooltip.kt:52)
+
+		this ended up being due to YourKit..
+	  * */
+
+
 	}
 	deephyButton("placeholder")
 	deephyToggleButton("placeholder", 0.0, ToggleMechanism())

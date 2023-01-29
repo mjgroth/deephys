@@ -4,12 +4,10 @@ import javafx.geometry.Pos
 import javafx.scene.text.TextAlignment.CENTER
 import matt.collect.set.contents.Contents
 import matt.color.colorMap
-import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.style.toFXColor
 import matt.nn.deephys.calc.CategoryAccuracy
@@ -27,12 +25,11 @@ import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.obs.math.double.op.times
 import matt.prim.str.addNewLinesUntilNumLinesIs
 
 class CategoryView<A: Number>(
-  selection: CategorySelection,
-  testLoader: TypedTestLike<A>,
-  viewer: DatasetViewer
+  selection: CategorySelection, testLoader: TypedTestLike<A>, viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
 
@@ -40,7 +37,7 @@ class CategoryView<A: Number>(
 	deephyLabel(
 	  selection.title.addNewLinesUntilNumLinesIs(3) /*so switching to confusion title with 3 lines isn't as jarring*/
 	).titleBoldFont()
-	vbox<NodeWrapper> {
+	v {
 
 	  when (selection) {
 		is Category          -> deephyLabel(
@@ -80,20 +77,33 @@ class CategoryView<A: Number>(
 
 	  h {
 		v {
+		  println("width1@${this.hashCode()}=$width,max=${maxWidth}")
+		  widthProperty.onChange {
+			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
+		  }
+		  maxWidthProperty.onChange {
+			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
+		  }
+		  maxWidthProperty.bindWeakly(viewer.stage!!.widthProperty*0.45)
 		  +MultipleImagesView(
 			viewer = viewer,
 			images = shownFalsePositives,
 			title = "False Positives",
-			tooltip = CategoryFalsePositivesSorted.blurb
+			tooltip = CategoryFalsePositivesSorted.blurb,
+			fade = false
 		  )
 		  +MultipleImagesView(
 			viewer = viewer,
 			images = shownFalseNegatives,
 			title = "False Negatives",
-			tooltip = CategoryFalseNegativesSorted.blurb
+			tooltip = CategoryFalseNegativesSorted.blurb,
+			fade = false
 		  )
+
 		}
 		v {
+
+		  //		  minWidthProperty.bindWeakly(viewer.widthProperty*0.45)
 
 		  alignment = Pos.CENTER
 
@@ -125,6 +135,7 @@ class CategoryView<A: Number>(
 			  selected = (selection as? CategoryConfusion)?.second,
 			  showAsList = viewer.showAsList2
 			)
+			println("ADDED CAT PIES")
 
 		  }
 		  deephyText("tip: click colored areas to navigate to the class. Shift-click to analyze confusions with the current class.") {
@@ -135,9 +146,8 @@ class CategoryView<A: Number>(
 		  }
 
 		}
-
-
 	  }
+
 
 	  val topNeuronsLabel = when (selection) {
 		is Category          -> "top neurons according to their average activation for ${selection.label}"
@@ -148,9 +158,8 @@ class CategoryView<A: Number>(
 	  }
 	  neuronListViewSwapper(
 		viewer = viewer,
-		contents = Contents(
-		  selection.allCategories.flatMap { testLoader.test.imagesWithGroundTruth(it) }
-		)
+		contents = Contents(selection.allCategories.flatMap { testLoader.test.imagesWithGroundTruth(it) }),
+		fade = false /*I think issues are being causes since this child is fading while the parent is too*/
 	  )
 	}
   }

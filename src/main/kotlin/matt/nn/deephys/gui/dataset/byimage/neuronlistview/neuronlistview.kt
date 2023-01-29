@@ -13,7 +13,8 @@ import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.lang.go
-import matt.lang.weak.WeakRef
+import matt.lang.weak.MyWeakRef
+import matt.math.round.ceilInt
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.NormalizedAverageActivation
 import matt.nn.deephys.calc.TopNeurons
@@ -23,9 +24,10 @@ import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProgressPopUp
+import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
@@ -37,36 +39,42 @@ import matt.obs.prop.ObsVal
 fun <A: Number> NW.neuronListViewSwapper(
   viewer: DatasetViewer,
   contents: Contents<DeephyImage<A>>,
-  bindScrolling: Boolean = false
+  bindScrolling: Boolean = false,
+  fade: Boolean = true
 ) = run {
 
-  val weakViewer = WeakRef(viewer)
-  neuronListViewSwapper(bindScrolling = bindScrolling, viewer = viewer, top = MyBinding(
-	viewer.layerSelection, viewer.normalizeTopNeuronActivations, viewer.testData, viewer.inD
-  ) {
-	weakViewer.deref()?.let { deRefedViewer ->
-	  deRefedViewer.layerSelection.value?.let { lay ->
-		@Suppress("UNCHECKED_CAST")
-		TopNeurons(
-		  images = contents,
-		  layer = lay,
-		  test = deRefedViewer.testData.value!!.preppedTest.await() as TypedTestLike<A>,
-		  normalized = deRefedViewer.normalizeTopNeuronActivations.value,
-		  denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
-		)
+  val weakViewer = MyWeakRef(viewer)
+  neuronListViewSwapper(
+	bindScrolling = bindScrolling,
+	viewer = viewer,
+	fade=fade,
+	top = MyBinding(
+	  viewer.layerSelection, viewer.normalizeTopNeuronActivations, viewer.testData, viewer.inD
+	) {
+	  weakViewer.deref()?.let { deRefedViewer ->
+		deRefedViewer.layerSelection.value?.let { lay ->
+		  @Suppress("UNCHECKED_CAST")
+		  TopNeurons(
+			images = contents,
+			layer = lay,
+			test = deRefedViewer.testData.value!!.preppedTest.await() as TypedTestLike<A>,
+			normalized = deRefedViewer.normalizeTopNeuronActivations.value,
+			denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
+		  )
+		}
 	  }
-	}
-  }.apply {    /*  viewer.onGarbageCollected {
+	}.apply {    /*  viewer.onGarbageCollected {
 		  markInvalid()
 		  removeAllDependencies()
 		}*/
-  })
+	}
+  )
 }
 
 fun NW.neuronListViewSwapper(
-  viewer: DatasetViewer, top: ObsVal<out TopNeuronsCalcType?>, bindScrolling: Boolean = false
+  viewer: DatasetViewer, top: ObsVal<out TopNeuronsCalcType?>, bindScrolling: Boolean = false, fade: Boolean = true
 ) = run {
-  val weakViewer = WeakRef(viewer)
+  val weakViewer = MyWeakRef(viewer)
   swapper(
 	MyBinding(
 	  viewer.normalizeTopNeuronActivations, viewer.testData, top
@@ -80,7 +88,10 @@ fun NW.neuronListViewSwapper(
 		  }
 		}
 	  }
-	}, nullMessage = "no top neurons"
+	},
+	nullMessage = "no top neurons",
+	fadeOutDur = if (fade) DEEPHYS_FADE_DUR else null,
+	fadeInDur = if (fade) DEEPHYS_FADE_DUR else null
   ) {
 	NeuronListView(this, bindScrolling = bindScrolling)
   }
@@ -136,12 +147,13 @@ class NeuronListView(
 
 
 
+		val startAsyncAt = (viewer.stage!!.width / NEURON_LIST_VIEW_WIDTH).ceilInt()
 
-		topNeurons.forEach { neuronWithAct ->
+		topNeurons.forEachIndexed { idx, neuronWithAct ->
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {
 			h {
-			  val weakViewer = WeakRef(viewer)
+			  val weakViewer = MyWeakRef(viewer)
 			  deephyActionText("neuron $neuronIndex") {
 				val deReffedViewer = weakViewer.deref()!!
 				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
@@ -162,19 +174,22 @@ class NeuronListView(
 					deephyText(
 					  act.formatted
 					) {
-					  deephyTooltip(
+
+					  veryLazyDeephysTooltip {
 						when (act) {
 						  is AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
 						  is RawActivation       -> "raw activation value for the selected image"
 						  is NormalActivation    -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
 						  is ActivationRatio     -> ActivationRatioCalc.technique
 						}
-					  )
+					  }
+
 					}
-//					infoSymbol("test")
+					//					infoSymbol("test")
 					act.extraInfo?.go { infoSymbol(it) }
 				  }
 				}
+
 
 
 				/*} else inD.testData.value?.let { inDTest ->
@@ -197,7 +212,8 @@ class NeuronListView(
 			  testLoader = testLoader,
 			  viewer = viewer,
 			  showActivationRatio = false,
-			  layoutForList = true
+			  layoutForList = true,
+			  loadImagesAsync = idx > startAsyncAt
 			)
 
 			spacer() /*space for the hbar*/

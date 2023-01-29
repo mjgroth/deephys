@@ -8,13 +8,13 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.go
-import matt.lang.weak.WeakRef
-import matt.log.warn.warn
+import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.dataset.byimage.feat.FeaturesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.dataset.byimage.preds.PredictionsView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
+import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
@@ -27,15 +27,19 @@ class ByImageView<A: Number>(
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
-	val weakViewer = WeakRef(viewer)
-	val weakTest = WeakRef(testLoader)
+	val weakViewer = MyWeakRef(viewer)
+	val weakTest = MyWeakRef(testLoader)
 	deephyButton("select random image") {
 	  setOnAction {
 		weakViewer.deref()!!.imageSelection.value = weakTest.deref()!!.tl.awaitNonUniformRandomImage()
 	  }
 	  visibleAndManagedProp.bind(viewer.imageSelection.isNull.and(viewer.isUnboundToDSet))
 	}
-	swapper(viewer.imageSelection, "no image selected") {
+	swapper(
+	  viewer.imageSelection, "no image selected",
+	  fadeOutDur = DEEPHYS_FADE_DUR,
+	  fadeInDur = DEEPHYS_FADE_DUR
+	) {
 	  val img = this@swapper
 	  weakViewer.deref()?.let { deRefedViewer ->
 		HBoxWrapperImpl<NodeWrapper>().apply {
@@ -46,7 +50,6 @@ class ByImageView<A: Number>(
 			/*scale.value = 4.0*/
 		  }
 		  spacer(10.0)
-		  warn("smelly")
 		  @Suppress("UNCHECKED_CAST")
 		  img as DeephyImage<A>
 		  +PredictionsView(

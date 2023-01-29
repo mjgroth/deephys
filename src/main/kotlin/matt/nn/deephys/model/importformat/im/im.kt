@@ -5,6 +5,7 @@ import matt.cbor.read.major.bytestr.ByteStringReader
 import matt.cbor.read.streamman.cborReader
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.PhaseOut
+import matt.lang.weak.MyWeakRef
 import matt.lang.weak.lazyWeak
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
@@ -40,7 +41,7 @@ class DeephyImage<A: Number>(
   dtype: DType<A> /*just for generic*/
 ): RAFCaches() {
 
-
+  val weak by lazy { MyWeakRef(this) }
 
 
   val category = Category(id = categoryID, label = category)

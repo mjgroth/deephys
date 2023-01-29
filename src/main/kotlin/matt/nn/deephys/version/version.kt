@@ -1,6 +1,7 @@
 package matt.nn.deephys.version
 
 import javafx.application.Platform.runLater
+import matt.async.pool.MyThreadPriorities
 import matt.async.schedule.AccurateTimer
 import matt.async.schedule.every
 import matt.async.thread.daemon
@@ -25,7 +26,7 @@ object VersionChecker {
   private var error = false
   private var checking = false
   fun checkForUpdatesInBackground() = daemon {
-	every(60.sec, timer = AccurateTimer(), zeroDelayFirst = true) {
+	every(60.sec, timer = AccurateTimer(priority = MyThreadPriorities.DELETING_OLD_CACHE), zeroDelayFirst = true) {
 	  checking = true
 	  try {
 		val releases = gh.GitHubRepo(ghUser, appName).releases()

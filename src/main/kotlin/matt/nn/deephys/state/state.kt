@@ -63,6 +63,7 @@ object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(Deephy
 
 const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
 
+const val  DEFAULT_BIG_IMAGE_SCALE = 128.0
 
 @Serializable(DeephySettingsSerializer::class) class DeephySettingsData: SettingsData() {
 
@@ -75,7 +76,7 @@ const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
 	max = 100.0
   )
   val bigImageScale by DoubleSettingProv(
-	defaultValue = 128.0,
+	defaultValue = DEFAULT_BIG_IMAGE_SCALE,
 	label = "Big image scale",
 	tooltip = "the width (in pixels) for big images",
 	min = 110.0,

@@ -4,7 +4,6 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
-import matt.log.warn.warnOnce
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
@@ -86,25 +85,10 @@ data class TopImages<A: Number>(
 
   override val cacheManager get() = test.testRAMCache
 
-  override fun timedCompute(): List<ImageIndex> = run {
-
-	DescendingArgMaxMax(
-	  neuron = neuron,
-	  test = test
-	)().take(num)/*.sortedBy { it.index }*/
-
-	/*val theTest = test.test
-
-	//	theTest.argmaxn2OfNeuron(neuron,num)
-
-	val acts = theTest.activationsByNeuron[neuron]
-
-	//	acts
-	val indices = test.dtype.wrap(acts).argmaxn2(num, skipInfinite = true, skipNaN = true)
-
-	*//*val indices = acts.argmaxn2(num)*//*
-	indices.map { ImageIndex(it) }*/
-  }
+  override fun timedCompute(): List<ImageIndex> = DescendingArgMaxMax(
+	neuron = neuron,
+	test = test
+  )().take(num)
 }
 
 private const val NUM_TOP_NEURONS = 25
@@ -152,33 +136,15 @@ data class TopNeurons<N: Number>(
 	  NeuronWithActivation(neuron, act)
 	}
 
-	/*
 
-
-		neuronsWithActs.filterNot {
-		  it.activation.isNaN
-		}.sortedBy {
-		  it.activation
-		}
-	*/
-	//
-	//	val temp = neuronsWithActs.filterNot {
-	//	  it.activation.isNaN
-	//	}
-	//	  .sortedBy {
-	//		it.activation
-	//	  }
-	//	  .reversed()
-	//	  .take(NUM_TOP_NEURONS)
 
 	return if (forcedNeuronIndices == null) {
 	  val r = neuronsWithActs.filterNot {
 		it.activation.isNaN || it.activation.isInfinite
 	  }
-		.sortedBy {
+		.sortedByDescending {
 		  it.activation.value.toDouble()
 		}
-		.reversed()
 		.take(NUM_TOP_NEURONS)
 
 	  r
@@ -199,7 +165,8 @@ data class ActivationRatioCalc<A: Number>(
   private val neuron: InterTestNeuron
 ): DeephysComputeInput<Activation<A, *>>() {
 
-  override val cacheManager get() = numTest.testRAMCache /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
+  override val cacheManager get() = FakeCacheManager /*this ComputeCache was taking up a TON of memory.*/
+  /*override val cacheManager get() = numTest.testRAMCache*/ /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
   companion object {
 	const val technique =
@@ -224,24 +191,24 @@ data class ActivationRatioCalc<A: Number>(
 	  val denom = denomTest.test.maxActivations[neuron]
 	  dType.activationRatio(dType.div(num, denom))
 	}
-	if (r.isNaN || r.isInfinite) {
-	  println(
-		"""
-		f=${r.value}
-		images.size=${images.size}
-		numTest.test.maxActivations[neuron]=${numTest.test.maxActivations[neuron]}
-		denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}
-		${
-		  if (images.isNotEmpty()) "neuron.averageActivation(images).value=${
-			neuron.averageActivation(
-			  images,
-			  dType = dType
-			).value
-		  }, denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}" else ""
-		}
-	  """.trimIndent()
-	  )
-	}
+	/*	if (r.isNaN || r.isInfinite) {
+		  println(
+			"""
+			f=${r.value}
+			images.size=${images.size}
+			numTest.test.maxActivations[neuron]=${numTest.test.maxActivations[neuron]}
+			denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}
+			${
+			  if (images.isNotEmpty()) "neuron.averageActivation(images).value=${
+				neuron.averageActivation(
+				  images,
+				  dType = dType
+				).value
+			  }, denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}" else ""
+			}
+		  """.trimIndent()
+		  )
+		}*/
 	return r
   }
 
@@ -285,7 +252,6 @@ data class ImageTopPredictions<N: Number>(
 	val clsLay = testLoader.model.classificationLayer
 	val preds = image.activationsFor(clsLay.interTest)
 	val softMaxDenom = ImageSoftMaxDenom(image, testLoader)()
-	warnOnce("bad toDouble x2")
 	preds.withIndex().sortedBy {
 	  it.value.toDouble()
 	}
@@ -326,7 +292,6 @@ data class CategoryFalsePositivesSorted<N: Number>(
   }
 
   override fun timedCompute(): List<DeephyImage<N>> = run {
-	warnOnce("bad toDouble here")
 	testLoader.test.imagesWithoutGroundTruth(category)
 	  .map {
 		it to testLoader.test.preds.await()[it]
@@ -355,7 +320,6 @@ data class CategoryFalseNegativesSorted<N: Number>(
   }
 
   override fun timedCompute() = run {
-	warnOnce("bad toDouble here")
 	testLoader.test.imagesWithGroundTruth(category)
 	  .map {
 		it to testLoader.test.preds.await()[it]

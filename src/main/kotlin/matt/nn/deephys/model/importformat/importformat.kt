@@ -2,9 +2,11 @@ package matt.nn.deephys.model.importformat
 
 import com.google.common.collect.MapMaker
 import kotlinx.serialization.Serializable
+import matt.async.pool.MyThreadPriorities.CREATING_NEW_CACHE
+import matt.async.thread.daemon
 import matt.collect.dmap.withStoringDefault
+import matt.collect.map.lazyMap
 import matt.collect.weak.lazyWeakMap
-import matt.collect.weak.soft.lazySoftMap
 import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
@@ -71,6 +73,9 @@ class Test<N: Number>(
   override val dtype: DType<N>
 ): DeephyFileObject, TypedTestLike<N> {
 
+  override fun isDoneLoading(): Boolean {
+	return true
+  }
   @Suppress("UNCHECKED_CAST")
   val images = images as List<DeephyImage<N>>
 
@@ -94,7 +99,8 @@ class Test<N: Number>(
   var testNeurons: Map<InterTestNeuron, TestNeuron<N>>? = null
 
 
-  fun category(id: Int) = images.find { it.category.id == id }!!.category
+  fun category(id: Int) = catsByID[id]!!
+	/*images.find { it.category.id == id }!!.category*/
 
   val categories by lazy {
 	stopwatch("categories", enabled = DeephySettings.verboseLogging.value) {
@@ -176,13 +182,27 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 //  }
 
 
-  val maxActivations = lazySoftMap<InterTestNeuron, N> { neuron ->
+  val maxActivations = lazyMap<InterTestNeuron, N> { neuron ->
 
 	/*activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!*/
 
 	activationsByNeuron[neuron].max()!!
 
+
+
   }
+
+  fun startPreloadingMaxActivations() {
+	daemon(priority = CREATING_NEW_CACHE) {
+	  model.resolvedLayers.forEach {
+		it.interTest.neurons.forEach {
+		  maxActivations[it]
+		}
+	  }
+	  println("finished preloading all maxActivations of ${name}!")
+	}
+  }
+
 
   val preds = run {
 	val clsLayerIndex = model.classificationLayer.index /*attempt to remove ref to Test from thread below*/

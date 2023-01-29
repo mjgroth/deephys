@@ -1,27 +1,34 @@
 package matt.nn.deephys.gui.neuron
 
+import matt.async.queue.QueueWorker
 import matt.collect.itr.subList
 import matt.collect.set.contents.contentsOf
+import matt.fx.control.wrapper.progressindicator.progressindicator
+import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.node.proto.infosymbol.infoSymbol
+import matt.lang.function.Consume
 import matt.lang.go
-import matt.lang.weak.WeakPair
-import matt.lang.weak.WeakRef
+import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.TopImages
+import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.obs.bind.weakBinding
 import matt.obs.math.double.op.times
 import matt.obs.prop.BindableProperty
+import matt.reflect.weak.WeakThing
 import kotlin.math.min
 
 class NeuronView<A: Number>(
@@ -30,78 +37,155 @@ class NeuronView<A: Number>(
   testLoader: TypedTestLike<A>,
   viewer: DatasetViewer,
   showActivationRatio: Boolean,
-  layoutForList: Boolean
+  layoutForList: Boolean,
+  loadImagesAsync: Boolean = false
 ): VBoxWrapperImpl<NW>() {
+
+  companion object {
+	private val worker = QueueWorker("NeuronView Worker")
+  }
+
+
   init {
-	val weakViewer = WeakRef(viewer)
+	val weakViewer = viewer.weakRef
+	val showing = BindableProperty(2)
+	progressindicator() {
+	  visibleAndManagedProp.bindWeakly(showing.weakBinding(this@NeuronView) { _, it ->
+		it < 2
+	  })
+	}
+
 	if (showActivationRatio) {
 	  swapperR(viewer.inD) {
 		weakViewer.deref()!!.testData.value?.go { numTest ->
 		  it.testData.value?.go { denomTest ->
 			h {
+
+
+
+			  val doneLoading = denomTest.isDoneLoading() && numTest.isDoneLoading()
+
 			  @Suppress("UNCHECKED_CAST")
-			  val ratio = ActivationRatioCalc(
-				numTest = numTest.preppedTest.await() as TypedTestLike<A>,
-				images = contentsOf(),
-				denomTest = denomTest.preppedTest.await() as TypedTestLike<A>,
-				neuron = neuron
-			  )()
-			  deephyText(
-				ratio.formatted
-			  ) {
-				deephyTooltip(ActivationRatioCalc.technique)
+			  val j = if (doneLoading) {
+				val ti = ActivationRatioCalc(
+				  numTest = numTest.preppedTest.await() as TypedTestLike<A>,
+				  images = contentsOf(),
+				  denomTest = denomTest.preppedTest.await() as TypedTestLike<A>,
+				  neuron = neuron
+				)()
+				object: Donable<Activation<A, *>> {
+				  override fun whenDone(c: Consume<Activation<A, *>>) {
+					c(ti)
+				  }
+				}
+			  } else {
+				showing.value -= 1
+				worker.schedule {
+				  ActivationRatioCalc(
+					numTest = numTest.preppedTest.await() as TypedTestLike<A>,
+					images = contentsOf(),
+					denomTest = denomTest.preppedTest.await() as TypedTestLike<A>,
+					neuron = neuron
+				  )()
+				}
 			  }
-			  //			  infoSymbol("test")
-			  ratio.extraInfo?.go { infoSymbol(it) }
+
+			  j.whenDone { ratio ->
+				ensureInFXThreadOrRunLater {
+				  if (!doneLoading) {
+					showing.value += 1
+				  }
+				  deephyText(
+					ratio.formatted
+				  ) {
+					veryLazyDeephysTooltip(ActivationRatioCalc.technique)
+				  }
+				  //			  infoSymbol("test")
+				  ratio.extraInfo?.go { infoSymbol(it) }
+
+				}
+			  }
+
+
 			}
 		  }
 		}
 	  }
 	}
+
 	+ImageFlowPane(viewer).apply {
+	  val imFlowPane = this
 	  /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
-	  prefWrapLengthProperty.bind(viewer.widthProperty*0.8)
+	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.8)
 
 	  fun update(
-		testLoaderAndViewer: Pair<TypedTestLike<A>, DatasetViewer>,
+		weakThing: WeakNeuronViewRefs<A>,
 		oldNumImages: Int?,
 		newNumImages: Int
 	  ) {
-		val localTestLoader = testLoaderAndViewer.first
-		val localViewer = testLoaderAndViewer.second
+		val localTestLoader = weakThing.testLoader
+		val localViewer = weakThing.viewer
+		val localNeuron = weakThing.neuron
+		val localImFlowPane = weakThing.imFlowPane
 
 		val realOldNumImages = oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }?.toULong()
 		val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
-		val topImages = TopImages(neuron, localTestLoader, realNumImages.toInt())()
 
+		val doneLoading = localTestLoader.isDoneLoading()
 
-		if (realOldNumImages == null) {
-		  topImages.forEach {
-			val im = localTestLoader.imageAtIndex(it.index)
-			+DeephyImView(im, localViewer).apply {
-//			  scale.bind(localViewer.smallImageScale / im.widthMaybe)
+		val topImagesJob = if (localTestLoader.isDoneLoading()) {
+		  val ti = TopImages(localNeuron, localTestLoader, realNumImages.toInt())()
+		  object: Donable<List<ImageIndex>> {
+			override fun whenDone(c: Consume<List<ImageIndex>>) {
+			  c(ti)
 			}
 		  }
-		} else if (realNumImages > realOldNumImages) {
-//		  topImages.forEach {
-//			println("ti: ${it}")
-//		  }
-//		  println("realOldNumImages=${realOldNumImages}")
-		  topImages.subList(realOldNumImages.toInt()).toList().forEach {
-//			println("it=$it")
-			val im = localTestLoader.imageAtIndex(it.index)
-			+DeephyImView(im, localViewer).apply {
-//			  scale.bind(localViewer.smallImageScale / im.widthMaybe)
-			}
-		  }
-		} else if (realNumImages < realOldNumImages) {
-		  children.subList(realNumImages.toInt()).toList().forEach {
-			it.removeFromParent()
+		} else {
+		  showing.value -= 1
+		  worker.schedule {
+			TopImages(localNeuron, localTestLoader, realNumImages.toInt())()
 		  }
 		}
+		topImagesJob.whenDone { topImages ->
+		  ensureInFXThreadOrRunLater {
+			if (realOldNumImages == null) {
+			  topImages.forEach {
+				val im = localTestLoader.imageAtIndex(it.index)
+				localImFlowPane.add(DeephyImView(im, localViewer,loadAsync=loadImagesAsync))
+			  }
+			} else if (realNumImages > realOldNumImages) {
+			  topImages.subList(realOldNumImages.toInt()).toList().forEach {
+				val im = localTestLoader.imageAtIndex(it.index)
+				localImFlowPane.add(DeephyImView(im, localViewer,loadAsync=loadImagesAsync))
+			  }
+			} else if (realNumImages < realOldNumImages) {
+			  localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
+				it.removeFromParent()
+			  }
+			}
+			if (!doneLoading) {
+			  showing.value += 1
+			}
+		  }
+
+
+		}
+
+
 	  }
-	  update(testLoader to viewer, null, numImages.value)
-	  numImages.onChangeWithAlreadyWeakAndOld(WeakPair(testLoader, viewer)) { tl, o, n ->
+
+
+	  val weakThing = WeakNeuronViewRefs<A>().apply {
+		this.testLoader = testLoader
+		this.viewer = viewer
+		this.neuron = neuron
+		this.imFlowPane = imFlowPane
+	  }
+
+
+	  update(weakThing.deref()!!, null, numImages.value)
+
+	  numImages.onChangeWithAlreadyWeakAndOld(weakThing) { tl, o, n ->
 		update(tl, o, n)
 	  }
 	  if (layoutForList) {
@@ -111,5 +195,18 @@ class NeuronView<A: Number>(
 	  }
 	}
   }
+
+
 }
+
+private class WeakNeuronViewRefs<A: Number>: WeakThing<WeakNeuronViewRefs<A>>() {
+
+  var testLoader by weak<TypedTestLike<A>>()
+  var viewer by weak<DatasetViewer>()
+  var neuron by weak<InterTestNeuron>()
+  var imFlowPane by weak<ImageFlowPane>()
+
+}
+
+
 

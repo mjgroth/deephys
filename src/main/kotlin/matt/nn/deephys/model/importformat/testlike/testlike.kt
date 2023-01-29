@@ -11,6 +11,7 @@ interface TestOrLoader {
   val testRAMCache: TestRAMCache
   val dtype: DType<*>
   val model: Model
+  fun isDoneLoading(): Boolean
 }
 
 

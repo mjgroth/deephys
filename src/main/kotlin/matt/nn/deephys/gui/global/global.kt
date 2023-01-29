@@ -34,6 +34,9 @@ import matt.obs.bindings.str.ObsS
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.Var
 
+/*null because gets in the way of existing animations for pie slices*/
+/*val DEEPHYS_FADE_DUR = 500.milliseconds*/
+val DEEPHYS_FADE_DUR = null
 
 fun EventTargetWrapper.deephyText(s: String = "", op: DeephyText.()->Unit = {}) =
   DeephyText(BindableProperty(s)).apply(op).also { +it }

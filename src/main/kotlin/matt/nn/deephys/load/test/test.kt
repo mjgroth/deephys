@@ -57,6 +57,10 @@ class TestLoader(
 	private val daemonPool = DaemonPool()
   }
 
+  override fun isDoneLoading(): Boolean {
+	return finishedTest.isDone()
+  }
+
   override val test get() = awaitFinishedTest()
   override val dtype get() = test.dtype
   private var finishedTest = LoadedValueSlot<Test<*>>()
@@ -346,6 +350,7 @@ class TestLoader(
 			  setTheTestNeurons(localTestNeurons)
 			  /*testNeurons = localTestNeurons*/ /*as Map<InterTestNeuron,TestNeuron<Float>>*/
 			  preds.startLoading()
+			  startPreloadingMaxActivations()
 			})
 			println("load2")
 			signalFinishedLoading()

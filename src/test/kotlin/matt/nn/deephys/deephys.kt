@@ -32,6 +32,7 @@ import kotlin.time.Duration.Companion.seconds
 const val NUM_IM_CLICKS = 10
 const val NUM_SLICE_CLICKS = 10
 val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
+//val WAIT_FOR_GUI_INTERVAL = 1.seconds
 
 
 val TEST_DATA_FOLDER = DEEPHYS_DATA_FOLDER["test"]

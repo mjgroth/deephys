@@ -13,6 +13,7 @@ import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.nn.deephys.load.async.AsyncLoader
 import matt.obs.bind.binding
 import matt.obs.prop.ObsVal
+import kotlin.time.Duration
 
 sealed interface CborSyncLoadResult<T>
 
@@ -44,11 +45,13 @@ fun <T> EventTargetWrapper.loadSwapper(
 fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
   loader: ObsVal<T?>,
   nullMessage: String = "please select a file",
+  fadeOutDur: Duration? = null,
+  fadeInDur: Duration? = null,
   op: T.()->NodeWrapper
 ) = swapper(loader, nullMessage) {
   VBoxWrapperImpl<NodeWrapper>().also {
 
-	it.swapper(fileFound.binding(streamOk, parseError) { this }) {
+	it.swapper(fileFound.binding(streamOk, parseError) { this }, fadeOutDur = fadeOutDur, fadeInDur = fadeInDur) {
 	  when {
 		!fileFound.value         -> TextWrapper("file not found")
 		!streamOk.value          -> TextWrapper("file loading stream broken. Was the file moved?")
