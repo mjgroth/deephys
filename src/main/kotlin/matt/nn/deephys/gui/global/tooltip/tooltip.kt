@@ -14,10 +14,11 @@ import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.lang.function.Produce
 import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
-import matt.nn.deephys.gui.global.DEEPHY_FONT_DEFAULT
+import matt.nn.deephys.gui.global.DEEPHYS_FONT_DEFAULT
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.state.DEFAULT_BIG_IMAGE_SCALE
 import matt.nn.deephys.state.DeephySettings
+import matt.obs.bindings.str.ObsS
 import java.lang.ref.WeakReference
 
 fun NodeWrapper.veryLazyDeephysTooltip(text: String, im: MyWeakRef<out DeephyImage<out Number>>) {
@@ -73,6 +74,18 @@ fun NodeWrapper.deephyTooltip(
 }
 
 
+fun NodeWrapper.deephyTooltip(
+  s: ObsS,
+): TooltipWrapper {
+
+  return DeephyTooltip(s.value, null).also {
+	install(it)
+	it.textProperty.bindWeakly(s)
+  }
+
+}
+
+
 class DeephyTooltip(s: String, im: DeephyImage<*>?): TooltipWrapper(s) {
   companion object {
 	/*private val drawQueue = QueueWorker()
@@ -102,7 +115,7 @@ class DeephyTooltip(s: String, im: DeephyImage<*>?): TooltipWrapper(s) {
 	/*text = if (DeephySettings.showTutorials.value) "$s\t(press escape to close)" else s*/
 
 
-	font = DEEPHY_FONT_DEFAULT
+	font = DEEPHYS_FONT_DEFAULT
 
 	var didFirstShow = false
 

@@ -29,13 +29,13 @@ class PredictionsView(
 ): VBoxW() {
   init {
 	textflow<TextWrapper> {
-	  deephyText("ground truth: ").titleFont()
+	  deephyText("Ground Truth: ").titleFont()
 	  deephyActionText(groundTruth.label) {
 		weakViewer.deref()!!.navigateTo(groundTruth)
 	  }.titleBoldFont()
 	}
 	spacer()
-	deephyText("predictions:") {
+	deephyText("Predictions:") {
 	  subtitleFont()
 	}
 	spacer(10.0)

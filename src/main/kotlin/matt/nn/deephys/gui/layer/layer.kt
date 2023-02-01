@@ -4,15 +4,14 @@ import javafx.scene.paint.Color
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.style.border.FXBorder
-import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
-import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.StringConverter
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysLabeledControl
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.ResolvedLayer
@@ -20,6 +19,7 @@ import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.binding
 import matt.obs.bindings.bool.ObsB
+import matt.obs.bindings.bool.and
 import matt.obs.col.olist.toBasicObservableList
 import matt.prim.str.isInt
 
@@ -97,14 +97,12 @@ class LayerView(
 	/*val neuronCB = choicebox(property = viewer.neuronSelection, values = layer.neurons.map { it.interTest }) {
 	  converter = toStringConverter<InterTestNeuron?> { "neuron ${it?.index}" }.toFXConverter()
 	}*/
-	hbox<NodeWrapper> {
-	  deephyText("neuron: ")
-	  +neuronSpinner
-	  deephyText("please input valid integer neuron index between 0 and ${neurons.size}") {
-		visibleAndManagedProp.bind(badText!!)
-	  }
+	deephysLabeledControl("Neuron", neuronSpinner) {
 	  /*+neuronCB*/
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
+	}
+	deephyText("please input valid integer neuron index between 0 and ${neurons.size}") {
+	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull.and(badText!!))
 	}
 	/*NEVER NULL*/
 	swapper(neuronSpinner.valueProperty, nullMessage = "select a neuron") {

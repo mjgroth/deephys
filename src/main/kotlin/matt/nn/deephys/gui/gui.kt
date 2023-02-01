@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui
 
 import javafx.application.Platform.runLater
+import javafx.geometry.Pos
 import javafx.geometry.Pos.BOTTOM_LEFT
 import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
@@ -21,18 +22,24 @@ import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.hotkey.hotkeys
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.node.disableWhen
 import matt.fx.graphics.wrapper.node.parent.ParentWrapper
-import matt.fx.graphics.wrapper.pane.hbox.hbox
+import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swap
+import matt.fx.graphics.wrapper.pane.hbox.h
+import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.stage.StageWrapper
+import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
+import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.anno.SeeURL
 import matt.lang.go
 import matt.log.profile.stopwatch.Stopwatch
-import matt.log.profile.stopwatch.tic
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.mstruct.rstruct.appName
 import matt.mstruct.rstruct.resourceURL
@@ -40,8 +47,12 @@ import matt.nn.deephys.gui.Arg.`erase-settings`
 import matt.nn.deephys.gui.Arg.`erase-state`
 import matt.nn.deephys.gui.Arg.reset
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
-import matt.nn.deephys.gui.global.deephyActionButton
+import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
+import matt.nn.deephys.gui.global.deephyButton
+import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.settings.settingsButton
 import matt.nn.deephys.init.initializeWhatICan
@@ -51,7 +62,11 @@ import matt.nn.deephys.load.loadSwapper
 import matt.nn.deephys.state.DeephySettingsNode
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
+import matt.obs.bind.binding
+import matt.obs.prop.BindableProperty
 import matt.obs.subscribe.Pager
+import matt.prim.str.mybuild.string
+import matt.prim.str.truncateWithElipsesOrAddSpaces
 import java.util.prefs.Preferences
 
 val DEEPHY_USER_DATA_DIR by lazy {
@@ -118,7 +133,6 @@ class DeephysApp {
 
 	warmupFxComponents()
 
-	//	println("start app 1")
 
 	val myStageTitle = stageTitle.await()
 	stage.title = myStageTitle
@@ -131,7 +145,6 @@ class DeephysApp {
 	  }
 	)
 
-	//	println("start app 2")
 
 	stage.node.minWidth = 1000.0
 	@SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
@@ -141,7 +154,6 @@ class DeephysApp {
 
 	readyForConfiguringWindowFromTest.putLoadedValue(stage)
 
-	//	println("start app 3")
 
 	root<VBoxWrapperImpl<NodeWrapper>> {
 
@@ -162,66 +174,120 @@ class DeephysApp {
 
 
 
-		content = VBoxWrapperImpl<NodeWrapper>().apply {
+		content = VBoxW().apply {
+
+		  spacing = 10.0
 		  alignment = TOP_CENTER
 
+		  val visualizer = BindableProperty<ModelVisualizer?>(null)
+		  val pleaseLoadModelToSeeVisualizerText = "Choose a model in order to visualize it"
+		  val visualizerToolTipText = BindableProperty(pleaseLoadModelToSeeVisualizerText)
+		  val showVisualizer = BindableProperty(false)
 
+		  h {
+			spacing = 25.0
 
-		  hbox<NodeWrapper> {
-			deephyActionButton("choose model file") {
-			  val f = FileChooser().apply {
-				extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
-			  }.showOpenDialog(stage?.node)?.toMFile()?.toSFile()
-			  if (f != null) {
-				DeephyState.tests.value = null
-				DeephyState.model.value = f
+			deephyButton("Choose Model") {
+			  prefHeightProperty.bind(settingsButton.heightProperty)
+			  setOnAction {
+				val f = FileChooser().apply {
+				  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
+				}.showOpenDialog(stage?.node)?.toMFile()?.toSFile()
+				if (f != null) {
+				  DeephyState.tests.value = null
+				  DeephyState.model.value = f
+				}
 			  }
 			}
-			+settingsButton
+
+			h {
+			  deephyTooltip(visualizerToolTipText) /*tooltip has to be outside of checkbox or else it will not show when checkbox is disabled?*/
+			  deephyCheckbox("Show Model Diagram") {
+				prefHeightProperty.bind(settingsButton.heightProperty)
+				visualizer.onChange {
+				  if (it == null) {
+					isSelected = false
+				  }
+				}
+				disableWhen { visualizer.isNull }
+
+				showVisualizer.bind(selectedProperty)
+			  }
+			}
+
+			h {
+			  hgrow = ALWAYS
+			  alignment = Pos.CENTER_RIGHT
+			  +settingsButton
+			}
+
+		  }
+
+
+
+		  v {
+			visibleAndManagedWhen { showVisualizer }
+			swap(visualizer)
 		  }
 
 
 		  loadSwapper(modelBinding.await(), nullMessage = "Select a .model file to begin") {
-			val swapT = tic("model swapper", enabled = true)
-			swapT.toc(0)
 			val model = this@loadSwapper
 			VBoxWrapperImpl<NodeWrapper>().apply {
 
-			  swapT.toc(1)
-			  deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "")
-			  swapT.toc(2)
-			  println("loaded model: ${model.name}")
-			  println(model.infoString())
-			  swapT.toc(3)
+			  h {
+				spacing = 10.0
+				deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "") {
+				  titleFont()
+				}
+				infoSymbol(
+				  string {
+					lineDelimited {
+					  +"Layers"
+					  model.layers.forEach {
+						+"\t${it.layerID.truncateWithElipsesOrAddSpaces(15)}: ${it.neurons.size}"
+					  }
+					}
+				  }
+				) {
+				  tooltipFontProperty v DEEPHYS_FONT_MONO
+				  /*wrapTextProp v true*/
+				}
+			  }
+
+
+			  println("loaded model: " + model.infoString())
 
 			  val maxNeurons = 50
+
+
 			  val vis = if (model.layers.all { it.neurons.size <= maxNeurons }) {
-				ModelVisualizer(model).also {
-				  +it
-				  it.blue()
-				}
+				visualizerToolTipText v "Show an interactive diagram of the model"
+				ModelVisualizer(model)
 			  } else {
-				deephyText("model is too large to visualize (>$maxNeurons in a layer)")
+				visualizerToolTipText v "model is too large to visualize (>$maxNeurons in a layer)"
 				null
 			  }
-			  swapT.toc(4)
+			  visualizer v vis
+
 			  val dSetViewsBox = DSetViewsVBox(model)
-			  swapT.toc(5)
 			  dSetViewsBox.modelVisualizer = vis
 			  vis?.dsetViewsBox = dSetViewsBox
-			  swapT.toc(6)
 			  val theTests = DeephyState.tests.value
-			  swapT.toc(6.5)
 			  theTests?.go {
 				dSetViewsBox += it
 			  }
-			  swapT.toc(7)
 			  +dSetViewsBox
-			  swapT.toc(8)
-			  deephyActionButton("add test") {
-				dSetViewsBox.addTest()
+			  deephyButton("Add a test") {
+				textProperty.bind(dSetViewsBox.children.sizeProperty.binding {
+				  if (it == 0) "Add a test" else "+"
+				})
+				deephyTooltip("Add a test")
+				setOnAction {
+				  dSetViewsBox.addTest()
+				}
+
 			  }
-			  swapT.toc(9)
 			  runLater {
 				testReadyDSetViewsBbox.page(dSetViewsBox)
 			  }

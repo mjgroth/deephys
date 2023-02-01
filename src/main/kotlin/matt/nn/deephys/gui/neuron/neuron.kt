@@ -10,8 +10,10 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.node.proto.infosymbol.infoSymbol
+import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.function.Consume
 import matt.lang.go
+import matt.log.taball
 import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.TopImages
@@ -26,6 +28,8 @@ import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.weakBinding
+import matt.obs.bindings.bool.and
+import matt.obs.bindings.bool.not
 import matt.obs.math.double.op.times
 import matt.obs.prop.BindableProperty
 import matt.reflect.weak.WeakThing
@@ -49,18 +53,17 @@ class NeuronView<A: Number>(
   init {
 	val weakViewer = viewer.weakRef
 	val showing = BindableProperty(2)
-	progressindicator() {
+	val progIndicator = progressindicator {
 	  visibleAndManagedProp.bindWeakly(showing.weakBinding(this@NeuronView) { _, it ->
 		it < 2
 	  })
 	}
 
 	if (showActivationRatio) {
-	  swapperR(viewer.inD) {
+	  swapperR(viewer.normalizer) {
 		weakViewer.deref()!!.testData.value?.go { numTest ->
 		  it.testData.value?.go { denomTest ->
 			h {
-
 
 
 			  val doneLoading = denomTest.isDoneLoading() && numTest.isDoneLoading()
@@ -113,7 +116,13 @@ class NeuronView<A: Number>(
 	  }
 	}
 
+	val noneText = infoSymbol(
+	  "There are no top images. This might happen if all activations are zero, NaN, or infinite"
+	)
 	+ImageFlowPane(viewer).apply {
+	  noneText.visibleAndManagedProp.bindWeakly(
+		children.sizeProperty.eq(0) and progIndicator.visibleProperty.not()
+	  )
 	  val imFlowPane = this
 	  /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
 	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.8)
@@ -148,15 +157,20 @@ class NeuronView<A: Number>(
 		}
 		topImagesJob.whenDone { topImages ->
 		  ensureInFXThreadOrRunLater {
+
+			if (localNeuron.index == 10) {
+			  taball("neuron 10 images", topImages)
+			}
+
 			if (realOldNumImages == null) {
 			  topImages.forEach {
 				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(DeephyImView(im, localViewer,loadAsync=loadImagesAsync))
+				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync))
 			  }
 			} else if (realNumImages > realOldNumImages) {
 			  topImages.subList(realOldNumImages.toInt()).toList().forEach {
 				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(DeephyImView(im, localViewer,loadAsync=loadImagesAsync))
+				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync))
 			  }
 			} else if (realNumImages < realOldNumImages) {
 			  localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {

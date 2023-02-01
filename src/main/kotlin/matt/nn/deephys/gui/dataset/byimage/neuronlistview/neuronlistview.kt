@@ -49,7 +49,7 @@ fun <A: Number> NW.neuronListViewSwapper(
 	viewer = viewer,
 	fade=fade,
 	top = MyBinding(
-	  viewer.layerSelection, viewer.normalizeTopNeuronActivations, viewer.testData, viewer.inD
+	  viewer.layerSelection, /*viewer.normalizeTopNeuronActivations, */viewer.testData, viewer.normalizer
 	) {
 	  weakViewer.deref()?.let { deRefedViewer ->
 		deRefedViewer.layerSelection.value?.let { lay ->
@@ -58,8 +58,8 @@ fun <A: Number> NW.neuronListViewSwapper(
 			images = contents,
 			layer = lay,
 			test = deRefedViewer.testData.value!!.preppedTest.await() as TypedTestLike<A>,
-			normalized = deRefedViewer.normalizeTopNeuronActivations.value,
-			denomTest = deRefedViewer.inD.value.takeIf { it != deRefedViewer }?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
+			/*normalized = deRefedViewer.normalizeTopNeuronActivations.value,*/
+			denomTest = deRefedViewer.normalizer.value.takeIf { it != deRefedViewer }?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
 		  )
 		}
 	  }
@@ -77,7 +77,7 @@ fun NW.neuronListViewSwapper(
   val weakViewer = MyWeakRef(viewer)
   swapper(
 	MyBinding(
-	  viewer.normalizeTopNeuronActivations, viewer.testData, top
+	  /*viewer.normalizeTopNeuronActivations,*/ viewer.testData, top
 	) {
 	  weakViewer.deref()?.let { deRefedViewer ->
 		deRefedViewer.testData.value?.let { tst ->
@@ -149,6 +149,10 @@ class NeuronListView(
 
 		val startAsyncAt = (viewer.stage!!.width / NEURON_LIST_VIEW_WIDTH).ceilInt()
 
+		if (topNeurons.isEmpty()) {
+		  infoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
+		}
+
 		topNeurons.forEachIndexed { idx, neuronWithAct ->
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {
@@ -163,8 +167,8 @@ class NeuronListView(
 
 			  spacer(10.0)
 
-			  val normalize = viewer.normalizeTopNeuronActivations
-			  swapperRNullable(viewer.inD.binding(normalize) { it }) {                /*val inD = it*/                /*if (inD == null || inD == viewer) {*/
+			  /*val normalize = viewer.normalizeTopNeuronActivations*/
+			  swapperRNullable(viewer.normalizer.binding(/*normalize*/) { it }) {                /*val inD = it*/                /*if (inD == null || inD == viewer) {*/
 
 
 				/*anirban and xavier asked to hide the activation text in this case since it doesn't pertain to a specific image*/

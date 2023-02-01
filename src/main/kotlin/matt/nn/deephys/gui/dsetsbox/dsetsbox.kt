@@ -2,7 +2,6 @@ package matt.nn.deephys.gui.dsetsbox
 
 import javafx.application.Platform.runLater
 import javafx.scene.layout.Border
-import javafx.scene.paint.Color
 import javafx.util.Duration
 import matt.file.CborFile
 import matt.file.toSFile
@@ -16,19 +15,22 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.math.ranges.step
 import matt.model.data.message.FileList
-import matt.nn.deephys.gui.global.DEEPHY_FONT_MONO
+import matt.nn.deephys.gui.global.color.DeephysPalette.deephysSelectGradient
 import matt.nn.deephys.gui.global.deephyToggleButton
-import matt.nn.deephys.gui.global.deephysSelectColor
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephySettings
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
-import matt.obs.bind.binding
 import matt.obs.prop.BindableProperty
 
 class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
+
+  companion object {
+	const val BIND_BUTTON_NAME = "bind"
+	const val NORMALIZER_BUTTON_NAME = "Normalizer"
+  }
 
   init {
 	runLater {
@@ -71,11 +73,11 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	parent: NodeWrapper,
 	viewer: DatasetViewer
   ) = parent.deephyToggleButton(
-	"bind",
+	BIND_BUTTON_NAME,
 	group = bindToggleGroup,
 	value = viewer
   ) {
-	setupSelectionColor(deephysSelectColor)
+	setupSelectionColor(deephysSelectGradient)
   }
 
   private val inDToggleGroup = ToggleMechanism<DatasetViewer>()
@@ -95,15 +97,16 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	parent: NodeWrapper,
 	viewer: DatasetViewer
   ) = parent.deephyToggleButton(
-	"",
+	NORMALIZER_BUTTON_NAME,
 	group = inDToggleGroup,
 	value = viewer
   ) {
-	setupSelectionColor(Color.rgb(255, 255, 0, 0.1))
-	textProperty.bind(selectedProperty.binding {
+	setupSelectionColor(deephysSelectGradient)
+	/*setupSelectionColor(Color.rgb(255, 255, 0, 0.1))*/
+	/*textProperty.bind(selectedProperty.binding {
 	  if (it) "InD" else "OOD"
-	})
-	font = DEEPHY_FONT_MONO
+	})*/
+	/*font = DEEPHY_FONT_MONO*/
   }
 
 
@@ -115,7 +118,9 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   }
 
 
-  fun addTest() = DatasetViewer(null, this).also { plusAssign(it) }
+  fun addTest() = DatasetViewer(null, this).also {
+	plusAssign(it)
+  }
 
 
   fun removeTest(t: DatasetViewer) {
@@ -123,8 +128,8 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	if (bound.value == t) bindToggleGroup.selectedValue.value = null
 	if (inD.value == t) inDToggleGroup.selectedValue.value = null
 	t.removeFromParent()
-	t.normalizeTopNeuronActivations.unbind()
-	t.inD.unbind()
+//	t.normalizeTopNeuronActivations.unbind()
+	t.normalizer.unbind()
 	t.outerBoundDSet.unbind()
 	t.numViewers.unbind()
 	t.smallImageScale.unbind()

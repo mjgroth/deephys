@@ -84,14 +84,14 @@ sealed interface DType<N: Number> {
   layer: InterTestLayer,
   test: TypedTestLike<*>,
   denomTest: TypedTestLike<*>?,
-  normalized: Boolean,
+  /*normalized: Boolean,*/
   forcedNeuronIndices: List<Int>? = null
 ) = TopNeurons(
   images = images as Contents<DeephyImage<N>>,
   layer = layer,
   test = test as TypedTestLike<N>,
   denomTest = denomTest as TypedTestLike<N>?,
-  normalized = normalized,
+  /*normalized = normalized,*/
   forcedNeuronIndices = forcedNeuronIndices
 )
 
@@ -245,19 +245,19 @@ value class DoubleArrayWrapper(private val v: DoubleArray): ArrayWrapper<Double>
 
 
 sealed interface MultiArrayWrapper<N: Number> {
-  fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean): List<Int>
+  fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean, skipZero: Boolean): List<Int>
 }
 
 @JvmInline
 value class FloatMultiArrayWrapper(val a: MultiArray<Float, D1>): MultiArrayWrapper<Float> {
-  override fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean): List<Int> {
-	return a.argmaxn2(n, skipInfinite = skipInfinite, skipNaN = skipNaN)
+  override fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean, skipZero: Boolean): List<Int> {
+	return a.argmaxn2(n, skipInfinite = skipInfinite, skipNaN = skipNaN,skipZero=skipZero)
   }
 }
 
 @JvmInline
 value class DoubleMultiArrayWrapper(val a: MultiArray<Double, D1>): MultiArrayWrapper<Double> {
-  override fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean): List<Int> {
-	return a.argmaxn2(n, skipInfinite = skipInfinite, skipNaN = skipNaN)
+  override fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean, skipZero: Boolean): List<Int> {
+	return a.argmaxn2(n, skipInfinite = skipInfinite, skipNaN = skipNaN,skipZero=skipZero)
   }
 }

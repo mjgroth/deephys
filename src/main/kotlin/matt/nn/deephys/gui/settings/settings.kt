@@ -24,12 +24,14 @@ import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephyLabel
+import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.deephyRadioButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.init.gearImage
 import matt.nn.deephys.state.DeephySettings
+import matt.nn.deephys.state.DeephyState
+import matt.prim.str.elementsToString
 import java.awt.Desktop
 
 
@@ -48,7 +50,7 @@ val settingsWindow by lazy {
 	CLOSE,
 	EscClosable = true,
 	decorated = true,
-	title = "Deephy Options",
+	title = "Deephys Options",
   ).apply {
 	width = 1000.0
   }
@@ -94,7 +96,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 		}
 
 		is IntSetting    -> {
-		  deephyLabel {
+		  deephysLabel {
 			veryLazyDeephysTooltip(sett.tooltip)
 			text = sett.label
 			contentDisplay = RIGHT
@@ -119,7 +121,7 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 		}
 
 		is DoubleSetting -> {
-		  deephyLabel {
+		  deephysLabel {
 			veryLazyDeephysTooltip(sett.tooltip)
 			text = sett.label
 			contentDisplay = RIGHT
@@ -169,10 +171,16 @@ object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
 
 	}
 
-	deephyActionButton("Reset all to default") {
+	deephyActionButton("Reset all settings to default") {
 	  DeephySettings.settings.forEach {
 		it.resetToDefault()
 	  }
+	}
+
+	deephyActionButton("Delete state") {
+	  DeephyState.delete()
+	  println("model=${DeephyState.model.value}")
+	  println("tests=${DeephyState.tests.value?.elementsToString()}")
 	}
 
 

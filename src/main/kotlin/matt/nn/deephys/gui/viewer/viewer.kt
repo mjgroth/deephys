@@ -4,10 +4,6 @@ import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
-import matt.async.thread.daemon
 import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.contentsOf
 import matt.collect.weak.lazyWeakMap
@@ -15,14 +11,17 @@ import matt.file.CborFile
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.ControlWrapper
-import matt.fx.control.wrapper.control.button.button
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
-import matt.fx.graphics.wrapper.node.NodeWrapper
+import matt.fx.graphics.icon.svg.svgToImage2
+import matt.fx.graphics.wrapper.imageview.imageview
 import matt.fx.graphics.wrapper.node.enableWhen
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
-import matt.fx.graphics.wrapper.pane.hbox.hbox
+import matt.fx.graphics.wrapper.pane.hSpacer
+import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
+import matt.fx.image.toFXImage
+import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.weak.MyWeakRef
@@ -30,6 +29,7 @@ import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
 import matt.model.obj.tostringbuilder.toStringBuilder
+import matt.mstruct.rstruct.resourceStream
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.gui.dataset.DatasetNode
 import matt.nn.deephys.gui.dataset.DatasetNodeView
@@ -38,10 +38,15 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
+import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.viewer.action.SelectCategory
+import matt.nn.deephys.gui.viewer.action.SelectImage
+import matt.nn.deephys.gui.viewer.action.SelectNeuron
+import matt.nn.deephys.gui.viewer.action.TestViewerAction
 import matt.nn.deephys.gui.viewer.tutorial.bind.BindTutorial
 import matt.nn.deephys.load.asyncLoadSwapper
 import matt.nn.deephys.load.test.TestLoader
@@ -70,10 +75,9 @@ import matt.obs.prop.VarProp
 import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
-import kotlin.time.Duration.Companion.seconds
+import matt.prim.str.mybuild.string
 
-@OptIn(ExperimentalStdlibApi::class) class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
-	TitledPaneWrapper() {
+class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
   private val initStopwatch = tic("viewer init", enabled = false)
 
@@ -100,9 +104,10 @@ import kotlin.time.Duration.Companion.seconds
   val bigImageScale = BindableProperty(DeephySettings.bigImageScale.value).apply {
 	bind(DeephySettings.bigImageScale)
   }
-  val normalizeTopNeuronActivations = BindableProperty(DeephySettings.normalizeTopNeuronActivations.value).apply {
-	bind(DeephySettings.normalizeTopNeuronActivations)
-  }
+
+  //  val normalizeTopNeuronActivations = BindableProperty(DeephySettings.normalizeTopNeuronActivations.value).apply {
+  //	bind(DeephySettings.normalizeTopNeuronActivations)
+  //  }
   val numImagesPerNeuronInByImage = BindableProperty(DeephySettings.numImagesPerNeuronInByImage.value).apply {
 	bind(DeephySettings.numImagesPerNeuronInByImage)
   }
@@ -116,7 +121,7 @@ import kotlin.time.Duration.Companion.seconds
 	bind(DeephySettings.showTutorials)
   }
 
-  val inD = BindableProperty(outerBox.inD.value).apply {
+  val normalizer = BindableProperty(outerBox.inD.value).apply {
 	bind(outerBox.inD)
   }
 
@@ -151,9 +156,6 @@ import kotlin.time.Duration.Companion.seconds
   val isBoundToDSet by lazy { boundToDSet.isNotNull }
   val isUnboundToDSet by lazy { isBoundToDSet.not() }
 
-  init {
-	initStopwatch.toc(2)
-  }
 
   private val boundView by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.view } }
   val view: VarProp<DatasetNodeView> = VarProp(
@@ -185,10 +187,6 @@ import kotlin.time.Duration.Companion.seconds
 	boundNeuron.value
   ).withNonNullUpdatesFrom(boundNeuron)
 
-  init {
-	initStopwatch.toc(3)
-  }
-
   val neuronSelectionResolved = neuronSelection.binding(
 	testData, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
 	layerSelectionResolved
@@ -202,16 +200,16 @@ import kotlin.time.Duration.Companion.seconds
 
   private val topNeuronsFromMyImage = run {
 	imageSelection.binding(
-	  testData, layerSelection, normalizeTopNeuronActivations, inD
+	  testData, layerSelection/*, normalizeTopNeuronActivations*/, normalizer
 	) { im ->
 	  layerSelection.value?.let { lay ->
 		im?.let { theIm ->
 		  testData.value!!.dtype.topNeurons(
 			images = contentsOf(theIm),
 			layer = lay,
-			normalized = normalizeTopNeuronActivations.value,
+			/*normalized = normalizeTopNeuronActivations.value,*/
 			test = testData.value!!.preppedTest.await(),
-			denomTest = inD.value.takeIf { it != this }?.testData?.value?.preppedTest?.await()
+			denomTest = normalizer.value/*.takeIf { it != this }*/?.testData?.value?.preppedTest?.await()
 		  )
 		}
 	  }
@@ -220,13 +218,13 @@ import kotlin.time.Duration.Companion.seconds
 
 
   val boundTopNeurons: MyBinding<TopNeurons<*>?> = boundToDSet.deepBinding(
-	normalizeTopNeuronActivations,
-	inD
+	/*normalizeTopNeuronActivations,*/
+	normalizer
   ) {
 
 
 	it?.topNeurons?.binding(
-	  normalizeTopNeuronActivations, inD
+	  /*normalizeTopNeuronActivations,*/ normalizer
 	) {
 	  it?.let {
 
@@ -234,8 +232,8 @@ import kotlin.time.Duration.Companion.seconds
 		  images = contentsOf(),
 		  layer = it.layer,
 		  test = testData.value!!.preppedTest.await(),
-		  denomTest = inD.value?.testData?.value?.preppedTest?.await(),
-		  normalized = normalizeTopNeuronActivations.value,
+		  denomTest = normalizer.value?.testData?.value?.preppedTest?.await(),
+		  /*normalized = normalizeTopNeuronActivations.value,*/
 		  forcedNeuronIndices = it().map { it.neuron.index }
 		)
 
@@ -339,18 +337,39 @@ import kotlin.time.Duration.Companion.seconds
   var bindButton: ControlWrapper? = null
   var oodButton: ControlWrapper? = null
 
+
+  private fun redoHistory() = when (val action = history[historyIndex.value]) {
+	is SelectImage    -> navigateTo(action.image, addHistory = false)
+	is SelectCategory -> navigateTo(action.cat, addHistory = false)
+	is SelectNeuron   -> navigateTo(action.neuron, addHistory = false)
+  }
+
+  private val canUseHistory = this@DatasetViewer.history.binding(historyIndex, boundToDSet) {
+	isUnboundToDSet.value && it.isNotEmpty()
+  }
+
   init {
-	initStopwatch.toc(7)
 	contentDisplay = ContentDisplay.LEFT
-	isExpanded = true    /*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
-	initStopwatch.toc(8)
-	graphic = hbox<NodeWrapper> {
+	isExpanded = true
+	/*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
+	graphic = h {
 	  alignment = Pos.CENTER
-	  this@DatasetViewer.initStopwatch.toc(8.1)
+	  isFillHeight = true
 
+	  /*spacing = 15.0*/
 
+	  fun sectionSpacer() = h {
+		minWidth = 30.0
+		alignment = Pos.CENTER
+		/*line {
+		  strokeProperty.bindWeakly(DarkModeController.darkModeProp.binding { if (it) Color.DARKGRAY else Color.LIGHTGRAY })
+		  endY = 25.0
+		}*/
+	  }
 
-	  deephyButton("remove test") {
+	  sectionSpacer()
+
+	  val removeTestButton = deephyButton("-") {
 		veryLazyDeephysTooltip("remove this test viewer")
 		setOnAction {
 		  this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
@@ -358,14 +377,21 @@ import kotlin.time.Duration.Companion.seconds
 	  }
 
 
+	  /*"Choose Test"*/
+	  val chooseTestButton = deephyButton("") {
 
+		val ICON_LENGTH = 25
 
-
-	  this@DatasetViewer.initStopwatch.toc(8.2)
-
-
-
-	  deephyButton("select test") {
+		graphic = imageview(
+		  svgToImage2(
+			resourceStream("open-file.svg")!!,
+			width = ICON_LENGTH*2,
+			height = ICON_LENGTH*2
+		  ).toFXImage()
+		) {
+		  isPreserveRatio = true
+		  fitWidth = ICON_LENGTH.toDouble()
+		}
 		veryLazyDeephysTooltip("choose test file")
 		setOnAction {
 		  val f = FileChooser().apply {
@@ -380,62 +406,84 @@ import kotlin.time.Duration.Companion.seconds
 		  }
 		}
 	  }
-	  this@DatasetViewer.initStopwatch.toc(8.3)
 
-	  fun redoHistory() {
-		val action = this@DatasetViewer.history[this@DatasetViewer.historyIndex.value]
-		when (action) {
-		  is SelectImage    -> {
-			this@DatasetViewer.navigateTo(action.image, addHistory = false)
-		  }
 
-		  is SelectCategory -> {
-			this@DatasetViewer.navigateTo(action.cat, addHistory = false)
-		  }
+	  removeTestButton.prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
 
-		  is SelectNeuron   -> {
-			this@DatasetViewer.navigateTo(action.neuron, addHistory = false)
-		  }
-		}
-	  }
 
-	  val canUseHistory = this@DatasetViewer.history.binding(
-		this@DatasetViewer.historyIndex, this@DatasetViewer.boundToDSet
-	  ) {
-		this@DatasetViewer.isUnboundToDSet.value && it.isNotEmpty()
-	  }
 
-	  button("back") {
+
+	  sectionSpacer()
+
+
+	  deephyButton("<-") {
+		prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
 		enableWhen {
-		  canUseHistory and this@DatasetViewer.historyIndex.gt(0)
+		  this@DatasetViewer.canUseHistory and this@DatasetViewer.historyIndex.gt(0)
 		}
 		setOnAction {
 		  this@DatasetViewer.historyIndex.value -= 1
-		  redoHistory()
+		  this@DatasetViewer.redoHistory()
 		}
 
 	  }
-	  this@DatasetViewer.initStopwatch.toc(8.4)
-	  button("forward") {
+	  deephyButton("->") {
+		prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
 		enableWhen {
-		  canUseHistory and this@DatasetViewer.historyIndex.lt(this@DatasetViewer.history.lastIndexProperty)
+		  this@DatasetViewer.canUseHistory and this@DatasetViewer.historyIndex.lt(this@DatasetViewer.history.lastIndexProperty)
 		}
 		setOnAction {
 		  this@DatasetViewer.historyIndex.value += 1
-		  redoHistory()
+		  this@DatasetViewer.redoHistory()
 		}
 	  }
 
+	  sectionSpacer()
+
 	  this@DatasetViewer.bindButton = this@DatasetViewer.outerBox.createBindToggleButton(this, this@DatasetViewer)
-	  this@DatasetViewer.oodButton = this@DatasetViewer.outerBox.createInDToggleButton(this, this@DatasetViewer)
+		.apply {
+		  prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+		}
+	  this@DatasetViewer.oodButton = this@DatasetViewer.outerBox.createInDToggleButton(this, this@DatasetViewer).apply {
+		prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+	  }
+
+	  sectionSpacer()
 
 	  deephyText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {
 		titleFont()
 	  }
+	  hSpacer(10.0)
+	  infoSymbol(
+
+		this@DatasetViewer.testData.binding {
+		  if (it == null) {
+			"After loading a test, see more info about it here."
+		  } else {
+			string {
+			  lineDelimited {
+				+"dtype:       ${it.dtype.label}"
+				+"Image Count: ${it.numImages.await()}"
+			  }
+			}
+		  }
+		}
+
+	  ) {
+		tooltipFontProperty v DEEPHYS_FONT_MONO
+		/*wrapTextProp v true*/
+	  }
+
+	  sectionSpacer()
+
 	  progressbar {
+
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
 		  it?.progress ?: 0.0.toVarProp()
 		})
+		visibleAndManagedWhen {
+		  progressProperty.lt(1.0)
+		}
 	  }
 	  progressbar {
 		visibleAndManagedWhen { this@DatasetViewer.showCacheBars }
@@ -450,31 +498,6 @@ import kotlin.time.Duration.Companion.seconds
 		progressProperty.bind(this@DatasetViewer.testData.deepBinding {
 		  it?.cacheProgressActs ?: 0.0.toVarProp()
 		})
-	  }
-	  deephyText("") {
-		fun update(v: TestLoader?) {
-		  text = ""
-		  if (v != null) {
-			daemon {
-			  try {
-				runBlocking {
-				  withTimeout(1.seconds) {
-					val dtype = v.preppedTest.await().dtype
-					text = "dtype: ${dtype.label}"
-				  }
-				}
-			  } catch (e: TimeoutCancellationException) {
-				warn("timeout when getting dtype text!")
-			  }
-
-			}
-
-		  }
-		}
-		update(this@DatasetViewer.testData.value)
-		this@DatasetViewer.testData.onChange {
-		  update(it)
-		}
 	  }
 	}
 	content = v {
@@ -493,8 +516,3 @@ import kotlin.time.Duration.Companion.seconds
 
 }
 
-
-sealed interface TestViewerAction
-class SelectImage(val image: DeephyImage<*>): TestViewerAction
-class SelectNeuron(val neuron: InterTestNeuron): TestViewerAction
-class SelectCategory(val cat: CategorySelection): TestViewerAction

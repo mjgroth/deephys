@@ -4,10 +4,12 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
+import matt.log.taball
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
 import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
+import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
@@ -68,7 +70,12 @@ data class DescendingArgMaxMax<A: Number>(
 	val acts = theTest.activationsByNeuron[neuron]
 
 	//	acts
-	val indices = test.dtype.wrap(acts).argmaxn2(MAX_NUM_IMAGES_IN_TOP_NEURONS, skipInfinite = true, skipNaN = true)
+	val indices = test.dtype.wrap(acts)
+	  .argmaxn2(MAX_NUM_IMAGES_IN_TOP_NEURONS, skipInfinite = true, skipNaN = true, skipZero = true)
+
+	if (neuron.index == 10) {
+	  taball("indices", indices)
+	}
 
 	/*val indices = acts.argmaxn2(num)*/
 	indices.sortedByDescending {
@@ -104,7 +111,7 @@ data class TopNeurons<N: Number>(
   val layer: InterTestLayer,
   private val test: TypedTestLike<N>,
   private val denomTest: TypedTestLike<N>?,
-  val normalized: Boolean,
+  /*val normalized: Boolean,*/
   val forcedNeuronIndices: List<Int>? = null
 ): DeephysComputeInput<List<NeuronWithActivation<N>>>(), TopNeuronsCalcType {
 
@@ -131,7 +138,7 @@ data class TopNeurons<N: Number>(
 		neuron = neuron,
 		images = images
 	  )()
-	  else if (normalized) NormalizedAverageActivation(neuron, images, test)()
+	  /*else if (normalized) NormalizedAverageActivation(neuron, images, test)()*/
 	  else neuron.averageActivation(images, dType = dType)
 	  NeuronWithActivation(neuron, act)
 	}
@@ -140,7 +147,7 @@ data class TopNeurons<N: Number>(
 
 	return if (forcedNeuronIndices == null) {
 	  val r = neuronsWithActs.filterNot {
-		it.activation.isNaN || it.activation.isInfinite
+		it.activation.isNaN || it.activation.isInfinite || it.activation.isZero
 	  }
 		.sortedByDescending {
 		  it.activation.value.toDouble()
@@ -170,7 +177,7 @@ data class ActivationRatioCalc<A: Number>(
 
   companion object {
 	const val technique =
-	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the InD neuron"
+	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the ${DSetViewsVBox.NORMALIZER_BUTTON_NAME} neuron"
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/

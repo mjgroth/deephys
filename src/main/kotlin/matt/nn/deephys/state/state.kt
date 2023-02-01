@@ -3,20 +3,20 @@ package matt.nn.deephys.state
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import matt.gui.option.SettingsData
-import matt.json.custom.bool
-import matt.json.custom.int
 import matt.json.oldfx.jsonObj
 import matt.json.ser.JsonObjectSerializer
-import matt.lang.go
 import matt.model.data.message.FileList
 import matt.model.data.message.SFile
-import matt.nn.deephys.calc.NormalizedAverageActivation.Companion.normalizeTopNeuronsBlurb
+import matt.obs.json.prop.setFromJson
+import matt.obs.prop.BindableProperty
 import matt.pref.obs.ObsPrefNode
 
 object DeephyState: ObsPrefNode(
   "sinhalab.deephys.state",
   oldKeys = listOf(
-	"dataFolder", "pref", "datasets"
+	"dataFolder",
+	"pref",
+	"datasets"
   )
 ) {
   val model by obj<SFile>()
@@ -26,7 +26,7 @@ object DeephyState: ObsPrefNode(
 object DeephySettingsNode: ObsPrefNode(
   "sinhalab.deephys.settings",
   oldKeys = listOf(
-	"numImagesPerNeuronInByImage", "normalizeTopNeuronActivations", "predictionSigFigs"
+	"normalizeTopNeuronActivations",
   )
 ) {
   val settings by obsObj { DeephySettingsData() }
@@ -35,21 +35,29 @@ object DeephySettingsNode: ObsPrefNode(
 object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(DeephySettingsData::class) {
   override fun deserialize(jsonObject: JsonObject): DeephySettingsData {
 	return DeephySettingsData().apply {
-	  jsonObject["numImagesPerNeuronInByImage"]?.int?.go {
-		numImagesPerNeuronInByImage.value = it
+
+	  namedObservables().forEach {
+		val jsonValue = jsonObject[it.key]
+		if (jsonValue != null) {
+		  (it.value as BindableProperty<*>).setFromJson(jsonValue)
+		}
 	  }
-	  jsonObject["normalizeTopNeuronActivations"]?.bool?.go {
-		normalizeTopNeuronActivations.value = it
-	  }
-	  jsonObject["predictionSigFigs"]?.int?.go {
-		predictionSigFigs.value = it
-	  }
-	  jsonObject["verboseLogging"]?.bool?.go {
-		verboseLogging.value = it
-	  }
-	  jsonObject["millisecondsBeforeTooltipsVanish"]?.int?.go {
-		millisecondsBeforeTooltipsVanish.value = it
-	  }
+
+//	  jsonObject["numImagesPerNeuronInByImage"]?.int?.go {
+//		numImagesPerNeuronInByImage.value = it
+//	  }
+//	  jsonObject["normalizeTopNeuronActivations"]?.bool?.go {
+//		normalizeTopNeuronActivations.value = it
+//	  }
+//	  jsonObject["predictionSigFigs"]?.int?.go {
+//		predictionSigFigs.value = it
+//	  }
+//	  jsonObject["verboseLogging"]?.bool?.go {
+//		verboseLogging.value = it
+//	  }
+//	  jsonObject["millisecondsBeforeTooltipsVanish"]?.int?.go {
+//		millisecondsBeforeTooltipsVanish.value = it
+//	  }
 	}
   }
 
@@ -82,11 +90,11 @@ const val  DEFAULT_BIG_IMAGE_SCALE = 128.0
 	min = 110.0,
 	max = 200.0
   )
-  val normalizeTopNeuronActivations by BoolSettingProv(
+/*  val normalizeTopNeuronActivations by BoolSettingProv(
 	defaultValue = false,
 	label = "Normalize activations of top neurons",
 	tooltip = normalizeTopNeuronsBlurb
-  )
+  )*/
   val predictionSigFigs by IntSettingProv(
 	defaultValue = 5,
 	label = "Prediction value significant figures",

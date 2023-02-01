@@ -1,10 +1,10 @@
 package matt.nn.deephys.gui.dataset.byimage
 
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
-import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
+import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.go
@@ -16,6 +16,7 @@ import matt.nn.deephys.gui.dataset.byimage.preds.PredictionsView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyButton
+import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
@@ -35,19 +36,18 @@ class ByImageView<A: Number>(
 	  }
 	  visibleAndManagedProp.bind(viewer.imageSelection.isNull.and(viewer.isUnboundToDSet))
 	}
-	swapper(
+	swapperR(
 	  viewer.imageSelection, "no image selected",
 	  fadeOutDur = DEEPHYS_FADE_DUR,
 	  fadeInDur = DEEPHYS_FADE_DUR
-	) {
-	  val img = this@swapper
+	) { img ->
 	  weakViewer.deref()?.let { deRefedViewer ->
-		HBoxWrapperImpl<NodeWrapper>().apply {
-		  +DeephyImView(img, deRefedViewer, big = true).apply {
-			/*img.widthMaybe*/
 
-			/*scale.bind(deRefedViewer.bigImageScale / img.widthMaybe)*/
-			/*scale.value = 4.0*/
+
+		h {
+		  v {
+			+DeephyImView(img, deRefedViewer, big = true)
+			deephyText("Image ID: ${img.imageID}")
 		  }
 		  spacer(10.0)
 		  @Suppress("UNCHECKED_CAST")
@@ -60,6 +60,8 @@ class ByImageView<A: Number>(
 			+FeaturesView(it)
 		  }
 		}
+
+
 	  } ?: TextWrapper("if you see this, then there must be a problem")
 
 	}.apply {

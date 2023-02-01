@@ -16,8 +16,8 @@ import matt.nn.deephys.calc.CategoryFalsePositivesSorted
 import matt.nn.deephys.gui.category.pie.CategoryPie
 import matt.nn.deephys.gui.dataset.byimage.mult.MultipleImagesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
-import matt.nn.deephys.gui.global.deephyLabel
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -27,6 +27,7 @@ import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.math.double.op.times
 import matt.prim.str.addNewLinesUntilNumLinesIs
+import matt.prim.str.elementsToString
 
 class CategoryView<A: Number>(
   selection: CategorySelection, testLoader: TypedTestLike<A>, viewer: DatasetViewer
@@ -34,27 +35,32 @@ class CategoryView<A: Number>(
   init {
 
 
-	deephyLabel(
+	deephysLabel(
 	  selection.title.addNewLinesUntilNumLinesIs(3) /*so switching to confusion title with 3 lines isn't as jarring*/
 	).titleBoldFont()
 	v {
 
+
 	  when (selection) {
-		is Category          -> deephyLabel(
-		  "Accuracy: ${
-			CategoryAccuracy(
-			  selection, testLoader
-			)()
-		  }\n" /*added newline to make confusion selecting smoother*/
-		)
+		is Category          -> {
+		  deephysLabel(
+			"Accuracy: ${
+			  CategoryAccuracy(
+				selection, testLoader
+			  )()
+			}\n" /*added newline to make confusion selecting smoother*/
+		  )
+		  deephysLabel("Category ID: ${selection.id}")
+		}
 
 		is CategoryConfusion -> {
-		  deephyLabel(
+		  deephysLabel(
 			"Accuracy of ${selection.first.label}: ${CategoryAccuracy(selection.first, testLoader)()}"
 		  )
-		  deephyLabel(
+		  deephysLabel(
 			"Accuracy of ${selection.second.label}: ${CategoryAccuracy(selection.second, testLoader)()}"
 		  )
+		  deephysLabel("Category IDs: ${selection.allCategories.toList().map { it.id }.elementsToString()}")
 		}
 	  }
 
@@ -153,7 +159,7 @@ class CategoryView<A: Number>(
 		is Category          -> "top neurons according to their average activation for ${selection.label}"
 		is CategoryConfusion -> "top neurons according to their average activation for ${selection.first} and ${selection.second}"
 	  }
-	  deephyLabel(topNeuronsLabel) {
+	  deephysLabel(topNeuronsLabel) {
 		subtitleFont()
 	  }
 	  neuronListViewSwapper(

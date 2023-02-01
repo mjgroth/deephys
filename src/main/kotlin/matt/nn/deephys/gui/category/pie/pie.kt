@@ -29,7 +29,7 @@ import matt.math.jmath.sigFigs
 import matt.model.code.idea.MChartIdea
 import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephyLabel
+import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
@@ -131,7 +131,7 @@ class CategoryPie(
 			)
 
 			node.viewOrder = -1.0
-			val t = deephyLabel(cat.label.truncateWithElipses(20)) {
+			val t = deephysLabel(cat.label.truncateWithElipses(20)) {
 			  textProperty.bind(obsString {
 				append(this@CategoryPie.showAsList.binding {
 				  if (it) "(${percent.percent.sigFigs(2)}%) " else ""
