@@ -33,7 +33,6 @@ import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.MyBinding
-import matt.obs.bind.binding
 import matt.obs.prop.ObsVal
 
 fun <A: Number> NW.neuronListViewSwapper(
@@ -47,7 +46,7 @@ fun <A: Number> NW.neuronListViewSwapper(
   neuronListViewSwapper(
 	bindScrolling = bindScrolling,
 	viewer = viewer,
-	fade=fade,
+	fade = fade,
 	top = MyBinding(
 	  viewer.layerSelection, /*viewer.normalizeTopNeuronActivations, */viewer.testData, viewer.normalizer
 	) {
@@ -98,11 +97,14 @@ fun NW.neuronListViewSwapper(
 }
 
 data class NeuronListViewConfig(
-  val viewer: DatasetViewer, val tops: TopNeuronsCalcType, val testLoader: TypedTestLike<*>
+  val viewer: DatasetViewer,
+  val tops: TopNeuronsCalcType,
+  val testLoader: TypedTestLike<*>
 )
 
 class NeuronListView(
-  cfg: NeuronListViewConfig, bindScrolling: Boolean = false
+  cfg: NeuronListViewConfig,
+  bindScrolling: Boolean = false
 ): ScrollPaneWrapper<HBoxWrapperImpl<NodeWrapper>>(HBoxWrapperImpl()) {
 
 
@@ -112,6 +114,10 @@ class NeuronListView(
 
 
   init {
+
+
+	val weakThisNLV = MyWeakRef(this)
+
 	hbarPolicy = AS_NEEDED
 	vbarPolicy = AS_NEEDED
 	isFitToHeight = true
@@ -120,16 +126,19 @@ class NeuronListView(
 
 	@Suppress("UNUSED_VARIABLE") val myHeight = 150.0
 	cfg.apply {
+	  val weakViewer = MyWeakRef(viewer)
+
 	  if (bindScrolling) {
+
 		viewer.currentByImageHScroll = hValueProp
 		viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
-		hValueProp.onChange { h ->
-		  if (viewer.outerBox.bound.value != null) {
-			viewer.siblings.forEach { it.currentByImageHScroll?.value = h }
+		hValueProp.onChangeWithAlreadyWeak(weakViewer) { vw, h ->
+		  if (vw.outerBox.bound.value != null) {
+			vw.siblings.forEach { it.currentByImageHScroll?.value = h }
 		  }
 		}
-		viewer.boundToDSet.onChange {
-		  viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
+		viewer.boundToDSet.onChangeWithAlreadyWeak(weakViewer) { vw, _ ->
+		  vw.boundToDSet.value?.currentByImageHScroll?.value?.go { weakThisNLV.deref()?.hvalue = it }
 		}
 	  }
 
@@ -143,11 +152,7 @@ class NeuronListView(
 		}
 
 
-
-
-
-
-		val startAsyncAt = (viewer.stage!!.width / NEURON_LIST_VIEW_WIDTH).ceilInt()
+		val startAsyncAt = (viewer.stage!!.width/NEURON_LIST_VIEW_WIDTH).ceilInt()
 
 		if (topNeurons.isEmpty()) {
 		  infoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
@@ -157,7 +162,6 @@ class NeuronListView(
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {
 			h {
-			  val weakViewer = MyWeakRef(viewer)
 			  deephyActionText("neuron $neuronIndex") {
 				val deReffedViewer = weakViewer.deref()!!
 				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
@@ -168,11 +172,14 @@ class NeuronListView(
 			  spacer(10.0)
 
 			  /*val normalize = viewer.normalizeTopNeuronActivations*/
-			  swapperRNullable(viewer.normalizer.binding(/*normalize*/) { it }) {                /*val inD = it*/                /*if (inD == null || inD == viewer) {*/
+			  swapperRNullable(
+				viewer.normalizer
+				/*.binding(*//*normalize*//*) { it }*/
+			  ) {                /*val inD = it*/                /*if (inD == null || inD == viewer) {*/
 
 
 				/*anirban and xavier asked to hide the activation text in this case since it doesn't pertain to a specific image*/
-				if (neuronWithAct.activation !is ActivationRatio || (tops as TopNeurons<*>).images.isNotEmpty()) {
+				if (neuronWithAct.activation !is ActivationRatio || (cfg.tops as TopNeurons<*>).images.isNotEmpty()) {
 				  val act = neuronWithAct.activation
 				  h {
 					deephyText(
@@ -193,7 +200,6 @@ class NeuronListView(
 					act.extraInfo?.go { infoSymbol(it) }
 				  }
 				}
-
 
 
 				/*} else inD.testData.value?.let { inDTest ->

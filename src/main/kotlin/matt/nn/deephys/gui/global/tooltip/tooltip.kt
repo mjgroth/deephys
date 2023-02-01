@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.global.tooltip
 
 import javafx.event.EventHandler
+import javafx.scene.Node
 import javafx.scene.control.ContentDisplay.BOTTOM
 import javafx.scene.input.MouseEvent
 import javafx.util.Duration
@@ -9,6 +10,7 @@ import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.tooltip.Owner
 import matt.fx.control.wrapper.tooltip.TooltipWrapper
 import matt.fx.control.wrapper.tooltip.install
+import matt.fx.control.wrapper.wrapped.wrapped
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.lang.function.Produce
@@ -22,10 +24,15 @@ import matt.obs.bindings.str.ObsS
 import java.lang.ref.WeakReference
 
 fun NodeWrapper.veryLazyDeephysTooltip(text: String, im: MyWeakRef<out DeephyImage<out Number>>) {
+
   val handler = object: EventHandler<MouseEvent> {
-	override fun handle(event: MouseEvent?) {
-	  deephyTooltip(text, im.deref()!!)
-	  removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
+	override fun handle(event: MouseEvent) {
+	  /*kinda works like a weak ref*/
+	  val target = (event.target as Node)
+	  target.wrapped().also {
+		it.deephyTooltip(text, im.deref()!!)
+		it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
+	  }
 	}
   }
 
@@ -33,10 +40,16 @@ fun NodeWrapper.veryLazyDeephysTooltip(text: String, im: MyWeakRef<out DeephyIma
 }
 
 fun NodeWrapper.veryLazyDeephysTooltip(text: String) {
+
   val handler = object: EventHandler<MouseEvent> {
-	override fun handle(event: MouseEvent?) {
-	  deephyTooltip(text)
-	  removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
+	override fun handle(event: MouseEvent) {
+	  /*kinda works like a weak ref*/
+	  val target = (event.target as Node)
+	  target.wrapped().also {
+		it.deephyTooltip(text)
+		it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
+	  }
+
 	}
   }
 
@@ -45,12 +58,15 @@ fun NodeWrapper.veryLazyDeephysTooltip(text: String) {
 
 fun NodeWrapper.veryLazyDeephysTooltip(op: Produce<String>) {
   val handler = object: EventHandler<MouseEvent> {
-	override fun handle(event: MouseEvent?) {
-	  deephyTooltip(op())
-	  removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
+	override fun handle(event: MouseEvent) {
+	  /*kinda works like a weak ref*/
+	  val target = (event.target as Node)
+	  target.wrapped().also {
+		it.deephyTooltip(op())
+		it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
+	  }
 	}
   }
-
   addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
 }
 

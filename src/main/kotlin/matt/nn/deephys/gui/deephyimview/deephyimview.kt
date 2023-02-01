@@ -57,11 +57,11 @@ class DeephyImView(
 		drawBorder()
 	  }
 	  hoverProperty.onChangeWithAlreadyWeak(localWeakIm) { deRefedIm, h ->
-		if (h) drawBorder()
-		else draw(deRefedIm)
+		if (h) weakThis.get()!!.drawBorder()
+		else weakThis.get()!!.draw(deRefedIm)
 	  }
 	  onLeftClick {
-		click()
+		weakThis.get()!!.click()
 	  }
 	  mcontextmenu {
 		onRequest {

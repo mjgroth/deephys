@@ -278,14 +278,22 @@ class DeephysTestSession {
 	sleep(1.seconds)
 	val postGCWaitSecs = 20
 	println("running gc for $postGCWaitSecs sec")
-	(0..postGCWaitSecs).forEach {
+	val threshold = 500.megabytes
+
+	for (it in 0..postGCWaitSecs) {
 	  /*ahh... finally found a solution. A loop with multiple collections instead of just one collections followed by endless pointless waiting. I best I know what happened: I was doing the gc too early and some things were still strongly reachable for whatever reasons deep in some internal libs*/
 	  Runtime.getRuntime().gc()
 	  sleep(1.seconds)
+	  val u = MemReport().used
+	  println("u$it=$u")
+	  if (u < threshold) {
+		println("waking up early because I've gone under the memory Threshold of $threshold. Yay!")
+		break
+	  }
 	}
-	val threshold = 500.megabytes
+
 	val u = MemReport().used
-	println("u=$u")
+	println("uFinal=$u")
 	assertTrueLazyMessage(u < threshold) {
 	  //	  println("sleeping forever 2")
 	  //	  sleep(1.days)

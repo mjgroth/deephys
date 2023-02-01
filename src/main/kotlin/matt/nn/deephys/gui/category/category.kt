@@ -141,7 +141,7 @@ class CategoryView<A: Number>(
 			  selected = (selection as? CategoryConfusion)?.second,
 			  showAsList = viewer.showAsList2
 			)
-			println("ADDED CAT PIES")
+//			println("ADDED CAT PIES")
 
 		  }
 		  deephyText("tip: click colored areas to navigate to the class. Shift-click to analyze confusions with the current class.") {
