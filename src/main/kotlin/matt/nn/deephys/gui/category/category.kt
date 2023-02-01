@@ -83,13 +83,13 @@ class CategoryView<A: Number>(
 
 	  h {
 		v {
-		  println("width1@${this.hashCode()}=$width,max=${maxWidth}")
-		  widthProperty.onChange {
-			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
-		  }
-		  maxWidthProperty.onChange {
-			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
-		  }
+//		  println("width1@${this.hashCode()}=$width,max=${maxWidth}")
+//		  widthProperty.onChange {
+//			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
+//		  }
+//		  maxWidthProperty.onChange {
+//			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
+//		  }
 		  maxWidthProperty.bindWeakly(viewer.stage!!.widthProperty*0.45)
 		  +MultipleImagesView(
 			viewer = viewer,

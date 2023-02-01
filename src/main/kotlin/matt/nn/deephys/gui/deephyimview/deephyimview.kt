@@ -19,6 +19,7 @@ import matt.obs.math.double.op.div
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
+import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.milliseconds
@@ -43,6 +44,9 @@ class DeephyImView(
   val weakIm = im.weak
 
   init {
+	val localWeakIm = weakIm
+	val localWeakViewer = weakViewer
+	val weakThis = WeakReference(this)
 	todoOnce("combine draw methods for V1 and deephy")
 
 	val pool = if (loadAsync) realPool else fakePool
@@ -52,7 +56,7 @@ class DeephyImView(
 	  if (hoverProperty.value) {
 		drawBorder()
 	  }
-	  hoverProperty.onChangeWithAlreadyWeak(weakIm) { deRefedIm, h ->
+	  hoverProperty.onChangeWithAlreadyWeak(localWeakIm) { deRefedIm, h ->
 		if (h) drawBorder()
 		else draw(deRefedIm)
 	  }
@@ -60,57 +64,59 @@ class DeephyImView(
 		click()
 	  }
 	  mcontextmenu {
-		"download image" does {
-		  val pngFile = FileChooser().apply {
-			title = "choose where to save png"
-			this.extensionFilters.setAll(ExtensionFilter("png", "*.png"))
-			this.initialFileName = im.category.label + "_" + im.index.toString() + ".png"
-		  }.showSaveDialog(stage?.node)
-		  if (pngFile != null) {
+		onRequest {
+		  "download image" does {
+			val pngFile = FileChooser().apply {
+			  title = "choose where to save png"
+			  this.extensionFilters.setAll(ExtensionFilter("png", "*.png"))
+			  this.initialFileName = localWeakIm.deref()!!.category.label + "_" + localWeakIm.deref()!!.index.toString() + ".png"
+			}.showSaveDialog(weakThis.get()!!.stage?.node)
+			if (pngFile != null) {
 
-			val mat2 = weakIm.deref()!!.matrix
-			val bi = BufferedImage(mat2.size, mat2[0].size, TYPE_INT_ARGB)
-			val pixelData = (bi.raster.dataBuffer as DataBufferInt).data
+			  val mat2 = localWeakIm.deref()!!.matrix
+			  val bi = BufferedImage(mat2.size, mat2[0].size, TYPE_INT_ARGB)
+			  val pixelData = (bi.raster.dataBuffer as DataBufferInt).data
 
-			println("bi.width = ${bi.width}")
-			println("bi.height = ${bi.height}")
-			println("pixelData.length = ${pixelData.size}")
+			  println("bi.width = ${bi.width}")
+			  println("bi.height = ${bi.height}")
+			  println("pixelData.length = ${pixelData.size}")
 
-			var i = 0
-			mat2.forEach {
-			  it.forEach {
-				val awt = it.toAwtColor()
-				pixelData[i++] = ByteBuffer.wrap(
-				  byteArrayOf(
-					awt.alpha.toByte(),
-					awt.red.toByte(),
-					awt.green.toByte(),
-					awt.blue.toByte()
-				  )
-				).asIntBuffer().get()
+			  var i = 0
+			  mat2.forEach {
+				it.forEach {
+				  val awt = it.toAwtColor()
+				  pixelData[i++] = ByteBuffer.wrap(
+					byteArrayOf(
+					  awt.alpha.toByte(),
+					  awt.red.toByte(),
+					  awt.green.toByte(),
+					  awt.blue.toByte()
+					)
+				  ).asIntBuffer().get()
+				}
 			  }
+
+
+			  ImageIO.write(
+				bi,
+				"png",
+				pngFile
+			  )
 			}
 
-
-			ImageIO.write(
-			  bi,
-			  "png",
-			  pngFile
-			)
 		  }
-
 		}
 	  }
 	  mat
 	}.whenDone { mat ->
 	  ensureInFXThreadOrRunLater {
 		showCanvas()
-		veryLazyDeephysTooltip(im.category.label, weakIm)
+		veryLazyDeephysTooltip(localWeakIm.deref()!!.category.label, localWeakIm)
 		val widthMaybe = mat[0].size.toDouble()
 		if (big) {
-		  scale.bindWeakly(viewer.bigImageScale/widthMaybe)
+		  scale.bindWeakly(localWeakViewer.deref()!!.bigImageScale/widthMaybe)
 		} else {
-		  scale.bindWeakly(viewer.smallImageScale/widthMaybe)
+		  scale.bindWeakly(localWeakViewer.deref()!!.smallImageScale/widthMaybe)
 		}
 	  }
 	}

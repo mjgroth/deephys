@@ -4,7 +4,6 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
-import matt.log.taball
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
@@ -73,9 +72,9 @@ data class DescendingArgMaxMax<A: Number>(
 	val indices = test.dtype.wrap(acts)
 	  .argmaxn2(MAX_NUM_IMAGES_IN_TOP_NEURONS, skipInfinite = true, skipNaN = true, skipZero = true)
 
-	if (neuron.index == 10) {
-	  taball("indices", indices)
-	}
+//	if (neuron.index == 10) {
+//	  taball("indices", indices)
+//	}
 
 	/*val indices = acts.argmaxn2(num)*/
 	indices.sortedByDescending {

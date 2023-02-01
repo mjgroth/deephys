@@ -158,9 +158,9 @@ class NeuronView<A: Number>(
 		topImagesJob.whenDone { topImages ->
 		  ensureInFXThreadOrRunLater {
 
-			if (localNeuron.index == 10) {
-			  taball("neuron 10 images", topImages)
-			}
+//			if (localNeuron.index == 10) {
+//			  taball("neuron 10 images", topImages)
+//			}
 
 			if (realOldNumImages == null) {
 			  topImages.forEach {
