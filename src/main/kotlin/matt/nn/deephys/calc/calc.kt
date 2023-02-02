@@ -1,14 +1,10 @@
 package matt.nn.deephys.calc
 
 import matt.caching.compcache.globalman.FakeCacheManager
-import matt.caching.compcache.globalman.GlobalRAMComputeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
 import matt.nn.deephys.calc.act.Activation
-import matt.nn.deephys.calc.act.NormalActivation
-import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
-import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
-import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
+import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
@@ -20,13 +16,13 @@ import matt.nn.deephys.state.DeephySettings
 import matt.nn.deephys.state.MAX_NUM_IMAGES_IN_TOP_NEURONS
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 
-data class NormalizedAverageActivation<N: Number>(
+/*data class NormalizedAverageActivation<N: Number>(
   private val neuron: InterTestNeuron,
   private val images: Contents<DeephyImage<N>>,
   private val test: TypedTestLike<N>,
 ): DeephysComputeInput<NormalActivation<N, *>>() {
 
-  /*small possibility of memory leaks when images is empty, but this is still way better than before*/
+  *//*small possibility of memory leaks when images is empty, but this is still way better than before*//*
   override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: GlobalRAMComputeCacheManager
 
   companion object {
@@ -54,7 +50,7 @@ data class NormalizedAverageActivation<N: Number>(
   }
 
 
-}
+}*/
 
 data class DescendingArgMaxMax<A: Number>(
   private val neuron: InterTestNeuron,
@@ -72,9 +68,9 @@ data class DescendingArgMaxMax<A: Number>(
 	val indices = test.dtype.wrap(acts)
 	  .argmaxn2(MAX_NUM_IMAGES_IN_TOP_NEURONS, skipInfinite = true, skipNaN = true, skipZero = true)
 
-//	if (neuron.index == 10) {
-//	  taball("indices", indices)
-//	}
+	//	if (neuron.index == 10) {
+	//	  taball("indices", indices)
+	//	}
 
 	/*val indices = acts.argmaxn2(num)*/
 	indices.sortedByDescending {
@@ -174,9 +170,21 @@ data class ActivationRatioCalc<A: Number>(
   override val cacheManager get() = FakeCacheManager /*this ComputeCache was taking up a TON of memory.*/
   /*override val cacheManager get() = numTest.testRAMCache*/ /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
-  companion object {
-	const val technique =
-	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the ${DSetViewsVBox.NORMALIZER_BUTTON_NAME} neuron"
+//  companion object {
+//	const val technique =
+//	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the ${DSetViewsVBox.NORMALIZER_BUTTON_NAME} neuron"
+//	const val latexTechnique = "\\frac{max activation of this neuron in this test}{max activation}"
+//  }
+
+  fun latexTechnique(): String {
+	val denom = "{max activation of this neuron in $NORMALIZER_BUTTON_NAME}"
+	return if (images.isEmpty()) {
+	  "\\frac{max activation of this neuron in this test}$denom"
+	} else if (images.size == 1) {
+	  "\\frac{raw activation of this neuron for image ${images.first().imageID}$denom"
+	} else {
+	  "\\frac{average activation of this neuron for selected images}$denom"
+	}
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/

@@ -5,7 +5,6 @@ import matt.model.data.mathable.DoubleWrapper
 import matt.model.data.mathable.FloatWrapper
 import matt.model.data.mathable.NumberWrapper
 import matt.nn.deephys.calc.act.ActivationRatio.Companion.ACT_RATIO_SYMBOL
-import matt.nn.deephys.calc.act.NormalActivation.Companion.NORMALIZED_ACT_SYMBOL
 import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
 
 sealed interface Activation<N: Number, T: Activation<N, T>>: NumberWrapper<T>, Comparable<T> {
@@ -97,7 +96,7 @@ value class RawActivationFloat64(override val value: Double): RawActivation<Doub
 
 }
 
-
+/*
 sealed interface NormalActivation<A: Number, T: NormalActivation<A, T>>: Activation<A, T> {
 
 
@@ -108,8 +107,9 @@ sealed interface NormalActivation<A: Number, T: NormalActivation<A, T>>: Activat
   override val extraInfo: String?
 	get() = null
 
-}
+}*/
 
+/*
 @JvmInline
 value class NormalActivationFloat32(override val value: Float): NormalActivation<Float, NormalActivationFloat32>,
 																ActivationFloat32<NormalActivationFloat32> {
@@ -129,9 +129,10 @@ value class NormalActivationFloat32(override val value: Float): NormalActivation
   }
 
 
-
 }
+*/
 
+/*
 
 @JvmInline
 value class NormalActivationFloat64(override val value: Double): NormalActivation<Double, NormalActivationFloat64>,
@@ -151,6 +152,7 @@ value class NormalActivationFloat64(override val value: Double): NormalActivatio
 	return NormalActivationFloat64(value/n.toDouble())
   }
 }
+*/
 
 
 sealed interface ActivationRatio<A: Number, T: ActivationRatio<A, T>>: Activation<A, T> {
@@ -160,7 +162,7 @@ sealed interface ActivationRatio<A: Number, T: ActivationRatio<A, T>>: Activatio
   }
 
   override val extraInfo: String?
-	get() =   if (isNaN || isInfinite)  "Ratio will be infinite or NaN if the corresponding activation in the InD network is absolute 0. If the activation was extremely small but non-zero in python and the current test is float32, it may have become zero when the precision was lost. You may try recreating the .test file with float64 precision to see if that fixes it." else null
+	get() = if (isNaN || isInfinite) "The activation percentage will be infinite or NaN if the corresponding activation in the InD network is absolute 0. If the activation was extremely small but non-zero in python and the current test is float32, it may have become zero when the precision was lost. You may try recreating the .test file with float64 precision to see if that fixes it." else null
 
 }
 
@@ -169,7 +171,7 @@ value class ActivationRatioFloat32(override val value: Float): ActivationRatio<F
 															   ActivationFloat32<ActivationRatioFloat32> {
 
 
-  override val formatted get() = " $ACT_RATIO_SYMBOL=${value.sigFigs(3)}"
+  override val formatted get() = " ${(value*100).sigFigs(3)}${ACT_RATIO_SYMBOL}"
   override fun plus(m: ActivationRatioFloat32): ActivationRatioFloat32 {
 	return ActivationRatioFloat32(value + m.value)
   }
@@ -189,7 +191,7 @@ value class ActivationRatioFloat64(override val value: Double): ActivationRatio<
 																ActivationFloat64<ActivationRatioFloat64> {
 
 
-  override val formatted get() = " $ACT_RATIO_SYMBOL=${value.sigFigs(3)}"
+  override val formatted get() = " ${(value*100).sigFigs(3)}$ACT_RATIO_SYMBOL"
   override fun plus(m: ActivationRatioFloat64): ActivationRatioFloat64 {
 	return ActivationRatioFloat64(value + m.value)
   }
