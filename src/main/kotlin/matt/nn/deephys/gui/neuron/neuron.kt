@@ -1,7 +1,6 @@
 package matt.nn.deephys.gui.neuron
 
 import matt.async.queue.QueueWorker
-import matt.fx.node.tex.texToPixels
 import matt.collect.itr.subList
 import matt.collect.set.contents.contentsOf
 import matt.fx.control.wrapper.progressindicator.progressindicator
@@ -12,6 +11,7 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.fx.node.proto.scaledcanvas.toCanvas
+import matt.fx.node.tex.texToPixels
 import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.function.Consume
 import matt.lang.go
