@@ -9,9 +9,8 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.node.proto.infosymbol.infoSymbol
-import matt.fx.node.proto.scaledcanvas.toCanvas
-import matt.fx.node.tex.texToPixels
 import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.function.Consume
 import matt.lang.go
@@ -23,6 +22,7 @@ import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.tooltip.deephysTexNodeFactory
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltipWithNode
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -104,7 +104,10 @@ class NeuronView<A: Number>(
 					ratio.formatted
 				  ) {
 					veryLazyDeephysTooltipWithNode {
-					  ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX).texToPixels()!!.toCanvas()
+					  deephysTexNodeFactory.toCanvas(
+						ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX)
+					  ) ?: TextWrapper("error")
+					  /*.texToPixels()!!.toCanvas()*/
 					}
 					//					veryLazyDeephysTooltip(ActivationRatioCalc.technique)
 				  }

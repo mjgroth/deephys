@@ -13,6 +13,7 @@ import matt.fx.control.wrapper.tooltip.install
 import matt.fx.control.wrapper.wrapped.wrapped
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
+import matt.fx.node.tex.TexNodeFactory
 import matt.lang.function.Produce
 import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
@@ -85,6 +86,10 @@ fun NodeWrapper.veryLazyDeephysTooltipWithNode(op: Produce<NodeWrapper>) {
 	}
   }
   addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
+}
+
+ val deephysTexNodeFactory by lazy {
+  TexNodeFactory(scale = 1.0)
 }
 
 

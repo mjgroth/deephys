@@ -1,7 +1,6 @@
 package matt.nn.deephys.gui.dataset.byimage.neuronlistview
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
-import matt.fx.node.tex.texToPixels
 import matt.collect.set.contents.Contents
 import matt.fx.control.wrapper.scroll.ScrollPaneWrapper
 import matt.fx.graphics.wrapper.node.NW
@@ -12,8 +11,8 @@ import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
+import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.node.proto.infosymbol.infoSymbol
-import matt.fx.node.proto.scaledcanvas.toCanvas
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
 import matt.math.round.ceilInt
@@ -29,6 +28,7 @@ import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProg
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.tooltip.deephysTexNodeFactory
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltipWithNode
 import matt.nn.deephys.gui.neuron.NeuronView
@@ -202,7 +202,10 @@ class NeuronListView(
 							else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
 						  }
 						  veryLazyDeephysTooltipWithNode {
-							ActivationRatioCalc.latexTechnique(num).texToPixels()!!.toCanvas()
+							deephysTexNodeFactory.toCanvas(
+							  ActivationRatioCalc.latexTechnique(num)
+							) ?: TextWrapper("error")
+							/*.texToPixels()!!.toCanvas()*/
 						  }
 						}
 						/*ActivationRatioCalc.technique*/
