@@ -1,12 +1,13 @@
 name: GHA Usage Audit
 on:
   schedule:
-    cron:
-      minutes: 44,45,46,47,48,49,50
-      hours: '*'
-      dayOfMonth: '*'
-      month: '*'
-      dayOfWeek: '*'
+    timers:
+    - cron:
+        minutes: 44,45,46,47,48,49,50
+        hours: '*'
+        dayOfMonth: '*'
+        month: '*'
+        dayOfWeek: '*'
 jobs:
   gha-usage-minutes-report:
     runs-on: ubuntu-22.04
