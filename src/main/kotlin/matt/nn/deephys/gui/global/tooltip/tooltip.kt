@@ -70,6 +70,23 @@ fun NodeWrapper.veryLazyDeephysTooltip(op: Produce<String>) {
   addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
 }
 
+fun NodeWrapper.veryLazyDeephysTooltipWithNode(op: Produce<NodeWrapper>) {
+  val handler = object: EventHandler<MouseEvent> {
+	override fun handle(event: MouseEvent) {
+	  /*kinda works like a weak ref*/
+	  val target = (event.target as Node)
+	  target.wrapped().also {
+		it.deephyTooltip("").apply {
+		  graphic = op()
+		}
+//		it.deephyTooltip(op())
+		it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
+	  }
+	}
+  }
+  addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
+}
+
 
 /*cant have op here since it will operate on the tooltip for other nodes*/
 fun NodeWrapper.deephyTooltip(

@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.neuron
 
 import matt.async.queue.QueueWorker
+import matt.fx.node.tex.texToPixels
 import matt.collect.itr.subList
 import matt.collect.set.contents.contentsOf
 import matt.fx.control.wrapper.progressindicator.progressindicator
@@ -10,18 +11,19 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.node.proto.infosymbol.infoSymbol
+import matt.fx.node.proto.scaledcanvas.toCanvas
 import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.function.Consume
 import matt.lang.go
-import matt.log.taball
 import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
+import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
 import matt.nn.deephys.calc.TopImages
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltipWithNode
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.ImageIndex
@@ -101,7 +103,10 @@ class NeuronView<A: Number>(
 				  deephyText(
 					ratio.formatted
 				  ) {
-					veryLazyDeephysTooltip(ActivationRatioCalc.technique)
+					veryLazyDeephysTooltipWithNode {
+					  ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX).texToPixels()!!.toCanvas()
+					}
+					//					veryLazyDeephysTooltip(ActivationRatioCalc.technique)
 				  }
 				  //			  infoSymbol("test")
 				  ratio.extraInfo?.go { infoSymbol(it) }
@@ -158,9 +163,9 @@ class NeuronView<A: Number>(
 		topImagesJob.whenDone { topImages ->
 		  ensureInFXThreadOrRunLater {
 
-//			if (localNeuron.index == 10) {
-//			  taball("neuron 10 images", topImages)
-//			}
+			//			if (localNeuron.index == 10) {
+			//			  taball("neuron 10 images", topImages)
+			//			}
 
 			if (realOldNumImages == null) {
 			  topImages.forEach {

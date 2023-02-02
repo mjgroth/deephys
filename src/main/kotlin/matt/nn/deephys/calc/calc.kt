@@ -3,6 +3,8 @@ package matt.nn.deephys.calc
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
+import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
+import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
 import matt.nn.deephys.model.data.Category
@@ -170,20 +172,27 @@ data class ActivationRatioCalc<A: Number>(
   override val cacheManager get() = FakeCacheManager /*this ComputeCache was taking up a TON of memory.*/
   /*override val cacheManager get() = numTest.testRAMCache*/ /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
-//  companion object {
-//	const val technique =
-//	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the ${DSetViewsVBox.NORMALIZER_BUTTON_NAME} neuron"
-//	const val latexTechnique = "\\frac{max activation of this neuron in this test}{max activation}"
-//  }
+  //  companion object {
+  //	const val technique =
+  //	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the ${DSetViewsVBox.NORMALIZER_BUTTON_NAME} neuron"
+  //	const val latexTechnique = "\\frac{max activation of this neuron in this test}{max activation}"
+  //  }
 
-  fun latexTechnique(): String {
-	val denom = "{max activation of this neuron in $NORMALIZER_BUTTON_NAME}"
-	return if (images.isEmpty()) {
-	  "\\frac{max activation of this neuron in this test}$denom"
-	} else if (images.size == 1) {
-	  "\\frac{raw activation of this neuron for image ${images.first().imageID}$denom"
-	} else {
-	  "\\frac{average activation of this neuron for selected images}$denom"
+  companion object {
+	sealed interface ActivationRatioNumerator
+	class SINGLE_IMAGE(val id: Int): ActivationRatioNumerator
+	enum class MiscActivationRatioNumerator: ActivationRatioNumerator {
+	  IMAGE_COLLECTION,
+	  MAX
+	}
+
+	fun latexTechnique(num: ActivationRatioNumerator): String {
+	  val denom = "{max activation of this neuron in $NORMALIZER_BUTTON_NAME}"
+	  return when (num) {
+		MAX              -> "\\frac{max activation of this neuron in this test}$denom"
+		is SINGLE_IMAGE  -> "\\frac{raw activation of this neuron for image ${num.id}$denom"
+		IMAGE_COLLECTION -> "\\frac{average activation of this neuron for selected images}$denom"
+	  }
 	}
   }
 

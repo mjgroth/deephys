@@ -155,7 +155,10 @@ value class NormalActivationFloat64(override val value: Double): NormalActivatio
 */
 
 
+
 sealed interface ActivationRatio<A: Number, T: ActivationRatio<A, T>>: Activation<A, T> {
+
+
 
   companion object {
 	const val ACT_RATIO_SYMBOL = "%"

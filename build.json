@@ -12,6 +12,11 @@
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
+	  "path" : ":k:fx:node:tex"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "implementation",
 	  "path" : ":k:cbor"
 	},
 	{

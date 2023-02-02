@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.dataset.byimage.neuronlistview
 
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
+import matt.fx.node.tex.texToPixels
 import matt.collect.set.contents.Contents
 import matt.fx.control.wrapper.scroll.ScrollPaneWrapper
 import matt.fx.graphics.wrapper.node.NW
@@ -12,22 +13,24 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.node.proto.infosymbol.infoSymbol
+import matt.fx.node.proto.scaledcanvas.toCanvas
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
 import matt.math.round.ceilInt
 import matt.nn.deephys.calc.ActivationRatioCalc
-import matt.nn.deephys.calc.NormalizedAverageActivation
+import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
+import matt.nn.deephys.calc.ActivationRatioCalc.Companion.SINGLE_IMAGE
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.TopNeuronsCalcType
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.AlwaysOneActivation
-import matt.nn.deephys.calc.act.NormalActivation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProgressPopUp
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltipWithNode
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
@@ -186,14 +189,27 @@ class NeuronListView(
 					  act.formatted
 					) {
 
-					  veryLazyDeephysTooltip {
-						when (act) {
-						  is AlwaysOneActivation -> "activation is always 1 in this case, so it is not shown"
-						  is RawActivation       -> "raw activation value for the selected image"
-						  is NormalActivation    -> NormalizedAverageActivation.normalizeTopNeuronsBlurb
-						  is ActivationRatio     -> ActivationRatioCalc.technique
+
+					  when (act) {
+						is AlwaysOneActivation -> veryLazyDeephysTooltip { "activation is always 1 in this case, so it is not shown" }
+						is RawActivation       -> veryLazyDeephysTooltip { "raw activation value for the selected image" }
+						is ActivationRatio     -> {
+						  /*val forced = (cfg.tops as TopNeurons<*>).forcedNeuronIndices*/
+						  val numImages = (cfg.tops as TopNeurons<*>).images.size
+						  val num = when (numImages) {
+							0 -> MiscActivationRatioNumerator.MAX
+							1 -> SINGLE_IMAGE(cfg.tops.images.first().imageID)
+							else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
+						  }
+						  veryLazyDeephysTooltipWithNode {
+							ActivationRatioCalc.latexTechnique(num).texToPixels()!!.toCanvas()
+						  }
 						}
+						/*ActivationRatioCalc.technique*/
+						/*is NormalActivation    -> NormalizedAverageActivation.normalizeTopNeuronsBlurb*/
+
 					  }
+
 
 					}
 					//					infoSymbol("test")

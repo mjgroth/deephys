@@ -15,9 +15,6 @@ import matt.nn.deephys.calc.act.ActivationRatioFloat64
 import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.AlwaysOneActivationFloat32
 import matt.nn.deephys.calc.act.AlwaysOneActivationFloat64
-import matt.nn.deephys.calc.act.NormalActivation
-import matt.nn.deephys.calc.act.NormalActivationFloat32
-import matt.nn.deephys.calc.act.NormalActivationFloat64
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.calc.act.RawActivationFloat32
 import matt.nn.deephys.calc.act.RawActivationFloat64
@@ -54,7 +51,7 @@ sealed interface DType<N: Number> {
   fun bytesThing(bytes: ByteArray): ImageActivationCborBytes<N>
   fun bytesToArray(bytes: ByteArray, numIms: Int): ArrayWrapper<N>
   fun rawActivation(act: N): RawActivation<N, *>
-  fun normalActivation(act: N): NormalActivation<N, *>
+//  fun normalActivation(act: N): NormalActivation<N, *>
   fun activationRatio(act: N): ActivationRatio<N, *>
   fun alwaysOneActivation(): AlwaysOneActivation<N, *>
   fun wrap(multiArray: MultiArray<N, D1>): MultiArrayWrapper<N>
@@ -114,7 +111,7 @@ object Float32: DtypeBase<Float>() {
 
   override fun rawActivation(act: Float) = RawActivationFloat32(act)
   override fun activationRatio(act: Float) = ActivationRatioFloat32(act)
-  override fun normalActivation(act: Float) = NormalActivationFloat32(act)
+//  override fun normalActivation(act: Float) = NormalActivationFloat32(act)
   override fun alwaysOneActivation() = AlwaysOneActivationFloat32
   override fun wrap(multiArray: MultiArray<Float, D1>) = FloatMultiArrayWrapper(multiArray)
   override fun mean(list: List<Float>) = list.mean()
@@ -141,7 +138,7 @@ object Float64: DtypeBase<Double>() {
 
   override fun rawActivation(act: Double) = RawActivationFloat64(act)
   override fun activationRatio(act: Double) = ActivationRatioFloat64(act)
-  override fun normalActivation(act: Double) = NormalActivationFloat64(act)
+//  override fun normalActivation(act: Double) = NormalActivationFloat64(act)
   override fun alwaysOneActivation() = AlwaysOneActivationFloat64
   override fun wrap(multiArray: MultiArray<Double, D1>) = DoubleMultiArrayWrapper(multiArray)
   override fun mean(list: List<Double>) = list.mean()
