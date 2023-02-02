@@ -1,0 +1,21 @@
+name: GHA Usage Audit
+on:
+  schedule:
+    cron:
+      minutes: 44,45,46,47,48,49,50
+      hours: '*'
+      dayOfMonth: '*'
+      month: '*'
+      dayOfWeek: '*'
+jobs:
+  gha-usage-minutes-report:
+    runs-on: ubuntu-22.04
+    steps:
+    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
+      name: GitHub Actions Usage Audit
+      uses: fergusmacd/github-action-usage@daff7e
+      with:
+        organisation: mjgroth
+        gitHubAPIKey: ${{ secrets.GHA_AUDIT_API_KEY }}
+        logLevel: error
+        raisealarmremainingminutes: 2950

@@ -11,7 +11,10 @@ version: [0.9.2](https://pypi.org/project/deephys/0.9.2/)
 [//]: # (### Performance Improvements)
 [//]: # (### User Friendliness)
 [//]: # (### Cosmetic Changes)
-[//]: # (### Bug Fixes)
+
+### Bug Fixes
+- Maybe fixed version checker (can't check until new update)
+
 [//]: # (### Internal Development)
 [//]: # (### New Tests)
 [//]: # (### Notes)

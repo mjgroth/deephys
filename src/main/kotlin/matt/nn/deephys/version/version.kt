@@ -22,11 +22,11 @@ import java.net.ConnectException
 
 object VersionChecker {
   private val gh by lazy { GitHubClient() }
-  private val ghUser by lazy { gh.me }
+  private val ghUser by lazy { gh.myOrg }
   private var error = false
   private var checking = false
   fun checkForUpdatesInBackground() = daemon {
-	every(60.sec, timer = AccurateTimer(priority = MyThreadPriorities.DELETING_OLD_CACHE), zeroDelayFirst = true) {
+	every(60.sec, timer = AccurateTimer(priority = MyThreadPriorities.CREATING_NEW_CACHE), zeroDelayFirst = true) {
 	  checking = true
 	  try {
 		val releases = gh.GitHubRepo(ghUser, appName).releases()
