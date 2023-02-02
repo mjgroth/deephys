@@ -1,8 +1,7 @@
 name: GHA Usage Audit
 on:
   schedule:
-    timers:
-    - cron: 55,56,57,58 * * * *
+  - cron: 1,2,3,4 * * * *
 jobs:
   gha-usage-minutes-report:
     runs-on: ubuntu-22.04
