@@ -1,19 +1,19 @@
-Let's Deephys! 
+Wrapping up your data 
 =============
 
-Before starting, install our Deephys wrapper. This will faciliate plugging your data in the right format for Deephys.
+Before starting, install our Deephys wrapper Python library. This library faciliates plugging your data with the right format for Deephys.
 
 .. code-block:: console
 
   $ pip install deephys
 
 
-Let's get started wrapping up your data to visualize with Deephys  🚀
+Now, let's get started wrapping up your data  🚀
 
-☀️ Save the model configuration parameters
+☀️ Setting up the model parameters
 --------------------------------------
 
-We first need to instantiate the model by indicating the number of neurons per layer to visualize.
+We first need to set up the model parameters to visualize. The output layer always needs to be included. Any number of layers can be included too.  To set up the model, we need to indicate the name of the model, as well as the number of neurons per layer and the name of the layer. This can be simply done in the following way: 
 
 >>> import deephys
 >>> model = deephys.setup_model(
@@ -22,28 +22,31 @@ We first need to instantiate the model by indicating the number of neurons per l
     name_network = "my_net"
     )
     
-If you want to visualize more layers, add the number of neurons and parameters in the list.
+This will create a `.model` file that will be useful for Deephys. In this example, we only set up two layers. If you want to visualize more layers, add them  in the list.
+
 
 ‼️ The last entry in both lists must be the output layer, which is mandatory to always have.
 
 
-🎏 Wrap up dataset distributions separatelly 🎏
+🎏 Wrap up each dataset distributions separatelly 🎏
 --------------------------------------
 
-Each dataset distribution that you would like to analyze needs to be wrapped-up independently. After wrapping up all dataset distributions, you can visualize them together using Deephys 🪄.  
+Each dataset distribution that you would like to analyze needs to be wrapped-up separatelly. After wrapping up all dataset distributions, you can visualize them together using Deephys 🪄.  
 
 🤔 How to wrap up one dataset distribution? It is just the following 2 steps:
 
 1. Extract images 🖼️, categories 🐕, and neural activity from the network 🔥🔥🔥
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can keep them in a python list or a numpy array. Here is all what you need:
+Here is all what you need:
 
-- images 🖼️: It is advisable to resize them to a small size (eg. 64x64 pixels) to save sapce. Dimensions: [#images,#channels,H,W].
-- categories 🐕: Integer indicating the ground-truth label number. Dimensions: [#images].
-- caregory names 🎈: Strings indicating the name of each category. Dimensions: [#categories].
-- output of the network 🔥: For each image, obtain the output of the network (after or before the softmax, it is up to you). Dimensions: [#images, #categories].
-- neural activity 🔥🔥🔥: For each image, obtain the neural activity that you want to visualize. This can be obtained for as many layers as you want. If you want to visualize a convolutional layer or a transformer, please see this for options. Dimensions: [#image, #neurons].
+- ``images`` 🖼️: It is advisable to resize them to a small size (eg. 64x64 pixels) to save sapce. Dimensions: [#images,#channels,H,W].
+- ``groundtruth_categories`` 🐕: Integer indicating the ground-truth label number. Dimensions: [#images].
+- ``caregory_names`` 🎈: Strings indicating the name of each category. Dimensions: [#categories].
+- ``network_output`` 🔥: For each image, obtain the output of the network (after or before the softmax, it is up to you). Dimensions: [#images, #categories].
+- ``neural_activity`` 🔥🔥🔥: For each image, obtain the neural activity that you want to visualize. This can be obtained for as many layers as you want. If you want to visualize a convolutional layer or a transformer, please see this for options. Dimensions: [#image, #neurons].
+
+You can keep them in a python list or a numpy array. 
 
 ‼️ Make sure that the order of the images is kept constant across all the data.
 
@@ -55,16 +58,17 @@ We are now ready to save. Just plug all the data to our Deephys wrapper in the f
 >>> test = deephys.import_test_data(
     name = "OOD",
     pixel_data = images,
-    ground_truths = gt_categories,
-    classes = category_names,
+    ground_truths = groundtruth_categories,
+    classes = caregory_names,
     state = [neural_activity, network_output],
     model = model
     )
 >>> test.suffix = None
 >>> test.save()
 
+Note that ``mdoel` is the model that was created at the beginning. The wrapper create a file called ``OOD.test``, which can used in Deephys.
 
-Note that you will need the model that was created at the beginning. Also, you can add more layers to the visualization by just adding them in the state list, just make sure `network_output` is the last one.
+You can add more layers to the visualization by just adding them in the state list, just make sure `network_output` is the last one.
 
 🎏 Remember to follow step 1 and 2 for each dataset distribution separatelly.
 
@@ -104,17 +108,6 @@ Parameter ``ground_truths`` in :func:`deephys.deephys.import_test_data` should b
 
 For example:
 
->>> test = import_test_data(
-    name = "CIFAR10",
-    classes = classes,
-    state = [all_activs,all_outputs],
-    model = model,
-    pixel_data = all_images,
-    ground_truths = all_cats.numpy().tolist()
-    )
-test.suffix = None
->>> test.suffix = None
->>> test.save()
 The data is now saved to a file called "CIFAR10.test"
 
 Please see `here <https://github.com/mjgroth/deephys-aio/blob/master/Python_Tutorial.ipynb>`_ for the full tutorial
