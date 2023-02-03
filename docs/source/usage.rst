@@ -66,7 +66,7 @@ We are now ready to save. Just plug all the data to our Deephys wrapper in the f
 >>> test.suffix = None
 >>> test.save()
 
-Note that ``mdoel` is the model that was created at the beginning. The wrapper create a file called ``OOD.test``, which can used in Deephys.
+Note that ``mdoel`` is the model that was created at the beginning. The wrapper create a file called ``OOD.test``, which can used in Deephys.
 
 You can add more layers to the visualization by just adding them in the state list, just make sure `network_output` is the last one.
 
