@@ -1,3 +1,5 @@
+Let's Deephys! 
+=============
 
 Before starting, install our Deephys wrapper. This will faciliate plugging your data in the right format for Deephys.
 
@@ -9,7 +11,7 @@ Before starting, install our Deephys wrapper. This will faciliate plugging your 
 Let's get started wrapping up your data to visualize with Deephys  🚀
 
 ☀️ Save the model configuration parameters
-==================
+--------------------------------------
 
 We first need to instantiate the model by indicating the number of neurons per layer to visualize.
 
@@ -26,7 +28,7 @@ If you want to visualize more layers, add the number of neurons and parameters i
 
 
 🎏 Wrap up dataset distributions separatelly 🎏
-===========================================
+--------------------------------------
 
 Each dataset distribution that you would like to analyze needs to be wrapped-up independently. After wrapping up all dataset distributions, you can visualize them together using Deephys 🪄.  
 
@@ -67,7 +69,8 @@ Note that you will need the model that was created at the beginning. Also, you c
 🎏 Remember to follow step 1 and 2 for each dataset distribution separatelly.
 
 
-EXAMPLES
+Examples 
+--------------------------------------
 
 To extract data from a test, please see the steps provided `here <https://colab.research.google.com/github/mjgroth/deephys-aio/blob/master/Python_Tutorial.ipynb>`_
 
