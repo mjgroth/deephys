@@ -93,7 +93,7 @@ const val  DEFAULT_BIG_IMAGE_SCALE = 128.0
 /*  val normalizeTopNeuronActivations by BoolSettingProv(
 	defaultValue = false,
 	label = "Normalize activations of top neurons",
-	tooltip = normalizeTopNeuronsBlurb
+	matt.fx.control.wrapper.tooltip.fixed.tooltip = normalizeTopNeuronsBlurb
   )*/
   val predictionSigFigs by IntSettingProv(
 	defaultValue = 5,
@@ -111,7 +111,7 @@ const val  DEFAULT_BIG_IMAGE_SCALE = 128.0
   )
   val millisecondsBeforeTooltipsVanish by IntSettingProv(
 	defaultValue = 5000,
-	label = "tooltip hide delay (ms)",
+	label = "matt.fx.control.wrapper.tooltip.fixed.tooltip hide delay (ms)",
 	tooltip = "Milliseconds before tooltips vanish. 0 means infinite (hit ESCAPE to make them go away)",
 	min = 0,
 	max = 10000

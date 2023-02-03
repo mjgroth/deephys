@@ -21,7 +21,6 @@ import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.image.toFXImage
-import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.weak.MyWeakRef
@@ -42,6 +41,7 @@ import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.viewer.action.SelectCategory
 import matt.nn.deephys.gui.viewer.action.SelectImage
@@ -121,8 +121,8 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	bind(DeephySettings.showTutorials)
   }
 
-  val normalizer = BindableProperty(outerBox.inD.value).apply {
-	bind(outerBox.inD)
+  val normalizer = BindableProperty(outerBox.normalizer.value).apply {
+	bind(outerBox.normalizer)
   }
 
   val numViewers = BindableProperty(outerBox.children.size).apply {
@@ -454,7 +454,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		titleFont()
 	  }
 	  hSpacer(10.0)
-	  infoSymbol(
+	  deephysInfoSymbol(
 
 		this@DatasetViewer.testData.binding {
 		  if (it == null) {
@@ -470,7 +470,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		}
 
 	  ) {
-		tooltipFontProperty v DEEPHYS_FONT_MONO
+
+
+		fontProperty v DEEPHYS_FONT_MONO
 		/*wrapTextProp v true*/
 	  }
 

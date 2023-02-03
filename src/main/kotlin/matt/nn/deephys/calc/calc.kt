@@ -187,11 +187,11 @@ data class ActivationRatioCalc<A: Number>(
 	}
 
 	fun latexTechnique(num: ActivationRatioNumerator): String {
-	  val denom = "{max activation of this neuron in $NORMALIZER_BUTTON_NAME}"
+	  val denom = "{\\textrm{max activation of this neuron in $NORMALIZER_BUTTON_NAME}}"
 	  return when (num) {
-		MAX              -> "\\frac{max activation of this neuron in this test}$denom"
-		is SINGLE_IMAGE  -> "\\frac{raw activation of this neuron for image ${num.id}$denom"
-		IMAGE_COLLECTION -> "\\frac{average activation of this neuron for selected images}$denom"
+		MAX              -> "\\frac{\\textrm{max activation of this neuron in this test}}$denom * 100"
+		is SINGLE_IMAGE  -> "\\frac{\\textrm{raw activation of this neuron for image ${num.id}}}$denom * 100"
+		IMAGE_COLLECTION -> "\\frac{\\textrm{average activation of this neuron for selected images}}$denom * 100"
 	  }
 	}
   }

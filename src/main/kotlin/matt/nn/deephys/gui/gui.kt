@@ -53,6 +53,7 @@ import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.settings.settingsButton
 import matt.nn.deephys.init.initializeWhatICan
@@ -201,7 +202,7 @@ class DeephysApp {
 			}
 
 			h {
-			  deephyTooltip(visualizerToolTipText) /*tooltip has to be outside of checkbox or else it will not show when checkbox is disabled?*/
+			  deephyTooltip(visualizerToolTipText) /*matt.fx.control.wrapper.tooltip.fixed.tooltip has to be outside of checkbox or else it will not show when checkbox is disabled?*/
 			  deephyCheckbox("Show Model Diagram") {
 				prefHeightProperty.bind(settingsButton.heightProperty)
 				visualizer.onChange {
@@ -240,7 +241,7 @@ class DeephysApp {
 				deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "") {
 				  titleFont()
 				}
-				infoSymbol(
+				deephysInfoSymbol(
 				  string {
 					lineDelimited {
 					  +"Layers"
@@ -250,7 +251,7 @@ class DeephysApp {
 					}
 				  }
 				) {
-				  tooltipFontProperty v DEEPHYS_FONT_MONO
+				  fontProperty v DEEPHYS_FONT_MONO
 				  /*wrapTextProp v true*/
 				}
 			  }

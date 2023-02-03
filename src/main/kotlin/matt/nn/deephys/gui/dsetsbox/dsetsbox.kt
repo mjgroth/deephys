@@ -81,7 +81,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   }
 
   private val inDToggleGroup = ToggleMechanism<DatasetViewer>()
-  val inD = inDToggleGroup.selectedValue.readOnly()
+  val normalizer = inDToggleGroup.selectedValue.readOnly()
   //
   //  init {
   //	bindToggleGroup.selectedValue.onChange {
@@ -126,7 +126,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   fun removeTest(t: DatasetViewer) {
 	println("removing test: ${t.file.value}")
 	if (bound.value == t) bindToggleGroup.selectedValue.value = null
-	if (inD.value == t) inDToggleGroup.selectedValue.value = null
+	if (normalizer.value == t) inDToggleGroup.selectedValue.value = null
 	t.removeFromParent()
 //	t.normalizeTopNeuronActivations.unbind()
 	t.normalizer.unbind()

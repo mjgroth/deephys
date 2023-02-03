@@ -65,7 +65,7 @@ fun warmupFxComponents() {
 
 	  /*
 	  Exception in thread "Thread-2" java.lang.ExceptionInInitializerError
-		at matt.fx.control.wrapper.tooltip.TooltipWrapper.<init>(tooltip.kt:52)
+		at matt.fx.control.wrapper.matt.fx.control.wrapper.tooltip.fixed.tooltip.matt.fx.control.wrapper.tooltip.fixed.TooltipWrapper.<init>(matt.fx.control.wrapper.tooltip.fixed.tooltip.kt:52)
 
 		this ended up being due to YourKit..
 	  * */

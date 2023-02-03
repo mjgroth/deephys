@@ -1,5 +1,6 @@
 package matt.nn.deephys.gui.deephyimview
 
+import javafx.scene.Cursor
 import javafx.stage.FileChooser
 import javafx.stage.FileChooser.ExtensionFilter
 import matt.async.queue.pool.FakeWorkerPool
@@ -44,10 +45,15 @@ class DeephyImView(
   val weakIm = im.weak
 
   init {
+
+
+
 	val localWeakIm = weakIm
 	val localWeakViewer = weakViewer
 	val weakThis = WeakReference(this)
 	todoOnce("combine draw methods for V1 and deephy")
+
+	cursor = Cursor.HAND
 
 	val pool = if (loadAsync) realPool else fakePool
 	pool.schedule {
@@ -60,6 +66,7 @@ class DeephyImView(
 		if (h) weakThis.get()!!.drawBorder()
 		else weakThis.get()!!.draw(deRefedIm)
 	  }
+
 	  onLeftClick {
 		weakThis.get()!!.click()
 	  }

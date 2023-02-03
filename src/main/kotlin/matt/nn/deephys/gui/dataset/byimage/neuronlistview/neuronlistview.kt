@@ -11,8 +11,6 @@ import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
-import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
 import matt.math.round.ceilInt
@@ -28,9 +26,9 @@ import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProg
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.tooltip.deephysTexNodeFactory
+import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTexTooltip
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltipWithNode
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
@@ -61,7 +59,7 @@ fun <A: Number> NW.neuronListViewSwapper(
 			layer = lay,
 			test = deRefedViewer.testData.value!!.preppedTest.await() as TypedTestLike<A>,
 			/*normalized = deRefedViewer.normalizeTopNeuronActivations.value,*/
-			denomTest = deRefedViewer.normalizer.value.takeIf { it != deRefedViewer }?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
+			denomTest = deRefedViewer.normalizer.value/*.takeIf { it != deRefedViewer }*/?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
 		  )
 		}
 	  }
@@ -157,8 +155,8 @@ class NeuronListView(
 
 		val startAsyncAt = (viewer.stage!!.width/NEURON_LIST_VIEW_WIDTH).ceilInt()
 
-		if (topNeurons.isEmpty()) {
-		  infoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
+		if (topNeurons.isEmpty() && viewer.normalizer.value != null) {
+		  deephysInfoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
 		}
 
 		topNeurons.forEachIndexed { idx, neuronWithAct ->
@@ -189,10 +187,24 @@ class NeuronListView(
 					  act.formatted
 					) {
 
+					  highlightOnHover()
 
 					  when (act) {
 						is AlwaysOneActivation -> veryLazyDeephysTooltip { "activation is always 1 in this case, so it is not shown" }
-						is RawActivation       -> veryLazyDeephysTooltip { "raw activation value for the selected image" }
+						is RawActivation       -> {
+						  val numImages = (cfg.tops as TopNeurons<*>).images.size
+						  if (numImages > 1) {
+							veryLazyDeephysTooltip {
+							  "average activation value for the selected images"
+							}
+						  } else {
+							veryLazyDeephysTooltip {
+							  "raw activation value for the selected image"
+							}
+						  }
+
+						}
+
 						is ActivationRatio     -> {
 						  /*val forced = (cfg.tops as TopNeurons<*>).forcedNeuronIndices*/
 						  val numImages = (cfg.tops as TopNeurons<*>).images.size
@@ -201,11 +213,8 @@ class NeuronListView(
 							1 -> SINGLE_IMAGE(cfg.tops.images.first().imageID)
 							else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
 						  }
-						  veryLazyDeephysTooltipWithNode {
-							deephysTexNodeFactory.toCanvas(
-							  ActivationRatioCalc.latexTechnique(num)
-							) ?: TextWrapper("error")
-							/*.texToPixels()!!.toCanvas()*/
+						  veryLazyDeephysTexTooltip {
+							ActivationRatioCalc.latexTechnique(num)
 						  }
 						}
 						/*ActivationRatioCalc.technique*/
@@ -216,7 +225,7 @@ class NeuronListView(
 
 					}
 					//					infoSymbol("test")
-					act.extraInfo?.go { infoSymbol(it) }
+					act.extraInfo?.go { deephysInfoSymbol(it) }
 				  }
 				}
 
