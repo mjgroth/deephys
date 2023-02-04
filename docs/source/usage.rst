@@ -28,7 +28,7 @@ This will create a `.model` file that will be useful for Deephys. In this exampl
 ‼️ The last entry in both lists must be the output layer, which is mandatory to always have.
 
 
-🎏 Wrap up each dataset distributions separatelly 🎏
+🎏 Wrap up each dataset distributions separately 🎏
 --------------------------------------
 
 Each dataset distribution that you would like to analyze needs to be wrapped-up separatelly. After wrapping up all dataset distributions, you can visualize them together using Deephys 🪄.  
@@ -72,9 +72,7 @@ You can add more layers to the visualization by just adding them in the state li
 
 🎏 Remember to follow step 1 and 2 for each dataset distribution separatelly.
 
-
 .. Extracting Activations From Data
-
 
 Examples 
 --------------------------------------
@@ -109,6 +107,4 @@ Parameter ``pixel_data`` in :func:`deephys.deephys.import_test_data` should be a
 
 Parameter ``ground_truths`` in :func:`deephys.deephys.import_test_data` should be an ordered list of ground truths.
 
-
 Please see `here <https://github.com/mjgroth/deephys-aio/blob/master/Python_Tutorial.ipynb>`_ for the full tutorial
-
