@@ -338,7 +338,7 @@ fun NW.deephysInfoSymbol(text: String, op: DSL<DeephysInfoSymbol> = {}) = Deephy
 
 
 class DeephysInfoSymbol(info: String): InfoSymbol(info) {
-  override fun buildTooltipGraphic(info: String) = DeephysTooltipContent(info)
+  override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
   val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
   val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
 }
@@ -354,7 +354,7 @@ fun NW.deephysWarningSymbol(text: String, op: DSL<DeephysWarningSymbol> = {}) = 
 
 
 class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {
-  override fun buildTooltipGraphic(warning: String) = DeephysTooltipContent(warning)
+  override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
   val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
   val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
 }
