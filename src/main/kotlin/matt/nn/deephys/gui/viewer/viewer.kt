@@ -12,6 +12,7 @@ import matt.fx.control.wrapper.control.ControlWrapper
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
 import matt.fx.graphics.dialog.openFile
+import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
 import matt.fx.graphics.icon.svg.svgToImage2
 import matt.fx.graphics.wrapper.imageview.imageview
 import matt.fx.graphics.wrapper.node.enableWhen
@@ -43,6 +44,7 @@ import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.DEEPHYS_SYMBOL_SPACING
 import matt.nn.deephys.gui.global.tooltip.DeephysWarningSymbol
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
@@ -462,36 +464,41 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		titleFont()
 	  }
 	  hSpacer(10.0)
-	  deephysInfoSymbol(
+	  h {
+		spacing = DEEPHYS_SYMBOL_SPACING
+		deephysInfoSymbol(
 
-		this@DatasetViewer.testData.binding {
-		  if (it == null) {
-			"After loading a test, see more info about it here."
-		  } else {
-			string {
-			  lineDelimited {
-				+"dtype:       ${it.dtype.label}"
-				+"Image Count: ${it.numImages.await()}"
+		  this@DatasetViewer.testData.binding {
+			if (it == null) {
+			  "After loading a test, see more info about it here."
+			} else {
+			  string {
+				lineDelimited {
+				  +"dtype:       ${it.dtype.label}"
+				  +"Image Count: ${it.numImages.await()}"
+				}
 			  }
 			}
 		  }
+
+		) {
+
+
+		  fontProperty v DEEPHYS_FONT_MONO
+		  /*wrapTextProp v true*/
 		}
 
-	  ) {
+		val loadWarnings = this@DatasetViewer.testData.binding {
+		  it?.loadWarnings
+		}
 
+		swapperR(loadWarnings) {
+		  h {
+			children.bindWeakly(it.nonBlockingFXWatcher()) {
+			  DeephysWarningSymbol(it).apply {
 
-		fontProperty v DEEPHYS_FONT_MONO
-		/*wrapTextProp v true*/
-	  }
-
-	  val loadWarnings = this@DatasetViewer.testData.binding {
-		it?.loadWarnings
-	  }
-
-	  swapperR(loadWarnings) {
-		h {
-		  children.bindWeakly(it) {
-			DeephysWarningSymbol(it)
+			  }
+			}
 		  }
 		}
 	  }

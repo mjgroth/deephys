@@ -50,6 +50,7 @@ import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.DEEPHYS_SYMBOL_SPACING
 import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
@@ -233,22 +234,27 @@ class DeephysApp {
 				deephyText("Model: ${model.name}") {
 				  titleFont()
 				}
-				deephysInfoSymbol(
-				  string {
-					lineDelimited {
-					  +"Layers"
-					  model.layers.forEach {
-						+"\t${it.layerID.truncateWithElipsesOrAddSpaces(15)}: ${it.neurons.size}"
+
+				h {
+				  spacing = DEEPHYS_SYMBOL_SPACING
+				  deephysInfoSymbol(
+					string {
+					  lineDelimited {
+						+"Layers"
+						model.layers.forEach {
+						  +"\t${it.layerID.truncateWithElipsesOrAddSpaces(15)}: ${it.neurons.size}"
+						}
 					  }
 					}
+				  ) {
+					fontProperty v DEEPHYS_FONT_MONO
+					/*wrapTextProp v true*/
 				  }
-				) {
-				  fontProperty v DEEPHYS_FONT_MONO
-				  /*wrapTextProp v true*/
+				  if (model.wasLoadedWithSuffix) {
+					deephysWarningSymbol(SUFFIX_WARNING)
+				  }
 				}
-				if (model.wasLoadedWithSuffix) {
-				  deephysWarningSymbol(SUFFIX_WARNING)
-				}
+
 			  }
 
 

@@ -360,6 +360,7 @@ class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {
 }
 
 
-val SUFFIX_WARNING = "The `suffix` key is no longer supported (this can just be appended to the `name`). Please update to a newer version of the pip deephys package"
+const val SUFFIX_WARNING = "The `suffix` key is no longer supported (this can just be appended to the `name`). Please update to a newer version of the pip deephys package"
 
+const val DEEPHYS_SYMBOL_SPACING = 5.0
 

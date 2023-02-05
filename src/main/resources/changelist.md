@@ -30,7 +30,7 @@
   - New tooltips
   - Info symbol text highlight in blue instead of yellow in light mode
   - Made '+' and '-' button bigger
-  - Reduced size of info circles
+  - new look for info circles
 
 
 ### Bug Fixes
