@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.deephyimview
 import javafx.scene.Cursor
 import matt.async.queue.pool.FakeWorkerPool
 import matt.async.queue.pool.QueueWorkerPool
-import matt.fx.control.menu.context.mcontextmenu
+import matt.gui.menu.context.mcontextmenu
 import matt.fx.graphics.dialog.saveFile
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.onLeftClick
