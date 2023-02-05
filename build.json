@@ -4,11 +4,7 @@
 	"type" : "Typical"
   },
   "dependencies" : [
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "implementation",
-	  "path" : ":k:gui"
-	},
+
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
