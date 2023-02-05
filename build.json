@@ -32,11 +32,6 @@
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "implementation",
-	  "path" : ":k:pref"
-	},
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "testImplementation",
 	  "path" : ":k:test"
 	},
