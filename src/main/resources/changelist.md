@@ -43,6 +43,7 @@
   - Fixed bug causing TopImages of a neuron to only show the top 18. Now it shows the top 100.
   - Fixed a crash that happened sometimes when the layer was switched. It was caused by the new layer not having a neuron at the currently selected index (e.g. when neuron 50 was selected and then the classification layer was selected, which only has 10 neurons.) This crash was solved by catching this case and setting the neuron to 0.
   - Stopped saving data in ~/registered with data related to window locations and preffered monitors. They are now properly stored in OS-specific properties
+  - Fixed an issue that caused settings or states to sometimes not save
 
 
 
