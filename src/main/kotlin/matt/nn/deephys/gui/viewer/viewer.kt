@@ -22,8 +22,8 @@ import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.image.toFXImage
-import matt.hurricanefx.eye.prop.lastIndexProperty
-import matt.hurricanefx.eye.prop.sizeProperty
+import matt.fx.base.prop.lastIndexProperty
+import matt.fx.base.prop.sizeProperty
 import matt.lang.disabledCode
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch

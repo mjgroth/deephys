@@ -9,7 +9,7 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.hurricanefx.eye.prop.sizeProperty
+import matt.fx.base.prop.sizeProperty
 import matt.lang.function.Consume
 import matt.lang.go
 import matt.model.flowlogic.await.Donable

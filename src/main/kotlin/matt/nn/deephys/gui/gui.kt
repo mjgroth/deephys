@@ -33,7 +33,7 @@ import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
 import matt.gui.mscene.MScene
-import matt.hurricanefx.eye.prop.sizeProperty
+import matt.fx.base.prop.sizeProperty
 import matt.lang.anno.SeeURL
 import matt.lang.go
 import matt.log.profile.stopwatch.Stopwatch

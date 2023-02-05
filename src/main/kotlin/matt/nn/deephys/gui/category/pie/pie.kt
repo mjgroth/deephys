@@ -24,7 +24,7 @@ import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
-import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNonNullableProp
+import matt.fx.base.wrapper.obs.obsval.prop.toNonNullableProp
 import matt.math.jmath.sigFigs
 import matt.model.code.idea.MChartIdea
 import matt.model.data.percent.Percent
