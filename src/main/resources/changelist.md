@@ -1,4 +1,4 @@
-[//]: # (VERSION:1.29.1)
+[//]: # (VERSION:1.30.0)
 [![pip](https://img.shields.io/badge/compatible%20pip%20version-0.10.0-00bbe2?&logo=pypi&logoColor=f5c39e)](https://pypi.org/project/deephys/0.10.0)
 ### PIP Python Package Updated to 0.10.0
 
@@ -6,7 +6,6 @@
 
 ### New Features
 - Neuron spinner now wraps around (e.g. hitting down on neuron 0 will go to neuron 50 and up on neuron 50 will go to neuron 0)
-- Removed the "BindTutorial" (this tutorial became a pointless waste of space, so removing it is a great feature)
 
 
 ### Performance Improvements
@@ -22,7 +21,7 @@
   - improved tip below pie charts
 
 
-### Removed
+### Removed Features
   - New tooltips
   - Info symbol text highlight in blue instead of yellow in light mode
   - Made '+' and '-' button bigger
