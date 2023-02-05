@@ -18,9 +18,9 @@ import matt.model.data.message.FileList
 import matt.nn.deephys.gui.global.color.DeephysPalette.deephysSelectGradient
 import matt.nn.deephys.gui.global.deephyToggleButton
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
+import matt.nn.deephys.gui.settings.DeephySettings
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
-import matt.nn.deephys.state.DeephySettings
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
 import matt.obs.prop.BindableProperty

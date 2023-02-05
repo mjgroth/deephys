@@ -7,6 +7,8 @@ import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNum
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
+import matt.nn.deephys.gui.settings.DeephySettings
+import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestLayer
@@ -14,8 +16,6 @@ import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.nn.deephys.state.DeephySettings
-import matt.nn.deephys.state.MAX_NUM_IMAGES_IN_TOP_NEURONS
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 
 /*data class NormalizedAverageActivation<N: Number>(
@@ -68,7 +68,7 @@ data class DescendingArgMaxMax<A: Number>(
 
 	//	acts
 	val indices = test.dtype.wrap(acts)
-	  .argmaxn2(MAX_NUM_IMAGES_IN_TOP_NEURONS, skipInfinite = true, skipNaN = true, skipZero = true)
+	  .argmaxn2(MAX_NUM_IMAGES_IN_TOP_IMAGES, skipInfinite = true, skipNaN = true, skipZero = true)
 
 	//	if (neuron.index == 10) {
 	//	  taball("indices", indices)

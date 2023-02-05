@@ -23,6 +23,7 @@ import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTexTooltip
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
+import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestNeuron
@@ -37,7 +38,7 @@ import kotlin.math.min
 
 class NeuronView<A: Number>(
   neuron: InterTestNeuron,
-  numImages: BindableProperty<Int> = BindableProperty(100),
+  numImages: BindableProperty<Int> = BindableProperty(MAX_NUM_IMAGES_IN_TOP_IMAGES),
   testLoader: TypedTestLike<A>,
   viewer: DatasetViewer,
   showActivationRatio: Boolean,

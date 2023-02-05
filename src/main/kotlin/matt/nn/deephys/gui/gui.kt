@@ -33,7 +33,6 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.stage.StageWrapper
-import matt.fx.node.proto.infosymbol.infoSymbol
 import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
 import matt.hurricanefx.eye.prop.sizeProperty
@@ -55,12 +54,11 @@ import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
-import matt.nn.deephys.gui.settings.settingsButton
+import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.init.modelBinding
 import matt.nn.deephys.init.warmupFxComponents
 import matt.nn.deephys.load.loadSwapper
-import matt.nn.deephys.state.DeephySettingsNode
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
 import matt.obs.bind.binding
@@ -68,6 +66,7 @@ import matt.obs.prop.BindableProperty
 import matt.obs.subscribe.Pager
 import matt.prim.str.mybuild.string
 import matt.prim.str.truncateWithElipsesOrAddSpaces
+import matt.nn.deephys.gui.settings.gui.settingsButton
 import java.util.prefs.Preferences
 
 val DEEPHY_USER_DATA_DIR by lazy {

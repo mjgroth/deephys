@@ -10,6 +10,7 @@ import matt.collect.weak.lazyWeakMap
 import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
+import matt.nn.deephys.gui.settings.DeephySettings
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.ResolvedLayer
@@ -20,7 +21,6 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.layer.Layer
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.nn.deephys.state.DeephySettings
 import matt.prim.str.mybuild.string
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.toNDArray

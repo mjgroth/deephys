@@ -30,9 +30,9 @@ import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_DEFAULT
 import matt.nn.deephys.gui.global.color.DeephysPalette
+import matt.nn.deephys.gui.settings.DEFAULT_BIG_IMAGE_SCALE
+import matt.nn.deephys.gui.settings.DeephySettings
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.nn.deephys.state.DEFAULT_BIG_IMAGE_SCALE
-import matt.nn.deephys.state.DeephySettings
 import matt.obs.bindings.str.ObsS
 import java.lang.ref.WeakReference
 

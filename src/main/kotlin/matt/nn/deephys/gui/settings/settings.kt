@@ -1,205 +1,136 @@
 package matt.nn.deephys.gui.settings
 
-import javafx.scene.control.ContentDisplay.RIGHT
-import matt.async.thread.ThreadReport
-import matt.fx.control.inter.contentDisplay
-import matt.fx.control.inter.graphic
-import matt.fx.control.lang.actionbutton
-import matt.fx.control.mstage.ShowMode.DO_NOT_SHOW
-import matt.fx.control.mstage.WMode.CLOSE
-import matt.fx.control.win.interact.openInNewWindow
-import matt.fx.control.wrapper.control.slider.slider
-import matt.fx.control.wrapper.control.spinner.spinner
-import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.hbox.hbox
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.gui.option.BoolSetting
-import matt.gui.option.DoubleSetting
-import matt.gui.option.EnumSetting
-import matt.gui.option.IntSetting
-import matt.log.profile.mem.MemReport
-import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
-import matt.nn.deephys.gui.global.deephyActionButton
-import matt.nn.deephys.gui.global.deephyButton
-import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephysLabel
-import matt.nn.deephys.gui.global.deephyRadioButton
-import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
-import matt.nn.deephys.init.gearImage
-import matt.nn.deephys.state.DeephySettings
-import matt.nn.deephys.state.DeephyState
-import matt.prim.str.elementsToString
-import java.awt.Desktop
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
+import matt.gui.option.SettingsData
+import matt.json.oldfx.jsonObj
+import matt.json.ser.JsonObjectSerializer
+import matt.obs.json.prop.setFromJson
+import matt.obs.prop.BindableProperty
+import matt.pref.obs.ObsPrefNode
 
 
-val settingsButton by lazy {
-  actionbutton(graphic = ImageViewWrapper(gearImage.await()).apply {
-	isPreserveRatio = true
-	fitWidth = 25.0
-  }) {
-	settingsWindow.show()
-  }
+object DeephySettingsNode: ObsPrefNode(
+  "sinhalab.deephys.settings",
+  oldKeys = listOf(
+	"normalizeTopNeuronActivations",
+  )
+) {
+  val settings by obsObj { DeephySettingsData() }
 }
 
-val settingsWindow by lazy {
-  SettingsPane.openInNewWindow(
-	DO_NOT_SHOW,
-	CLOSE,
-	EscClosable = true,
-	decorated = true,
-	title = "Deephys Options",
-  ).apply {
-	width = 1000.0
-  }
-}
+object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(DeephySettingsData::class) {
+  override fun deserialize(jsonObject: JsonObject): DeephySettingsData {
+	return DeephySettingsData().apply {
 
-fun <E: Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) = rec.apply {
-  val tm = createBoundToggleMechanism()
-  cls.java.enumConstants.forEach {
-	deephyRadioButton((it as Enum<*>).name, tm, it) {
-	  isSelected = prop.value == it
+	  namedObservables().forEach {
+		val jsonValue = jsonObject[it.key]
+		if (jsonValue != null) {
+		  (it.value as BindableProperty<*>).setFromJson(jsonValue)
+		}
+	  }
+
+	  //	  jsonObject["numImagesPerNeuronInByImage"]?.int?.go {
+	  //		numImagesPerNeuronInByImage.value = it
+	  //	  }
+	  //	  jsonObject["normalizeTopNeuronActivations"]?.bool?.go {
+	  //		normalizeTopNeuronActivations.value = it
+	  //	  }
+	  //	  jsonObject["predictionSigFigs"]?.int?.go {
+	  //		predictionSigFigs.value = it
+	  //	  }
+	  //	  jsonObject["verboseLogging"]?.bool?.go {
+	  //		verboseLogging.value = it
+	  //	  }
+	  //	  jsonObject["millisecondsBeforeTooltipsVanish"]?.int?.go {
+	  //		millisecondsBeforeTooltipsVanish.value = it
+	  //	  }
 	}
   }
+
+  override fun serialize(value: DeephySettingsData) = jsonObj(
+	*value.namedObservables().map {
+	  it.key to it.value
+	}.toTypedArray()
+  )
+
 }
 
-object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
+const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
+const val MAX_NUM_IMAGES_IN_TOP_IMAGES = 100
+
+const val  DEFAULT_BIG_IMAGE_SCALE = 128.0
+
+@Serializable(DeephySettingsSerializer::class) class DeephySettingsData: SettingsData() {
+
+
+  val smallImageScale by DoubleSettingProv(
+	defaultValue = 32.0,
+	label = "Small image scale",
+	tooltip = "the width (in pixels) for default images",
+	min = 10.0,
+	max = 100.0
+  )
+  val bigImageScale by DoubleSettingProv(
+	defaultValue = DEFAULT_BIG_IMAGE_SCALE,
+	label = "Big image scale",
+	tooltip = "the width (in pixels) for big images",
+	min = 110.0,
+	max = 200.0
+  )
+  /*  val normalizeTopNeuronActivations by BoolSettingProv(
+	  defaultValue = false,
+	  label = "Normalize activations of top neurons",
+	  matt.fx.control.wrapper.tooltip.fixed.tooltip = normalizeTopNeuronsBlurb
+	)*/
+  val predictionSigFigs by IntSettingProv(
+	defaultValue = 5,
+	label = "Prediction value significant figures",
+	tooltip = "Prediction value significant figures",
+	min = 3,
+	max = 10
+  )
+  val numImagesPerNeuronInByImage by IntSettingProv(
+	defaultValue = 9,
+	label = "Number of images per neuron in top neurons row",
+	tooltip = "Number of images per neuron in top neurons row",
+	min = 9,
+	max = MAX_NUM_IMAGES_IN_TOP_NEURONS
+  )
+  val millisecondsBeforeTooltipsVanish by IntSettingProv(
+	defaultValue = 5000,
+	label = "matt.fx.control.wrapper.tooltip.fixed.tooltip hide delay (ms)",
+	tooltip = "Milliseconds before tooltips vanish. 0 means infinite (hit ESCAPE to make them go away)",
+	min = 0,
+	max = 10000
+  )
+  val verboseLogging by BoolSettingProv(
+	defaultValue = false,
+	label = "Verbose Logging",
+	tooltip = "Extra logging to standard out. May impact performance."
+  )
+  val showCacheBars by BoolSettingProv(
+	defaultValue = false,
+	label = "Cache Progress Bars",
+	tooltip = "Extra progress bars indicating the progress of data caching."
+  )
+  val showTutorials by BoolSettingProv(
+	defaultValue = true,
+	label = "Show Tutorials",
+	tooltip = "Show Interactive Tutorials Throughout the app"
+  )
+
   init {
-
-
-	DeephySettings.settings.forEach { sett ->
-
-	  when (sett) {
-		is EnumSetting   -> {		//		  val group = sett.createBoundToggleMechanism()
-		  hbox<NW> {
-			deephyText(sett.label)
-
-			sett.createRadioButtons(this@hbox)
-
-			//			sett.cls.java.enumConstants.forEach {
-			//			  deephyRadioButton((it as Enum<*>).name, group, it) {
-			//				isSelected = sett.prop.value == it
-			//			  }
-			//			}
-			veryLazyDeephysTooltip(sett.tooltip)
-		  }
-
-		  //		  group.selectedValue.bindBidirectional(sett.prop)
-
-		  //		  val prop = group.selectedValue/*<Any>().toNonNullableProp()*/
-		  //		  prop.value = sett.prop.value
-		  //		  prop.onChange {
-		  //			sett.prop::value.set(it)
-		  //		  }
-		}
-
-		is IntSetting    -> {
-		  deephysLabel {
-			veryLazyDeephysTooltip(sett.tooltip)
-			text = sett.label
-			contentDisplay = RIGHT
-			graphic = spinner(
-			  min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
-			) {
-			  prefWidth = 150.0			/* val rBlocker = RecursionBlocker()
-			   valueProperty.onChange {
-				 require(it != null)
-				 rBlocker.with {
-				   sett.prop.value = it
-				 }
-			   }
-			   sett.prop.onChange {
-				 rBlocker.with {
-
-				 }
-			   }*/
-			  this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)
-			}
-		  }
-		}
-
-		is DoubleSetting -> {
-		  deephysLabel {
-			veryLazyDeephysTooltip(sett.tooltip)
-			text = sett.label
-			contentDisplay = RIGHT
-			graphic = slider(
-			  min = sett.min,
-			  max = sett.max,
-			  value = sett.prop.value,
-			) {
-			  prefWidth = 150.0
-			/*  val rBlocker = RecursionBlocker()
-			  valueChangingProperty.onChange {
-				rBlocker.with {
-				  sett.prop.value = value
-				}
-			  }			*//*  valueProperty.onChange {
-				  require(it != null)
-				  rBlocker.with {
-					sett.prop.value = it
-				  }
-				}*//*
-			  sett.prop.onChange {
-				rBlocker.with {
-				  value = it
-				}
-			  }
-*/
-			  valueProperty.bindBidirectional(sett.prop)
-
-			  /*this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)*/
-			}
-		  }
-		}
-
-		is BoolSetting   -> {
-		  deephyCheckbox(
-			sett.label
-		  ) {
-			veryLazyDeephysTooltip(sett.tooltip)
-			selectedProperty.bindBidirectional(sett.prop)			/*isSelected = sett.prop.value
-			selectedProperty.onChange {
-			  sett.prop.value = it
-			}*/
-		  }
-		}
-	  }
-
-
+	observe {
+	  println("big obj changed")
 	}
-
-	deephyActionButton("Reset all settings to default") {
-	  DeephySettings.settings.forEach {
-		it.resetToDefault()
-	  }
-	}
-
-	deephyActionButton("Delete state") {
-	  DeephyState.delete()
-	  println("model=${DeephyState.model.value}")
-	  println("tests=${DeephyState.tests.value?.elementsToString()}")
-	}
-
-
-	deephyButton("Print RAM info to console") {
-	  setOnAction {
-		println(MemReport())
-	  }
-	}
-
-	deephyButton("Print thread info to console") {
-	  setOnAction {
-		println(ThreadReport())
-	  }
-	}
-	deephyButton("Open Log Folder") {
-	  setOnAction {
-		Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder)
-	  }
-	}
-
   }
+
 }
+
+/*Todo: I wish this could be an object*/
+val DeephySettings by lazy {
+  DeephySettingsNode.settings
+}
+
+

@@ -28,6 +28,7 @@
   - Fixed a bug causing raw activations to show in the category view of the "bind" dataset even if it was set as "
     Normalizer". Now activation ratios will correctly show.
   - Fixed bug where it said "there are no top neurons due to 'zero' activations" when really it was just because no normalizer was set
+  - Fixed bug causing TopImages of a neuron to only show the top 18. Now it shows the top 100.
 
 
 

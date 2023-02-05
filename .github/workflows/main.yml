@@ -8,21 +8,18 @@ jobs:
   build_intel_app:
     runs-on: macos-12
     steps:
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: actions/setup-java@v3
       with:
         distribution: corretto
         java-version: 18
         java-package: jdk
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
         latest: true
         fileName: nn-deephys-intel-0-all.jar
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         mkdir input
@@ -30,59 +27,47 @@ jobs:
         mkdir output
         mkdir cer
       name: mkdirs
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         CERTS_P12_B64: ${{ secrets.CERTS_P12_B64 }}
       run: echo -n "$CERTS_P12_B64" | base64 --decode --output cer/Certificates.p12
       name: decode base64 cert
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env:
         DEV_ID_APP_PEM: ${{ secrets.DEV_ID_APP_PEM }}
       run: echo -n "$DEV_ID_APP_PEM" > cer/dev_id_app.pem
       name: write pem cert
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v create-keychain -p "${{ secrets.CER }}" build.keychain
       name: security create
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v default-keychain -s build.keychain
       name: security default
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v unlock-keychain -p "${{ secrets.CER }}" build.keychain
       name: security unlock
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v list-keychains
       name: security list-keychains
       continue-on-error: true
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v show-keychain-info build.keychain
       name: security show-keychain-info
       continue-on-error: true
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v dump-trust-settings
       name: security dump-trust-settings
       continue-on-error: true
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v requirement-evaluate cer/dev_id_app.pem
       name: security requirement-evaluate
       continue-on-error: true
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: security -v import cer/Certificates.p12 -k build.keychain -P "${{ secrets.CER
         }}" -T /usr/bin/codesign
       name: security import
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: 'security -v set-key-partition-list -S apple-tool:,apple:,codesign: -s
         -k "${{ secrets.CER }}" build.keychain'
       name: security partition list
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         echo ls:
@@ -92,7 +77,6 @@ jobs:
         mv nn-deephys-intel-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.icns -o logo.icns
       name: prepare files for jPackage
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: jpackage --type app-image --verbose --name deephys --app-version "${{ github.event.inputs.version
         }}" --main-jar nn-deephys-intel-0-all.jar --java-options -Dprism.maxvram=2G
@@ -100,127 +84,100 @@ jobs:
         output --icon logo.icns --input input --temp temp --mac-package-identifier
         lab.sinha.deephy --mac-package-signing-prefix lab.sinha.deephy --mac-sign
       name: jPackage
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: mkdir /Users/runner/work/deephys/deephys/output/jar
       name: notarize 1
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: jar xf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
       name: notarize 2
       working-directory: /Users/runner/work/deephys/deephys/output/jar
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: pwd
       name: notarize 3
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ls
       name: notarize 4
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ls /Users/runner/work/deephys/deephys/output
       name: notarize 5
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ls /Users/runner/work/deephys/deephys/output/jar
       name: notarize 6
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ls /Users/runner/work/deephys/deephys/output/jar/com
       name: notarize 7
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun
       name: notarize 8
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna
       name: notarize 9
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ls /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-aarch64
       name: notarize 10
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
         Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
         /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-aarch64/libjnidispatch.jnilib'
       name: notarize 11
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
         Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
         /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/jar/com/sun/jna/darwin-x86-64/libjnidispatch.jnilib'
       name: notarize 12
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: rm -rf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
       name: notarize 13
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: bash -c "jar cf /Users/runner/work/deephys/deephys/output/deephys.app/Contents/app/nn-deephys-intel-0-all.jar
         *"
       name: notarize 14
       working-directory: /Users/runner/work/deephys/deephys/output/jar
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: 'codesign --timestamp --options runtime --force -s "Developer ID Application:
         Matthew Groth (4GAZMDTC2M)" --prefix lab.sinha.deephy -vvvv --entitlements
         /Users/runner/work/deephys/deephys/temp/config/deephys.entitlements /Users/runner/work/deephys/deephys/output/deephys.app/Contents/MacOS/deephys'
       name: notarize 15
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ditto -c -k --keepParent /Users/runner/work/deephys/deephys/output/deephys.app
         /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
       name: notarize 16
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: xcrun notarytool store-credentials matthewgroth --apple-id mgroth49@gmail.com
         --password "${{ secrets.NOTARYTOOL2 }}" --team-id 4GAZMDTC2M --validate -v
       name: notarize 17
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: bash -c "xcrun notarytool matt.kbuild.glang.buildservice.executor.submit
         /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip --keychain-profile
         matthewgroth --wait -f json > /Users/runner/work/deephys/deephys/temp/notary_submit_result.json"
       name: notarize 18
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: cat /Users/runner/work/deephys/deephys/temp/notary_submit_result.json
       name: notarize 19
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: bash -c "jq -r '.id' /Users/runner/work/deephys/deephys/temp/notary_submit_result.json
         > /Users/runner/work/deephys/deephys/temp/notary_id.txt"
       name: notarize 20
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: cat /Users/runner/work/deephys/deephys/temp/notary_id.txt
       name: notarize 21
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: bash -c "xcrun notarytool log $(cat /Users/runner/work/deephys/deephys/temp/notary_id.txt)
         --keychain-profile matthewgroth"
       name: notarize 22
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: xcrun stapler staple /Users/runner/work/deephys/deephys/output/deephys.app
       name: notarize 23
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: ditto -c -k --keepParent /Users/runner/work/deephys/deephys/output/deephys.app
         /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
       name: notarize 24
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: codesign -dv --verbose=4 /Users/runner/work/deephys/deephys/output/deephys.app
       name: notarize 25
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: spctl -a -t open --context context:primary-signature -v /Users/runner/work/deephys/deephys/output/deephys.app
       name: notarize 26
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: svenstaro/upload-release-action@v2
       with:
@@ -230,21 +187,18 @@ jobs:
   build_linux_app:
     runs-on: ubuntu-22.04
     steps:
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: actions/setup-java@v3
       with:
         distribution: corretto
         java-version: 18
         java-package: jdk
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
         latest: true
         fileName: nn-deephys-linux-0-all.jar
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         mkdir input
@@ -252,7 +206,6 @@ jobs:
         mkdir output
         mkdir cer
       name: mkdirs
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         echo ls:
@@ -262,14 +215,12 @@ jobs:
         mv nn-deephys-linux-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo_64.png -o logo_64.png
       name: prepare files for jPackage
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: jpackage --type app-image --verbose --name deephys --app-version "${{ github.event.inputs.version
         }}" --main-jar nn-deephys-linux-0-all.jar --java-options -Dprism.maxvram=2G
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
         output --icon logo_64.png --input input --temp temp
       name: jPackage
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         cd output
@@ -280,7 +231,6 @@ jobs:
         echo "ls output/deephys:"
         ls -al output/deephys
       name: compress
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: svenstaro/upload-release-action@v2
       with:
@@ -290,21 +240,18 @@ jobs:
   build_windows_app:
     runs-on: windows-2022
     steps:
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: actions/setup-java@v3
       with:
         distribution: corretto
         java-version: 18
         java-package: jdk
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
         latest: true
         fileName: nn-deephys-windows-0-all.jar
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         mkdir input
@@ -312,7 +259,6 @@ jobs:
         mkdir output
         mkdir cer
       name: mkdirs
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         echo ls:
@@ -322,14 +268,12 @@ jobs:
         mv nn-deephys-windows-0-all.jar input
         curl -LJ0 https://github.com/mjgroth/deephys/blob/master/src/main/resources/logo.ico -o logo.ico
       name: prepare files for jPackage
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: jpackage --type app-image --verbose --name deephys --app-version "${{ github.event.inputs.version
         }}" --main-jar nn-deephys-windows-0-all.jar --java-options "-Dprism.maxvram=2G"
         --java-options -Xmx6144m --java-options -XX:-OmitStackTraceInFastThrow --dest
         output --icon logo.ico --input input --temp temp
       name: jPackage
-    - !<matt.mbuild.admin.ghwf.model.action.GHRunAction>
       env: {}
       run: |-
         cd output
@@ -340,7 +284,6 @@ jobs:
         echo "ls output/deephys:"
         ls output/deephys
       name: compress
-    - !<matt.mbuild.admin.ghwf.model.action.GHUseAction>
       name: null
       uses: svenstaro/upload-release-action@v2
       with:

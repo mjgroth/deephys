@@ -43,6 +43,7 @@ import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.settings.DeephySettings
 import matt.nn.deephys.gui.viewer.action.SelectCategory
 import matt.nn.deephys.gui.viewer.action.SelectImage
 import matt.nn.deephys.gui.viewer.action.SelectNeuron
@@ -57,7 +58,6 @@ import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.nn.deephys.state.DeephySettings
 import matt.obs.bind.MyBinding
 import matt.obs.bind.binding
 import matt.obs.bind.coalesceNull
