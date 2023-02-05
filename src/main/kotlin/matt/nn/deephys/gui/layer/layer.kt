@@ -2,14 +2,11 @@ package matt.nn.deephys.gui.layer
 
 import javafx.scene.paint.Color
 import matt.fx.control.wrapper.control.spinner.spinner
-import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.style.border.FXBorder
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNeverNull
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.hurricanefx.eye.wrapper.obs.obsval.prop.toNullableProp
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
-import matt.model.op.convert.StringConverter
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephysLabeledControl
 import matt.nn.deephys.gui.neuron.NeuronView
@@ -29,47 +26,24 @@ class LayerView(
   viewer: DatasetViewer
 ): VBoxWrapperImpl<RegionWrapper<*>>() {
   init {
+
+
+	val interLayer = layer.interTest
 	val neurons = layer.neurons.map { it.interTest }
 	var badText: ObsB? = null
+	val firstNeuron = neurons[0]
 	val neuronSpinner = spinner(
 	  items = neurons.toBasicObservableList(),
 	  editable = true,
-	  //	  property = viewer.neuronSelection,
-	  enableScroll = false
+	  enableScroll = false,
+	  converter = InterTestNeuron.stringConverterThatFallsBackToFirst(neurons = neurons)
 	) {
-	  valueFactory!!.converter = object: StringConverter<InterTestNeuron> {
-		override fun toString(t: InterTestNeuron): String {
-		  return "${t.index}"
-		}
 
-		override fun fromString(s: String): InterTestNeuron {
-		  return s.toIntOrNull()?.let { i -> neurons.firstOrNull { it.index == i } } ?: neurons.first()
-		  //		  val i = string.toIntOrNull()
-		  //		  if (i != null) {
-		  //		  return neurons.firstOrNull { it.index == i } ?: neurons.first()
-		  //		  		  }
-		  //		  return null
-		}
-	  }
-	  /*try to force gui update so first one converts to correct string...*/
-	  valueFactory!!.increment(1)
-	  valueFactory!!.decrement(1)
+	  autoCommitOnType()
 
-	  //	  valueProperty.matt.hurricanefx.eye.wrapper.obs.collect.list.onChange {
-	  //		println("v:$it")
-	  //	  }
-	  editor.textProperty.onChange {
-		val oldSelection = node.editor.selection
-		runLater {
-		  node.commitValue()
-		  runLater {
-			node.editor.selectRange(oldSelection.start + 1, oldSelection.end + 1)
-		  }
-		}
-	  }
+	  valueFactory!!.wrapAround = true
 
-
-	  badText = node.editor.textProperty().toNullableProp().binding {
+	  badText = textProperty.binding {
 		it == null || !it.isInt() || it.toInt() !in neurons.indices
 	  }
 
@@ -79,33 +53,34 @@ class LayerView(
 	  }
 
 
-
-	  valueFactory!!.value = viewer.neuronSelection.value ?: neurons[0]
+	  val fact = valueFactory!!
+	  val neuron = viewer.neuronSelection.value?.takeIf { it.layer == interLayer } ?: firstNeuron
+	  fact.value = neuron
+	  viewer.neuronSelection v neuron
 	  val rBlocker = RecursionBlocker()
-	  viewer.neuronSelection.onChange {
-		rBlocker {
-		  valueFactory!!.value = it ?: neurons[0]
+	  viewer.neuronSelection.onChangeWithWeak(fact) { deRefedFact, newNeuron ->
+		if (newNeuron == null || newNeuron.layer == interLayer) {
+		  rBlocker {
+			deRefedFact.value = newNeuron ?: firstNeuron
+		  }
 		}
 	  }
-	  valueProperty.onChange {
+	  valueProperty.onChangeWithWeak(viewer) { deRefedViewer, newValue ->
 		rBlocker {
-		  viewer.neuronSelection.value = it
+		  deRefedViewer.neuronSelection.value = newValue
 		}
 	  }
 
 	}
-	/*val neuronCB = choicebox(property = viewer.neuronSelection, values = layer.neurons.map { it.interTest }) {
-	  converter = toStringConverter<InterTestNeuron?> { "neuron ${it?.index}" }.toFXConverter()
-	}*/
+
+
 	deephysLabeledControl("Neuron", neuronSpinner) {
-	  /*+neuronCB*/
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
 	deephyText("please input valid integer neuron index between 0 and ${neurons.size}") {
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull.and(badText!!))
 	}
-	/*NEVER NULL*/
-	swapper(neuronSpinner.valueProperty, nullMessage = "select a neuron") {
+	swapperNeverNull(neuronSpinner.valueProperty) {
 	  NeuronView(this, testLoader = testLoader, viewer = viewer, showActivationRatio = true, layoutForList = false)
 	}
   }

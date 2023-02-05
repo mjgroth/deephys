@@ -1,51 +1,30 @@
 package matt.nn.deephys.load.test
 
 
-import matt.async.pool.DaemonPool
 import matt.async.thread.daemon
 import matt.cbor.err.CborParseException
-import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.major.txtstr.TextStringReader
 import matt.cbor.read.streamman.cborReader
-import matt.cbor.read.withByteStoring
-import matt.collect.list.awaitlist.BlockList
-import matt.collect.list.awaitlist.BlockListBuilder
-import matt.collect.queue.pollUntilEnd
 import matt.file.CborFile
-import matt.lang.List2D
-import matt.lang.disabledCode
 import matt.lang.err
-import matt.lang.l
-import matt.log.profile.mem.throttle
 import matt.model.code.errreport.ThrowReport
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.load.async.AsyncLoader
-import matt.nn.deephys.load.cache.Cacher
-import matt.nn.deephys.load.cache.DeephysCacheManager
-import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
+import matt.nn.deephys.load.test.TestLoader.Keys.theName
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.Float32
 import matt.nn.deephys.load.test.dtype.Float64
-import matt.nn.deephys.load.test.dtype.FloatActivationData
+import matt.nn.deephys.load.test.imageloader.ImageSetLoader
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
-import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
-import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.nn.deephys.model.importformat.im.ImageActivationCborBytes
-import matt.nn.deephys.model.importformat.im.readFloatActivations
-import matt.nn.deephys.model.importformat.im.readPixels
-import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
-import matt.obs.prop.BindableProperty
 import matt.prim.str.elementsToString
 import matt.prim.str.mybuild.string
 import java.io.IOException
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.atomic.AtomicInteger
 
 
 class TestLoader(
@@ -53,9 +32,7 @@ class TestLoader(
   override val model: Model
 ): AsyncLoader(file), TestOrLoader {
 
-  companion object {
-	private val daemonPool = DaemonPool()
-  }
+
 
   override fun isDoneLoading(): Boolean {
 	return finishedTest.isDone()
@@ -64,41 +41,45 @@ class TestLoader(
   override val test get() = awaitFinishedTest()
   override val dtype get() = preppedTest.await().dtype
   private var finishedTest = LoadedValueSlot<Test<*>>()
-  private val finishedImages = LoadedValueSlot<BlockList<DeephyImage<*>>>()
+
   override val finishedLoadingAwaitable = finishedTest
-  private val datasetHDCache = DeephysCacheManager.newDatasetCache()
-  fun awaitNonUniformRandomImage() = finishedImages.await().random()
-  fun awaitImage(index: Int) = finishedImages.await()[index]
+  val imageSetLoader = ImageSetLoader(this)
+  private val datasetHDCache = imageSetLoader.datasetHDCache
+  fun awaitNonUniformRandomImage() = imageSetLoader.finishedImages.await().random()
+  fun awaitImage(index: Int) = imageSetLoader.finishedImages.await()[index]
   fun awaitFinishedTest(): Test<*> = finishedTest.await()
   val numImages = LoadedValueSlot<ULong>()
-  val progress by lazy { BindableProperty(0.0) }
-  val cacheProgressPixels by lazy { BindableProperty(0.0) }
-  val cacheProgressActs by lazy { BindableProperty(0.0) }
-  private val numCachedPixels = AtomicInteger(0)
-  private val numCachedActs = AtomicInteger(0)
+  val progress by lazy { imageSetLoader.progress }
+  val cacheProgressPixels by lazy { imageSetLoader.cacheProgressPixels }
+  val cacheProgressActs by lazy { imageSetLoader.cacheProgressActs }
 
-  fun category(id: Int) = finishedImages.await().asSequence().map {
+
+  fun category(id: Int) = imageSetLoader.finishedImages.await().asSequence().map {
 	it.category
   }.first {
 	it.id == id
   }
 
-  private var numDataBytes: Int? = null
-  private var numActivationBytes: Int? = null
-  private val numRead = AtomicInteger(0)
-  private val pixelsShapePerImage = LoadedValueSlot<List<Int>>()
-  private val activationsShapePerImage = LoadedValueSlot<List<Int>>()
 
-  private val infoString by lazy {
+  val infoString by lazy {
 	string {
 	  lineDelimited {
 		+"Test:"
 		+"\tname=${file.name}"
 		+"\tnumImages=${numImages.await()}"
-		+"\tpixelsShapePerImage=${pixelsShapePerImage.await().elementsToString()}"
-		+"\tactivationsShapePerImage=${activationsShapePerImage.await().elementsToString()}"
+		+"\tpixelsShapePerImage=${imageSetLoader.pixelsShapePerImage.await().elementsToString()}"
+		+"\tactivationsShapePerImage=${imageSetLoader.activationsShapePerImage.await().elementsToString()}"
 	  }
 	}
+  }
+
+  private enum class Keys(key: String? = null, val required: Boolean = false) {
+	theName("name", required = true),
+	suffix,
+	dtype,
+	images(required = true);
+
+	val key = key ?: name
   }
 
   val start = SingleCall {
@@ -109,228 +90,72 @@ class TestLoader(
 		return@daemon
 	  }
 	  try {
-		var localTestNeurons: Map<InterTestNeuron, TestNeuron<*>>? = null
-		var neuronActCacheTools: List<Cacher>? = null
+
 		val stream = file.inputStream()
 		try {
 		  val reader = stream.cborReader()
 		  reader.readManually<MapReader, Unit> {
 
+			val keys = Keys.values()
 
-			expectCount(3UL..4UL)
-			val name = nextValue<String>(requireKeyIs = "name")
-			val suffix = nextValue<String?>(requireKeyIs = "suffix")
+			expectCount(keys.count { it.required }..keys.size)
+			val countInt = count.toInt()
 
+			var name: String? = null
+			var dtype: DType<*> = Float32
+			val loadWarnings = mutableListOf<String>()
 
-			val nextKey = nextKeyOnly<String>()
+			var imagesWereRead = false
 
-			println("nextKey=$nextKey")
+			repeat(countInt) { keyIdx: Int ->
+			  println("keyIdx=$keyIdx")
+			  val nextKey = nextKeyOrValueOnly<String>()
+			  println("nextKey=$nextKey")
 
-			val dtype = when (nextKey) {
-			  "dtype" -> {
-				println("doing dtype read")
-				val d = nextValueManualDontReadKey<TextStringReader, DType<*>> {
-				  val str = this.read().raw
-				  when (str) {
-					"float32" -> Float32
-					"float64" -> Float64
-					else      -> err("str == $str")
-				  }
-				}
-				nextKeyOnly(requireIs = "images")
-				d
-			  }
+			  val theKey = keys.firstOrNull {
+				it.key == nextKey
+			  } ?: throw LoadException("Unknown Key: $nextKey")
 
-			  "images" -> {
-				Float32
-			  }
-
-			  else -> {
-				err("nextKey == $nextKey")
-			  }
-			}
-
-			println("load1")
-			preppedTest.putLoadedValue(PreppedTestLoader(this@TestLoader, dtype))
-
-			nextValueManualDontReadKey<ArrayReader, Unit>() {
-			  val numberOfIms = count
-			  val numImsDouble = numberOfIms.toDouble()
-			  val numImsInt = numberOfIms.toInt()
-			  val lastImageIndex = numImsInt - 1
-			  var nextImageIndex = 0
-			  numImages.putLoadedValue(count)
-			  val finishedImagesBuilder = BlockListBuilder<DeephyImage<*>>(numImsInt)
-			  finishedImages.putLoadedValue(finishedImagesBuilder.blockList)
-
-			  val actsCacheSize = numImsInt*dtype.byteLen
-			  val evenRAF = EvenlySizedRAFCache(datasetHDCache.neuronsRAF, actsCacheSize)
-
-			  localTestNeurons = model.neurons.associate {
-				it.interTest to TestNeuron(
-				  index = it.index,
-				  layerIndex = it.layer.index,
-				  activationsRAF = evenRAF,
-				  numIms = numImsInt,
-				  dType = dtype
-				)
-			  }
-
-			  neuronActCacheTools = localTestNeurons!!.values.map { it.activations.cacher }
-
-			  var activationsRAF: EvenlySizedRAFCache? = null
-			  var pixelsRAF: EvenlySizedRAFCache? = null
-
-
-			  val ACTS_FOR_NEURONS_BUFF_SIZE = 1000
-			  val activationByteMultiImBuffer = ArrayBlockingQueue<ImageActivationCborBytes<*>>(
-				ACTS_FOR_NEURONS_BUFF_SIZE
-			  )
-			  readEachManually<MapReader, Unit> {
-				val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
-				val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
-				val category = nextValue<String>(requireKeyIs = "category")
-
-
-
-				nextKeyOnly(requireIs = "data")
-				val imageData: ByteArray = if (numDataBytes == null) {
-				  withByteStoring {
-					val r = nextValueManualDontReadKey<ArrayReader, List2D<IntArray>> {
-					  readPixels()
-					}
-					pixelsShapePerImage.putLoadedValue(l(r.size, r[0].size, r[0][0].size))
-					r
-				  }.let {
-					numDataBytes = it.second.size
-					pixelsRAF = EvenlySizedRAFCache(datasetHDCache.pixelsRAF, numDataBytes!!)
-					it.second
-				  }
-				} else readNBytes(numDataBytes!!)
-
-				var features: Map<String, String>? = null
-				if (count.toInt() == 6) {
-				  features = nextValue(requireKeyIs = "features")
+			  when (theKey) {
+				theName -> {
+				  name = nextKeyOrValueOnly()
 				}
 
-
-				val bytes = nextValueManual<MapReader, ByteArray>(
-				  requireKeyIs = "activations"
-				) {
-				  nextKeyOnly(requireIs = "activations")
-				  if (numActivationBytes == null) {
-					withByteStoring {
-					  val r = nextValueManualDontReadKey<ArrayReader, FloatActivationData> {
-						readFloatActivations()
-					  }
-					  activationsShapePerImage.putLoadedValue(r.map { it.size })
-					  println(infoString)
-					  r
-					}.let {
-					  numActivationBytes = it.second.size
-					  activationsRAF = EvenlySizedRAFCache(datasetHDCache.activationsRAF, numActivationBytes!!)
-					  it.second
-					}
-				  } else readNBytes(numActivationBytes!!)
+				Keys.suffix -> {
+				  loadWarnings += "suffix key is no longer supported (this can just be included in the name). Please use a newer version of the pip library."
+				  nextKeyOrValueOnly<String?>()
 				}
 
-				val activationsBytes = dtype.bytesThing(bytes)
-
-
-
-
-
-
-				if (numRead.incrementAndGet()%1000 == 0) {
-				  throttle("test loader")
-				}
-
-
-
-				activationByteMultiImBuffer.put(activationsBytes)
-				if (activationByteMultiImBuffer.size == ACTS_FOR_NEURONS_BUFF_SIZE || nextImageIndex == lastImageIndex) {
-
-
-				  val toolItr = neuronActCacheTools!!.iterator()
-
-				  val imageActBytes = activationByteMultiImBuffer.pollUntilEnd().map {
-					it.rawBytes()
+				Keys.dtype -> {
+				  require(!imagesWereRead) {
+					"Images must be read after the dtype"
 				  }
-
-				  val siz = imageActBytes.size
-				  val buff = ByteArray(dtype.byteLen*siz)
-
-				  (0..<imageActBytes[0].size step dtype.byteLen).forEach { n ->
-					val tool = toolItr.next()
-					imageActBytes.forEachIndexed { idx, it ->
-					  System.arraycopy(it, n, buff, idx*dtype.byteLen, dtype.byteLen)
-					}
-					tool.write(buff)
-				  }
-
-
-				}
-
-				val deephyImage = DeephyImage(
-				  imageID = imageID,
-				  categoryID = categoryID,
-				  category = category,
-				  index = nextImageIndex++,
-				  testLoader = this@TestLoader,
-				  model = this@TestLoader.model,
-				  test = finishedTest,
-				  features = features,
-				  activationsRAF = activationsRAF!!,
-				  pixelsRAF = pixelsRAF!!,
-				  dtype = dtype
-				).apply {
-
-
-				  /*  daemonPool.execute {
-					  disabledCode {
-						activations.strong {
-						  activationsBytes.parse2DArray()
-						}
-					  }
-					}*/
-				  daemonPool.executeLowPriority {
-					activations.cache(activationsBytes.bytes)
-					val n = numCachedActs.incrementAndGet()
-					cacheProgressActs.value = (n.toDouble())/numImsDouble
-					if (n == numImsInt) datasetHDCache.activationsRAF.closeWriting()
-				  }
-
-				  disabledCode {
-					daemonPool.execute {
-					  data.strong {
-						readPixels(imageData)
-					  }
+				  dtype = nextValueManualDontReadKey<TextStringReader, DType<*>> {
+					val str = this.read().raw
+					when (str) {
+					  "float32" -> Float32
+					  "float64" -> Float64
+					  else      -> err("str == $str")
 					}
 				  }
-				  daemonPool.executeLowPriority {
-					data.cache(imageData)
-					val n = numCachedPixels.incrementAndGet()
-					cacheProgressPixels.value = (n.toDouble())/numImsDouble
-					if (n == numImsInt) datasetHDCache.pixelsRAF.closeWriting()
-				  }
-
-
 				}
 
-
-				finishedImagesBuilder += deephyImage
-				if (nextImageIndex%100 == 0) {
-
-				  progress.value = nextImageIndex/numberOfIms.toDouble()
+				Keys.images -> {
+				  require(keyIdx == countInt - 1)
+				  preppedTest.putLoadedValue(PreppedTestLoader(this@TestLoader, dtype))
+				  imageSetLoader.readImages(
+					reader = this,
+					dtype = dtype,
+					finishedTest=finishedTest
+				  )
+				  imagesWereRead = true
 				}
 			  }
-
-
 			}
 
 
 
-			neuronActCacheTools!!.forEach {
+			imageSetLoader.neuronActCacheTools!!.forEach {
 			  it.finalize()
 			}
 			datasetHDCache.neuronsRAF.closeWriting()
@@ -339,15 +164,14 @@ class TestLoader(
 
 
 			finishedTest.putLoadedValue(Test(
-			  name = name,
-			  suffix = suffix,
-			  images = finishedImages.await(), /*as List<DeephyImage<Float>>*/
+			  name = name ?: throw LoadException("Test did not have a name"),
+			  loadWarnings = loadWarnings,
+			  images = imageSetLoader.finishedImages.await(), /*as List<DeephyImage<Float>>*/
 			  model = this@TestLoader.model,
 			  testRAMCache = testRAMCache,
 			  dtype = dtype,
-			  //				  dtype = Float32
 			).apply {
-			  setTheTestNeurons(localTestNeurons)
+			  setTheTestNeurons(imageSetLoader.localTestNeurons)
 			  /*testNeurons = localTestNeurons*/ /*as Map<InterTestNeuron,TestNeuron<Float>>*/
 			  preds.startLoading()
 			  startPreloadingMaxActivations()
@@ -356,6 +180,10 @@ class TestLoader(
 			signalFinishedLoading()
 		  }
 		} catch (e: CborParseException) {
+		  ThrowReport(Thread.currentThread(), e).print()
+		  signalParseError(e)
+		  return@daemon
+		} catch (e: LoadException) {
 		  ThrowReport(Thread.currentThread(), e).print()
 		  signalParseError(e)
 		  return@daemon
@@ -377,3 +205,5 @@ class TestLoader(
 
 }
 
+
+class LoadException(message: String): Exception(message)

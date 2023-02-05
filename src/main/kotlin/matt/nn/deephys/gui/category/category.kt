@@ -144,7 +144,7 @@ class CategoryView<A: Number>(
 //			println("ADDED CAT PIES")
 
 		  }
-		  deephyText("tip: click colored areas to navigate to the class. Shift-click to analyze confusions with the current class.") {
+		  deephyText("Tip: Click the colored areas to navigate to the respective class. Shift-click it to analyze confusions with the currently selected class.") {
 			textAlignment = CENTER
 			visibleAndManagedWhen {
 			  viewer.showTutorials

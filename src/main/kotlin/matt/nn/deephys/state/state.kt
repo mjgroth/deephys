@@ -6,6 +6,9 @@ import matt.pref.obs.ObsPrefNode
 
 object DeephyState: ObsPrefNode(
   "sinhalab.deephys.state",
+  oldNames = listOf(
+	"sinhalab.deephy.state"
+  ),
   oldKeys = listOf(
 	"dataFolder",
 	"pref",

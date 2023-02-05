@@ -1,7 +1,6 @@
 package matt.nn.deephys.load.async
 
 import javafx.application.Platform.runLater
-import matt.cbor.err.CborParseException
 import matt.file.CborFile
 import matt.model.flowlogic.await.Awaitable
 import matt.obs.bindings.bool.ObsB
@@ -10,7 +9,7 @@ import matt.obs.prop.BindableProperty
 abstract class AsyncLoader(file: CborFile) {
   val fileFound: ObsB = BindableProperty(file.exists())
   val streamOk: ObsB = BindableProperty(true)
-  val parseError = BindableProperty<CborParseException?>(null)
+  val parseError = BindableProperty<Exception?>(null)
   val finishedLoading: ObsB = BindableProperty(false)
   abstract val finishedLoadingAwaitable: Awaitable<*>
 
@@ -27,7 +26,7 @@ abstract class AsyncLoader(file: CborFile) {
   }
 
 
-  protected fun signalParseError(e: CborParseException) {
+  protected fun signalParseError(e: Exception) {
 	runLater {
 	  parseError.value = e
 	}

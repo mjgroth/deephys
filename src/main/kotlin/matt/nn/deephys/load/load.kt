@@ -8,6 +8,7 @@ import matt.file.MFile
 import matt.fx.graphics.wrapper.EventTargetWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNeverNull
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.nn.deephys.load.async.AsyncLoader
@@ -51,7 +52,7 @@ fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
 ) = swapper(loader, nullMessage) {
   VBoxWrapperImpl<NodeWrapper>().also {
 
-	it.swapper(fileFound.binding(streamOk, parseError) { this }, fadeOutDur = fadeOutDur, fadeInDur = fadeInDur) {
+	it.swapperNeverNull(fileFound.binding(streamOk, parseError) { this }, fadeOutDur = fadeOutDur, fadeInDur = fadeInDur) {
 	  when {
 		!fileFound.value         -> TextWrapper("file not found")
 		!streamOk.value          -> TextWrapper("file loading stream broken. Was the file moved?")

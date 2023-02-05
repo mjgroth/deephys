@@ -34,12 +34,13 @@ import kotlin.collections.set
 
 sealed interface DeephyFileObject {
   val name: String
-  val suffix: String?
 }
+
+
 
 @Serializable class Model(
   override val name: String,
-  override val suffix: String?,
+  val suffix: String? = null,
   val layers: List<Layer>,
 ): DeephyFileObject {
   val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
@@ -52,7 +53,6 @@ sealed interface DeephyFileObject {
 	lineDelimited {
 	  +"Model:"
 	  +"\tname=$name"
-	  +"\tsuffix=$suffix"
 	  +"\tlayers:"
 	  layers.forEach {
 		+"\t\t${it.layerID} (${it.neurons.size} neurons)"
@@ -66,7 +66,7 @@ sealed interface DeephyFileObject {
 /*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
 class Test<N: Number>(
   override val name: String,
-  override val suffix: String?,
+  val loadWarnings: List<String>,
   images: List<DeephyImage<*>>,
   override val model: Model,
   override val testRAMCache: TestRAMCache,

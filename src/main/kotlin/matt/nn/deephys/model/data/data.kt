@@ -1,5 +1,6 @@
 package matt.nn.deephys.model.data
 
+import matt.model.op.convert.StringConverter
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.LayerLike
@@ -19,8 +20,19 @@ data class InterTestLayer(
 data class InterTestNeuron(
   val layer: InterTestLayer, val index: Int
 ) {
+
+  companion object {
+	fun stringConverterThatFallsBackToFirst(neurons: List<InterTestNeuron>) = object: StringConverter<InterTestNeuron> {
+	  override fun toString(t: InterTestNeuron): String = "${t.index}"
+	  override fun fromString(s: String): InterTestNeuron =
+		s.toIntOrNull()?.let { i -> neurons.firstOrNull { it.index == i } } ?: neurons.first()
+	}
+  }
+
   fun <A: Number> activation(image: DeephyImage<A>) = image.activationFor(this)
-  fun averageActivation(category: Category, testLoader: TypedTestLike<*>) = category.averageActivationFor(this, testLoader)
+  fun averageActivation(category: Category, testLoader: TypedTestLike<*>) =
+	category.averageActivationFor(this, testLoader)
+
   fun <A: Number> averageActivation(
 	images: Set<DeephyImage<A>>,
 	dType: DType<A>

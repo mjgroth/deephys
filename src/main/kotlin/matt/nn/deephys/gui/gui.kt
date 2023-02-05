@@ -7,18 +7,16 @@ import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
-import javafx.stage.FileChooser
-import javafx.stage.FileChooser.ExtensionFilter
 import matt.async.thread.daemon
 import matt.auto.ICON_SIZES
 import matt.collect.itr.mapToArray
 import matt.exec.app.myVersion
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
-import matt.file.construct.toMFile
 import matt.file.toSFile
 import matt.fx.control.mscene.MScene
 import matt.fx.control.wrapper.scroll.scrollpane
+import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.hotkey.hotkeys
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -50,11 +48,13 @@ import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.settings.DeephySettingsNode
+import matt.nn.deephys.gui.settings.gui.settingsButton
 import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.init.modelBinding
 import matt.nn.deephys.init.warmupFxComponents
@@ -66,8 +66,6 @@ import matt.obs.prop.BindableProperty
 import matt.obs.subscribe.Pager
 import matt.prim.str.mybuild.string
 import matt.prim.str.truncateWithElipsesOrAddSpaces
-import matt.nn.deephys.gui.settings.gui.settingsButton
-import java.util.prefs.Preferences
 
 val DEEPHY_USER_DATA_DIR by lazy {
   PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkdir("Deephys")
@@ -104,16 +102,6 @@ class DeephysApp {
 		initializeWhatICan()
 	  }
 
-	  daemon {
-		Preferences.userRoot().node("sinhalab.deephy.state").apply {
-		  removeNode()
-		  flush()
-		}
-		Preferences.userRoot().node("sinhalab.deephy.settings").apply {
-		  removeNode()
-		  flush()
-		}
-	  }
 
 	  startDeephyApp()
 
@@ -190,9 +178,12 @@ class DeephysApp {
 			deephyButton("Choose Model") {
 			  prefHeightProperty.bind(settingsButton.heightProperty)
 			  setOnAction {
-				val f = FileChooser().apply {
-				  extensionFilters.setAll(ExtensionFilter("model files", "*.model"))
-				}.showOpenDialog(stage?.node)?.toMFile()?.toSFile()
+
+
+				val f = openFile {
+				  extensionFilter("model files", "*.model")
+				}?.toSFile()
+
 				if (f != null) {
 				  DeephyState.tests.value = null
 				  DeephyState.model.value = f
@@ -279,6 +270,7 @@ class DeephysApp {
 			  }
 			  +dSetViewsBox
 			  deephyButton("Add a test") {
+				deephysSingleCharButtonFont()
 				textProperty.bind(dSetViewsBox.children.sizeProperty.binding {
 				  if (it == 0) "Add a test" else "+"
 				})

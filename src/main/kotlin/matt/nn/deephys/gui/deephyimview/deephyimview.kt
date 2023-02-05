@@ -1,11 +1,10 @@
 package matt.nn.deephys.gui.deephyimview
 
 import javafx.scene.Cursor
-import javafx.stage.FileChooser
-import javafx.stage.FileChooser.ExtensionFilter
 import matt.async.queue.pool.FakeWorkerPool
 import matt.async.queue.pool.QueueWorkerPool
 import matt.fx.control.menu.context.mcontextmenu
+import matt.fx.graphics.dialog.saveFile
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.graphics.wrapper.style.toAwtColor
@@ -47,7 +46,6 @@ class DeephyImView(
   init {
 
 
-
 	val localWeakIm = weakIm
 	val localWeakViewer = weakViewer
 	val weakThis = WeakReference(this)
@@ -73,11 +71,14 @@ class DeephyImView(
 	  mcontextmenu {
 		onRequest {
 		  "download image" does {
-			val pngFile = FileChooser().apply {
+			val pngFile = saveFile(stage = weakThis.get()!!.stage) {
 			  title = "choose where to save png"
-			  this.extensionFilters.setAll(ExtensionFilter("png", "*.png"))
-			  this.initialFileName = localWeakIm.deref()!!.category.label + "_" + localWeakIm.deref()!!.index.toString() + ".png"
-			}.showSaveDialog(weakThis.get()!!.stage?.node)
+			  extensionFilter(
+				description = "png",
+				"*.png"
+			  )
+			  initialSaveFileName = localWeakIm.deref()!!.category.label + "_" + localWeakIm.deref()!!.index.toString() + ".png"
+			}
 			if (pngFile != null) {
 
 			  val mat2 = localWeakIm.deref()!!.matrix

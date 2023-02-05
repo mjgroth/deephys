@@ -2,8 +2,6 @@ package matt.nn.deephys.gui.viewer
 
 import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
-import javafx.stage.FileChooser
-import javafx.stage.FileChooser.ExtensionFilter
 import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.contentsOf
 import matt.collect.weak.lazyWeakMap
@@ -13,6 +11,7 @@ import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.ControlWrapper
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
+import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.icon.svg.svgToImage2
 import matt.fx.graphics.wrapper.imageview.imageview
 import matt.fx.graphics.wrapper.node.enableWhen
@@ -20,9 +19,11 @@ import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
+import matt.fx.graphics.wrapper.window.WindowWrapper
 import matt.fx.image.toFXImage
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.hurricanefx.eye.prop.sizeProperty
+import matt.lang.disabledCode
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
@@ -40,6 +41,7 @@ import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
@@ -76,6 +78,7 @@ import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
 import matt.prim.str.mybuild.string
+import java.lang.ref.WeakReference
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
 
@@ -348,7 +351,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	isUnboundToDSet.value && it.isNotEmpty()
   }
 
+
   init {
+	val weakViewer = WeakReference(this)
 	contentDisplay = ContentDisplay.LEFT
 	isExpanded = true
 	/*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
@@ -370,6 +375,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  sectionSpacer()
 
 	  val removeTestButton = deephyButton("-") {
+		deephysSingleCharButtonFont()
 		veryLazyDeephysTooltip("remove this test viewer")
 		setOnAction {
 		  this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
@@ -394,10 +400,11 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		}
 		veryLazyDeephysTooltip("choose test file")
 		setOnAction {
-		  val f = FileChooser().apply {
+
+		  val f = openFile(stage = weakViewer.get()!!.stage) {
 			title = "choose test data"
-			this.extensionFilters.setAll(ExtensionFilter("tests", "*.test"))
-		  }.showOpenDialog(stage?.node)
+			extensionFilter("tests", "*.test")
+		  }
 
 		  if (f != null) {
 			stopwatch("set fileProp") {
@@ -511,7 +518,9 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	  ) {
 		DatasetNode(this, this@DatasetViewer)
 	  }
-	  +BindTutorial(this@DatasetViewer)
+	  disabledCode {
+		+BindTutorial(this@DatasetViewer)
+	  }
 	}
   }
 

@@ -12,6 +12,9 @@ import matt.pref.obs.ObsPrefNode
 
 object DeephySettingsNode: ObsPrefNode(
   "sinhalab.deephys.settings",
+  oldNames = listOf(
+	"sinhalab.deephy.settings"
+  ),
   oldKeys = listOf(
 	"normalizeTopNeuronActivations",
   )
