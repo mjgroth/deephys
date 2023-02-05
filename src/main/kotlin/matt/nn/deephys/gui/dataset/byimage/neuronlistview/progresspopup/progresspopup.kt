@@ -5,7 +5,6 @@ import javafx.scene.layout.Priority.ALWAYS
 import javafx.scene.paint.Color
 import javafx.stage.StageStyle.UNDECORATED
 import matt.async.queue.QueueWorker
-import matt.fx.control.mscene.MScene
 import matt.fx.control.wrapper.label.LabelWrapper
 import matt.fx.control.wrapper.progressbar.ProgressBarWrapper
 import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
@@ -14,6 +13,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.style.border.FXBorder
 import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.fx.graphics.wrapper.window.WindowWrapper
+import matt.gui.mscene.MScene
 import matt.lang.function.Convert
 import matt.lang.function.Produce
 import matt.lang.go

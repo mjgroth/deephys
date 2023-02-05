@@ -14,7 +14,6 @@ import matt.exec.app.myVersion
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.file.toSFile
-import matt.fx.control.mscene.MScene
 import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.hotkey.hotkeys
@@ -33,6 +32,7 @@ import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
+import matt.gui.mscene.MScene
 import matt.hurricanefx.eye.prop.sizeProperty
 import matt.lang.anno.SeeURL
 import matt.lang.go

@@ -5,9 +5,6 @@ import matt.async.thread.ThreadReport
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.lang.actionbutton
-import matt.fx.control.mstage.ShowMode.DO_NOT_SHOW
-import matt.fx.control.mstage.WMode.CLOSE
-import matt.fx.control.win.interact.openInNewWindow
 import matt.fx.control.wrapper.control.slider.slider
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
@@ -15,6 +12,9 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.gui.interact.openInNewWindow
+import matt.gui.mstage.ShowMode.DO_NOT_SHOW
+import matt.gui.mstage.WMode.CLOSE
 import matt.gui.option.BoolSetting
 import matt.gui.option.DoubleSetting
 import matt.gui.option.EnumSetting
