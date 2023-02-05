@@ -46,7 +46,6 @@ val gearImage = DaemonLoadedValueOp("gear.png") {
 }
 
 
-@OptIn(ExperimentalSerializationApi::class)
 val modelBinding = DaemonLoadedValueOp(".model binding") {
   DeephyState.model.binding { f ->
 	f?.toMFile()?.loadCbor<Model>()

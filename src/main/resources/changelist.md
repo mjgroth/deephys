@@ -22,10 +22,8 @@
 
 
 ### Removed Features
-  - New tooltips
-  - Info symbol text highlight in blue instead of yellow in light mode
-  - Made '+' and '-' button bigger
-  - Reduced size of info circles
+- Removed the "BindTutorial" (this tutorial became a pointless waste of space)
+- Removed the "suffix" field for objects saved in python (this was useless and users can easily add a suffix as part of the name)
 
 
 ### Cosmetic Changes

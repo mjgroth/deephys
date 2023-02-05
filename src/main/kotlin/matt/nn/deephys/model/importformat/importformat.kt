@@ -36,17 +36,21 @@ sealed interface DeephyFileObject {
   val name: String
 }
 
-
+private const val SUFFIX_NOT_PRESENT = "SUFFIX_NOT_PRESENT"
 
 @Serializable class Model(
   override val name: String,
-  val suffix: String? = null,
+  val suffix: String? = SUFFIX_NOT_PRESENT,
   val layers: List<Layer>,
 ): DeephyFileObject {
   val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
   val neurons: List<ResolvedNeuron> by lazy { resolvedLayers.flatMap { it.neurons } }
   val classificationLayer by lazy {
 	resolvedLayers.first { it.isClassification }
+  }
+
+  val wasLoadedWithSuffix by lazy {
+	suffix != SUFFIX_NOT_PRESENT
   }
 
   fun infoString() = string {

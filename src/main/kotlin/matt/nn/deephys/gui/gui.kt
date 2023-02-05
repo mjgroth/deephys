@@ -52,6 +52,7 @@ import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
+import matt.nn.deephys.gui.global.tooltip.deephysWarningSymbol
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.gui.settings.gui.settingsButton
@@ -228,7 +229,7 @@ class DeephysApp {
 
 			  h {
 				spacing = 10.0
-				deephyText("Model: ${model.name}" + if (model.suffix != null) "_${model.suffix}" else "") {
+				deephyText("Model: ${model.name}") {
 				  titleFont()
 				}
 				deephysInfoSymbol(
@@ -243,6 +244,11 @@ class DeephysApp {
 				) {
 				  fontProperty v DEEPHYS_FONT_MONO
 				  /*wrapTextProp v true*/
+				}
+				if (model.wasLoadedWithSuffix) {
+				  deephysWarningSymbol(
+					"The `suffix` key is no longer supported. Please update to a newer version of the pip deephys package"
+				  )
 				}
 			  }
 
@@ -298,7 +304,6 @@ class DeephysApp {
 		+VersionChecker.statusNode
 	  }
 	}
-	println("start app 4")
 
 	/*not currently using this, because after making scroll bars transparet I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G */
 	/*  scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/

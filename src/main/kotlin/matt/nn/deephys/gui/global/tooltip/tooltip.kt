@@ -327,12 +327,6 @@ class DeephyTooltip(s: String, im: DeephyImage<*>?): FixedTooltipWrapper() {
   }
 }
 
-class DeephysInfoSymbol(info: String): InfoSymbol(info) {
-  override fun buildTooltipGraphic(info: String) = DeephysTooltipContent(info)
-  val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
-  val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
-}
-
 fun NW.deephysInfoSymbol(text: ObsS, op: DSL<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text.value).attachTo(this) {
   textProperty.bind(text)
   op()
@@ -341,5 +335,28 @@ fun NW.deephysInfoSymbol(text: ObsS, op: DSL<DeephysInfoSymbol> = {}) = DeephysI
 fun NW.deephysInfoSymbol(text: String, op: DSL<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text).attachTo(this, op)
 
 
-//fun NW.deephysInfoSymbol(text: String, op: DSL<InfoSymbol> = {}) = infoSymbol(text, op)
-//fun NW.deephysInfoSymbol(text: ObsS, op: DSL<InfoSymbol> = {}) = infoSymbol(text, op)
+
+class DeephysInfoSymbol(info: String): InfoSymbol(info) {
+  override fun buildTooltipGraphic(info: String) = DeephysTooltipContent(info)
+  val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
+  val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
+}
+
+
+fun NW.deephysWarningSymbol(text: ObsS, op: DSL<DeephysWarningSymbol> = {}) = DeephysWarningSymbol(text.value).attachTo(this) {
+  textProperty.bind(text)
+  op()
+}
+
+fun NW.deephysWarningSymbol(text: String, op: DSL<DeephysWarningSymbol> = {}) = DeephysWarningSymbol(text).attachTo(this, op)
+
+
+
+class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {
+  override fun buildTooltipGraphic(warning: String) = DeephysTooltipContent(warning)
+  val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
+  val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
+}
+
+
+

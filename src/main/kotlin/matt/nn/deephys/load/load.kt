@@ -1,6 +1,5 @@
 package matt.nn.deephys.load
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
@@ -22,7 +21,7 @@ class FileNotFound<T>(val f: MFile): CborSyncLoadResult<T>
 class ParseError<T>(val message: String?): CborSyncLoadResult<T>
 class Loaded<T>(val data: T): CborSyncLoadResult<T>
 
-@ExperimentalSerializationApi
+
 inline fun <reified T: Any> MFile.loadCbor(): CborSyncLoadResult<T> =
   if (doesNotExist) FileNotFound(this) else try {
 	val bytes = readBytes()
@@ -52,7 +51,11 @@ fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
 ) = swapper(loader, nullMessage) {
   VBoxWrapperImpl<NodeWrapper>().also {
 
-	it.swapperNeverNull(fileFound.binding(streamOk, parseError) { this }, fadeOutDur = fadeOutDur, fadeInDur = fadeInDur) {
+	it.swapperNeverNull(
+	  fileFound.binding(streamOk, parseError) { this },
+	  fadeOutDur = fadeOutDur,
+	  fadeInDur = fadeInDur
+	) {
 	  when {
 		!fileFound.value         -> TextWrapper("file not found")
 		!streamOk.value          -> TextWrapper("file loading stream broken. Was the file moved?")
