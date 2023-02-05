@@ -16,10 +16,10 @@ import matt.fx.graphics.icon.svg.svgToImage2
 import matt.fx.graphics.wrapper.imageview.imageview
 import matt.fx.graphics.wrapper.node.enableWhen
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.fx.graphics.wrapper.window.WindowWrapper
 import matt.fx.image.toFXImage
 import matt.hurricanefx.eye.prop.lastIndexProperty
 import matt.hurricanefx.eye.prop.sizeProperty
@@ -43,6 +43,7 @@ import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.DeephysWarningSymbol
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.settings.DeephySettings
@@ -481,6 +482,18 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
 		fontProperty v DEEPHYS_FONT_MONO
 		/*wrapTextProp v true*/
+	  }
+
+	  val loadWarnings = this@DatasetViewer.testData.binding {
+		it?.loadWarnings
+	  }
+
+	  swapperR(loadWarnings) {
+		h {
+		  children.bindWeakly(it) {
+			DeephysWarningSymbol(it)
+		  }
+		}
 	  }
 
 	  sectionSpacer()

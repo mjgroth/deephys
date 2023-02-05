@@ -11,6 +11,7 @@ import matt.lang.err
 import matt.model.code.errreport.ThrowReport
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
+import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
 import matt.nn.deephys.load.async.AsyncLoader
 import matt.nn.deephys.load.test.TestLoader.Keys.theName
 import matt.nn.deephys.load.test.dtype.DType
@@ -22,6 +23,7 @@ import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
+import matt.obs.col.olist.basicMutableObservableListOf
 import matt.prim.str.elementsToString
 import matt.prim.str.mybuild.string
 import java.io.IOException
@@ -82,6 +84,8 @@ class TestLoader(
 	val key = key ?: name
   }
 
+  val loadWarnings = basicMutableObservableListOf<String>()
+
   val start = SingleCall {
 	daemon("TestLoader-${file.name}") {
 
@@ -103,7 +107,7 @@ class TestLoader(
 
 			var name: String? = null
 			var dtype: DType<*> = Float32
-			val loadWarnings = mutableListOf<String>()
+
 
 			var imagesWereRead = false
 
@@ -122,7 +126,7 @@ class TestLoader(
 				}
 
 				Keys.suffix -> {
-				  loadWarnings += "suffix key is no longer supported (this can just be included in the name). Please use a newer version of the pip library."
+				  loadWarnings += SUFFIX_WARNING
 				  nextKeyOrValueOnly<String?>()
 				}
 
@@ -165,7 +169,6 @@ class TestLoader(
 
 			finishedTest.putLoadedValue(Test(
 			  name = name ?: throw LoadException("Test did not have a name"),
-			  loadWarnings = loadWarnings,
 			  images = imageSetLoader.finishedImages.await(), /*as List<DeephyImage<Float>>*/
 			  model = this@TestLoader.model,
 			  testRAMCache = testRAMCache,

@@ -70,7 +70,6 @@ private const val SUFFIX_NOT_PRESENT = "SUFFIX_NOT_PRESENT"
 /*../../../../../../python/deephy.py*//* https://www.rfc-editor.org/rfc/rfc8949.html */
 class Test<N: Number>(
   override val name: String,
-  val loadWarnings: List<String>,
   images: List<DeephyImage<*>>,
   override val model: Model,
   override val testRAMCache: TestRAMCache,

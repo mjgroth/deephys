@@ -50,6 +50,7 @@ import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.titleFont
+import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.deephysWarningSymbol
@@ -246,9 +247,7 @@ class DeephysApp {
 				  /*wrapTextProp v true*/
 				}
 				if (model.wasLoadedWithSuffix) {
-				  deephysWarningSymbol(
-					"The `suffix` key is no longer supported. Please update to a newer version of the pip deephys package"
-				  )
+				  deephysWarningSymbol(SUFFIX_WARNING)
 				}
 			  }
 

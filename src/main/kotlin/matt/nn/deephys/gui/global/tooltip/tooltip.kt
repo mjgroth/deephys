@@ -22,6 +22,7 @@ import matt.fx.graphics.wrapper.node.shape.rect.rectangle
 import matt.fx.graphics.wrapper.pane.stack.StackPaneW
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.node.proto.infosymbol.InfoSymbol
+import matt.fx.node.proto.infosymbol.WarningSymbol
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.fx.node.tex.TexNodeFactory
 import matt.lang.function.DSL
@@ -358,5 +359,7 @@ class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {
   val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
 }
 
+
+val SUFFIX_WARNING = "The `suffix` key is no longer supported (this can just be appended to the `name`). Please update to a newer version of the pip deephys package"
 
 
