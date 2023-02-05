@@ -4,7 +4,7 @@ import matt.fx.control.wrapper.control.choice.choicebox
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.hurricanefx.eye.converter.toFXConverter
+import matt.fx.base.converter.toFXConverter
 import matt.model.op.convert.toStringConverter
 import matt.nn.deephys.gui.category.CategoryView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
