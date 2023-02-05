@@ -22,6 +22,13 @@
   - improved tip below pie charts
 
 
+### Removed
+  - New tooltips
+  - Info symbol text highlight in blue instead of yellow in light mode
+  - Made '+' and '-' button bigger
+  - Reduced size of info circles
+
+
 ### Cosmetic Changes
   - New tooltips
   - Info symbol text highlight in blue instead of yellow in light mode
