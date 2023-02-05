@@ -6,7 +6,7 @@ jobs:
   gha-usage-minutes-report:
     runs-on: ubuntu-22.04
     steps:
-      name: GitHub Actions Usage Audit
+    - name: GitHub Actions Usage Audit
       uses: fergusmacd/github-action-usage@f679c974d34b8f2378da3fcf070fada08d21899f
       with:
         organisation: mjgroth
