@@ -7,7 +7,6 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
 import matt.fx.control.lang.actionbutton
-import matt.fx.control.proto.actiontext.actionText
 import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.wrapper.button.radio.RadioButtonWrapper
 import matt.fx.control.wrapper.button.radio.radiobutton
@@ -35,6 +34,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.text.textlike.MONO_FONT
 import matt.fx.graphics.wrapper.text.textlike.TextLike
+import matt.gui.actiontext.actionText
 import matt.obs.bindings.str.ObsS
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.Var

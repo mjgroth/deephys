@@ -9,10 +9,10 @@ import javafx.scene.paint.Color
 import javafx.util.Duration
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
+import matt.fx.control.popup.tooltip.Owner
+import matt.fx.control.popup.tooltip.fixed.FixedTooltipWrapper
+import matt.fx.control.popup.tooltip.fixed.install
 import matt.fx.control.wrapper.label.LabelWrapper
-import matt.fx.control.wrapper.tooltip.Owner
-import matt.fx.control.wrapper.tooltip.fixed.FixedTooltipWrapper
-import matt.fx.control.wrapper.tooltip.fixed.install
 import matt.fx.control.wrapper.wrapped.wrapped
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NW

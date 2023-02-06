@@ -14,6 +14,7 @@ import matt.log.warn.warnOnce
 import matt.model.data.release.Release
 import matt.model.data.release.Version
 import matt.mstruct.rstruct.appName
+import matt.mstruct.rstruct.modID
 import matt.nn.deephys.gui.global.deephyHyperlink
 import matt.nn.deephys.gui.global.deephyText
 import matt.obs.prop.BindableProperty
@@ -29,7 +30,7 @@ object VersionChecker {
 	every(60.sec, timer = AccurateTimer(priority = MyThreadPriorities.CREATING_NEW_CACHE), zeroDelayFirst = true) {
 	  checking = true
 	  try {
-		val releases = gh.GitHubRepo(ghUser, appName).releases()
+		val releases = gh.GitHubRepo(ghUser, modID.appName).releases()
 		if (releases == null) {
 		  warnOnce("releases == null")
 		  error = true

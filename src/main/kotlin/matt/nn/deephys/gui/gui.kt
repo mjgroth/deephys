@@ -38,7 +38,7 @@ import matt.lang.anno.SeeURL
 import matt.lang.go
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
-import matt.mstruct.rstruct.appName
+import matt.mstruct.rstruct.modID
 import matt.mstruct.rstruct.resourceURL
 import matt.nn.deephys.gui.Arg.`erase-settings`
 import matt.nn.deephys.gui.Arg.`erase-state`
@@ -98,7 +98,7 @@ class DeephysApp {
 	  warmupJvmThreading()
 
 	  daemon {
-		stageTitle.putLoadedValue("$appName $myVersion")
+		stageTitle.putLoadedValue("${modID.appName} $myVersion")
 	  }
 
 	  daemon {

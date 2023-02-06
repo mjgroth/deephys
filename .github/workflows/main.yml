@@ -148,9 +148,8 @@ jobs:
         --password "${{ secrets.NOTARYTOOL2 }}" --team-id 4GAZMDTC2M --validate -v
     - name: notarize 18
       env: {}
-      run: bash -c "xcrun notarytool matt.kbuild.glang.buildservice.executor.submit
-        /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip --keychain-profile
-        matthewgroth --wait -f json > /Users/runner/work/deephys/deephys/temp/notary_submit_result.json"
+      run: bash -c "xcrun notarytool submit /Users/runner/work/deephys/deephys/output/deephys-mac-intel.zip
+        --keychain-profile matthewgroth --wait -f json > /Users/runner/work/deephys/deephys/temp/notary_submit_result.json"
     - name: notarize 19
       env: {}
       run: cat /Users/runner/work/deephys/deephys/temp/notary_submit_result.json
