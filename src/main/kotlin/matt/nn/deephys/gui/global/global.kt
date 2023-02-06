@@ -102,11 +102,15 @@ fun EventTargetWrapper.deephyHyperlink(s: String = "", op: HyperlinkWrapper.()->
 }
 
 
-fun EventTargetWrapper.deephyCheckbox(s: String = "", prop: Var<Boolean>? = null, op: CheckBoxWrapper.()->Unit = {}) =
-  checkbox(s, property = prop) {
-	font = DEEPHYS_FONT_DEFAULT
-	op()
-  }
+fun EventTargetWrapper.deephyCheckbox(
+  s: String = "",
+  prop: Var<Boolean>? = null,
+  weakBothWays: Boolean? = null,
+  op: CheckBoxWrapper.()->Unit = {}
+) = checkbox(s, property = prop, weakBothWays = weakBothWays) {
+  font = DEEPHYS_FONT_DEFAULT
+  op()
+}
 
 fun EventTargetWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = button(s) {
   deephysButtonStyle()

@@ -8,6 +8,7 @@ import matt.cbor.read.major.txtstr.TextStringReader
 import matt.cbor.read.streamman.cborReader
 import matt.file.CborFile
 import matt.lang.err
+import matt.log.warn.warn
 import matt.model.code.errreport.ThrowReport
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
@@ -20,6 +21,7 @@ import matt.nn.deephys.load.test.dtype.Float64
 import matt.nn.deephys.load.test.imageloader.ImageSetLoader
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
+import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
@@ -28,12 +30,12 @@ import matt.prim.str.elementsToString
 import matt.prim.str.mybuild.string
 import java.io.IOException
 
+const val OLD_CAT_LOAD_WARNING = "Getting category the old way. This will fail if the image list didn't contain the category."
 
 class TestLoader(
   file: CborFile,
   override val model: Model
 ): AsyncLoader(file), TestOrLoader {
-
 
 
   override fun isDoneLoading(): Boolean {
@@ -51,15 +53,26 @@ class TestLoader(
   fun awaitImage(index: Int) = imageSetLoader.finishedImages.await()[index]
   fun awaitFinishedTest(): Test<*> = finishedTest.await()
   val numImages = LoadedValueSlot<ULong>()
+  val loadedCategories = LoadedValueSlot<List<Category>>()
+  val didLoadCategories = LoadedValueSlot<Boolean>()
   val progress by lazy { imageSetLoader.progress }
   val cacheProgressPixels by lazy { imageSetLoader.cacheProgressPixels }
   val cacheProgressActs by lazy { imageSetLoader.cacheProgressActs }
 
 
-  fun category(id: Int) = imageSetLoader.finishedImages.await().asSequence().map {
-	it.category
-  }.first {
-	it.id == id
+  fun category(id: Int): Category {
+
+	val didLoadCats = didLoadCategories.await()
+	if (didLoadCats) {
+	  return loadedCategories.await()[id]
+	} else {
+	  warn(OLD_CAT_LOAD_WARNING)
+	  return imageSetLoader.finishedImages.await().asSequence().map {
+		it.category
+	  }.first {
+		it.id == id
+	  }
+	}
   }
 
 
@@ -79,6 +92,7 @@ class TestLoader(
 	theName("name", required = true),
 	suffix,
 	dtype,
+	classes,
 	images(required = true);
 
 	val key = key ?: name
@@ -110,6 +124,8 @@ class TestLoader(
 
 
 			var imagesWereRead = false
+			var catsWereRead = false
+
 
 			repeat(countInt) { keyIdx: Int ->
 			  println("keyIdx=$keyIdx")
@@ -121,16 +137,25 @@ class TestLoader(
 			  } ?: throw LoadException("Unknown Key: $nextKey")
 
 			  when (theKey) {
-				theName -> {
+				theName      -> {
 				  name = nextKeyOrValueOnly()
 				}
 
-				Keys.suffix -> {
+				Keys.suffix  -> {
 				  loadWarnings += SUFFIX_WARNING
 				  nextKeyOrValueOnly<String?>()
 				}
 
-				Keys.dtype -> {
+				Keys.classes -> {
+				  val cats = nextKeyOrValueOnly<List<String>>()
+				  loadedCategories.putLoadedValue(cats.mapIndexed { idx, it ->
+					Category(id = idx, label = it)
+				  })
+				  catsWereRead = true
+				  didLoadCategories.putLoadedValue(true)
+				}
+
+				Keys.dtype   -> {
 				  require(!imagesWereRead) {
 					"Images must be read after the dtype"
 				  }
@@ -144,18 +169,23 @@ class TestLoader(
 				  }
 				}
 
-				Keys.images -> {
+				Keys.images  -> {
 				  require(keyIdx == countInt - 1)
+				  if (!catsWereRead) {
+					loadWarnings += "You are using an old version of the python library which does not correctly save the list of classes. Please re-generate your data with the latest version from pip."
+					didLoadCategories.putLoadedValue(false)
+				  }
 				  preppedTest.putLoadedValue(PreppedTestLoader(this@TestLoader, dtype))
 				  imageSetLoader.readImages(
 					reader = this,
 					dtype = dtype,
-					finishedTest=finishedTest
+					finishedTest = finishedTest
 				  )
 				  imagesWereRead = true
 				}
 			  }
 			}
+
 
 
 
@@ -173,6 +203,7 @@ class TestLoader(
 			  model = this@TestLoader.model,
 			  testRAMCache = testRAMCache,
 			  dtype = dtype,
+			  cats = if (didLoadCategories.await()) loadedCategories.await() else null
 			).apply {
 			  setTheTestNeurons(imageSetLoader.localTestNeurons)
 			  /*testNeurons = localTestNeurons*/ /*as Map<InterTestNeuron,TestNeuron<Float>>*/

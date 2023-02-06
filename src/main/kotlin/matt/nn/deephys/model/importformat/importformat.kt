@@ -9,8 +9,10 @@ import matt.collect.map.lazyMap
 import matt.collect.weak.lazyWeakMap
 import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
+import matt.log.warn.warn
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
 import matt.nn.deephys.gui.settings.DeephySettings
+import matt.nn.deephys.load.test.OLD_CAT_LOAD_WARNING
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.ResolvedLayer
@@ -73,6 +75,7 @@ class Test<N: Number>(
   images: List<DeephyImage<*>>,
   override val model: Model,
   override val testRAMCache: TestRAMCache,
+  cats: List<Category>?,
   override val dtype: DType<N>
 ): DeephyFileObject, TypedTestLike<N> {
 
@@ -106,9 +109,15 @@ class Test<N: Number>(
 	/*images.find { it.category.id == id }!!.category*/
 
   val categories by lazy {
-	stopwatch("categories", enabled = DeephySettings.verboseLogging.value) {
-	  this@Test.images.map { it.category }.toSet().toList().sortedBy { it.id }
+	if (cats!=null) {
+	  cats.sortedBy { it.id }
+	} else {
+	  warn(OLD_CAT_LOAD_WARNING)
+	  stopwatch("categories", enabled = DeephySettings.verboseLogging.value) {
+		this@Test.images.map { it.category }.toSet().toList().sortedBy { it.id }
+	  }
 	}
+
   }
   val catsByID by lazy {
 	categories.associateBy { it.id }
@@ -116,9 +125,12 @@ class Test<N: Number>(
 
 
   private val imagesByCategoryID by lazy {
-	stopwatch("imagesByCategoryID", enabled = DeephySettings.verboseLogging.value) {
-	  this@Test.images.groupBy { it.category.id }.mapValues { it.value.toSet() }
+	val r = categories.associateWith { setOf<DeephyImage<N>>() }.toMutableMap()
+	val toPut = stopwatch("imagesByCategoryID", enabled = DeephySettings.verboseLogging.value) {
+	  this@Test.images.groupBy { it.category }.mapValues { it.value.toSet() }
 	}
+	r.putAll(toPut)
+	r.mapKeys { it.key.id }
   }
 
   fun imagesWithGroundTruth(category: Category): Set<DeephyImage<N>> = imagesByCategoryID[category.id] ?: setOf()

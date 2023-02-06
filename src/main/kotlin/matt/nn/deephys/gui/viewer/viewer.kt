@@ -6,6 +6,8 @@ import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.contentsOf
 import matt.collect.weak.lazyWeakMap
 import matt.file.CborFile
+import matt.fx.base.prop.lastIndexProperty
+import matt.fx.base.prop.sizeProperty
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.ControlWrapper
@@ -22,8 +24,6 @@ import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.image.toFXImage
-import matt.fx.base.prop.lastIndexProperty
-import matt.fx.base.prop.sizeProperty
 import matt.lang.disabledCode
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch

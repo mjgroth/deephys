@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.ArcType.ROUND
 import javafx.util.Duration
+import matt.fx.base.wrapper.obs.obsval.prop.toNonNullableProp
 import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.anim.animation.keyframe
 import matt.fx.graphics.anim.animation.timeline
@@ -24,13 +25,12 @@ import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
-import matt.fx.base.wrapper.obs.obsval.prop.toNonNullableProp
 import matt.math.jmath.sigFigs
 import matt.model.code.idea.MChartIdea
 import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -43,6 +43,7 @@ import matt.obs.bindings.str.mybuildobs.obsString
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.VarProp
 import matt.prim.str.truncateWithElipses
+import java.lang.ref.WeakReference
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -53,7 +54,7 @@ class CategoryPie(
   viewer: DatasetViewer,
   colorMap: Map<Category, Color>,
   selected: Category? = null,
-  private val showAsList: BindableProperty<Boolean>
+  showAsList: BindableProperty<Boolean>
 ): VBoxWrapperImpl<NodeWrapper>(), MChartIdea {
 
   companion object {
@@ -69,7 +70,7 @@ class CategoryPie(
   init {
 	alignment = Pos.TOP_CENTER
 	exactWidth = 350.0
-	deephyCheckbox("show as list", showAsList)
+	deephyCheckbox("show as list", showAsList, weakBothWays = true)
 	deephyText(title) {
 	  subtitleFont()
 	  veryLazyDeephysTooltip("only shows at most $MAX_SLICES slices (unless shown as list)")
@@ -79,7 +80,7 @@ class CategoryPie(
 	  hbarPolicy = NEVER
 	  isFitToWidth = true
 
-	  vbarPolicyProperty.bind(this@CategoryPie.showAsList.binding {
+	  vbarPolicyProperty.bindWeakly(showAsList.binding {
 		if (it) ALWAYS else NEVER
 	  })
 
@@ -94,8 +95,8 @@ class CategoryPie(
 	  content = PaneWrapperImpl<Pane, NodeWrapper>(Pane()).apply {
 		exactWidth = WIDTH
 		val nonZeroCats = cats.filter { nums[it]!! > 0 }
-		exactHeightProperty.bind(
-		  this@CategoryPie.showAsList.binding {
+		exactHeightProperty.bindWeakly(
+		  showAsList.binding {
 			if (it) BAR_Y_INCR*nonZeroCats.size else HEIGHT
 		  }
 		)
@@ -126,26 +127,33 @@ class CategoryPie(
 
 		  textflow<NodeWrapper> {
 
-			visibleAndManagedProp.bind(
-			  this@CategoryPie.showAsList.or(catIndex < MAX_SLICES)
+			visibleAndManagedProp.bindWeakly(
+			  showAsList.or(catIndex < MAX_SLICES)
 			)
 
 			node.viewOrder = -1.0
 			val t = deephysLabel(cat.label.truncateWithElipses(20)) {
-			  textProperty.bind(obsString {
-				append(this@CategoryPie.showAsList.binding {
-				  if (it) "(${percent.percent.sigFigs(2)}%) " else ""
-				})
-				appendStatic(cat.label)
-			  }.binding(this@CategoryPie.showAsList) {
-				if (this@CategoryPie.showAsList.value) {
-				  it.truncateWithElipses(30)
-				} else it.truncateWithElipses(20)
-			  })
-			}
 
-			layoutXProperty.bind(
-			  this@CategoryPie.showAsList.binding(
+
+			  textProperty.bindWeakly(
+
+
+				obsString {
+				  append(showAsList.binding {
+					if (it) "(${percent.percent.sigFigs(2)}%) " else ""
+				  })
+				  appendStatic(cat.label)
+				}.binding(showAsList) {
+				  if (showAsList.value) it.truncateWithElipses(30)
+				  else it.truncateWithElipses(20)
+				}
+
+			  )
+			}
+			val weakText = WeakReference(t)
+
+			layoutXProperty.bindWeakly(
+			  showAsList.binding(
 				textXAddition.toNonNullableProp(),
 				textXAdditionList.toNonNullableProp()
 			  ) {
@@ -155,12 +163,14 @@ class CategoryPie(
 
 
 
-			layoutYProperty.bind(
-			  this@CategoryPie.showAsList.binding(
+			layoutYProperty.bindWeakly(
+			  showAsList.binding(
 				textYAddition.toNonNullableProp(),
 				textYAdditionList.toNonNullableProp()
-			  ) {
-				(if (it) barY + textYAdditionList.value else CENTER_Y + 130*thetaY - t.font.size + textXAdditionList.value)
+			  ) { sal ->
+				weakText.get()?.let {
+				  (if (sal) barY + textYAdditionList.value else CENTER_Y + 130*thetaY - it.font.size + textXAdditionList.value)
+				} ?: -1.0
 			  }
 			)
 
@@ -186,8 +196,8 @@ class CategoryPie(
 			y = barY,
 			width = barWidth
 		  ).apply {
-			visibleAndManagedProp.bind(
-			  this@CategoryPie.showAsList
+			visibleAndManagedProp.bindWeakly(
+			  showAsList
 			)
 			highlighted.bind(hoverProperty)
 			if (cat == selected) {
@@ -211,8 +221,8 @@ class CategoryPie(
 			  arcLength = arcLength,
 			  startAngle = nextStart
 			).apply {
-			  visibleAndManagedProp.bind(
-				this@CategoryPie.showAsList.not()
+			  visibleAndManagedProp.bindWeakly(
+				showAsList.not()
 			  )
 			  highlighted.bind(hoverProperty)
 			  if (cat == selected) {

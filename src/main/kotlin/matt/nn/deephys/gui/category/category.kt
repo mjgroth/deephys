@@ -4,7 +4,6 @@ import javafx.geometry.Pos
 import javafx.scene.text.TextAlignment.CENTER
 import matt.collect.set.contents.Contents
 import matt.color.colorMap
-import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
@@ -83,13 +82,13 @@ class CategoryView<A: Number>(
 
 	  h {
 		v {
-//		  println("width1@${this.hashCode()}=$width,max=${maxWidth}")
-//		  widthProperty.onChange {
-//			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
-//		  }
-//		  maxWidthProperty.onChange {
-//			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
-//		  }
+		  //		  println("width1@${this.hashCode()}=$width,max=${maxWidth}")
+		  //		  widthProperty.onChange {
+		  //			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
+		  //		  }
+		  //		  maxWidthProperty.onChange {
+		  //			println("width2@${this.hashCode()}=$width,max=${maxWidth}")
+		  //		  }
 		  maxWidthProperty.bindWeakly(viewer.stage!!.widthProperty*0.45)
 		  +MultipleImagesView(
 			viewer = viewer,
@@ -141,14 +140,12 @@ class CategoryView<A: Number>(
 			  selected = (selection as? CategoryConfusion)?.second,
 			  showAsList = viewer.showAsList2
 			)
-//			println("ADDED CAT PIES")
+			//			println("ADDED CAT PIES")
 
 		  }
 		  deephyText("Tip: Click the colored areas to navigate to the respective class. Shift-click it to analyze confusions with the currently selected class.") {
 			textAlignment = CENTER
-			visibleAndManagedWhen {
-			  viewer.showTutorials
-			}
+			visibleAndManagedProp.bindWeakly(viewer.showTutorials)
 		  }
 
 		}

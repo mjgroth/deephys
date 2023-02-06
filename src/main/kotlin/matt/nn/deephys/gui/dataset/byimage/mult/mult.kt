@@ -30,7 +30,7 @@ class MultipleImagesView<A: Number>(
 	  veryLazyDeephysTooltip("$tooltip (first $MAX_IMS)")
 	}
 	+ImageFlowPane(viewer).apply {
-	  prefWrapLengthProperty.bind(viewer.widthProperty*0.4)
+	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.4)
 	  images.take(MAX_IMS).forEach {
 		+DeephyImView(it, viewer).apply {
 		  //		  scale.bind(viewer.smallImageScale / it.widthMaybe)

@@ -22,7 +22,6 @@ import matt.nn.deephys.calc.TopNeuronsCalcType
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.RawActivation
-import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.withProgressPopUp
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyText
@@ -147,10 +146,12 @@ class NeuronListView(
 	  content!!.apply {
 
 
-		val topNeurons = withProgressPopUp {
+		val topNeurons = tops()
+
+		/*val topNeurons = withProgressPopUp {
 		  it.message = "loading tops..."
 		  tops()
-		}
+		}*/
 
 
 		val startAsyncAt = (viewer.stage!!.width/NEURON_LIST_VIEW_WIDTH).ceilInt()

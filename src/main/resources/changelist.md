@@ -1,7 +1,5 @@
 [//]: # (VERSION:1.30.0)
-[![pip](https://img.shields.io/badge/compatible%20pip%20version-0.10.0-00bbe2?&logo=pypi&logoColor=f5c39e)](https://pypi.org/project/deephys/0.10.0)
-### PIP Python Package Updated to 0.10.0
-
+[![pip](https://img.shields.io/badge/compatible%20pip%20version-0.9.2-00bbe2?&logo=pypi&logoColor=f5c39e)](https://pypi.org/project/deephys/0.9.2)
 
 
 ### New Features
@@ -10,6 +8,10 @@
 
 ### Performance Improvements
 - Fixed some memory leaks
+-TopNeurons loads faster because loading bar popup was removed
+- Reduced memory and cpu usage from image progress indicators
+- Fixed a set of major memory leaks in the category pie charts. App would previously cease to a halt after prolonged use of the category view, but now it is much more robust.
+- Greatly reduced the CPU usage from reference queues (low level improvement that will make app feel more smooth throughout)
 
 
 ### User Friendliness
@@ -24,6 +26,7 @@
 ### Removed Features
 - Removed the "BindTutorial" (this tutorial became a pointless waste of space)
 - Removed the "suffix" field for objects saved in python (this was useless and users can easily add a suffix as part of the name)
+- Removed the loading bar pop up for TopNeuron views. It was actually slowing down the loading process. Also, we have made enough performance gains that this is no longer worth it.
 
 
 ### Cosmetic Changes
@@ -44,10 +47,16 @@
   - Fixed a crash that happened sometimes when the layer was switched. It was caused by the new layer not having a neuron at the currently selected index (e.g. when neuron 50 was selected and then the classification layer was selected, which only has 10 neurons.) This crash was solved by catching this case and setting the neuron to 0.
   - Stopped saving data in ~/registered with data related to window locations and preffered monitors. They are now properly stored in OS-specific properties
   - Fixed an issue that caused settings or states to sometimes not save
+  - App now takes new "classes" field in `.test` files to prevent errors when not all categories are included as ground truths of images. This requires a newer pip package version.
+  - Fixed a bug causing error logs to not be saved into files.
+  - Prevented deadlock and freeze caused by image progress indicators
+  - Fixed a set of major memory leaks coming from the category pie charts
 
 
 
 
 
 
+### Notes
+- I ran out of time and could not release the newest python version with this. Python version 0.9.2 will still work with this version, but as soon as the newer python version is released please switch to that. You will see warnings about switching to a newer python version. Unfortunately these warnings are un-actionable untl I release the new python version.
 
