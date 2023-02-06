@@ -19,7 +19,7 @@ import matt.gui.option.BoolSetting
 import matt.gui.option.DoubleSetting
 import matt.gui.option.EnumSetting
 import matt.gui.option.IntSetting
-import matt.log.profile.mem.MemReport
+import matt.log.report.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
