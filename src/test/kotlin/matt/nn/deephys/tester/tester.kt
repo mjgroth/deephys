@@ -12,9 +12,9 @@ import matt.json.prim.loadJson
 import matt.json.prim.save
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
-import matt.log.profile.mem.MemReport
 import matt.log.profile.stopwatch.tic
 import matt.log.profile.yk.YourKit
+import matt.log.report.MemReport
 import matt.model.data.byte.megabytes
 import matt.nn.deephys.DeephysTestData
 import matt.nn.deephys.MAC_MAYBE_MIN_SCREEN_SIZE
