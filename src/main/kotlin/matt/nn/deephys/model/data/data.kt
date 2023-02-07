@@ -4,6 +4,7 @@ import matt.model.op.convert.StringConverter
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.LayerLike
+import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
@@ -13,7 +14,7 @@ data class InterTestLayer(
   val index: Int, override val layerID: String, val neuronCount: Int
 ): LayerLike {
   @OptIn(ExperimentalStdlibApi::class) val neurons get() = (0..<neuronCount).map { InterTestNeuron(this, it) }
-  override val isClassification get() = layerID == "classification"
+  override fun isClassification(model: Model) = layerID == model.classification_layer
   override fun toString() = layerID
 }
 

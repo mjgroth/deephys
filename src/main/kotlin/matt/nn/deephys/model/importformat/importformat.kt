@@ -44,6 +44,7 @@ private const val SUFFIX_NOT_PRESENT = "SUFFIX_NOT_PRESENT"
   override val name: String,
   val suffix: String? = SUFFIX_NOT_PRESENT,
   val layers: List<Layer>,
+  val classification_layer: String = "classification"
 ): DeephyFileObject {
   val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
   val neurons: List<ResolvedNeuron> by lazy { resolvedLayers.flatMap { it.neurons } }

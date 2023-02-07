@@ -4,7 +4,7 @@
 
 div[role=contentinfo] {
   visibility: hidden;
-  position: relative;
+  display: none;
 }
 
 

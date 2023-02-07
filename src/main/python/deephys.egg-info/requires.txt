@@ -1,3 +1,4 @@
 cbor2
 numpy
 torch
+tqdm

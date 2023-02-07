@@ -9,7 +9,7 @@ import matt.nn.deephys.model.importformat.layer.Layer
 interface LayerLike {
   val layerID: String
   override fun toString(): String
-  val isClassification get() = layerID == "classification"
+  fun isClassification(model: Model) = layerID == model.classification_layer
 }
 
 

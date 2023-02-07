@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import struct
 from time import time
+from tqdm import tqdm
 
 # library already optimizes writes of int8
 # python cbor package has no way to make float32, also bytearray is smaller/faster
@@ -25,25 +26,22 @@ class Layer:
 
 
 @dataclass
-class DEEPHYSData:
+class DeephysData:
     name: str
-    suffix: Optional[str]
 
     def save(self):
-        if self.suffix == None:
-            fileName = f"{self.name}.{self.extension}"
-        else:
-            fileName = f"{self.name}_{self.suffix}.{self.extension}"
+        fileName = f"{self.name}.{self.extension}"
+        print(f"Saving data to {fileName}...")
         with open(fileName, "wb") as fp:
             dump(asdict(self), fp)
+        print(f"done saving data to {fileName}")
 
 
 @dataclass
-class Model(DEEPHYSData):
+class Model(DeephysData):
     """
 
     :param name: name of the model (e.g.: `"resnet18"`)
-    :param suffix: optional suffix for the model
     :param layers: A List of layers in the model. The app is guaranteed to support cases where there are 2 layers and one of them is called `"classification"`.
     """
 
@@ -78,6 +76,23 @@ class Model(DEEPHYSData):
         activations: List[bytearray]  # float32 or float64
 
 
+def model(name, layers):
+    """
+
+    :param name: The name of the model
+    :param layers: A dictionary with the names and number of neurons of each layer.
+    """
+    return Model(
+        name=name,
+        layers=list(
+            map(
+                lambda item: Layer(layerID=item[0], neurons=[Neuron()] * item[1]),
+                layers.items(),
+            )
+        ),
+    )
+
+
 def import_torch_dataset(
     name: str,
     dataset: torch.utils.data.DataLoader,
@@ -89,7 +104,7 @@ def import_torch_dataset(
     """
     Conveniently calls import_test_data with PyTorch data.
 
-    :param name: the name of the dataset
+    :param name: The name of the dataset
     :param dataset: contains pixel data of images
     :param classes: an ordered list of strings representing class names
     :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
@@ -152,7 +167,7 @@ def import_test_data(
     """
     Prepare test results for Deephys
 
-    :param name: the name of the dataset
+    :param name: The name of the dataset
     :param classes: an ordered list of strings representing class names
     :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
     :param model: the model structure
@@ -186,7 +201,8 @@ def import_test_data(
         raise Exception(
             f"pixel_data should have 3 color channels, but {pixel_data.shape[1]} were received"
         )
-    for i in range(len(pixel_data)):
+    print("Preparing data...")
+    for i in tqdm(range(len(pixel_data))):
         image = pixel_data[i]
         target = ground_truths[i]
         mn = torch.min(image)
@@ -228,7 +244,7 @@ def import_test_data(
                 features=None,
             )
         )
-    test = Test(name=name, suffix=None, dtype=dtype, images=imageList)
+    test = Test(name=name, classes=classes, dtype=dtype, images=imageList)
     return test
 
 
@@ -243,8 +259,9 @@ class ImageFile:
 
 
 @dataclass
-class Test(DEEPHYSData):
+class Test(DeephysData):
     dtype: Optional[str]
+    classes: List[str]
     images: List[ImageFile]
 
     def __post_init__(self):
