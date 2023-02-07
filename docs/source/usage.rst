@@ -37,7 +37,7 @@ Each dataset distribution that you would like to analyze needs to be exported se
 
 🤔 How to export one dataset distribution? It is just the following 2 steps:
 
-1. Extract images 🖼️, categories 🐕, and neural activity from the network 🔥🔥🔥
+1. Extract images 🖼️, categories 🐕, and neural activity 🔥🔥🔥
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here is all the variables we need for each data distribution:
