@@ -20,14 +20,6 @@ class TestDeephys(unittest.TestCase):
             testset, batch_size=128, shuffle=False, num_workers=2
         )
         num_images = len(testloader.dataset)
-        layer1 = dp.Layer(layerID="layer1", neurons=[dp.Neuron()])
-        layer2 = dp.Layer(layerID="layer2", neurons=[dp.Neuron(), dp.Neuron()])
-        model = dp.Model("model", [layer1, layer2], classification_layer="layer2")
-        model2 = dp.model(
-            "model", {"layer1": 1, "layer2": 2}, classification_layer="layer2"
-        )
-        state = [[[0.5]] * num_images, [[0.5, 0.5]] * num_images]
-        print(f"state={np.array(state).shape}")
         classes = (
             "plane",
             "car",
@@ -40,6 +32,15 @@ class TestDeephys(unittest.TestCase):
             "ship",
             "truck",
         )
+        num_classes = len(classes)
+        layer1 = dp.Layer(layerID="layer1", neurons=[dp.Neuron()])
+        layer2 = dp.Layer(layerID="layer2", neurons=[dp.Neuron()] * num_classes)
+        model = dp.Model("model", [layer1, layer2], classification_layer="layer2")
+        model2 = dp.model(
+            "model", {"layer1": 1, "layer2": num_classes}, classification_layer="layer2"
+        )
+        state = [[[0.5]] * num_images, [[0.5] * num_classes] * num_images]
+        print(f"state={np.array(state).shape}")
         torch_test = dp.import_torch_dataset(
             name="torch_test",
             dataset=testloader.dataset,

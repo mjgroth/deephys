@@ -47,6 +47,7 @@ class Model(DeephysData):
     """
 
     layers: List[Layer]
+    classification_layer: str
 
     def __post_init__(self):
         self.extension = f"model"
