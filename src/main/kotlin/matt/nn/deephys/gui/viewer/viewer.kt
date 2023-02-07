@@ -29,7 +29,6 @@ import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
-import matt.model.obj.tostringbuilder.toStringBuilder
 import matt.mstruct.rstruct.resourceStream
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.gui.dataset.DatasetNode
@@ -81,6 +80,7 @@ import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
 import matt.prim.str.mybuild.string
+import matt.reflect.tostring.toStringBuilder
 import java.lang.ref.WeakReference
 
 class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
