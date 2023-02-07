@@ -205,10 +205,6 @@ def import_test_data(
                 raise Exception(
                     f"classification layer must have the same length as the number of classes. classification layer length = {len(layer.neurons)}, classes length = {len(classes)}"
                 )
-    if len(classes) != len(model.layers):
-        raise Exception(
-            f"ground_truths length ({len(ground_truths)}) must be same as the image length ({len(pixel_data)})"
-        )
     if len(ground_truths) != len(pixel_data):
         raise Exception(
             f"ground_truths length ({len(ground_truths)}) must be same as the image length ({len(pixel_data)})"
