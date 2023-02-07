@@ -1,36 +1,23 @@
-# Configuration file for the Sphinx documentation builder.
-
-# -- Project information
-
-project = 'Deephys'
-copyright = '???'
-author = 'MIT-Fujitsu Team'
-
-release = '0.6'
-version = '0.6.0'
-
-# -- General configuration
-
+project = "Deephys"
+copyright = ""
+author = "MIT-Fujitsu Team"
+release = "0.6"
+release = "0.6.0"
 extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx_autodoc_typehints'
+    "sphinx.ext.duration",
+    "sphinx.ext.doctest",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    "sphinx_autodoc_typehints",
 ]
-
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'torch': ('https://pytorch.org/docs/master',None)
+    "python": ("https://docs.python.org/3/", None),
+    "torch": ("https://pytorch.org/docs/master", None),
 }
-intersphinx_disabled_domains = ['std']
-
-templates_path = ['_templates']
-
-# -- Options for HTML output
-
-html_theme = 'sphinx_rtd_theme'
-
-# -- Options for EPUB output
-epub_show_urls = 'footnote'
+intersphinx_disabled_domains = ["std"]
+templates_path = ["_templates"]
+html_theme = "sphinx_rtd_theme"
+epub_show_urls = "footnote"
+html_static_path = ["html"]
+html_css_files = ["css/custom.css"]
