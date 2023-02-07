@@ -79,8 +79,8 @@ You can add more layers to the visualization by just adding them in the state li
 
 .. Extracting Activations From Data
 
-Examples 
+Neural activity zoo:
 --------------------------------------
 
-To extract data from a test, please see the steps provided `here <https://colab.research.google.com/github/mjgroth/deephys-aio/blob/master/Python_Tutorial.ipynb>`_
+See `here <https://drive.google.com/drive/folders/1755Srmf39sBMjWa_1lEpS-FPo1ANCWFV?usp=sharing>`_
 
