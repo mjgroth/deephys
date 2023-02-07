@@ -1,15 +1,5 @@
-Welcome to Deephys' python documentation!
+Welcome to Deephys export Python library documentation!
 =========================================
-
-**Deephys**, short for **Deep Electrophysiology**, is a software tool accompanying the paper __. 
- 
-The code and other information lives inside the `GitHub repo <https://github.com/mjgroth/deephys-aio>`_
-
-Check out the :doc:`usage` section for further information.
-
-.. note::
-
-   This project is under active development.
 
 Contents
 --------
