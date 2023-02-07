@@ -1,7 +1,7 @@
 # @title DEEPHYS
 from cbor2 import dump
 from dataclasses import dataclass, asdict
-from typing import List, Optional, Mapping, Union
+from typing import List, Optional, Mapping, Union, Dict
 import numpy as np
 import torch
 import struct
@@ -42,13 +42,16 @@ class Model(DeephysData):
     """
 
     :param name: name of the model (e.g.: `"resnet18"`)
-    :param layers: A List of layers in the model. The app is guaranteed to support cases where there are 2 layers and one of them is called `"classification"`.
+    :param layers: A List of layers in the model.
+    :param classification_layer: The name of the classification layer. Must be one of the layers defined in `layers`.
     """
 
     layers: List[Layer]
 
     def __post_init__(self):
         self.extension = f"model"
+        if self.classification_layer not in map(lambda l: l.layerID, self.layers):
+            raise Exception(f"classification_layer must be one of the included layers")
 
     def state(self, activations, dtype):
         if len(activations) != len(self.layers):
@@ -76,11 +79,12 @@ class Model(DeephysData):
         activations: List[bytearray]  # float32 or float64
 
 
-def model(name, layers):
+def model(name: str, layers: Dict[str, int], classification_layer: str):
     """
 
     :param name: The name of the model
     :param layers: A dictionary with the names and number of neurons of each layer.
+    :param classification_layer: The name of the classification layer. Must be one of the layers defined in `layers`.
     """
     return Model(
         name=name,
@@ -90,6 +94,7 @@ def model(name, layers):
                 layers.items(),
             )
         ),
+        classification_layer=classification_layer,
     )
 
 
@@ -192,6 +197,16 @@ def import_test_data(
     if len(pixel_data.shape) != (4):
         raise Exception(
             f"pixel_data should be a 3D or 4D array-like collection. Colored: [images,channels,dim1,dim2] or greyscale: [images,dim1,dim2], but a shape of {pixel_data.shape} was received"
+        )
+    for layer in model.layers:
+        if layer.layerID == model.classification_layer:
+            if len(layer.neurons) != len(classes):
+                raise Exception(
+                    f"classification layer must have the same length as the number of classes. classification layer length = {len(layer.neurons)}, classes length = {len(classes)}"
+                )
+    if len(classes) != len(model.layers):
+        raise Exception(
+            f"ground_truths length ({len(ground_truths)}) must be same as the image length ({len(pixel_data)})"
         )
     if len(ground_truths) != len(pixel_data):
         raise Exception(

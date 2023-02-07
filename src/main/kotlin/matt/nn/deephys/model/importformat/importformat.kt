@@ -49,7 +49,7 @@ private const val SUFFIX_NOT_PRESENT = "SUFFIX_NOT_PRESENT"
   val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
   val neurons: List<ResolvedNeuron> by lazy { resolvedLayers.flatMap { it.neurons } }
   val classificationLayer by lazy {
-	resolvedLayers.first { it.isClassification }
+	resolvedLayers.first { it.isClassification(this) }
   }
 
   val wasLoadedWithSuffix by lazy {

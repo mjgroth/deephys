@@ -1,4 +1,4 @@
-[//]: # (VERSION:1.30.1)
+[//]: # (VERSION:1.31.0)
 [![pip](https://img.shields.io/badge/compatible%20pip%20version-0.11.0-00bbe2?&logo=pypi&logoColor=f5c39e)](https://pypi.org/project/deephys/0.11.0)
 ### PIP Python Package Updated to 0.11.0
 - Removed `suffix` params

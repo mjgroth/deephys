@@ -1,39 +1,39 @@
-Wrapping up your data 
+Exporting up your data 
 =============
 
-Before starting, install our Deephys wrapper Python library. This library faciliates plugging your data with the right format for Deephys.
+Before starting, install our Deephys-Exporter Python library. This library facilitates encapsulating your data into a format compatible with Deephys and saves the data to files.
 
 .. code-block:: console
 
   $ pip install deephys
 
+Now, let's get started exporting your data  🚀
 
-Now, let's get started wrapping up your data  🚀
-
-☀️ Setting up the model parameters
+☀️ Defining Your Model
 --------------------------------------
 
-We first need to set up the model parameters to visualize. The output layer always needs to be included. Any number of layers can be included too.  To set up the model, we need to indicate the name of the model, as well as the number of neurons per layer and the name of the layer. This can be simply done in the following way: 
+We first need to define the model to visualize. Any number of layers can be included. To define the model indicate its name, the neuron count per layer, and which layer is the classification layer.:: 
 
->>> import deephys
->>> model = deephys.setup_model(
-    num_neurons = [num_neurons_layer, num_neurons_output],
-    name_layers = ["penultimate_layer", "output_layer"]
-    name_network = "my_net"
+>>> import deephys as dp
+>>> model = dp.model(
+    name = "my_net",
+    layers = {
+    # include any additional layers
+      "penultimate_layer": num_neurons_layer,
+      "output": num_neurons_output,
+      },
+      classification_layer = "output"
     )
+>>> model.save()
     
-This will create a `.model` file that will be useful for Deephys. In this example, we only set up two layers. If you want to visualize more layers, add them  in the list.
+This will create a `my_net.model` to be imported into Deephys.
 
-
-‼️ The last entry in both lists must be the output layer, which is mandatory to always have.
-
-
-🎏 Wrap up each dataset distributions separately 🎏
+🎏 Export each dataset distributions separately 🎏
 --------------------------------------
 
-Each dataset distribution that you would like to analyze needs to be wrapped-up separatelly. After wrapping up all dataset distributions, you can visualize them together using Deephys 🪄.  
+Each dataset distribution that you would like to analyze needs to be exported separately. After exporting all dataset distributions, you can visualize them together using Deephys 🪄.  
 
-🤔 How to wrap up one dataset distribution? It is just the following 2 steps:
+🤔 How to export one dataset distribution? It is just the following 2 steps:
 
 1. Extract images 🖼️, categories 🐕, and neural activity from the network 🔥🔥🔥
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,7 +50,7 @@ You can keep them in a python list or a numpy array.
 
 ‼️ Make sure that the order of the images is kept constant across all the data.
 
-2. Wrap-up the data with the Deephys wrapper ✨
+2. Export the data with the Deephys wrapper ✨
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We are now ready to save. Just plug all the data to our Deephys wrapper in the following format. 
@@ -63,14 +63,13 @@ We are now ready to save. Just plug all the data to our Deephys wrapper in the f
     state = [neural_activity, network_output],
     model = model
     )
->>> test.suffix = None
 >>> test.save()
 
-Note that ``mdoel`` is the model that was created at the beginning. The wrapper create a file called ``OOD.test``, which can used in Deephys.
+Note that ``model`` is the model that was created at the beginning. The wrapper create a file called ``OOD.test``, which can used in Deephys.
 
 You can add more layers to the visualization by just adding them in the state list, just make sure `network_output` is the last one.
 
-🎏 Remember to follow step 1 and 2 for each dataset distribution separatelly.
+🎏 Remember to follow step 1 and 2 for each dataset distribution separately.
 
 .. Extracting Activations From Data
 
