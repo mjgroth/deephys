@@ -1,7 +1,7 @@
 Exporting up your data 
 =============
 
-Before starting, install our Deephys-Exporter Python library. This library facilitates encapsulating your data into a format compatible with Deephys and saves the data to files.
+Before starting, install our Deephys exporter Python library. This library facilitates encapsulating your data into a format compatible with Deephys and saves the data to files.
 
 .. code-block:: console
 
@@ -50,12 +50,12 @@ Here is all the variables we need for each data distribution:
 
 All these can be Python lista or a numpy arrays. 
 
-🤯 Make sure that the order of the images corresponds to the neural activity.
+🤯 IMPORTANT: Make sure that the order of the images is aligned with the neural activity.
 
-2. Convert the data a Deephys-compatible format ✨
+2. Convert the data to a Deephys-compatible format ✨
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We are now ready to save the data in a Deephys-compatible format. Just plug all the data to our Deephys export function in the following format:
+We are now ready to convert the data in a Deephys-compatible format. Just plug all the variables obtained in step 1 to our Deephys export function in the following format:
 
 .. code-block:: python
 
@@ -69,13 +69,13 @@ We are now ready to save the data in a Deephys-compatible format. Just plug all 
     )
   test.save()
 
-Note that ``model`` is the model that was created at the beginning. The wrapper create a file called ``Data_Distribution_1.test``, which can used in Deephys.
+Note that ``dp_model`` is the model that was defined at the beginning of the process. This will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
 
 You can add more layers to the visualization by just adding them in the state list.
 
-🤯 Make sure that the list passed to ``state`` follow the same order as in the dictionary in ``layers`` when defining the model.
+🤯 IMPORTANT: Make sure that the list passed to ``state`` follow the same order as when defining the model  in ``layers``.
 
-🎏 Remember to follow step 1 and 2 for each dataset distribution separately.
+🎏 Remember to follow step 1 and 2 for each dataset distribution separately. This will generate a different visualization file for each distribution that can then be visualized in Deephys all together.
 
 .. Extracting Activations From Data
 
