@@ -42,11 +42,11 @@ Each dataset distribution that you would like to analyze needs to be exported se
 
 Here is all the variables we need for each data distribution:
 
-- ``images`` 🖼️: They need to be in the range [0, 1]. It is advisable to resize them to a small size (eg. 64x64 pixels) to save space and memory. They can be color or grayscale images. Dimensions: ``[#images,#channels,H,W]``.
-- ``groundtruth_categories`` 🐕: Integer indicating the ground-truth label number. Dimensions: ``[#images]``.
-- ``caregory_names`` 🎈: Strings indicating the name of each category. Dimensions: ``[#categories]``.
-- ``network_output`` 🔥: For each image, extract the output of the network (after or before the softmax, it is up to you). Dimensions: ``[#images, #categories]``.
-- ``neural_activity`` 🔥🔥🔥: For each image, extract the neural activity that you want to visualize. This can be obtained for as many layers as you want. If you want to visualize a convolutional layer or a transformer, please see this for options (TBD). Dimensions for each layer: ``[#images, #neurons]``.
+- ``images``: They need to be in the range [0, 1]. It is advisable to resize them to a small size (eg. 64x64 pixels) to save space and memory. They can be color or grayscale images. Dimensions: ``[#images,#channels,H,W]``.
+- ``groundtruth_categories``: Integer indicating the ground-truth label number. Dimensions: ``[#images]``.
+- ``caregory_names``: Strings indicating the name of each category. Dimensions: ``[#categories]``.
+- ``network_output``: For each image, extract the output of the network (after or before the softmax, it is up to you). Dimensions: ``[#images, #categories]``.
+- ``neural_activity``: For each image, extract the neural activity that you want to visualize. This can be obtained for as many layers as you want. If you want to visualize a convolutional layer or a transformer, please see this for options (TBD). Dimensions for each layer: ``[#images, #neurons]``.
 
 All these can be Python lista or a numpy arrays. 
 
