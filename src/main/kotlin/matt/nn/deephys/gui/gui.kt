@@ -8,12 +8,12 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
 import matt.async.thread.daemon
-import matt.auto.ICON_SIZES
 import matt.collect.itr.mapToArray
 import matt.exec.app.myVersion
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.file.toSFile
+import matt.fx.base.prop.sizeProperty
 import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.hotkey.hotkeys
@@ -33,7 +33,7 @@ import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
 import matt.gui.mscene.MScene
-import matt.fx.base.prop.sizeProperty
+import matt.image.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.go
 import matt.log.profile.stopwatch.Stopwatch

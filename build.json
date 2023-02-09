@@ -13,6 +13,10 @@
 	  "type" : "Project",
 	  "cfg" :  "implementation",
 	  "path" : ":k:cbor"
+	},	{
+	  "type" : "Project",
+	  "cfg" :  "implementation",
+	  "path" : ":k:image"
 	},
 	{
 	  "type" : "Project",
