@@ -1,4 +1,4 @@
-Welcome to Deephys export Python library documentation!
+Welcome to the documentation for Deephys' python-exporter library!
 =========================================
 
 .. toctree::
