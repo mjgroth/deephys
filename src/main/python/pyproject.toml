@@ -7,7 +7,6 @@ authors = [
 dependencies = [
     'cbor2',
     'numpy',
-    'torch',
     'tqdm'
 ]
 [project.urls]
