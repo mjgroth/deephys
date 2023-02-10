@@ -161,7 +161,7 @@ def _to_list(value):
     return value
 
 
-def import_test_data(
+def export(
     name: str,
     classes: list,
     state: Union[list, np.ndarray, torch.FloatTensor],
