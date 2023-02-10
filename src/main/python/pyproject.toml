@@ -1,6 +1,6 @@
 [project]
 name = "deephys"
-version = "0.11.0"
+version = "0.12.0"
 authors = [
     { name = "Matt Groth", email = "mjgroth@mit.edu" }
 ]
@@ -9,7 +9,8 @@ dependencies = [
     'numpy',
     'tqdm'
 ]
+description = "Library to export neural activity to a Deephys-compatible format"
 [project.urls]
-"Homepage" = "https://github.com/mgroth0/deephys"
-"Documentation" = "https://matt-groth-deephys.readthedocs-hosted.com/en/latest/"
+"Homepage" = "https://deephys.org"
+"Documentation" = "https://deephys.readthedocs.io/en/latest/"
 "Bug Tracker" = "https://deephys.youtrack.cloud/"
