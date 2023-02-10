@@ -17,4 +17,7 @@
 
 
 
+### Notes
+- python PIP changelists from now on will be posted to the documentation here:  https://deephys.readthedocs.io/en/latest/changelist.html
+- These release notes here now will only pertain to the app, not the python library
 
