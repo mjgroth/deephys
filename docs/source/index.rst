@@ -1,8 +1,10 @@
+==================================================================
 Welcome to the documentation for Deephys' python-exporter library!
-=========================================
+==================================================================
 
 .. toctree::
 
-   usage
-   pytorch
-   api
+	usage
+	pytorch
+	api
+	changelist
