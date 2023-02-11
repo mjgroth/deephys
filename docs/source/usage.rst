@@ -46,7 +46,7 @@ Here is all the variables we need for each data distribution:
 
 - ``caregory_names``: Strings indicating the name of each category. Dimensions: ``[#categories]``.
 - ``images``: They need to be in the range [0, 1]. It is advisable to resize them to a small size (eg. 64x64 pixels) to save space and memory. They can be color or grayscale images. Dimensions: ``[#images,#channels,H,W]``.
-- ``groundtruth_categories``: Integer indicating the ground-truth label number for each image. Dimensions: ``[#images]``.
+- ``groundtruth``: Integer indicating the ground-truth label number for each image. Dimensions: ``[#images]``.
 - ``neural_activity``: For each image, extract the neural activity that you want to visualize. This can be obtained for as many layers as you want. If you want to visualize a convolutional layer or a transformer, please see this for options (TBD). Dimensions for each layer: ``[#images, #neurons]``.
 
 All these can be Python lists or a numpy arrays.
@@ -64,7 +64,7 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 	    dataset_name="Data_Distribution_1",
 	    classes=caregory_names,
 	    images=images,
-	    groundtruth=groundtruth_categories,
+	    groundtruth=groundtruth,
 	    neural_activity={"penultimate_layer": neural_activity_penultimate, "output": neural_activity_output},
 	    model=dp_model,
 	)
