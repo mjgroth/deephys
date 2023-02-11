@@ -13,7 +13,7 @@ Now, let's get started exporting your data  🚀
 ☀️ Defining Your Model
 ======================
 
-We first need to define the model to visualize. Any number of layers can be included. To define the model indicate its name, the neuron count per layer, and which layer is the classification layer.
+We first need to define the model to visualize. Any number of layers to be visualized can be included. To define the model indicate its name, the neuron count per layer, and which layer is the classification layer.
 
 .. code-block:: python
 
@@ -49,7 +49,7 @@ Here is all the variables we need for each data distribution:
 - ``groundtruth``: Integer indicating the ground-truth label number for each image. Dimensions: ``[#images]``.
 - ``neural_activity``: For each image, extract the neural activity that you want to visualize. This can be obtained for as many layers as you want. If you want to visualize a convolutional layer or a transformer, please see this for options (TBD). Dimensions for each layer: ``[#images, #neurons]``.
 
-All these can be Python lists or a numpy arrays.
+All these can be Python lists or numpy arrays.
 
 🤯 IMPORTANT: Make sure that the order of the images is aligned with the order of the neural activity.
 
@@ -60,7 +60,7 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 
 .. code-block:: python
 
-	test = dp.export(
+	distribution = dp.export(
 	    dataset_name="Data_Distribution_1",
 	    caregory_names=caregory_names,
 	    images=images,
@@ -68,12 +68,12 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 	    neural_activity={"penultimate_layer": neural_activity_penultimate, "output": neural_activity_output},
 	    model=dp_model,
 	)
-	test.save()
+	distribution.save()
 	
 
-Note that ``dp_model`` is the model that was defined at the beginning of the process. This will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
+Note that ``dp_model`` is the model that was defined at the beginning of the process. ``distribution.save()`` will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
 
-You can add more layers to the visualization by just adding them in the state list.
+
 
 🎏 Remember to follow step 1 and 2 for each dataset distribution separately. This will generate a different visualization file for each distribution that can then be visualized in Deephys all together.
 
