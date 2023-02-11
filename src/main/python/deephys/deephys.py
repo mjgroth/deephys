@@ -3,7 +3,6 @@ from cbor2 import dump
 from dataclasses import dataclass, asdict
 from typing import List, Optional, Mapping, Union, Dict
 import numpy as np
-import torch
 import struct
 from time import time
 from tqdm import tqdm
@@ -80,15 +79,30 @@ class Model(DeephysData):
         activations: List[bytearray]  # float32 or float64
 
 
-def model(name: str, layers: Dict[str, int], classification_layer: str):
+def model(model_name: str, layers: Dict[str, int], classification_layer: str):
     """
 
-    :param name: The name of the model
+    :param model_name: The name of the model
     :param layers: A dictionary with the names and number of neurons of each layer.
-    :param classification_layer: The name of the classification layer. Must be one of the layers defined in `layers`.
+    :param classification_layer: The name of the classification layer. Must be the name of one of the layers defined in `layers`.
     """
+    if len(model_name) > 40:
+        raise Exception(
+            f"Name of the model too long."
+        )
+
+    for layer in layers:
+        if len(layer) > 30:
+            raise Exception(
+                f"Name of the layer {layer} is too long."
+            )
+        if layers[layer] < 0:
+            raise Exception(
+                f"Name of neurons should be positive"
+            )
+
     return Model(
-        name=name,
+        name=model_name,
         layers=list(
             map(
                 lambda item: Layer(layerID=item[0], neurons=[Neuron()] * item[1]),
@@ -99,126 +113,126 @@ def model(name: str, layers: Dict[str, int], classification_layer: str):
     )
 
 
-def import_torch_dataset(
-    name: str,
-    dataset: torch.utils.data.DataLoader,
-    classes: list,
-    state: Union[list, np.ndarray, torch.FloatTensor],
-    model: Model,
-    dtype: str = "float32",
-):
-    """
-    Conveniently calls import_test_data with PyTorch data.
-
-    :param name: The name of the dataset
-    :param dataset: contains pixel data of images
-    :param classes: an ordered list of strings representing class names
-    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
-    :param model: the model structure
-    :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
-                  Default: ``"float32"``
-    :return: a formatted data object which may be saved to a file
-    :rtype: deephys.deephys.Test
-    """
-    pixelDataList = []
-    groundTruthList = []
-    for i in range(len(dataset)):
-        image, target = dataset[i]
-        if torch.is_tensor(target):
-            target = target.item()
-        pixelDataList.append(image)
-        groundTruthList.append(target)
-    pixelDataList = torch.stack(pixelDataList)
-    return import_test_data(
-        name=name,
-        pixel_data=pixelDataList,
-        ground_truths=groundTruthList,
-        classes=classes,
-        state=state,
-        model=model,
-    )
-
-
 def _to_np(d):
     if isinstance(d, list):
         return np.array(d)
-    if torch.is_tensor(d):
-        return d.cpu().detach().numpy()
     return d
 
 
-def _to_torch(value):
-    if isinstance(value, list):
-        return torch.tensor(value)
-    elif isinstance(value, np.ndarray):
-        return torch.from_numpy(value)
-    return value
-
-
 def _to_list(value):
-    if isinstance(value, (np.ndarray, torch.IntTensor)):
+    if isinstance(value, np.ndarray):
         return value.tolist()
     return value
 
 
-def import_test_data(
-    name: str,
-    classes: list,
-    state: Union[list, np.ndarray, torch.FloatTensor],
+def export(
+    dataset_name: str,
+    category_names: list,
+    neural_activity: Dict[str, Union[list, np.ndarray]],
     model: Model,
-    pixel_data: Union[list, np.ndarray, torch.FloatTensor],
-    ground_truths: Union[List[int], np.ndarray, torch.IntTensor],
+    images: Union[list, np.ndarray],
+    groundtruth: Union[List[int], np.ndarray],
     dtype: str = "float32",
 ):
     """
     Prepare test results for Deephys
+    The order of the images should be consistent with the order of the groundtruth_categories per image and the neural_activity.
 
-    :param name: The name of the dataset
-    :param classes: an ordered list of strings representing class names
-    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
-    :param model: the model structure
-    :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2] or [images,dim1,dim2] for greyscale. Pixels must be floats within the range 0.0:1.0
-    :param ground_truths: an ordered list of ground truths. The length should be the same as the number of images. Each element should be an integer indicating the index of the class.
+    :param dataset_name: The name of the dataset
+    :param category_names: an ordered list of strings representing class names
+    :param neural_activity: A dictionary with the name of the layers and their neural activity. The neural activity is an ordered array or list of floats [#images,#neurons]. Length of activations must be the same as the number of images and in the same order.
+    :param model: The model structure
+    :param images: An ordered list of image pixel data [#images,#channels,dim1,dim2] or [#images,dim1,dim2] for greyscale. Pixels must be floats within the range 0.0:1.0
+    :param groundtruth: An ordered list of the ground truth category of each image. The length should be the same as the number of images. Each element should be an integer indicating the index of the category.
     :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
                   Default: ``"float32"``
     :return: a formatted data object which may be saved to a file
     :rtype: deephys.deephys.Test
     """
-    imageList = []
-    state = list(map(_to_np, state))
-    pixel_data = _to_torch(pixel_data)
-    if len(pixel_data.shape) == (3):
-        pixel_data = torch.unsqueeze(pixel_data, 1)
-        pixel_data = pixel_data.repeat(1, 3, 1, 1)
-    if isinstance(ground_truths, torch.FloatTensor):
+
+    if len(dataset_name) > 40:  # Check dataset is not too long
         raise Exception(
-            f"ground_truths should be a list-like of ints, but got a FloatTensor. Please make it an IntTensor."
+            f"Name of the dataset too long."
         )
-    ground_truths = _to_list(ground_truths)
-    if len(pixel_data.shape) != (4):
+
+    # Prepare and check state
+    layer_names_in_model = []
+    for layer in model.layers:
+        layer_names_in_model.append(layer.layerID)
+    layer_names_in_model = set(layer_names_in_model)
+    layer_names_in_state = set(neural_activity.keys())
+    if not layer_names_in_model == layer_names_in_state:
         raise Exception(
-            f"pixel_data should be a 3D or 4D array-like collection. Colored: [images,channels,dim1,dim2] or greyscale: [images,dim1,dim2], but a shape of {pixel_data.shape} was received"
+            f"Layers names are different from the layers of the model"
         )
+
+    for layer in neural_activity:  # convert the activity of each layer to numpy
+        neural_activity[layer] = _to_np(neural_activity[layer])
+
     for layer in model.layers:
         if layer.layerID == model.classification_layer:
-            if len(layer.neurons) != len(classes):
+            if len(layer.neurons) != len(category_names):
                 raise Exception(
-                    f"classification layer must have the same length as the number of classes. classification layer length = {len(layer.neurons)}, classes length = {len(classes)}"
+                    f"classification layer must have the same length as the number of classes. classification "
+                    f"layer length = {len(layer.neurons)}, classes length = {len(category_names)}"
                 )
-    if len(ground_truths) != len(pixel_data):
+        else:  # check the activity is after relu (all values should be positive)
+            if np.any(neural_activity[layer.layerID] < 0):
+                raise Exception(
+                    f"Found negative activity in {layer.layerID}. Activity should be taken after ReLU."
+                )
+        dim_activity = np.shape(neural_activity[layer.layerID])
+        if not len(dim_activity) == 2:
+            raise Exception(
+                f"Neural activity of {layer.layerID} should be 2 dimensions (number of images x number of neurons)"
+            )
+        if not dim_activity[0] == len(images):
+            raise Exception(
+                f"Neural activity of {layer.layerID} contains {dim_activity[0]} images, but it must be "
+                f" {len(images)} images"
+            )
+        if not dim_activity[1] == len(layer.neurons):
+            raise Exception(
+                f"Neural activity of {layer.layerID} has {dim_activity[1]} neurons but the model was "
+                f"defined with {len(layer.neurons)} neurons"
+            )
+
+    # Prepare and check ground_truths
+    groundtruth = _to_list(groundtruth)  # convert ground_truth to list
+    if any((not isinstance(val, (int, np.uint))) for val in groundtruth):  # check that grount-truth are int
         raise Exception(
-            f"ground_truths length ({len(ground_truths)}) must be same as the image length ({len(pixel_data)})"
+            f"ground_truths should be a list-like of intst. Please make it an int."
         )
-    if pixel_data.shape[1] != 3:
+    if len(groundtruth) != len(images):
         raise Exception(
-            f"pixel_data should have 3 color channels, but {pixel_data.shape[1]} were received"
+            f"ground_truths length ({len(groundtruth)}) must be same as the image length ({len(images)})"
         )
+    # Prepare and check pixel_data
+    images = _to_np(images)  # convert all images to numpy
+
+    if len(images.shape) == 3:  # add color channels when they are not present
+        images = np.unsqueeze(images, 1)
+        images = images.repeat(1, 3, 1, 1)
+
+    if len(images.shape) != 4:  # make sure that the dimension is 4
+        raise Exception(
+            f"pixel_data should be a 3D or 4D array-like collection. Colored: "
+            f"[images,channels,dim1,dim2] or greyscale: [images,dim1,dim2], but a "
+            f"shape of {images.shape} was received"
+        )
+
+    if images.shape[1] != 3:
+        raise Exception(
+            f"pixel_data should have 3 color channels, but {images.shape[1]} were received"
+        )
+
     print("Preparing data...")
-    for i in tqdm(range(len(pixel_data))):
-        image = pixel_data[i]
-        target = ground_truths[i]
-        mn = torch.min(image)
-        mx = torch.max(image)
+    imageList = []
+    for i in tqdm(range(len(images))):
+        image = images[i]
+        target = groundtruth[i]
+        mn = np.min(image)
+        mx = np.max(image)
         if mx > 1 or mn < 0:
             raise Exception(
                 f"image pixel values must be floats between 0 and 1, but values given range from {mn} to {mx}"
@@ -226,8 +240,11 @@ def import_test_data(
         image = image * 255
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
-        im_as_list = image.numpy().astype(np.uint8).tolist()
-        im_activations = list(map(lambda l: l[i, :], state))
+        im_as_list = image.astype(np.uint8).tolist()
+
+        # Pull the layers in the stored order:
+        im_activations = [neural_activity[layer.layerID][i, :] for layer in model.layers]
+
         if dtype == "float32":
             float_fun = float32
         elif dtype == "float64":
@@ -240,7 +257,7 @@ def import_test_data(
             ImageFile(
                 imageID=i,
                 categoryID=target,
-                category=classes[target],
+                category=category_names[target],
                 data=im_to_bytes(im_as_list),
                 activations=model.state(
                     list(
@@ -256,7 +273,7 @@ def import_test_data(
                 features=None,
             )
         )
-    test = Test(name=name, classes=classes, dtype=dtype, images=imageList)
+    test = Test(name=dataset_name, classes=category_names, dtype=dtype, images=imageList)
     return test
 
 

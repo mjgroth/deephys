@@ -3,8 +3,7 @@ from deephys.deephys import (
     Layer,
     Model,
     model,
-    import_torch_dataset,
-    import_test_data,
+    export,
     ImageFile,
     Test,
     Stopwatch,
@@ -15,9 +14,8 @@ __all__ = [
     "Layer",
     "Model",
     "model",
-    "import_torch_dataset",
-    "import_test_data",
+    "export",
     "ImageFile",
     "Test",
-    "Stopwatch",
+    "Stopwatch"
 ]

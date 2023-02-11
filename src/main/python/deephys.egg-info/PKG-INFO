@@ -1,7 +1,8 @@
 Metadata-Version: 2.1
 Name: deephys
-Version: 0.11.0
+Version: 0.12.0
+Summary: Library to export neural activity to a Deephys-compatible format
 Author-email: Matt Groth <mjgroth@mit.edu>
-Project-URL: Homepage, https://github.com/mgroth0/deephys
-Project-URL: Documentation, https://matt-groth-deephys.readthedocs-hosted.com/en/latest/
+Project-URL: Homepage, https://deephys.org
+Project-URL: Documentation, https://deephys.readthedocs.io/en/latest/
 Project-URL: Bug Tracker, https://deephys.youtrack.cloud/
