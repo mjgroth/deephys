@@ -76,7 +76,7 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 	distribution.save()
 	
 
-Note that ``dp_model`` is the model that was defined at the beginning of the process. Also, note that the neural activity extracte for each layer has been placed in a dictionary that indicates the layer of the neural activitiy.
+Note that ``dp_model`` is the model that was defined at the beginning of the process. Also, note that the neural activity extracted for each layer has been placed in a dictionary that indicates from what layer it has been extracted.
 
 Finally, ``distribution.save()`` will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
 
