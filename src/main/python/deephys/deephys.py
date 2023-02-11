@@ -131,7 +131,7 @@ def export(
     neural_activity: Dict[str, Union[list, np.ndarray]],
     model: Model,
     images: Union[list, np.ndarray],
-    groundtruth_categories: Union[List[int], np.ndarray],
+    groundtruth: Union[List[int], np.ndarray],
     dtype: str = "float32",
 ):
     """
@@ -143,7 +143,7 @@ def export(
     :param neural_activity: A dictionary with the name of the layers and their neural activity. The neural activity is an ordered array or list of floats [#images,#neurons]. Length of activations must be the same as the number of images and in the same order.
     :param model: The model structure
     :param images: An ordered list of image pixel data [#images,#channels,dim1,dim2] or [#images,dim1,dim2] for greyscale. Pixels must be floats within the range 0.0:1.0
-    :param groundtruth_categories: An ordered list of the ground truth category of each image. The length should be the same as the number of images. Each element should be an integer indicating the index of the category.
+    :param groundtruth: An ordered list of the ground truth category of each image. The length should be the same as the number of images. Each element should be an integer indicating the index of the category.
     :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
                   Default: ``"float32"``
     :return: a formatted data object which may be saved to a file
@@ -198,14 +198,14 @@ def export(
             )
 
     # Prepare and check ground_truths
-    groundtruth_categories = _to_list(groundtruth_categories)  # convert ground_truth to list
-    if any((not isinstance(val, (int, np.uint))) for val in groundtruth_categories):  # check that grount-truth are int
+    groundtruth = _to_list(groundtruth)  # convert ground_truth to list
+    if any((not isinstance(val, (int, np.uint))) for val in groundtruth):  # check that grount-truth are int
         raise Exception(
             f"ground_truths should be a list-like of intst. Please make it an int."
         )
-    if len(groundtruth_categories) != len(images):
+    if len(groundtruth) != len(images):
         raise Exception(
-            f"ground_truths length ({len(groundtruth_categories)}) must be same as the image length ({len(images)})"
+            f"ground_truths length ({len(groundtruth)}) must be same as the image length ({len(images)})"
         )
     # Prepare and check pixel_data
     images = _to_np(images)  # convert all images to numpy
@@ -230,7 +230,7 @@ def export(
     imageList = []
     for i in tqdm(range(len(images))):
         image = images[i]
-        target = groundtruth_categories[i]
+        target = groundtruth[i]
         mn = np.min(image)
         mx = np.max(image)
         if mx > 1 or mn < 0:

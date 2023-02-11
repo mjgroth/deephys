@@ -40,7 +40,7 @@ class TestDeephys(unittest.TestCase):
             dataset_name="test",
             category_names=classes,
             images=pixel_data,
-            groundtruth_categories=ground_truths,
+            groundtruth=ground_truths,
             neural_activity=state,
             model=model,
         )
@@ -50,7 +50,7 @@ class TestDeephys(unittest.TestCase):
             dataset_name="test2",
             category_names=classes,
             images=pixel_data,
-            groundtruth_categories=ground_truths,
+            groundtruth=ground_truths,
             neural_activity=state,
             model=model,
         )
