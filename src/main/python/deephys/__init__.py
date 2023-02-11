@@ -3,7 +3,7 @@ from deephys.deephys import (
     Layer,
     Model,
     model,
-    export,
+    test,
     ImageFile,
     Test,
     Stopwatch,
@@ -14,8 +14,8 @@ __all__ = [
     "Layer",
     "Model",
     "model",
-    "export",
+    "test",
     "ImageFile",
     "Test",
-    "Stopwatch"
+    "Stopwatch",
 ]

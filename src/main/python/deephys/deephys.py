@@ -6,6 +6,7 @@ import numpy as np
 import struct
 from time import time
 from tqdm import tqdm
+import importlib
 
 # library already optimizes writes of int8
 # python cbor package has no way to make float32, also bytearray is smaller/faster
@@ -52,6 +53,17 @@ class Model(DeephysData):
         self.extension = f"model"
         if self.classification_layer not in map(lambda l: l.layerID, self.layers):
             raise Exception(f"classification_layer must be one of the included layers")
+        if len(self.name) > 40:
+            raise Exception(
+                f"Name of the model too long. Must be 40 characters or less"
+            )
+        for layer in self.layers:
+            if len(layer.layerID) > 30:
+                raise Exception(f"Name of the layer {layer.layerID} is too long.")
+            if len(layer.neurons) < 0:
+                raise Exception(
+                    f"Number of neurons in {layer} should be positive, but it was {len(layer.neurons)}"
+                )
 
     def state(self, activations, dtype):
         if len(activations) != len(self.layers):
@@ -86,21 +98,6 @@ def model(model_name: str, layers: Dict[str, int], classification_layer: str):
     :param layers: A dictionary with the names and number of neurons of each layer.
     :param classification_layer: The name of the classification layer. Must be the name of one of the layers defined in `layers`.
     """
-    if len(model_name) > 40:
-        raise Exception(
-            f"Name of the model too long."
-        )
-
-    for layer in layers:
-        if len(layer) > 30:
-            raise Exception(
-                f"Name of the layer {layer} is too long."
-            )
-        if layers[layer] < 0:
-            raise Exception(
-                f"Name of neurons should be positive"
-            )
-
     return Model(
         name=model_name,
         layers=list(
@@ -116,17 +113,27 @@ def model(model_name: str, layers: Dict[str, int], classification_layer: str):
 def _to_np(d):
     if isinstance(d, list):
         return np.array(d)
+    if importlib.util.find_spec("torch") is not None:
+        import torch
+
+        if torch.is_tensor(d):
+            return d.cpu().detach().numpy()
     return d
 
 
 def _to_list(value):
     if isinstance(value, np.ndarray):
         return value.tolist()
+    if importlib.util.find_spec("torch") is not None:
+        import torch
+
+        if isinstance(value, torch.IntTensor):
+            return value.tolist()
     return value
 
 
-def export(
-    dataset_name: str,
+def test(
+    name: str,
     category_names: list,
     neural_activity: Dict[str, Union[list, np.ndarray]],
     model: Model,
@@ -135,10 +142,9 @@ def export(
     dtype: str = "float32",
 ):
     """
-    Prepare test results for Deephys
-    The order of the images should be consistent with the order of the groundtruth_categories per image and the neural_activity.
+    Prepare test results for Deephys. The order of the images should be consistent with the order of the groundtruth_categories per image and the neural_activity.
 
-    :param dataset_name: The name of the dataset
+    :param name: The name of the test
     :param category_names: an ordered list of strings representing class names
     :param neural_activity: A dictionary with the name of the layers and their neural activity. The neural activity is an ordered array or list of floats [#images,#neurons]. Length of activations must be the same as the number of images and in the same order.
     :param model: The model structure
@@ -149,12 +155,8 @@ def export(
     :return: a formatted data object which may be saved to a file
     :rtype: deephys.deephys.Test
     """
-
-    if len(dataset_name) > 40:  # Check dataset is not too long
-        raise Exception(
-            f"Name of the dataset too long."
-        )
-
+    if len(name) > 40:
+        raise Exception(f"Name of the test must be 40 characters or less")
     # Prepare and check state
     layer_names_in_model = []
     for layer in model.layers:
@@ -162,24 +164,19 @@ def export(
     layer_names_in_model = set(layer_names_in_model)
     layer_names_in_state = set(neural_activity.keys())
     if not layer_names_in_model == layer_names_in_state:
-        raise Exception(
-            f"Layers names are different from the layers of the model"
-        )
-
+        raise Exception(f"Layers names are different from the layers of the model")
     for layer in neural_activity:  # convert the activity of each layer to numpy
         neural_activity[layer] = _to_np(neural_activity[layer])
-
     for layer in model.layers:
         if layer.layerID == model.classification_layer:
             if len(layer.neurons) != len(category_names):
                 raise Exception(
-                    f"classification layer must have the same length as the number of classes. classification "
-                    f"layer length = {len(layer.neurons)}, classes length = {len(category_names)}"
+                    f"classification layer must have the same length as the number of classes. classification layer length = {len(layer.neurons)}, classes length = {len(category_names)}"
                 )
         else:  # check the activity is after relu (all values should be positive)
             if np.any(neural_activity[layer.layerID] < 0):
                 raise Exception(
-                    f"Found negative activity in {layer.layerID}. Activity should be taken after ReLU."
+                    f"Found negative activity in {layer.layerID}. Activity should be taken after ReLU"
                 )
         dim_activity = np.shape(neural_activity[layer.layerID])
         if not len(dim_activity) == 2:
@@ -188,44 +185,44 @@ def export(
             )
         if not dim_activity[0] == len(images):
             raise Exception(
-                f"Neural activity of {layer.layerID} contains {dim_activity[0]} images, but it must be "
-                f" {len(images)} images"
+                f"Neural activity of {layer.layerID} contains {dim_activity[0]} images, but it must be {len(images)} images"
             )
         if not dim_activity[1] == len(layer.neurons):
             raise Exception(
-                f"Neural activity of {layer.layerID} has {dim_activity[1]} neurons but the model was "
-                f"defined with {len(layer.neurons)} neurons"
+                f"Neural activity of {layer.layerID} has {dim_activity[1]} neurons but the model was defined with {len(layer.neurons)} neurons"
             )
-
     # Prepare and check ground_truths
+    if importlib.util.find_spec("torch") is not None:
+        import torch
+
+        if isinstance(groundtruth, torch.FloatTensor):
+            raise Exception(
+                f"groundtruth should be a list-like of ints, but got a FloatTensor. Please make it an IntTensor."
+            )
     groundtruth = _to_list(groundtruth)  # convert ground_truth to list
-    if any((not isinstance(val, (int, np.uint))) for val in groundtruth):  # check that grount-truth are int
+    if any(
+        (not isinstance(val, (int, np.uint))) for val in groundtruth
+    ):  # check that ground-truth are int
         raise Exception(
-            f"ground_truths should be a list-like of intst. Please make it an int."
+            f"ground_truths should be a list-like of ints. Please make it an int."
         )
     if len(groundtruth) != len(images):
         raise Exception(
             f"ground_truths length ({len(groundtruth)}) must be same as the image length ({len(images)})"
         )
     # Prepare and check pixel_data
-    images = _to_np(images)  # convert all images to numpy
-
+    images = _to_np(images)
     if len(images.shape) == 3:  # add color channels when they are not present
         images = np.unsqueeze(images, 1)
         images = images.repeat(1, 3, 1, 1)
-
     if len(images.shape) != 4:  # make sure that the dimension is 4
         raise Exception(
-            f"pixel_data should be a 3D or 4D array-like collection. Colored: "
-            f"[images,channels,dim1,dim2] or greyscale: [images,dim1,dim2], but a "
-            f"shape of {images.shape} was received"
+            f"pixel_data should be a 3D or 4D array-like collection. Colored: [images,channels,dim1,dim2] or greyscale: [images,dim1,dim2], but a shape of {images.shape} was received"
         )
-
     if images.shape[1] != 3:
         raise Exception(
             f"pixel_data should have 3 color channels, but {images.shape[1]} were received"
         )
-
     print("Preparing data...")
     imageList = []
     for i in tqdm(range(len(images))):
@@ -241,10 +238,9 @@ def export(
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
         im_as_list = image.astype(np.uint8).tolist()
-
-        # Pull the layers in the stored order:
-        im_activations = [neural_activity[layer.layerID][i, :] for layer in model.layers]
-
+        im_activations = [
+            neural_activity[layer.layerID][i, :] for layer in model.layers
+        ]
         if dtype == "float32":
             float_fun = float32
         elif dtype == "float64":
@@ -273,7 +269,7 @@ def export(
                 features=None,
             )
         )
-    test = Test(name=dataset_name, classes=category_names, dtype=dtype, images=imageList)
+    test = Test(name=name, classes=category_names, dtype=dtype, images=imageList)
     return test
 
 
