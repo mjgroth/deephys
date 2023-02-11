@@ -28,14 +28,16 @@ class TestDeephys(unittest.TestCase):
         layer2 = dp.Layer(layerID="layer2", neurons=[dp.Neuron()] * num_classes)
         model = dp.Model("model", [layer1, layer2], classification_layer="layer2")
         model2 = dp.model(
-            "model", {"layer1": 1, "layer2": num_classes}, classification_layer="layer2"
+            "model", {"layer2": num_classes, "layer1": 1}, classification_layer="layer2"
         )
-        model.save()
-        state = [[[0.5]] * num_images, [[0.5] * num_classes] * num_images]
+        model2.save()
+        state = {"layer1": [[0.5]] * num_images,
+                 "layer2": [[0.5] * num_classes] * num_images
+            }
 
         pixel_data = np.zeros([num_images, 3, 32, 32])
 
-        ground_truths = [0] * num_images
+        ground_truths = np.array([0] * num_images)
         test = dp.export(
             name="test",
             classes=classes,
