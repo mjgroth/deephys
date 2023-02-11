@@ -13,7 +13,7 @@ Now, let's get started exporting your data  🚀
 ☀️ Defining Your Model
 ======================
 
-We first need to define the model to visualize. Any number of layers to be visualized can be included. To define the model indicate its name, the neuron count per layer, and which layer is the classification layer.
+We first need to define the model to visualize. Any number of layers to be visualized can be included. To define the model indicate its name, the neuron count per layer. The classification (output) layer needs to be also indicated as it needs to be always included in the visualization. 
 
 .. code-block:: python
 
@@ -42,16 +42,21 @@ Each dataset distribution that you would like to analyze needs to be exported se
 1. Extract images 🖼️, categories 🐕, and neural activity 🔥🔥🔥
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here is all the variables we need for each data distribution:
+Here is all the variables we need to extract for each data distribution:
 
-- ``caregory_names``: Strings indicating the name of each category. Dimensions: ``[#categories]``.
 - ``images``: They need to be in the range [0, 1]. It is advisable to resize them to a small size (eg. 64x64 pixels) to save space and memory. They can be color or grayscale images. Dimensions: ``[#images,#channels,H,W]``.
 - ``groundtruth``: Integer indicating the ground-truth label number for each image. Dimensions: ``[#images]``.
-- ``neural_activity``: For each image, extract the neural activity that you want to visualize. This can be obtained for as many layers as you want. If you want to visualize a convolutional layer or a transformer, please see this for options (TBD). Dimensions for each layer: ``[#images, #neurons]``.
+- ``neural_activity``: For each image, extract the neural activity that you want to visualize. The neural activity needs to be extracted for each layers we indicated in the model that we want to visualize.  Dimensions for each layer: ``[#images, #neurons]``.
 
-All these can be Python lists or numpy arrays.
+All these variables can be Python lists or numpy arrays.
 
-🤯 IMPORTANT: Make sure that the order of the images is aligned with the order of the neural activity.
+🤯 IMPORTANT: Make sure that the order of the images is aligned with the order of the groundtruth and the neural activity.
+🤯 If you want to visualize a convolutional layer or a transformer, please see this for options (TBD).
+
+
+
+We will also need the ``caregory_names``, which is a list of strings indicating the name of each category (Dimensions: ``[#categories]``).
+
 
 2. Convert the data to a Deephys-compatible format ✨
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,7 +76,9 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 	distribution.save()
 	
 
-Note that ``dp_model`` is the model that was defined at the beginning of the process. ``distribution.save()`` will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
+Note that ``dp_model`` is the model that was defined at the beginning of the process. Also, note that the neural activity extracte for each layer has been placed in a dictionary that indicates the layer of the neural activitiy.
+
+Finally, ``distribution.save()`` will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
 
 
 
