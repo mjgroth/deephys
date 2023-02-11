@@ -62,7 +62,7 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 
 	test = dp.import_test_data(
 	    dataset_name="Data_Distribution_1",
-	    classes=caregory_names,
+	    caregory_names=caregory_names,
 	    images=images,
 	    groundtruth=groundtruth,
 	    neural_activity={"penultimate_layer": neural_activity_penultimate, "output": neural_activity_output},
