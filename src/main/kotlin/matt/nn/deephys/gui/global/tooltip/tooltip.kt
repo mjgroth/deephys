@@ -31,19 +31,25 @@ import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_DEFAULT
 import matt.nn.deephys.gui.global.color.DeephysPalette
+import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DEFAULT_BIG_IMAGE_SCALE
-import matt.nn.deephys.gui.settings.DeephySettings
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.bindings.str.ObsS
 import java.lang.ref.WeakReference
 
-fun NodeWrapper.veryLazyDeephysTooltip(text: String, im: MyWeakRef<out DeephyImage<out Number>>) {
+fun NodeWrapper.veryLazyDeephysTooltip(
+  text: String,
+  im: MyWeakRef<out DeephyImage<out Number>>,
+  settings: DeephysSettingsController
+) {
+
 
   val handler = object: EventHandler<MouseEvent> {
 	override fun handle(event: MouseEvent) {    /*kinda works like a weak ref*/
 	  val target = (event.target as Node)
-	  target.wrapped().also {
-		it.deephyTooltip(text, im.deref()!!)
+	  (target.wrapped()).also {
+		it.deephyTooltip(text, im.deref()!!, settings)
 		it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
 	  }
 	}
@@ -52,13 +58,13 @@ fun NodeWrapper.veryLazyDeephysTooltip(text: String, im: MyWeakRef<out DeephyIma
   addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
 }
 
-fun NodeWrapper.veryLazyDeephysTooltip(text: String) {
+fun NodeWrapper.veryLazyDeephysTooltip(text: String, settings: DeephysSettingsController) {
 
   val handler = object: EventHandler<MouseEvent> {
 	override fun handle(event: MouseEvent) {    /*kinda works like a weak ref*/
 	  val target = (event.target as Node)
-	  target.wrapped().also {
-		it.deephyTooltip(text)
+	  (target.wrapped()).also {
+		it.deephyTooltip(text, settings = settings)
 		it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
 	  }
 
@@ -68,12 +74,17 @@ fun NodeWrapper.veryLazyDeephysTooltip(text: String) {
   addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
 }
 
-fun NodeWrapper.veryLazyDeephysTooltip(op: Produce<String>) {
+fun DeephysNode.veryLazyDeephysTooltip(op: Produce<String>) = run {
+  val memSafeSettings = settings
+  veryLazyDeephysTooltip(memSafeSettings, op)
+}
+
+fun NodeWrapper.veryLazyDeephysTooltip(settings: DeephysSettingsController, op: Produce<String>) {
   val handler = object: EventHandler<MouseEvent> {
 	override fun handle(event: MouseEvent) {    /*kinda works like a weak ref*/
 	  val target = (event.target as Node)
 	  target.wrapped().also {
-		it.deephyTooltip(op())
+		it.deephyTooltip(op(), settings = settings)
 		it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
 	  }
 	}
@@ -81,14 +92,29 @@ fun NodeWrapper.veryLazyDeephysTooltip(op: Produce<String>) {
   addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
 }
 
-fun NodeWrapper.veryLazyDeephysTexTooltip(getCode: Produce<String>) =
-  veryLazyDeephysTooltipWithNode(/*darkBG = true*/) {
+fun DeephysNode.veryLazyDeephysTexTooltip(getCode: Produce<String>) = run {
+  val memSafeNode = settings
+  veryLazyDeephysTexTooltip(memSafeNode, getCode)
+}
+
+fun NodeWrapper.veryLazyDeephysTexTooltip(settings: DeephysSettingsController, getCode: Produce<String>) = run {
+  veryLazyDeephysTooltipWithNode(/*darkBG = true*/settings) {
 	deephysTexNodeFactory.toCanvas(
 	  getCode()
 	) ?: TextWrapper("error")
   }
+}
 
-fun NodeWrapper.veryLazyDeephysTooltipWithNode(/*darkBG: Boolean = false, */op: Produce<NodeWrapper>) {
+fun DeephysNode.veryLazyDeephysTooltipWithNode(op: Produce<NodeWrapper>) = run {
+  val memSafeNode = settings
+  veryLazyDeephysTooltipWithNode(memSafeNode, op)
+}
+
+fun NodeWrapper.veryLazyDeephysTooltipWithNode(
+  /*darkBG: Boolean = false, */
+  settings: DeephysSettingsController,
+  op: Produce<NodeWrapper>,
+) {
   val handler = object: EventHandler<MouseEvent> {
 	override fun handle(event: MouseEvent) {    /*kinda works like a weak ref*/
 	  val target = (event.target as Node)
@@ -97,7 +123,7 @@ fun NodeWrapper.veryLazyDeephysTooltipWithNode(/*darkBG: Boolean = false, */op: 
 		  //			"""-fx-background: black; -fx-background-color: black"""
 		  *//*node.scene.root.style = "-fx-background: black; -fx-background-color: black"*//*
 		}*/
-		it.deephyTooltip("").apply {
+		it.deephyTooltip("", settings = settings).apply {
 		  contentNode.theLabel.graphic = op()        /*  if (darkBG) {
 			  thread {
 				sleep(1.seconds)
@@ -141,13 +167,15 @@ val deephysTexNodeFactory by lazy {
 }
 
 
-/*cant have op here since it will operate on the matt.fx.control.wrapper.tooltip.fixed.tooltip for other nodes*/
+/*cant have op here since it will operate on the tooltip for other nodes*/
 fun NodeWrapper.deephyTooltip(
-  s: String, im: DeephyImage<*>? = null/*, op: Tooltip.()->Unit = {}*/
+  s: String,
+  im: DeephyImage<*>? = null/*, op: Tooltip.()->Unit = {}*/,
+  settings: DeephysSettingsController
 ): DeephyTooltip {
 
   if (im == null) {
-	return DeephyTooltip(s, null).also {
+	return DeephyTooltip(s, null, settings).also {
 	  install(it)
 	}
   }
@@ -160,9 +188,10 @@ fun NodeWrapper.deephyTooltip(
 
 fun NodeWrapper.deephyTooltip(
   s: ObsS,
+  settings: DeephysSettingsController
 ): FixedTooltipWrapper {
 
-  return DeephyTooltip(s.value, null).also {
+  return DeephyTooltip(s.value, null, settings).also {
 	install(it)
 	it.contentNode.theLabel.textProperty.bindWeakly(s)
   }
@@ -196,7 +225,7 @@ class DeephysTooltipContent(s: String): StackPaneW() {
 
 }
 
-class DeephyTooltip(s: String, im: DeephyImage<*>?): FixedTooltipWrapper() {
+class DeephyTooltip(s: String, im: DeephyImage<*>?, settings: DeephysSettingsController): FixedTooltipWrapper() {
   companion object {    /*private val drawQueue = QueueWorker()
 	private val runLaterBunch = mutableSetOf<()->Unit>()*/
 
@@ -234,7 +263,7 @@ class DeephyTooltip(s: String, im: DeephyImage<*>?): FixedTooltipWrapper() {
 	var didFirstShow = false
 
 	comfortablyShowForeverUntilEscaped()
-	val ms1 = DeephySettings.millisecondsBeforeTooltipsVanish.value
+	val ms1 = settings.millisecondsBeforeTooltipsVanish.value
 	if (ms1 != 0) {
 	  hideDelay = Duration.millis(ms1.toDouble())
 	}    //	println("hideDelay1=${hideDelay}")
@@ -247,11 +276,11 @@ class DeephyTooltip(s: String, im: DeephyImage<*>?): FixedTooltipWrapper() {
 
 	  /*putting this stuff in setOnShown to reduce the amount of CPU and memory resources used by tooltips that never show*/
 	  if (!didFirstShow) {
-		val ms2 = DeephySettings.millisecondsBeforeTooltipsVanish.value
+		val ms2 = settings.millisecondsBeforeTooltipsVanish.value
 		if (ms2 != 0) {
 		  hideDelay = Duration.millis(ms2.toDouble())
 		}        //		println("hideDelay1.5=${hideDelay}")
-		DeephySettings.millisecondsBeforeTooltipsVanish.onChangeWithWeak(this) { tt, newMS ->
+		settings.millisecondsBeforeTooltipsVanish.onChangeWithWeak(this) { tt, newMS ->
 		  if (newMS == 0) {
 			tt.hideDelay = Duration.INDEFINITE
 		  } else {
@@ -336,7 +365,6 @@ fun NW.deephysInfoSymbol(text: ObsS, op: DSL<DeephysInfoSymbol> = {}) = DeephysI
 fun NW.deephysInfoSymbol(text: String, op: DSL<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text).attachTo(this, op)
 
 
-
 class DeephysInfoSymbol(info: String): InfoSymbol(info) {
   override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
   val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
@@ -344,13 +372,14 @@ class DeephysInfoSymbol(info: String): InfoSymbol(info) {
 }
 
 
-fun NW.deephysWarningSymbol(text: ObsS, op: DSL<DeephysWarningSymbol> = {}) = DeephysWarningSymbol(text.value).attachTo(this) {
-  textProperty.bind(text)
-  op()
-}
+fun NW.deephysWarningSymbol(text: ObsS, op: DSL<DeephysWarningSymbol> = {}) =
+  DeephysWarningSymbol(text.value).attachTo(this) {
+	textProperty.bind(text)
+	op()
+  }
 
-fun NW.deephysWarningSymbol(text: String, op: DSL<DeephysWarningSymbol> = {}) = DeephysWarningSymbol(text).attachTo(this, op)
-
+fun NW.deephysWarningSymbol(text: String, op: DSL<DeephysWarningSymbol> = {}) =
+  DeephysWarningSymbol(text).attachTo(this, op)
 
 
 class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {

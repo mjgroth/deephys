@@ -1,50 +1,53 @@
 package matt.nn.deephys.gui.settings.gui
 
-import javafx.scene.control.ContentDisplay.RIGHT
-import matt.async.thread.ThreadReport
-import matt.fx.control.inter.contentDisplay
-import matt.fx.control.inter.graphic
+import javafx.scene.control.TreeItem
+import javafx.scene.text.TextAlignment.CENTER
 import matt.fx.control.lang.actionbutton
-import matt.fx.control.wrapper.control.slider.slider
-import matt.fx.control.wrapper.control.spinner.spinner
+import matt.fx.control.wrapper.control.tree.treeview
+import matt.fx.control.wrapper.treeitem.TreeItemWrapper
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.hbox.hbox
+import matt.fx.graphics.wrapper.pane.hbox.h
+import matt.fx.graphics.wrapper.pane.stack.stackpane
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.gui.interact.openInNewWindow
 import matt.gui.mstage.ShowMode.DO_NOT_SHOW
 import matt.gui.mstage.WMode.CLOSE
-import matt.gui.option.BoolSetting
-import matt.gui.option.DoubleSetting
 import matt.gui.option.EnumSetting
-import matt.gui.option.IntSetting
-import matt.log.report.MemReport
-import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
-import matt.nn.deephys.gui.global.deephyActionButton
-import matt.nn.deephys.gui.global.deephyButton
-import matt.nn.deephys.gui.global.deephyCheckbox
+import matt.gui.option.SettingsData
 import matt.nn.deephys.gui.global.deephyRadioButton
-import matt.nn.deephys.gui.global.deephyText
-import matt.nn.deephys.gui.global.deephysLabel
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
-import matt.nn.deephys.gui.settings.DeephySettings
+import matt.nn.deephys.gui.global.deephysText
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
+import matt.nn.deephys.gui.settings.gui.control.createControlFor
 import matt.nn.deephys.init.gearImage
-import matt.nn.deephys.state.DeephyState
-import matt.prim.str.elementsToString
-import java.awt.Desktop
 
-val settingsButton by lazy {
+private object MONITOR
+
+private var gotSettingsButton = false
+fun settingsButton(settings: DeephysSettingsController) = lazy {
+  synchronized(MONITOR) {
+	require(!gotSettingsButton)
+	gotSettingsButton = true
+  }
+
   actionbutton(graphic = ImageViewWrapper(gearImage.await()).apply {
 	isPreserveRatio = true
 	fitWidth = 25.0
   }) {
-	settingsWindow.show()
+	settingsWindow(settings).value.show()
   }
 }
 
-val settingsWindow by lazy {
-  SettingsPane.openInNewWindow(
+private var gotSettingsWindow = false
+fun settingsWindow(settings: DeephysSettingsController) = lazy {
+  synchronized(MONITOR) {
+	require(!gotSettingsWindow)
+	gotSettingsWindow = true
+  }
+  SettingsPane(settings).openInNewWindow(
 	DO_NOT_SHOW,
 	CLOSE,
 	EscClosable = true,
@@ -64,141 +67,51 @@ fun <E: Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) = rec.apply
   }
 }
 
-object SettingsPane: VBoxWrapperImpl<NodeWrapper>() {
+class SettingsPane(override val settings: DeephysSettingsController): VBoxWrapperImpl<NodeWrapper>(), DeephysNode {
+  companion object {
+	private var instance: SettingsPane? = null
+  }
+
+  init {
+	synchronized(SettingsPane::class) {
+	  require(instance == null)
+	  instance = this
+	}
+  }
+
   init {
 
+	val memSafeSettings = settings
 
-	DeephySettings.settings.forEach { sett ->
-
-	  when (sett) {
-		is EnumSetting   -> {		//		  val group = sett.createBoundToggleMechanism()
-		  hbox<NW> {
-			deephyText(sett.label)
-
-			sett.createRadioButtons(this@hbox)
-
-			//			sett.cls.java.enumConstants.forEach {
-			//			  deephyRadioButton((it as Enum<*>).name, group, it) {
-			//				isSelected = sett.prop.value == it
-			//			  }
-			//			}
-			veryLazyDeephysTooltip(sett.tooltip)
-		  }
-
-		  //		  group.selectedValue.bindBidirectional(sett.prop)
-
-		  //		  val prop = group.selectedValue/*<Any>().toNonNullableProp()*/
-		  //		  prop.value = sett.prop.value
-		  //		  prop.onChange {
-		  //			sett.prop::value.set(it)
-		  //		  }
+	h {
+	  val tv = treeview<SettingsData> {
+		root = TreeItemWrapper(memSafeSettings)
+		populate {
+		  it.value.sections.map { it as SettingsData }
 		}
-
-		is IntSetting    -> {
-		  deephysLabel {
-			veryLazyDeephysTooltip(sett.tooltip)
-			text = sett.label
-			contentDisplay = RIGHT
-			graphic = spinner(
-			  min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
-			) {
-			  prefWidth = 150.0			/* val rBlocker = RecursionBlocker()
-			   valueProperty.onChange {
-				 require(it != null)
-				 rBlocker.with {
-				   sett.prop.value = it
-				 }
-			   }
-			   sett.prop.onChange {
-				 rBlocker.with {
-
-				 }
-			   }*/
-			  this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)
-			}
-		  }
-		}
-
-		is DoubleSetting -> {
-		  deephysLabel {
-			veryLazyDeephysTooltip(sett.tooltip)
-			text = sett.label
-			contentDisplay = RIGHT
-			graphic = slider(
-			  min = sett.min,
-			  max = sett.max,
-			  value = sett.prop.value,
-			) {
-			  prefWidth = 150.0
-			  /*  val rBlocker = RecursionBlocker()
-				valueChangingProperty.onChange {
-				  rBlocker.with {
-					sett.prop.value = value
-				  }
-				}			*//*  valueProperty.onChange {
-				  require(it != null)
-				  rBlocker.with {
-					sett.prop.value = it
-				  }
-				}*//*
-			  sett.prop.onChange {
-				rBlocker.with {
-				  value = it
-				}
+		root!!.expandAll()
+		select(root!!.node)
+	  }
+	  v {
+		fun update(selection: TreeItem<SettingsData>?) {
+		  clear()
+		  selection?.value?.settings?.forEach { sett ->
+			+createControlFor(sett, memSafeSettings)
+		  } ?: run {
+			stackpane<NW> {
+			  prefHeightProperty.bindWeakly(this@v.heightProperty)
+			  prefWidthProperty.bindWeakly(this@v.widthProperty)
+			  deephysText("Select a section in the tree to edit its settings.") {
+				textAlignment = CENTER
 			  }
-*/
-			  valueProperty.bindBidirectional(sett.prop)
-
-			  /*this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)*/
 			}
 		  }
 		}
-
-		is BoolSetting   -> {
-		  deephyCheckbox(
-			sett.label
-		  ) {
-			veryLazyDeephysTooltip(sett.tooltip)
-			selectedProperty.bindBidirectional(sett.prop)			/*isSelected = sett.prop.value
-			selectedProperty.onChange {
-			  sett.prop.value = it
-			}*/
-		  }
+		tv.selectedItemProperty.onChange {
+		  update(it)
 		}
-	  }
-
-
-	}
-
-	deephyActionButton("Reset all settings to default") {
-	  DeephySettings.settings.forEach {
-		it.resetToDefault()
+		update(tv.selectedItem)
 	  }
 	}
-
-	deephyActionButton("Delete state") {
-	  DeephyState.delete()
-	  println("model=${DeephyState.model.value}")
-	  println("tests=${DeephyState.tests.value?.elementsToString()}")
-	}
-
-
-	deephyButton("Print RAM info to console") {
-	  setOnAction {
-		println(MemReport())
-	  }
-	}
-
-	deephyButton("Print thread info to console") {
-	  setOnAction {
-		println(ThreadReport())
-	  }
-	}
-	deephyButton("Open Log Folder") {
-	  setOnAction {
-		Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder)
-	  }
-	}
-
   }
 }

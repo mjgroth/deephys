@@ -11,7 +11,6 @@ import matt.log.profile.mem.throttle
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.warn.warn
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
-import matt.nn.deephys.gui.settings.DeephySettings
 import matt.nn.deephys.load.test.OLD_CAT_LOAD_WARNING
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.testcache.TestRAMCache
@@ -83,6 +82,7 @@ class Test<N: Number>(
   override fun isDoneLoading(): Boolean {
 	return true
   }
+
   @Suppress("UNCHECKED_CAST")
   val images = images as List<DeephyImage<N>>
 
@@ -107,16 +107,14 @@ class Test<N: Number>(
 
 
   fun category(id: Int) = catsByID[id]!!
-	/*images.find { it.category.id == id }!!.category*/
+  /*images.find { it.category.id == id }!!.category*/
 
   val categories by lazy {
-	if (cats!=null) {
+	if (cats != null) {
 	  cats.sortedBy { it.id }
 	} else {
 	  warn(OLD_CAT_LOAD_WARNING)
-	  stopwatch("categories", enabled = DeephySettings.verboseLogging.value) {
-		this@Test.images.map { it.category }.toSet().toList().sortedBy { it.id }
-	  }
+	  this@Test.images.map { it.category }.toSet().toList().sortedBy { it.id }
 	}
 
   }
@@ -127,9 +125,7 @@ class Test<N: Number>(
 
   private val imagesByCategoryID by lazy {
 	val r = categories.associateWith { setOf<DeephyImage<N>>() }.toMutableMap()
-	val toPut = stopwatch("imagesByCategoryID", enabled = DeephySettings.verboseLogging.value) {
-	  this@Test.images.groupBy { it.category }.mapValues { it.value.toSet() }
-	}
+	val toPut = this@Test.images.groupBy { it.category }.mapValues { it.value.toSet() }
 	r.putAll(toPut)
 	r.mapKeys { it.key.id }
   }
@@ -145,8 +141,7 @@ class Test<N: Number>(
   private val activationsMatByLayerIndex = lazyWeakMap<Int, D2Array<N>> { lay ->
 
 
-
-//	dtype.
+	//	dtype.
 	val list = this@Test.images.map {
 	  it.weakActivations[lay]/*.asList()*/
 	}/*.toNDArray()*/
@@ -154,11 +149,9 @@ class Test<N: Number>(
 
 	dtype.d2array(list)
 
-//	1
+	//	1
 
   }
-
-
 
 
   val activationsByNeuron = MapMaker()
@@ -193,9 +186,9 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 
 	}*/
 
-//  fun activationsByNeuronValueWrapped(key: InterTestNeuron): MultiArrayWrapper<N> {
-//	dtype.wr
-//  }
+  //  fun activationsByNeuronValueWrapped(key: InterTestNeuron): MultiArrayWrapper<N> {
+  //	dtype.wr
+  //  }
 
 
   val maxActivations = lazyMap<InterTestNeuron, N> { neuron ->
@@ -203,7 +196,6 @@ myMat[0 ..< myMat.shape[0], it.index]*/
 	/*activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!*/
 
 	activationsByNeuron[neuron].max()!!
-
 
 
   }

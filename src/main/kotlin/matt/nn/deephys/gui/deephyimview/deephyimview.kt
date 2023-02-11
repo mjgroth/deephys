@@ -3,16 +3,17 @@ package matt.nn.deephys.gui.deephyimview
 import javafx.scene.Cursor
 import matt.async.queue.pool.FakeWorkerPool
 import matt.async.queue.pool.QueueWorkerPool
-import matt.gui.menu.context.mcontextmenu
 import matt.fx.graphics.dialog.saveFile
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.graphics.wrapper.style.toAwtColor
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
+import matt.gui.menu.context.mcontextmenu
 import matt.lang.RUNTIME
 import matt.log.todo.todoOnce
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.math.double.op.div
@@ -28,7 +29,8 @@ class DeephyImView(
   im: DeephyImage<*>,
   viewer: DatasetViewer,
   big: Boolean = false,
-  loadAsync: Boolean = false
+  loadAsync: Boolean = false,
+  settings: DeephysSettingsController
 ): ScaledCanvas(
   initializeInLoadingMode = true,
   progressIndicatorWidthAndHeight = (if (big) viewer.bigImageScale.value else viewer.smallImageScale.value),
@@ -44,6 +46,8 @@ class DeephyImView(
   val weakIm = im.weak
 
   init {
+
+	val memSafeSettings = settings
 
 
 	val localWeakIm = weakIm
@@ -119,7 +123,11 @@ class DeephyImView(
 	}.whenDone { mat ->
 	  ensureInFXThreadOrRunLater {
 		showCanvas()
-		veryLazyDeephysTooltip(localWeakIm.deref()!!.category.label, localWeakIm)
+		veryLazyDeephysTooltip(
+		  localWeakIm.deref()!!.category.label,
+		  localWeakIm,
+		  settings = memSafeSettings
+		)
 		val widthMaybe = mat[0].size.toDouble()
 		if (big) {
 		  scale.bindWeakly(localWeakViewer.deref()!!.bigImageScale/widthMaybe)

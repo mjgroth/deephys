@@ -51,7 +51,7 @@ fun ET.deephysLabeledControl(
   alignment = Pos.CENTER_LEFT
   h {
 	alignment = Pos.CENTER_LEFT
-	deephyText("$label:")
+	deephysText("$label:")
 	prefWidth = 60.0
   }
   +control.apply {
@@ -60,10 +60,10 @@ fun ET.deephysLabeledControl(
   op()
 }
 
-fun EventTargetWrapper.deephyText(s: String = "", op: DeephyText.()->Unit = {}) =
+fun EventTargetWrapper.deephysText(s: String = "", op: DeephyText.()->Unit = {}) =
   DeephyText(BindableProperty(s)).apply(op).also { +it }
 
-fun EventTargetWrapper.deephyText(s: ObsS, op: DeephyText.()->Unit = {}) = DeephyText(s).apply(op).also { +it }
+fun EventTargetWrapper.deephysText(s: ObsS, op: DeephyText.()->Unit = {}) = DeephyText(s).apply(op).also { +it }
 fun DeephyText(s: String) = DeephyText(BindableProperty(s))
 class DeephyText(s: ObsS): TextWrapper() {
   init {
@@ -169,7 +169,7 @@ val deephysNullMessageFact: (message: String)->NW = { message ->
 	spacer()
 	h {
 	  spacer()
-	  deephyText(message)
+	  deephysText(message)
 	}
   }
 }

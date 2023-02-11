@@ -13,6 +13,7 @@ import matt.model.code.errreport.ThrowReport
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.load.async.AsyncLoader
 import matt.nn.deephys.load.test.TestLoader.Keys.theName
 import matt.nn.deephys.load.test.dtype.DType
@@ -34,7 +35,8 @@ const val OLD_CAT_LOAD_WARNING = "Getting category the old way. This will fail i
 
 class TestLoader(
   file: CborFile,
-  override val model: Model
+  override val model: Model,
+  settings: DeephysSettingsController
 ): AsyncLoader(file), TestOrLoader {
 
 
@@ -231,7 +233,7 @@ class TestLoader(
   }
 
 
-  override val testRAMCache by lazy { TestRAMCache() }
+  override val testRAMCache by lazy { TestRAMCache(settings) }
 
 
   val preppedTest = LoadedValueSlot<PreppedTestLoader<*>>()

@@ -7,9 +7,11 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNeverNull
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.deephysLabeledControl
 import matt.nn.deephys.gui.neuron.NeuronView
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.data.InterTestNeuron
@@ -23,10 +25,12 @@ import matt.prim.str.isInt
 class LayerView(
   layer: ResolvedLayer,
   testLoader: TypedTestLike<*>,
-  viewer: DatasetViewer
-): VBoxWrapperImpl<RegionWrapper<*>>() {
+  viewer: DatasetViewer,
+  override val settings: DeephysSettingsController
+): VBoxWrapperImpl<RegionWrapper<*>>(), DeephysNode {
   init {
 
+	val memSafeSettings = settings
 
 	val interLayer = layer.interTest
 	val neurons = layer.neurons.map { it.interTest }
@@ -77,11 +81,18 @@ class LayerView(
 	deephysLabeledControl("Neuron", neuronSpinner) {
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
 	}
-	deephyText("please input valid integer neuron index between 0 and ${neurons.size}") {
+	deephysText("please input valid integer neuron index between 0 and ${neurons.size}") {
 	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull.and(badText!!))
 	}
 	swapperNeverNull(neuronSpinner.valueProperty) {
-	  NeuronView(this, testLoader = testLoader, viewer = viewer, showActivationRatio = true, layoutForList = false)
+	  NeuronView(
+		this,
+		testLoader = testLoader,
+		viewer = viewer,
+		showActivationRatio = true,
+		layoutForList = false,
+		settings = memSafeSettings
+	  )
 	}
   }
 }

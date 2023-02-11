@@ -12,11 +12,13 @@ import matt.lang.weak.MyWeakRef
 import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.global.deephyActionText
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.obs.bind.binding
@@ -26,16 +28,18 @@ class PredictionsView(
   groundTruth: Category,
   topPreds: ImageTopPredictions<*>,
   weakViewer: MyWeakRef<DatasetViewer>,
-): VBoxW() {
+  override val settings: DeephysSettingsController
+): VBoxW(), DeephysNode {
   init {
+	val memSafeSettings = settings
 	textflow<TextWrapper> {
-	  deephyText("Ground Truth: ").titleFont()
+	  deephysText("Ground Truth: ").titleFont()
 	  deephyActionText(groundTruth.label) {
 		weakViewer.deref()!!.navigateTo(groundTruth)
 	  }.titleBoldFont()
 	}
 	spacer()
-	deephyText("Predictions:") {
+	deephysText("Predictions:") {
 	  subtitleFont()
 	}
 	spacer(10.0)
@@ -56,9 +60,9 @@ class PredictionsView(
 		predNamesBox.deephyActionText(category.label.truncateWithElipsesOrAddSpaces(25)) {
 		  weakViewer.deref()!!.navigateTo(category)
 		}.apply {
-		  veryLazyDeephysTooltip(fullString)
+		  veryLazyDeephysTooltip(fullString, memSafeSettings)
 		}
-		predValuesBox.deephyText {
+		predValuesBox.deephysText {
 		  textProperty.bind(weakViewer.deref()!!.predictionSigFigs.binding {
 			when (pred) {
 			  is Float  -> pred.sigFigs(it).toString()
@@ -67,7 +71,7 @@ class PredictionsView(
 			}
 
 		  })
-		  veryLazyDeephysTooltip(fullString)
+		  veryLazyDeephysTooltip(fullString, memSafeSettings)
 		}
 	  }
 	}

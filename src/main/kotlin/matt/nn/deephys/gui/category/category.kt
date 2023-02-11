@@ -15,10 +15,12 @@ import matt.nn.deephys.calc.CategoryFalsePositivesSorted
 import matt.nn.deephys.gui.category.pie.CategoryPie
 import matt.nn.deephys.gui.dataset.byimage.mult.MultipleImagesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
@@ -29,14 +31,24 @@ import matt.prim.str.addNewLinesUntilNumLinesIs
 import matt.prim.str.elementsToString
 
 class CategoryView<A: Number>(
-  selection: CategorySelection, testLoader: TypedTestLike<A>, viewer: DatasetViewer
-): VBoxWrapperImpl<RegionWrapper<*>>() {
+  selection: CategorySelection,
+  testLoader: TypedTestLike<A>,
+  viewer: DatasetViewer,
+  override val settings: DeephysSettingsController
+): VBoxWrapperImpl<RegionWrapper<*>>(), DeephysNode {
+
+
+
   init {
 
+	val memSafeSettings = settings
 
 	deephysLabel(
 	  selection.title.addNewLinesUntilNumLinesIs(3) /*so switching to confusion title with 3 lines isn't as jarring*/
 	).titleBoldFont()
+
+
+
 	v {
 
 
@@ -95,14 +107,16 @@ class CategoryView<A: Number>(
 			images = shownFalsePositives,
 			title = "False Positives",
 			tooltip = CategoryFalsePositivesSorted.blurb,
-			fade = false
+			fade = false,
+			settings = memSafeSettings
 		  )
 		  +MultipleImagesView(
 			viewer = viewer,
 			images = shownFalseNegatives,
 			title = "False Negatives",
 			tooltip = CategoryFalseNegativesSorted.blurb,
-			fade = false
+			fade = false,
+			settings = memSafeSettings
 		  )
 
 		}
@@ -125,7 +139,8 @@ class CategoryView<A: Number>(
 			  viewer,
 			  colorMap = colorMap,
 			  selected = (selection as? CategoryConfusion)?.second,
-			  showAsList = viewer.showAsList1
+			  showAsList = viewer.showAsList1,
+			  settings = memSafeSettings
 			)
 			+CategoryPie(
 			  "False Negatives",
@@ -138,12 +153,13 @@ class CategoryView<A: Number>(
 			  viewer,
 			  colorMap = colorMap,
 			  selected = (selection as? CategoryConfusion)?.second,
-			  showAsList = viewer.showAsList2
+			  showAsList = viewer.showAsList2,
+			  settings = memSafeSettings
 			)
 			//			println("ADDED CAT PIES")
 
 		  }
-		  deephyText("Tip: Click the colored areas to navigate to the respective class. Shift-click it to analyze confusions with the currently selected class.") {
+		  deephysText("Tip: Click the colored areas to navigate to the respective class. Shift-click it to analyze confusions with the currently selected class.") {
 			textAlignment = CENTER
 			visibleAndManagedProp.bindWeakly(viewer.showTutorials)
 		  }
@@ -162,7 +178,8 @@ class CategoryView<A: Number>(
 	  neuronListViewSwapper(
 		viewer = viewer,
 		contents = Contents(selection.allCategories.flatMap { testLoader.test.imagesWithGroundTruth(it) }),
-		fade = false /*I think issues are being causes since this child is fading while the parent is too*/
+		fade = false /*I think issues are being causes since this child is fading while the parent is too*/,
+		settings = memSafeSettings
 	  )
 	}
   }

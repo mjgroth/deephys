@@ -29,10 +29,11 @@ import matt.math.jmath.sigFigs
 import matt.model.code.idea.MChartIdea
 import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
@@ -54,7 +55,8 @@ class CategoryPie(
   viewer: DatasetViewer,
   colorMap: Map<Category, Color>,
   selected: Category? = null,
-  showAsList: BindableProperty<Boolean>
+  showAsList: BindableProperty<Boolean>,
+  settings: DeephysSettingsController
 ): VBoxWrapperImpl<NodeWrapper>(), MChartIdea {
 
   companion object {
@@ -68,12 +70,16 @@ class CategoryPie(
   }
 
   init {
+	val memSafeSettings = settings
 	alignment = Pos.TOP_CENTER
 	exactWidth = 350.0
 	deephyCheckbox("show as list", showAsList, weakBothWays = true)
-	deephyText(title) {
+	deephysText(title) {
 	  subtitleFont()
-	  veryLazyDeephysTooltip("only shows at most $MAX_SLICES slices (unless shown as list)")
+	  veryLazyDeephysTooltip(
+		"only shows at most $MAX_SLICES slices (unless shown as list)",
+		memSafeSettings
+	  )
 	}
 	val total = nums.values.sum().toDouble()
 	scrollpane<NW> {
@@ -194,7 +200,8 @@ class CategoryPie(
 			color = color,
 			x = 0.0,
 			y = barY,
-			width = barWidth
+			width = barWidth,
+			settings = memSafeSettings
 		  ).apply {
 			visibleAndManagedProp.bindWeakly(
 			  showAsList
@@ -219,7 +226,8 @@ class CategoryPie(
 			  viewer = viewer,
 			  color = color,
 			  arcLength = arcLength,
-			  startAngle = nextStart
+			  startAngle = nextStart,
+			  settings = memSafeSettings
 			).apply {
 			  visibleAndManagedProp.bindWeakly(
 				showAsList.not()
@@ -259,7 +267,8 @@ class CategoryPie(
 	color: Color,
 	y: Double,
 	x: Double,
-	width: Double
+	width: Double,
+	settings: DeephysSettingsController
   ): RectangleWrapper(
 	x = x,
 	y = y,
@@ -278,7 +287,7 @@ class CategoryPie(
 
 
 	init {
-	  veryLazyDeephysTooltip(cat.label + " (shift-click for Confusion View)")
+	  veryLazyDeephysTooltip(cat.label + " (shift-click for Confusion View)", settings)
 	  fill = color
 	  stroke = color.invert()
 	  cursor = Cursor.HAND
@@ -308,7 +317,8 @@ class CategoryPie(
 	private val viewer: DatasetViewer,
 	color: Color,
 	arcLength: Double,
-	startAngle: Double
+	startAngle: Double,
+	settings: DeephysSettingsController
   ): ArcWrapper(
 	centerX = CENTER_X,
 	centerY = CENTER_Y,
@@ -329,7 +339,7 @@ class CategoryPie(
 
 
 	init {
-	  veryLazyDeephysTooltip(cat.label + " (shift-click for Confusion View)")
+	  veryLazyDeephysTooltip(cat.label + " (shift-click for Confusion View)", settings)
 	  fill = color
 	  stroke = color.invert()
 	  node.apply {

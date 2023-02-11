@@ -1,13 +1,12 @@
 package matt.nn.deephys.calc
 
+import matt.caching.compcache.GlobalRAMComputeInput
 import matt.caching.compcache.globalman.FakeCacheManager
-import matt.caching.compcache.timed.TimedComputeInput
 import matt.collect.set.contents.Contents
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
-import matt.nn.deephys.gui.settings.DeephySettings
 import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.ImageIndex
@@ -57,9 +56,9 @@ import org.jetbrains.kotlinx.multik.ndarray.data.get
 data class DescendingArgMaxMax<A: Number>(
   private val neuron: InterTestNeuron,
   private val test: TypedTestLike<A>,
-): DeephysComputeInput<List<ImageIndex>>() {
+): GlobalRAMComputeInput<List<ImageIndex>>() {
   override val cacheManager get() = test.testRAMCache
-  override fun timedCompute(): List<ImageIndex> = run {
+  override fun compute(): List<ImageIndex> = run {
 	val theTest = test.test
 
 	//	theTest.argmaxn2OfNeuron(neuron,num)
@@ -85,11 +84,11 @@ data class TopImages<A: Number>(
   private val neuron: InterTestNeuron,
   private val test: TypedTestLike<A>,
   private val num: Int
-): DeephysComputeInput<List<ImageIndex>>() {
+): GlobalRAMComputeInput<List<ImageIndex>>() {
 
   override val cacheManager get() = test.testRAMCache
 
-  override fun timedCompute(): List<ImageIndex> = DescendingArgMaxMax(
+  override fun compute(): List<ImageIndex> = DescendingArgMaxMax(
 	neuron = neuron,
 	test = test
   )().take(num)
@@ -110,12 +109,12 @@ data class TopNeurons<N: Number>(
   private val denomTest: TypedTestLike<N>?,
   /*val normalized: Boolean,*/
   val forcedNeuronIndices: List<Int>? = null
-): DeephysComputeInput<List<NeuronWithActivation<N>>>(), TopNeuronsCalcType {
+): GlobalRAMComputeInput<List<NeuronWithActivation<N>>>(), TopNeuronsCalcType {
 
   /*small possibility of memory leaks when images is empty, but this is still way better than before*/
   override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: FakeCacheManager
 
-  override fun timedCompute(): List<NeuronWithActivation<N>> {
+  override fun compute(): List<NeuronWithActivation<N>> {
 	if (images.isEmpty() && denomTest == null) return listOf()
 
 	val neurons = forcedNeuronIndices?.let {
@@ -167,7 +166,7 @@ data class ActivationRatioCalc<A: Number>(
   private val images: Contents<DeephyImage<A>>,
   val denomTest: TypedTestLike<A>,
   private val neuron: InterTestNeuron
-): DeephysComputeInput<Activation<A, *>>() {
+): GlobalRAMComputeInput<Activation<A, *>>() {
 
   override val cacheManager get() = FakeCacheManager /*this ComputeCache was taking up a TON of memory.*/
   /*override val cacheManager get() = numTest.testRAMCache*/ /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
@@ -197,7 +196,7 @@ data class ActivationRatioCalc<A: Number>(
   }
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
-  override fun timedCompute(): Activation<A, *> {
+  override fun compute(): Activation<A, *> {
 	/*val dType = DType.leastPrecise(numTest.dtype, denomTest.dtype)*/
 	val dType = numTest.dtype
 	val r = if (images.isEmpty()) {
@@ -240,11 +239,11 @@ data class ActivationRatioCalc<A: Number>(
 data class ImageSoftMaxDenom<N: Number>(
   private val image: DeephyImage<N>,
   private val testLoader: TestOrLoader
-): DeephysComputeInput<N>() {
+): GlobalRAMComputeInput<N>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
-  override fun timedCompute(): N {
+  override fun compute(): N {
 	val clsLay = testLoader.model.classificationLayer
 	val preds = image.activationsFor(clsLay.interTest)
 
@@ -266,11 +265,11 @@ data class ImageSoftMaxDenom<N: Number>(
 data class ImageTopPredictions<N: Number>(
   private val image: DeephyImage<N>,
   private val testLoader: TypedTestLike<N>
-): DeephysComputeInput<List<Pair<Category, N>>>() {
+): GlobalRAMComputeInput<List<Pair<Category, N>>>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
-  override fun timedCompute(): List<Pair<Category, N>> {
+  override fun compute(): List<Pair<Category, N>> {
 	val dtype = testLoader.dtype
 	val clsLay = testLoader.model.classificationLayer
 	val preds = image.activationsFor(clsLay.interTest)
@@ -289,11 +288,11 @@ data class ImageTopPredictions<N: Number>(
 data class CategoryAccuracy(
   private val category: Category,
   private val testLoader: TypedTestLike<*>
-): DeephysComputeInput<Double>() {
+): GlobalRAMComputeInput<Double>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
-  override fun timedCompute(): Double {
+  override fun compute(): Double {
 	val r = testLoader.test.imagesWithGroundTruth(category).map {
 	  if (testLoader.test.preds.await()[it] == category) 1.0 else 0.0
 	}.let { it.sum()/it.size }
@@ -305,7 +304,7 @@ data class CategoryAccuracy(
 data class CategoryFalsePositivesSorted<N: Number>(
   private val category: Category,
   private val testLoader: TypedTestLike<N>
-): DeephysComputeInput<List<DeephyImage<N>>>() {
+): GlobalRAMComputeInput<List<DeephyImage<N>>>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
@@ -314,7 +313,7 @@ data class CategoryFalsePositivesSorted<N: Number>(
 	  "false positives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute(): List<DeephyImage<N>> = run {
+  override fun compute(): List<DeephyImage<N>> = run {
 	testLoader.test.imagesWithoutGroundTruth(category)
 	  .map {
 		it to testLoader.test.preds.await()[it]
@@ -333,7 +332,7 @@ data class CategoryFalsePositivesSorted<N: Number>(
 data class CategoryFalseNegativesSorted<N: Number>(
   private val category: Category,
   private val testLoader: TypedTestLike<N>
-): DeephysComputeInput<List<DeephyImage<N>>>() {
+): GlobalRAMComputeInput<List<DeephyImage<N>>>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
@@ -342,7 +341,7 @@ data class CategoryFalseNegativesSorted<N: Number>(
 	  "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
   }
 
-  override fun timedCompute() = run {
+  override fun compute() = run {
 	testLoader.test.imagesWithGroundTruth(category)
 	  .map {
 		it to testLoader.test.preds.await()[it]
@@ -356,9 +355,4 @@ data class CategoryFalseNegativesSorted<N: Number>(
 		it.first
 	  }
   }
-}
-
-
-abstract class DeephysComputeInput<O>(): TimedComputeInput<O>() {
-  override val stopwatchEnabled get() = DeephySettings.verboseLogging.value
 }

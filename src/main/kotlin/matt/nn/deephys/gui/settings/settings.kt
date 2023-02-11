@@ -1,91 +1,90 @@
 package matt.nn.deephys.gui.settings
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.Json
+import matt.async.thread.ThreadReport
 import matt.gui.option.SettingsData
-import matt.json.oldfx.jsonObj
-import matt.json.ser.JsonObjectSerializer
-import matt.obs.json.prop.setFromJson
-import matt.obs.prop.BindableProperty
+import matt.log.report.MemReport
+import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
+import matt.nn.deephys.state.DeephyState
+import matt.obs.hold.TypedObsHolderSerializer
 import matt.pref.obs.ObsPrefNode
+import matt.prim.str.elementsToString
+import java.awt.Desktop
 
 
-object DeephySettingsNode: ObsPrefNode(
+class DeephySettingsNode: ObsPrefNode(
   "sinhalab.deephys.settings",
   oldNames = listOf(
 	"sinhalab.deephy.settings"
   ),
   oldKeys = listOf(
 	"normalizeTopNeuronActivations",
-  )
+  ),
+  json = Json {
+	ignoreUnknownKeys = true
+  }
 ) {
-  val settings by obsObj { DeephySettingsData() }
-}
+  companion object {
+	private var instance: DeephySettingsNode? = null
+  }
 
-object DeephySettingsSerializer: JsonObjectSerializer<DeephySettingsData>(DeephySettingsData::class) {
-  override fun deserialize(jsonObject: JsonObject): DeephySettingsData {
-	return DeephySettingsData().apply {
-
-	  namedObservables().forEach {
-		val jsonValue = jsonObject[it.key]
-		if (jsonValue != null) {
-		  (it.value as BindableProperty<*>).setFromJson(jsonValue)
-		}
-	  }
-
-	  //	  jsonObject["numImagesPerNeuronInByImage"]?.int?.go {
-	  //		numImagesPerNeuronInByImage.value = it
-	  //	  }
-	  //	  jsonObject["normalizeTopNeuronActivations"]?.bool?.go {
-	  //		normalizeTopNeuronActivations.value = it
-	  //	  }
-	  //	  jsonObject["predictionSigFigs"]?.int?.go {
-	  //		predictionSigFigs.value = it
-	  //	  }
-	  //	  jsonObject["verboseLogging"]?.bool?.go {
-	  //		verboseLogging.value = it
-	  //	  }
-	  //	  jsonObject["millisecondsBeforeTooltipsVanish"]?.int?.go {
-	  //		millisecondsBeforeTooltipsVanish.value = it
-	  //	  }
+  init {
+	synchronized(DeephySettingsNode::class) {
+	  require(instance == null)
+	  instance = this
 	}
   }
 
-  override fun serialize(value: DeephySettingsData) = jsonObj(
-	*value.namedObservables().map {
-	  it.key to it.value
-	}.toTypedArray()
-  )
+  val settings by obsObj {
+	DeephysSettingsController()
+  }
 
 }
 
 const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
 const val MAX_NUM_IMAGES_IN_TOP_IMAGES = 100
+const val DEFAULT_BIG_IMAGE_SCALE = 128.0
 
-const val  DEFAULT_BIG_IMAGE_SCALE = 128.0
+private object DeephySettingsSerializer: TypedObsHolderSerializer<DeephysSettingsController>(
+  DeephysSettingsController::class,
+  3
+)
 
-@Serializable(DeephySettingsSerializer::class) class DeephySettingsData: SettingsData() {
+@Serializable(with = DeephySettingsSerializer::class)
+class DeephysSettingsController: SettingsData("Main Settings") {
 
 
-  val smallImageScale by DoubleSettingProv(
-	defaultValue = 32.0,
-	label = "Small image scale",
-	tooltip = "the width (in pixels) for default images",
-	min = 10.0,
-	max = 100.0
+  val fakeSettingToForceLoading by DoubleSettingProv(
+	defaultValue = 1.0,
+	label = "fakeSettingToForceLoading",
+	tooltip = "fakeSettingToForceLoading",
+	min = -10.0,
+	max = 10.0
   )
-  val bigImageScale by DoubleSettingProv(
-	defaultValue = DEFAULT_BIG_IMAGE_SCALE,
-	label = "Big image scale",
-	tooltip = "the width (in pixels) for big images",
-	min = 110.0,
-	max = 200.0
+
+  val appearance by registeredSection(AppearanceSettings())
+
+  val millisecondsBeforeTooltipsVanish by IntSettingProv(
+	defaultValue = 1000,
+	label = "tooltip hide delay (ms)",
+	tooltip = "Milliseconds before tooltips vanish. 0 means infinite (hit ESCAPE to make them go away)",
+	min = 0,
+	max = 10000
   )
-  /*  val normalizeTopNeuronActivations by BoolSettingProv(
-	  defaultValue = false,
-	  label = "Normalize activations of top neurons",
-	  matt.fx.control.wrapper.tooltip.fixed.tooltip = normalizeTopNeuronsBlurb
-	)*/
+
+  val showTutorials by BoolSettingProv(
+	defaultValue = true,
+	label = "Show Tutorials",
+	tooltip = "Show Interactive Tutorials Throughout the app"
+  )
+
+
+  val debug by registeredSection(DebugSettings())
+
+}
+
+class AppearanceSettings: SettingsData("Appearance") {
   val predictionSigFigs by IntSettingProv(
 	defaultValue = 5,
 	label = "Prediction value significant figures",
@@ -100,40 +99,76 @@ const val  DEFAULT_BIG_IMAGE_SCALE = 128.0
 	min = 9,
 	max = MAX_NUM_IMAGES_IN_TOP_NEURONS
   )
-  val millisecondsBeforeTooltipsVanish by IntSettingProv(
-	defaultValue = 5000,
-	label = "matt.fx.control.wrapper.tooltip.fixed.tooltip hide delay (ms)",
-	tooltip = "Milliseconds before tooltips vanish. 0 means infinite (hit ESCAPE to make them go away)",
-	min = 0,
-	max = 10000
+  val smallImageScale by DoubleSettingProv(
+	defaultValue = 32.0,
+	label = "Small image scale",
+	tooltip = "the width (in pixels) for default images",
+	min = 10.0,
+	max = 100.0
   )
-  val verboseLogging by BoolSettingProv(
-	defaultValue = false,
-	label = "Verbose Logging",
-	tooltip = "Extra logging to standard out. May impact performance."
+  val bigImageScale by DoubleSettingProv(
+	defaultValue = DEFAULT_BIG_IMAGE_SCALE,
+	label = "Big image scale",
+	tooltip = "the width (in pixels) for big images",
+	min = 110.0,
+	max = 200.0
   )
+}
+
+
+class DebugSettings: SettingsData("Debug") {
+
   val showCacheBars by BoolSettingProv(
 	defaultValue = false,
 	label = "Cache Progress Bars",
 	tooltip = "Extra progress bars indicating the progress of data caching."
   )
-  val showTutorials by BoolSettingProv(
-	defaultValue = true,
-	label = "Show Tutorials",
-	tooltip = "Show Interactive Tutorials Throughout the app"
+
+  val verboseLogging by BoolSettingProv(
+	defaultValue = false,
+	label = "Verbose Logging",
+	tooltip = "Extra logging to standard out. May impact performance."
   )
 
-  init {
-	observe {
-	  println("big obj changed")
+  val resetSettings = actionNotASetting(
+	label = "Reset all settings to default",
+	tooltip = "Reset all settings to default",
+  ) {
+	settings.forEach {
+	  it.resetToDefault()
 	}
   }
 
+  val deleteState = actionNotASetting(
+	label = "Delete State",
+	tooltip = "Delete State",
+  ) {
+	DeephyState.delete()
+	println("model=${DeephyState.model.value}")
+	println("tests=${DeephyState.tests.value?.elementsToString()}")
+  }
+
+
+  val printRamInfo = actionNotASetting(
+	label = "Print RAM info to console",
+	tooltip = "Print RAM info to console",
+  ) {
+	println(MemReport())
+  }
+
+
+  val printThreadInfo = actionNotASetting(
+	label = "Print thread info to console",
+	tooltip = "Print thread info to console",
+  ) {
+	println(ThreadReport())
+  }
+
+  val openLogFolder = actionNotASetting(
+	label = "Open Log Folder",
+	tooltip = "Open Log Folder",
+  ) {
+	Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder)
+  }
+
 }
-
-/*Todo: I wish this could be an object*/
-val DeephySettings by lazy {
-  DeephySettingsNode.settings
-}
-
-

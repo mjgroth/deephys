@@ -32,7 +32,10 @@ import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
+import matt.gui.interact.WinOwn
+import matt.gui.interact.openInNewWindow
 import matt.gui.mscene.MScene
+import matt.gui.mstage.ShowMode
 import matt.image.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.go
@@ -45,10 +48,11 @@ import matt.nn.deephys.gui.Arg.`erase-state`
 import matt.nn.deephys.gui.Arg.reset
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
+import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.DEEPHYS_SYMBOL_SPACING
 import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
@@ -87,13 +91,16 @@ class DeephysApp {
 
   /*invoked directly from test, in case I ever want to return something*/
   fun boot(args: Array<String>) {
+
+	val settingsNode = DeephySettingsNode()
+
 	if (args.size == 1 && args[0] == `erase-state`.name) {
 	  DeephyState.delete()
 	} else if (args.size == 1 && args[0] == `erase-settings`.name) {
-	  DeephySettingsNode.delete()
+	  settingsNode.delete()
 	} else if (args.size == 1 && args[0] == reset.name) {
 	  DeephyState.delete()
-	  DeephySettingsNode.delete()
+	  settingsNode.delete()
 	} else {
 	  warmupJvmThreading()
 
@@ -105,8 +112,38 @@ class DeephysApp {
 		initializeWhatICan()
 	  }
 
+	  val lastVersion = DeephyState.lastVersionOpened.value!!
+	  val thisVersion = modID.version.toString()
+	  var openedNewVersion = false
+	  if (lastVersion != thisVersion) {
+		DeephyState.lastVersionOpened v thisVersion
+		openedNewVersion = true
+	  }
 
-	  startDeephyApp()
+	  val settings = settingsNode.settings
+
+	  val didSettingsReset = settings.wasResetBecauseSerializedDataWasWrongClassVersion
+
+	  if (didSettingsReset) {
+
+
+		settings.apply {
+		  println("settings=$settings")
+		  println("saving settings with new class version")
+		  fakeSettingToForceLoading.value = -fakeSettingToForceLoading.value
+		  println("saved with new class version")
+		}
+
+
+
+
+	  }
+
+	  startDeephyApp(
+		settingsNode = settingsNode,
+		settingsDidReset = didSettingsReset,
+		openedNewVersion = openedNewVersion
+	  )
 
 
 	}
@@ -119,15 +156,40 @@ class DeephysApp {
   val testReadyScene = LoadedValueSlot<MScene<ParentWrapper<*>>>()
 
 
-  fun startDeephyApp(t: Stopwatch? = null) = GuiApp(decorated = true) {
+  fun startDeephyApp(
+	t: Stopwatch? = null,
+	settingsNode: DeephySettingsNode,
+	settingsDidReset: Boolean,
+	@Suppress("UNUSED_PARAMETER")
+	openedNewVersion: Boolean
+  ) = GuiApp(decorated = true) {
 
 
-	warmupFxComponents()
+
+	warmupFxComponents(settingsNode.settings)
 
 
 	val myStageTitle = stageTitle.await()
 	stage.title = myStageTitle
 
+
+
+	if (settingsDidReset) {
+	  VBoxWrapperImpl<NW>().apply {
+		deephysText("Welcome to Deephys")
+		@Suppress("KotlinConstantConditions")
+		if (settingsDidReset) {
+		  deephysText("Your settings have been reset due to the new update.")
+		}
+		deephyActionButton("OK") {
+		  this@deephyActionButton.stage!!.close()
+		}
+	  }.openInNewWindow(
+		showMode = ShowMode.SHOW,
+		own = WinOwn.Owner(stage),
+		alwaysOnTop = true
+	  )
+	}
 
 
 	stage.icons.addAll(
@@ -151,9 +213,11 @@ class DeephysApp {
 
 	  alignment = TOP_CENTER
 
+	  val settButton = settingsButton(settingsNode.settings).value
+
 	  hotkeys {
 		COMMA.meta {
-		  settingsButton.fire()
+		  settButton.fire()
 		}
 	  }
 
@@ -179,7 +243,7 @@ class DeephysApp {
 			spacing = 25.0
 
 			deephyButton("Choose Model") {
-			  prefHeightProperty.bind(settingsButton.heightProperty)
+			  prefHeightProperty.bind(settButton.heightProperty)
 			  setOnAction {
 
 
@@ -195,9 +259,15 @@ class DeephysApp {
 			}
 
 			h {
-			  deephyTooltip(visualizerToolTipText) /*matt.fx.control.wrapper.tooltip.fixed.tooltip has to be outside of checkbox or else it will not show when checkbox is disabled?*/
+
+			  deephyTooltip(
+				visualizerToolTipText,
+				settings = settingsNode.settings
+			  ) /*tooltip has to be outside of checkbox or else it will not show when checkbox is disabled?*/
+
+
 			  deephyCheckbox("Show Model Diagram") {
-				prefHeightProperty.bind(settingsButton.heightProperty)
+				prefHeightProperty.bind(settButton.heightProperty)
 				visualizer.onChange {
 				  if (it == null) {
 					isSelected = false
@@ -212,7 +282,7 @@ class DeephysApp {
 			h {
 			  hgrow = ALWAYS
 			  alignment = Pos.CENTER_RIGHT
-			  +settingsButton
+			  +settButton
 			}
 
 		  }
@@ -231,7 +301,7 @@ class DeephysApp {
 
 			  h {
 				spacing = 10.0
-				deephyText("Model: ${model.name}") {
+				deephysText("Model: ${model.name}") {
 				  titleFont()
 				}
 
@@ -265,14 +335,14 @@ class DeephysApp {
 
 			  val vis = if (model.layers.all { it.neurons.size <= maxNeurons }) {
 				visualizerToolTipText v "Show an interactive diagram of the model"
-				ModelVisualizer(model)
+				ModelVisualizer(model, settingsNode.settings)
 			  } else {
 				visualizerToolTipText v "model is too large to visualize (>$maxNeurons in a layer)"
 				null
 			  }
 			  visualizer v vis
 
-			  val dSetViewsBox = DSetViewsVBox(model)
+			  val dSetViewsBox = DSetViewsVBox(model, settingsNode.settings)
 			  dSetViewsBox.modelVisualizer = vis
 			  vis?.dsetViewsBox = dSetViewsBox
 			  val theTests = DeephyState.tests.value
@@ -285,7 +355,7 @@ class DeephysApp {
 				textProperty.bind(dSetViewsBox.children.sizeProperty.binding {
 				  if (it == 0) "Add a test" else "+"
 				})
-				deephyTooltip("Add a test")
+				deephyTooltip("Add a test", settings = settingsNode.settings)
 				setOnAction {
 				  dSetViewsBox.addTest()
 				}

@@ -40,14 +40,14 @@ import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
 import matt.nn.deephys.gui.global.deephyButton
-import matt.nn.deephys.gui.global.deephyText
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.DEEPHYS_SYMBOL_SPACING
 import matt.nn.deephys.gui.global.tooltip.DeephysWarningSymbol
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
-import matt.nn.deephys.gui.settings.DeephySettings
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.action.SelectCategory
 import matt.nn.deephys.gui.viewer.action.SelectImage
 import matt.nn.deephys.gui.viewer.action.SelectNeuron
@@ -83,7 +83,11 @@ import matt.prim.str.mybuild.string
 import matt.reflect.tostring.toStringBuilder
 import java.lang.ref.WeakReference
 
-class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox): TitledPaneWrapper() {
+class DatasetViewer(
+  initialFile: CborFile? = null,
+  val outerBox: DSetViewsVBox,
+  settings: DeephysSettingsController
+): TitledPaneWrapper() {
 
   private val initStopwatch = tic("viewer init", enabled = false)
 
@@ -104,27 +108,27 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	outerBox.save()
   }
 
-  val smallImageScale = BindableProperty(DeephySettings.smallImageScale.value).apply {
-	bind(DeephySettings.smallImageScale)
+  val smallImageScale = BindableProperty(settings.appearance.smallImageScale.value).apply {
+	bind(settings.appearance.smallImageScale)
   }
-  val bigImageScale = BindableProperty(DeephySettings.bigImageScale.value).apply {
-	bind(DeephySettings.bigImageScale)
+  val bigImageScale = BindableProperty(settings.appearance.bigImageScale.value).apply {
+	bind(settings.appearance.bigImageScale)
   }
 
   //  val normalizeTopNeuronActivations = BindableProperty(DeephySettings.normalizeTopNeuronActivations.value).apply {
   //	bind(DeephySettings.normalizeTopNeuronActivations)
   //  }
-  val numImagesPerNeuronInByImage = BindableProperty(DeephySettings.numImagesPerNeuronInByImage.value).apply {
-	bind(DeephySettings.numImagesPerNeuronInByImage)
+  val numImagesPerNeuronInByImage = BindableProperty(settings.appearance.numImagesPerNeuronInByImage.value).apply {
+	bind(settings.appearance.numImagesPerNeuronInByImage)
   }
-  val predictionSigFigs = BindableProperty(DeephySettings.predictionSigFigs.value).apply {
-	bind(DeephySettings.predictionSigFigs)
+  val predictionSigFigs = BindableProperty(settings.appearance.predictionSigFigs.value).apply {
+	bind(settings.appearance.predictionSigFigs)
   }
-  val showCacheBars = BindableProperty(DeephySettings.showCacheBars.value).apply {
-	bind(DeephySettings.showCacheBars)
+  val showCacheBars = BindableProperty(settings.debug.showCacheBars.value).apply {
+	bind(settings.debug.showCacheBars)
   }
-  val showTutorials = BindableProperty(DeephySettings.showTutorials.value).apply {
-	bind(DeephySettings.showTutorials)
+  val showTutorials = BindableProperty(settings.showTutorials.value).apply {
+	bind(settings.showTutorials)
   }
 
   val normalizer = BindableProperty(outerBox.normalizer.value).apply {
@@ -140,7 +144,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 	t.toc("start")
 	f?.run {
 
-	  val loader = TestLoader(f, model)
+	  val loader = TestLoader(f, model, settings)
 	  t.toc("got loader")
 	  loader.start()
 	  t.toc("started loader")
@@ -379,7 +383,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
 	  val removeTestButton = deephyButton("-") {
 		deephysSingleCharButtonFont()
-		veryLazyDeephysTooltip("remove this test viewer")
+		veryLazyDeephysTooltip("remove this test viewer", settings)
 		setOnAction {
 		  this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
 		}
@@ -401,7 +405,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		  isPreserveRatio = true
 		  fitWidth = ICON_LENGTH.toDouble()
 		}
-		veryLazyDeephysTooltip("choose test file")
+		veryLazyDeephysTooltip("choose test file", settings)
 		setOnAction {
 
 		  val f = openFile(stage = weakViewer.get()!!.stage) {
@@ -460,7 +464,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 
 	  sectionSpacer()
 
-	  deephyText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {
+	  deephysText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {
 		titleFont()
 	  }
 	  hSpacer(10.0)
@@ -536,7 +540,7 @@ class DatasetViewer(initialFile: CborFile? = null, val outerBox: DSetViewsVBox):
 		fadeOutDur = DEEPHYS_FADE_DUR,
 		fadeInDur = DEEPHYS_FADE_DUR
 	  ) {
-		DatasetNode(this, this@DatasetViewer)
+		DatasetNode(this, this@DatasetViewer, settings)
 	  }
 	  disabledCode {
 		+BindTutorial(this@DatasetViewer)

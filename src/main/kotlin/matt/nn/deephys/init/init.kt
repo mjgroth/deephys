@@ -1,7 +1,6 @@
 package matt.nn.deephys.init
 
 import javafx.scene.image.Image
-import kotlinx.serialization.ExperimentalSerializationApi
 import matt.async.thread.daemon
 import matt.file.toMFile
 import matt.fx.control.toggle.mech.ToggleMechanism
@@ -18,6 +17,7 @@ import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.load.loadCbor
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
@@ -52,7 +52,7 @@ val modelBinding = DaemonLoadedValueOp(".model binding") {
   }
 }
 
-fun warmupFxComponents() {
+fun warmupFxComponents(settings: DeephysSettingsController) {
   HBoxWrapperImpl<NodeWrapper>().apply {
 	DeephyText("placeholder").apply {
 	  subtitleFont()
@@ -60,11 +60,11 @@ fun warmupFxComponents() {
 	  titleBoldFont()
 
 
-	  deephyTooltip("placeholder")
+	  deephyTooltip("placeholder", settings = settings)
 
 	  /*
 	  Exception in thread "Thread-2" java.lang.ExceptionInInitializerError
-		at matt.fx.control.wrapper.matt.fx.control.wrapper.tooltip.fixed.tooltip.matt.fx.control.wrapper.tooltip.fixed.TooltipWrapper.<init>(matt.fx.control.wrapper.tooltip.fixed.tooltip.kt:52)
+		at matt.fx.control.wrapper.tooltip.tooltipWrapper.<init>(tooltip.kt:52)
 
 		this ended up being due to YourKit..
 	  * */

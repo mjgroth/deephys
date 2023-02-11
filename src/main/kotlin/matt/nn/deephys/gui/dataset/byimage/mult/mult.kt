@@ -5,10 +5,12 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.deephyimview.DeephyImView
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.math.op.times
@@ -19,20 +21,25 @@ class MultipleImagesView<A: Number>(
   title: String,
   tooltip: String,
   fade: Boolean = true,
-): VBoxWrapperImpl<NW>() {
+  override val settings: DeephysSettingsController
+): VBoxWrapperImpl<NW>(), DeephysNode {
   companion object {
 	private const val MAX_IMS = 25
   }
 
   init {
-	deephyText("$title (${images.size})").apply {
+	val memSafeSettings = settings
+	deephysText("$title (${images.size})").apply {
 	  subtitleFont()
-	  veryLazyDeephysTooltip("$tooltip (first $MAX_IMS)")
+	  veryLazyDeephysTooltip(
+		"$tooltip (first $MAX_IMS)",
+		settings = memSafeSettings
+	  )
 	}
 	+ImageFlowPane(viewer).apply {
 	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.4)
 	  images.take(MAX_IMS).forEach {
-		+DeephyImView(it, viewer).apply {
+		+DeephyImView(it, viewer, settings = memSafeSettings).apply {
 		  //		  scale.bind(viewer.smallImageScale / it.widthMaybe)
 		}
 	  }
@@ -40,7 +47,8 @@ class MultipleImagesView<A: Number>(
 	neuronListViewSwapper(
 	  viewer = viewer,
 	  contents = Contents(images),
-	  fade=fade
+	  fade = fade,
+	  settings = memSafeSettings
 	)
   }
 }

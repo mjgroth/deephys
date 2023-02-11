@@ -9,7 +9,7 @@ import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.BIND_BUTTON_NAME
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
 import matt.nn.deephys.gui.global.deephyActionText
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.or
@@ -24,7 +24,7 @@ class BindTutorial(viewer: DatasetViewer): VBoxW() {
 		  (viewer.isUnboundToDSet or viewer.normalizer.isNull)
 	}
 	spacer()
-	deephyText("In order to visualize this dataset in comparison to other datasets:")
+	deephysText("In order to visualize this dataset in comparison to other datasets:")
 	h {
 	  spacer()
 	  v {

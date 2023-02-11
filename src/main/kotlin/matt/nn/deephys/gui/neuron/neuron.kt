@@ -3,13 +3,13 @@ package matt.nn.deephys.gui.neuron
 import matt.async.queue.QueueWorker
 import matt.collect.itr.subList
 import matt.collect.set.contents.contentsOf
+import matt.fx.base.prop.sizeProperty
 import matt.fx.control.wrapper.progressindicator.progressindicator
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.fx.base.prop.sizeProperty
 import matt.lang.function.Consume
 import matt.lang.go
 import matt.model.flowlogic.await.Donable
@@ -19,10 +19,12 @@ import matt.nn.deephys.calc.TopImages
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTexTooltip
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.ImageIndex
@@ -43,8 +45,9 @@ class NeuronView<A: Number>(
   viewer: DatasetViewer,
   showActivationRatio: Boolean,
   layoutForList: Boolean,
-  loadImagesAsync: Boolean = false
-): VBoxWrapperImpl<NW>() {
+  loadImagesAsync: Boolean = false,
+  override val settings: DeephysSettingsController
+): VBoxWrapperImpl<NW>(), DeephysNode {
 
   companion object {
 	private val worker = QueueWorker("NeuronView Worker")
@@ -52,6 +55,7 @@ class NeuronView<A: Number>(
 
 
   init {
+	val memSafeSettings = settings
 	val weakViewer = viewer.weakRef
 	val showing = BindableProperty(2)
 	val progIndicator = progressindicator {
@@ -99,10 +103,10 @@ class NeuronView<A: Number>(
 				  if (!doneLoading) {
 					showing.value += 1
 				  }
-				  deephyText(
+				  deephysText(
 					ratio.formatted
 				  ) {
-					veryLazyDeephysTexTooltip {
+					veryLazyDeephysTexTooltip(memSafeSettings) {
 					  ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX)
 					}
 				  }
@@ -167,12 +171,12 @@ class NeuronView<A: Number>(
 			if (realOldNumImages == null) {
 			  topImages.forEach {
 				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync))
+				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync,settings = memSafeSettings))
 			  }
 			} else if (realNumImages > realOldNumImages) {
 			  topImages.subList(realOldNumImages.toInt()).toList().forEach {
 				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync))
+				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync,settings = memSafeSettings))
 			  }
 			} else if (realNumImages < realOldNumImages) {
 			  localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {

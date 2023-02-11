@@ -17,6 +17,7 @@ object DeephyState: ObsPrefNode(
 ) {
   val model by obj<SFile>()
   val tests by obj<FileList>()
+  val lastVersionOpened by string("")
 }
 
 

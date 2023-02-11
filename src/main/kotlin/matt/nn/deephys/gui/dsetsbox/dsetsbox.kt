@@ -18,14 +18,17 @@ import matt.model.data.message.FileList
 import matt.nn.deephys.gui.global.color.DeephysPalette.deephysSelectGradient
 import matt.nn.deephys.gui.global.deephyToggleButton
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
-import matt.nn.deephys.gui.settings.DeephySettings
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
 import matt.obs.prop.BindableProperty
 
-class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
+class DSetViewsVBox(
+  val model: Model,
+  private val settings: DeephysSettingsController
+): VBoxWrapperImpl<DatasetViewer>() {
 
   companion object {
 	const val BIND_BUTTON_NAME = "bind"
@@ -41,7 +44,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   var modelVisualizer: ModelVisualizer? = null
 
   operator fun plusAssign(file: CborFile) {
-	this += DatasetViewer(file, this)
+	this += DatasetViewer(file, this, settings)
   }
 
   operator fun plusAssign(list: FileList) {
@@ -118,7 +121,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
   }
 
 
-  fun addTest() = DatasetViewer(null, this).also {
+  fun addTest() = DatasetViewer(null, this, settings).also {
 	plusAssign(it)
   }
 
@@ -128,7 +131,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	if (bound.value == t) bindToggleGroup.selectedValue.value = null
 	if (normalizer.value == t) inDToggleGroup.selectedValue.value = null
 	t.removeFromParent()
-//	t.normalizeTopNeuronActivations.unbind()
+	//	t.normalizeTopNeuronActivations.unbind()
 	t.normalizer.unbind()
 	t.outerBoundDSet.unbind()
 	t.numViewers.unbind()
@@ -143,7 +146,7 @@ class DSetViewsVBox(val model: Model): VBoxWrapperImpl<DatasetViewer>() {
 	t.boundToDSet.removeAllDependencies()
 	t.outerBox.save()
 	requestFocus() /*make this into scene.oldFocusOwner to remove possibility of that causing memory leak*/
-	DeephySettings.millisecondsBeforeTooltipsVanish.cleanWeakListeners()
+	settings.millisecondsBeforeTooltipsVanish.cleanWeakListeners()
 	DarkModeController.darkModeProp.cleanWeakListeners()
   }
 

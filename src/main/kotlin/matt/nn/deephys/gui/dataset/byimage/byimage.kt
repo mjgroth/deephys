@@ -16,7 +16,9 @@ import matt.nn.deephys.gui.dataset.byimage.preds.PredictionsView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyButton
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
@@ -25,9 +27,11 @@ import matt.obs.bindings.bool.and
 
 class ByImageView<A: Number>(
   testLoader: PreppedTestLoader<A>,
-  viewer: DatasetViewer
-): VBoxWrapperImpl<RegionWrapper<*>>() {
+  viewer: DatasetViewer,
+  override val settings: DeephysSettingsController
+): VBoxWrapperImpl<RegionWrapper<*>>(), DeephysNode {
   init {
+	val memSafeSettings = settings
 	val weakViewer = MyWeakRef(viewer)
 	val weakTest = MyWeakRef(testLoader)
 	deephyButton("select random image") {
@@ -46,14 +50,17 @@ class ByImageView<A: Number>(
 
 		h {
 		  v {
-			+DeephyImView(img, deRefedViewer, big = true)
-			deephyText("Image ID: ${img.imageID}")
+			+DeephyImView(img, deRefedViewer, big = true, settings = memSafeSettings)
+			deephysText("Image ID: ${img.imageID}")
 		  }
 		  spacer(10.0)
 		  @Suppress("UNCHECKED_CAST")
 		  img as DeephyImage<A>
 		  +PredictionsView(
-			img.category, ImageTopPredictions(img, weakTest.deref()!!), weakViewer
+			img.category,
+			ImageTopPredictions(img, weakTest.deref()!!),
+			weakViewer,
+			memSafeSettings
 		  )
 		  spacer()
 		  img.features?.takeIf { it.isNotEmpty() }?.go {
@@ -71,7 +78,8 @@ class ByImageView<A: Number>(
 	neuronListViewSwapper(
 	  viewer = viewer,
 	  top = viewer.topNeurons,
-	  bindScrolling = true
+	  bindScrolling = true,
+	  settings = memSafeSettings
 	)
   }
 }

@@ -9,9 +9,11 @@ import matt.fx.graphics.wrapper.node.line.LineWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.modelvis.neuroncirc.NeuronCircle
+import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.model.importformat.Model
 import matt.obs.bind.binding
 import matt.obs.math.double.min
@@ -20,7 +22,10 @@ import matt.obs.math.double.op.plus
 import matt.obs.math.double.op.times
 import matt.obs.prop.BindableProperty
 
-class ModelVisualizer(model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) {
+class ModelVisualizer(
+  model: Model,
+  override val settings: DeephysSettingsController
+): PaneWrapperImpl<Pane, NodeWrapper>(Pane()), DeephysNode {
 
   companion object {
 	private val ORIENTATION = VERTICAL
@@ -59,6 +64,7 @@ class ModelVisualizer(model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) 
   private var circles: List<NeuronCircle>? = null
 
   init {
+	val memSafeSettings = settings
 	prefHeight = PREF_HEIGHT
 	prefWidth = Double.MAX_VALUE
 	val diagramHeightProp = BindableProperty(DIAGRAM_HEIGHT)
@@ -97,7 +103,7 @@ class ModelVisualizer(model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) 
 
 	  val layerCenter = modelStart + spacePerLayer*layIndex.toDouble() + spacePerLayer/2.0
 
-	  deephyText(lay.layerID) {
+	  deephysText(lay.layerID) {
 		layoutXProperty bind when (ORIENTATION) {
 		  VERTICAL   -> diagramLeftProp/4.0
 		  HORIZONTAL -> layerCenter
@@ -126,7 +132,7 @@ class ModelVisualizer(model: Model): PaneWrapperImpl<Pane, NodeWrapper>(Pane()) 
 		NeuronCircle(
 		  layer = lay, neuron = neuron, x = xProp, y = yProp, radius = radius, color = COLOR
 		).apply {
-		  veryLazyDeephysTooltip("neuron $neuronIndex")
+		  veryLazyDeephysTooltip("neuron $neuronIndex",settings = memSafeSettings)
 		  setOnMouseClicked {
 			val dvb = this@ModelVisualizer.dsetViewsBox!!
 			if (dvb.children.isEmpty()) return@setOnMouseClicked

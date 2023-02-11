@@ -16,7 +16,7 @@ import matt.model.data.release.Version
 import matt.mstruct.rstruct.appName
 import matt.mstruct.rstruct.modID
 import matt.nn.deephys.gui.global.deephyHyperlink
-import matt.nn.deephys.gui.global.deephyText
+import matt.nn.deephys.gui.global.deephysText
 import matt.obs.prop.BindableProperty
 import matt.time.dur.sec
 import java.net.ConnectException
@@ -63,12 +63,12 @@ object VersionChecker {
 	if (!error) {
 	  if (new == null && checking) text("checking for updates...")
 	  else if (new != null && new.version > myVersion) {
-		deephyText("Version ${new.version} Available: ")
+		deephysText("Version ${new.version} Available: ")
 		deephyHyperlink("Click here to update") {
 		  opens(ghUser.mainPageOf(appName).jURL.toURI())
 		}
 	  } else if (new != null && new.version < myVersion) {
-		deephyText("developing unreleased version (last pushed was ${new.version})")
+		deephysText("developing unreleased version (last pushed was ${new.version})")
 	  }
 	}
   }
