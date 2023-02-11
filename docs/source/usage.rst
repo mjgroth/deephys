@@ -60,7 +60,7 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 
 .. code-block:: python
 
-	test = dp.import_test_data(
+	test = dp.export(
 	    dataset_name="Data_Distribution_1",
 	    caregory_names=caregory_names,
 	    images=images,
