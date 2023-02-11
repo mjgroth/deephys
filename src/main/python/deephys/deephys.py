@@ -96,6 +96,10 @@ def model(name: str, layers: Dict[str, int], classification_layer: str):
             raise Exception(
                 f"Name of the layer {layer} is too long."
             )
+        if layers[layer] < 0:
+            raise Exception(
+                f"Name of neurons should be positive"
+            )
 
     return Model(
         name=name,
