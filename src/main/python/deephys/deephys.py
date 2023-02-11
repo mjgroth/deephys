@@ -79,14 +79,14 @@ class Model(DeephysData):
         activations: List[bytearray]  # float32 or float64
 
 
-def model(name: str, layers: Dict[str, int], classification_layer: str):
+def model(model_name: str, layers: Dict[str, int], classification_layer: str):
     """
 
-    :param name: The name of the model
+    :param model_name: The name of the model
     :param layers: A dictionary with the names and number of neurons of each layer.
-    :param classification_layer: The name of the classification layer. Must be one of the layers defined in `layers`.
+    :param classification_layer: The name of the classification layer. Must be the name of one of the layers defined in `layers`.
     """
-    if len(name) > 40:
+    if len(model_name) > 40:
         raise Exception(
             f"Name of the model too long."
         )
@@ -102,7 +102,7 @@ def model(name: str, layers: Dict[str, int], classification_layer: str):
             )
 
     return Model(
-        name=name,
+        name=model_name,
         layers=list(
             map(
                 lambda item: Layer(layerID=item[0], neurons=[Neuron()] * item[1]),
@@ -136,13 +136,14 @@ def export(
 ):
     """
     Prepare test results for Deephys
+    The order of the images should be consistent with the order of the groundtruth_categories per image and the neural_activity.
 
-    :param name: The name of the dataset
-    :param classes: an ordered list of strings representing class names
-    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
-    :param model: the model structure
-    :param pixel_data: an ordered list of image pixel data [images,channels,dim1,dim2] or [images,dim1,dim2] for greyscale. Pixels must be floats within the range 0.0:1.0
-    :param ground_truths: an ordered list of ground truths. The length should be the same as the number of images. Each element should be an integer indicating the index of the class.
+    :param dataset_name: The name of the dataset
+    :param category_names: an ordered list of strings representing class names
+    :param neural_activity: A dictionary with the name of the layers and their neural activity. The neural activity is an ordered array or list of floats [#images,#neurons]. Length of activations must be the same as the number of images and in the same order.
+    :param model: The model structure
+    :param images: An ordered list of image pixel data [#images,#channels,dim1,dim2] or [#images,dim1,dim2] for greyscale. Pixels must be floats within the range 0.0:1.0
+    :param groundtruth_categories: An ordered list of the ground truth category of each image. The length should be the same as the number of images. Each element should be an integer indicating the index of the category.
     :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
                   Default: ``"float32"``
     :return: a formatted data object which may be saved to a file
