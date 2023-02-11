@@ -1,11 +1,21 @@
 from deephys.deephys import (
+    Neuron,
+    Layer,
     Model,
     model,
-    export
+    export,
+    ImageFile,
+    Test,
+    Stopwatch,
 )
 
 __all__ = [
+    "Neuron",
+    "Layer",
     "Model",
     "model",
-    "export"
+    "export",
+    "ImageFile",
+    "Test",
+    "Stopwatch"
 ]

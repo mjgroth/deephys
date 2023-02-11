@@ -3,7 +3,6 @@ from cbor2 import dump
 from dataclasses import dataclass, asdict
 from typing import List, Optional, Mapping, Union, Dict
 import numpy as np
-import torch
 import struct
 from time import time
 from tqdm import tqdm
@@ -99,64 +98,14 @@ def model(name: str, layers: Dict[str, int], classification_layer: str):
     )
 
 
-def import_torch_dataset(
-    name: str,
-    dataset: torch.utils.data.DataLoader,
-    classes: list,
-    state: Union[list, np.ndarray, torch.FloatTensor],
-    model: Model,
-    dtype: str = "float32",
-):
-    """
-    Conveniently calls import_test_data with PyTorch data.
-
-    :param name: The name of the dataset
-    :param dataset: contains pixel data of images
-    :param classes: an ordered list of strings representing class names
-    :param state: a 3D array of floats [layers,activations,neurons]. Length of activations must be the same as the number of images. Note that because each layer is a different shape, the outermost type must be a regular list. However, it can be a list of numpy arrays or list list of torch tensors.
-    :param model: the model structure
-    :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
-                  Default: ``"float32"``
-    :return: a formatted data object which may be saved to a file
-    :rtype: deephys.deephys.Test
-    """
-    pixelDataList = []
-    groundTruthList = []
-    for i in range(len(dataset)):
-        image, target = dataset[i]
-        if torch.is_tensor(target):
-            target = target.item()
-        pixelDataList.append(image)
-        groundTruthList.append(target)
-    pixelDataList = torch.stack(pixelDataList)
-    return import_test_data(
-        name=name,
-        pixel_data=pixelDataList,
-        ground_truths=groundTruthList,
-        classes=classes,
-        state=state,
-        model=model,
-    )
-
-
 def _to_np(d):
     if isinstance(d, list):
         return np.array(d)
-    if torch.is_tensor(d):
-        return d.cpu().detach().numpy()
     return d
 
 
-def _to_torch(value):
-    if isinstance(value, list):
-        return torch.tensor(value)
-    elif isinstance(value, np.ndarray):
-        return torch.from_numpy(value)
-    return value
-
-
 def _to_list(value):
-    if isinstance(value, (np.ndarray, torch.IntTensor)):
+    if isinstance(value, np.ndarray):
         return value.tolist()
     return value
 
@@ -164,10 +113,10 @@ def _to_list(value):
 def export(
     name: str,
     classes: list,
-    state: Union[list, np.ndarray, torch.FloatTensor],
+    state: Union[list, np.ndarray],
     model: Model,
-    pixel_data: Union[list, np.ndarray, torch.FloatTensor],
-    ground_truths: Union[List[int], np.ndarray, torch.IntTensor],
+    pixel_data: Union[list, np.ndarray],
+    ground_truths: Union[List[int], np.ndarray],
     dtype: str = "float32",
 ):
     """
@@ -186,13 +135,13 @@ def export(
     """
     imageList = []
     state = list(map(_to_np, state))
-    pixel_data = _to_torch(pixel_data)
+    pixel_data = _to_np(pixel_data)
     if len(pixel_data.shape) == (3):
-        pixel_data = torch.unsqueeze(pixel_data, 1)
+        pixel_data = np.unsqueeze(pixel_data, 1)
         pixel_data = pixel_data.repeat(1, 3, 1, 1)
-    if isinstance(ground_truths, torch.FloatTensor):
+    if any((not isinstance(val, (int, np.uint))) for val in ground_truths):
         raise Exception(
-            f"ground_truths should be a list-like of ints, but got a FloatTensor. Please make it an IntTensor."
+            f"ground_truths should be a list-like of intst. Please make it an int."
         )
     ground_truths = _to_list(ground_truths)
     if len(pixel_data.shape) != (4):
@@ -217,8 +166,8 @@ def export(
     for i in tqdm(range(len(pixel_data))):
         image = pixel_data[i]
         target = ground_truths[i]
-        mn = torch.min(image)
-        mx = torch.max(image)
+        mn = np.min(image)
+        mx = np.max(image)
         if mx > 1 or mn < 0:
             raise Exception(
                 f"image pixel values must be floats between 0 and 1, but values given range from {mn} to {mx}"
@@ -226,7 +175,7 @@ def export(
         image = image * 255
         chan_to_bytes = lambda chan: [bytes(row) for row in chan]
         im_to_bytes = lambda im: list(map(chan_to_bytes, im))
-        im_as_list = image.numpy().astype(np.uint8).tolist()
+        im_as_list = image.astype(np.uint8).tolist()
         im_activations = list(map(lambda l: l[i, :], state))
         if dtype == "float32":
             float_fun = float32
