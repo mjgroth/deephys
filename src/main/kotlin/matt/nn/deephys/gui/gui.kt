@@ -64,12 +64,14 @@ enum class Arg {
 
 class DeephysApp {
 
-  fun boot(vararg args: Arg): Unit = boot(args.mapToArray { it.name })
+  fun boot2(settingsNode: DeephySettingsNode, vararg args: Arg): Unit = boot(args.mapToArray { it.name },settingsNode=settingsNode)
 
   /*invoked directly from test, in case I ever want to return something*/
-  fun boot(args: Array<String>) {
+  fun boot(
+	args: Array<String>,
+	settingsNode: DeephySettingsNode = DeephySettingsNode()
+  ) {
 
-	val settingsNode = DeephySettingsNode()
 
 	if (args.size == 1 && args[0] == `erase-state`.name) {
 	  DeephyState.delete()

@@ -27,6 +27,7 @@ import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.category.pie.CategoryPie.CategorySlice
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
+import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.state.DeephyState
@@ -52,9 +53,10 @@ class DeephysTestSession {
   }
 
   init {
-	app.boot(reset) /*need this so tests are deterministic*/
+	val settingsNode = DeephySettingsNode()
+	app.boot2(settingsNode=settingsNode, reset) /*need this so tests are deterministic*/
 	thread {
-	  app.boot(arrayOf())
+	  app.boot2(args=arrayOf(), settingsNode=settingsNode)
 	}
 	mainStage.apply {
 	  runLaterReturn {
