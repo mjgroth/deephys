@@ -6,9 +6,8 @@ import matt.fx.graphics.style.border.FXBorder
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNeverNull
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.model.flowlogic.recursionblocker.RecursionBlocker
-import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.deephysLabeledControl
+import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -36,6 +35,8 @@ class LayerView(
 	val neurons = layer.neurons.map { it.interTest }
 	var badText: ObsB? = null
 	val firstNeuron = neurons[0]
+
+
 	val neuronSpinner = spinner(
 	  items = neurons.toBasicObservableList(),
 	  editable = true,
@@ -56,25 +57,17 @@ class LayerView(
 		else null
 	  }
 
-
-	  val fact = valueFactory!!
 	  val neuron = viewer.neuronSelection.value?.takeIf { it.layer == interLayer } ?: firstNeuron
-	  fact.value = neuron
+	  valueFactory!!.value = neuron
 	  viewer.neuronSelection v neuron
-	  val rBlocker = RecursionBlocker()
-	  viewer.neuronSelection.onChangeWithWeak(fact) { deRefedFact, newNeuron ->
-		if (newNeuron == null || newNeuron.layer == interLayer) {
-		  rBlocker {
-			deRefedFact.value = newNeuron ?: firstNeuron
-		  }
-		}
-	  }
-	  valueProperty.onChangeWithWeak(viewer) { deRefedViewer, newValue ->
-		rBlocker {
-		  deRefedViewer.neuronSelection.value = newValue
-		}
-	  }
 
+	  bindBidirectional(
+		viewer.neuronSelection,
+		default = firstNeuron,
+		acceptIf = {
+		  it == null || it.layer == interLayer
+		}
+	  )
 	}
 
 
@@ -91,7 +84,8 @@ class LayerView(
 		viewer = viewer,
 		showActivationRatio = true,
 		layoutForList = false,
-		settings = memSafeSettings
+		settings = memSafeSettings,
+		showTopCats = true
 	  )
 	}
   }

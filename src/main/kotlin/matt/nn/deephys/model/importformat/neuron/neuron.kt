@@ -15,6 +15,11 @@ class TestNeuron<A: Number>(
   numIms: Int,
   dType: DType<A>
 ): RAFCaches() {
+
+  override fun toString(): String {
+	return "TestNeuron $index of layer $layerIndex"
+  }
+
   val activations = object: CachedRAFProp<ArrayWrapper<A>>(activationsRAF) {
 	override fun decode(bytes: ByteArray): ArrayWrapper<A> {
 

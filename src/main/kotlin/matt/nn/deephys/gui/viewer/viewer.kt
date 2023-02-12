@@ -15,21 +15,18 @@ import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.titled.TitledPaneWrapper
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
-import matt.fx.graphics.icon.svg.svgToImage2
-import matt.fx.graphics.wrapper.imageview.imageview
 import matt.fx.graphics.wrapper.node.enableWhen
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.fx.image.toFXImage
+import matt.fx.node.proto.svgIcon
 import matt.lang.disabledCode
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.warn
-import matt.mstruct.rstruct.resourceStream
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.gui.dataset.DatasetNode
 import matt.nn.deephys.gui.dataset.DatasetNodeView
@@ -43,14 +40,15 @@ import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.titleFont
-import matt.nn.deephys.gui.global.tooltip.DEEPHYS_SYMBOL_SPACING
-import matt.nn.deephys.gui.global.tooltip.DeephysWarningSymbol
-import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
+import matt.nn.deephys.gui.global.tooltip.symbol.DEEPHYS_SYMBOL_SPACING
+import matt.nn.deephys.gui.global.tooltip.symbol.DeephysWarningSymbol
+import matt.nn.deephys.gui.global.tooltip.symbol.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.action.SelectCategory
 import matt.nn.deephys.gui.viewer.action.SelectImage
 import matt.nn.deephys.gui.viewer.action.SelectNeuron
+import matt.nn.deephys.gui.viewer.action.SelectView
 import matt.nn.deephys.gui.viewer.action.TestViewerAction
 import matt.nn.deephys.gui.viewer.tutorial.bind.BindTutorial
 import matt.nn.deephys.load.asyncLoadSwapper
@@ -120,6 +118,9 @@ class DatasetViewer(
   //  }
   val numImagesPerNeuronInByImage = BindableProperty(settings.appearance.numImagesPerNeuronInByImage.value).apply {
 	bind(settings.appearance.numImagesPerNeuronInByImage)
+  }
+  val averageRawActSigFigs = BindableProperty(settings.appearance.averageRawActSigFigs.value).apply {
+	bind(settings.appearance.averageRawActSigFigs)
   }
   val predictionSigFigs = BindableProperty(settings.appearance.predictionSigFigs.value).apply {
 	bind(settings.appearance.predictionSigFigs)
@@ -193,7 +194,7 @@ class DatasetViewer(
   }
 
 
-  val neuronSelection: VarProp<InterTestNeuron?> = VarProp<InterTestNeuron?>(
+  val neuronSelection: VarProp<InterTestNeuron?> = VarProp(
 	boundNeuron.value
   ).withNonNullUpdatesFrom(boundNeuron)
 
@@ -334,10 +335,15 @@ class DatasetViewer(
   fun navigateTo(category: CategorySelection, addHistory: Boolean = true) {
 	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	neuronSelection.value = null
-	neuronSelection.value = null
 	categorySelection.value = category
 	if (addHistory) appendHistory(SelectCategory(category))
 	view.value = ByCategory
+  }
+
+  fun navigateTo(theView: DatasetNodeView, addHistory: Boolean = true) {
+	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
+	if (addHistory) appendHistory(SelectView(theView))
+	view.value = theView
   }
 
   init {
@@ -352,6 +358,7 @@ class DatasetViewer(
 	is SelectImage    -> navigateTo(action.image, addHistory = false)
 	is SelectCategory -> navigateTo(action.cat, addHistory = false)
 	is SelectNeuron   -> navigateTo(action.neuron, addHistory = false)
+	is SelectView -> navigateTo(action.view, addHistory = false)
   }
 
   private val canUseHistory = this@DatasetViewer.history.binding(historyIndex, boundToDSet) {
@@ -393,18 +400,10 @@ class DatasetViewer(
 	  /*"Choose Test"*/
 	  val chooseTestButton = deephyButton("") {
 
-		val ICON_LENGTH = 25
 
-		graphic = imageview(
-		  svgToImage2(
-			resourceStream("open-file.svg")!!,
-			width = ICON_LENGTH*2,
-			height = ICON_LENGTH*2
-		  ).toFXImage()
-		) {
-		  isPreserveRatio = true
-		  fitWidth = ICON_LENGTH.toDouble()
-		}
+		graphic = svgIcon("open-file",25)
+
+
 		veryLazyDeephysTooltip("choose test file", settings)
 		setOnAction {
 
@@ -498,6 +497,7 @@ class DatasetViewer(
 
 		swapperR(loadWarnings) {
 		  h {
+			spacing = DEEPHYS_SYMBOL_SPACING
 			children.bindWeakly(it.nonBlockingFXWatcher()) {
 			  DeephysWarningSymbol(it).apply {
 

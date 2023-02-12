@@ -3,9 +3,11 @@ package matt.nn.deephys.calc
 import matt.caching.compcache.GlobalRAMComputeInput
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.collect.set.contents.Contents
+import matt.log.profile.stopwatch.tic
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
+import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
 import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
 import matt.nn.deephys.model.data.Category
@@ -17,42 +19,6 @@ import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 
-/*data class NormalizedAverageActivation<N: Number>(
-  private val neuron: InterTestNeuron,
-  private val images: Contents<DeephyImage<N>>,
-  private val test: TypedTestLike<N>,
-): DeephysComputeInput<NormalActivation<N, *>>() {
-
-  *//*small possibility of memory leaks when images is empty, but this is still way better than before*//*
-  override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: GlobalRAMComputeCacheManager
-
-  companion object {
-	const val normalizeTopNeuronsBlurb =
-	  "Normalized Activation ($NORMALIZED_ACT_SYMBOL) = Raw Activation ($RAW_ACT_SYMBOL) / max(activation for each image for this neuron)"
-  }
-
-  override fun timedCompute(): NormalActivation<N, *> {
-	val num = neuron.averageActivation(images, dType = test.dtype).value
-
-	val denom = test.test.maxActivations[neuron]
-
-	val r = test.dtype.div(num, denom)
-	return test.dtype.normalActivation(r)
-  }
-
-  override fun equals(other: Any?): Boolean {
-	return other is NormalizedAverageActivation<*> && other.neuron == this.neuron && other.images == images
-  }
-
-  override fun hashCode(): Int {
-	var result = neuron.hashCode()
-	result = 31*result + images.hashCode()
-	return result
-  }
-
-
-}*/
-
 data class DescendingArgMaxMax<A: Number>(
   private val neuron: InterTestNeuron,
   private val test: TypedTestLike<A>,
@@ -60,20 +26,13 @@ data class DescendingArgMaxMax<A: Number>(
   override val cacheManager get() = test.testRAMCache
   override fun compute(): List<ImageIndex> = run {
 	val theTest = test.test
-
-	//	theTest.argmaxn2OfNeuron(neuron,num)
-
 	val acts = theTest.activationsByNeuron[neuron]
-
-	//	acts
-	val indices = test.dtype.wrap(acts)
-	  .argmaxn2(MAX_NUM_IMAGES_IN_TOP_IMAGES, skipInfinite = true, skipNaN = true, skipZero = true)
-
-	//	if (neuron.index == 10) {
-	//	  taball("indices", indices)
-	//	}
-
-	/*val indices = acts.argmaxn2(num)*/
+	val indices = test.dtype.wrap(acts).argmaxn2(
+	  MAX_NUM_IMAGES_IN_TOP_IMAGES,
+	  skipInfinite = true,
+	  skipNaN = true,
+	  skipZero = true
+	)
 	indices.sortedByDescending {
 	  acts[it].toDouble()
 	}.map { ImageIndex(it) }
@@ -93,6 +52,40 @@ data class TopImages<A: Number>(
 	test = test
   )().take(num)
 }
+
+
+data class TopCategories<N: Number>(
+  val neuron: InterTestNeuron,
+  private val test: TypedTestLike<N>,
+): GlobalRAMComputeInput<List<Pair<Category, RawActivation<*, *>>>>() {
+
+  override val cacheManager get() = test.testRAMCache
+
+  override fun compute(): List<Pair<Category, RawActivation<*, *>>> {
+	val t = tic("TopCategories for ${neuron}")
+	t.tic("starting to get top categories")
+	val theTest = test.test
+	val dtype = theTest.dtype
+	val acts = theTest.activationsByNeuron[neuron]
+	val activationsByCategory = mutableMapOf<Category, MutableList<N>>()
+	dtype.wrap(acts).forEachIndexed { idx, act ->
+	  val cat = theTest.imageAtIndex(idx).category
+	  val list = activationsByCategory.getOrPut(cat) {
+		mutableListOf()
+	  }
+	  list.add(act)
+	}
+	val meanActsByCat = activationsByCategory.mapValues {
+	  dtype.mean(it.value)
+	}
+	val result = meanActsByCat.entries.sortedByDescending { it.value.toDouble() }.take(5).map {
+	  it.key to test.dtype.rawActivation(it.value)
+	}
+	t.toc("got result")
+	return result
+  }
+}
+
 
 private const val NUM_TOP_NEURONS = 25
 
@@ -134,7 +127,6 @@ data class TopNeurons<N: Number>(
 		neuron = neuron,
 		images = images
 	  )()
-	  /*else if (normalized) NormalizedAverageActivation(neuron, images, test)()*/
 	  else neuron.averageActivation(images, dType = dType)
 	  NeuronWithActivation(neuron, act)
 	}
@@ -171,11 +163,6 @@ data class ActivationRatioCalc<A: Number>(
   override val cacheManager get() = FakeCacheManager /*this ComputeCache was taking up a TON of memory.*/
   /*override val cacheManager get() = numTest.testRAMCache*/ /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
-  //  companion object {
-  //	const val technique =
-  //	  "This value is the ratio between the maximum activation of this neuron and the maximum activation of the ${DSetViewsVBox.NORMALIZER_BUTTON_NAME} neuron"
-  //	const val latexTechnique = "\\frac{max activation of this neuron in this test}{max activation}"
-  //  }
 
   companion object {
 	sealed interface ActivationRatioNumerator
@@ -197,7 +184,7 @@ data class ActivationRatioCalc<A: Number>(
 
   /*TODO: make this a lazy val so I don't need to make params above vals*/
   override fun compute(): Activation<A, *> {
-	/*val dType = DType.leastPrecise(numTest.dtype, denomTest.dtype)*/
+
 	val dType = numTest.dtype
 	val r = if (images.isEmpty()) {
 	  if (numTest == denomTest) dType.alwaysOneActivation()
@@ -213,24 +200,6 @@ data class ActivationRatioCalc<A: Number>(
 	  val denom = denomTest.test.maxActivations[neuron]
 	  dType.activationRatio(dType.div(num, denom))
 	}
-	/*	if (r.isNaN || r.isInfinite) {
-		  println(
-			"""
-			f=${r.value}
-			images.size=${images.size}
-			numTest.test.maxActivations[neuron]=${numTest.test.maxActivations[neuron]}
-			denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}
-			${
-			  if (images.isNotEmpty()) "neuron.averageActivation(images).value=${
-				neuron.averageActivation(
-				  images,
-				  dType = dType
-				).value
-			  }, denomTest.test.maxActivations[neuron]=${denomTest.test.maxActivations[neuron]}" else ""
-			}
-		  """.trimIndent()
-		  )
-		}*/
 	return r
   }
 
@@ -256,9 +225,6 @@ data class ImageSoftMaxDenom<N: Number>(
 
 	return su
 
-	//	return preds.sumOf {
-	//
-	//	}
   }
 }
 
@@ -299,6 +265,9 @@ data class CategoryAccuracy(
 
 	return r
   }
+
+  fun formatted() = "${compute() * 100}%"
+
 }
 
 data class CategoryFalsePositivesSorted<N: Number>(
@@ -356,3 +325,5 @@ data class CategoryFalseNegativesSorted<N: Number>(
 	  }
   }
 }
+
+

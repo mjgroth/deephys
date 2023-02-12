@@ -31,7 +31,7 @@ class DSetViewsVBox(
 ): VBoxWrapperImpl<DatasetViewer>() {
 
   companion object {
-	const val BIND_BUTTON_NAME = "bind"
+	const val BIND_BUTTON_NAME = "Bind"
 	const val NORMALIZER_BUTTON_NAME = "Normalizer"
   }
 

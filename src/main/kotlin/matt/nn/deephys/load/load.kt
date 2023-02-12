@@ -59,7 +59,7 @@ fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
 	  when {
 		!fileFound.value         -> TextWrapper("file not found")
 		!streamOk.value          -> TextWrapper("file loading stream broken. Was the file moved?")
-		parseError.value != null -> TextWrapper("parse error loading file: ${parseError.value}")
+		parseError.value != null -> TextWrapper("Encountered error while loading file: ${parseError.value?.message}")
 		else                     -> op(this)
 	  }
 	}

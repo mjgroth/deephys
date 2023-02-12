@@ -207,7 +207,8 @@ class TestLoader(
 			  dtype = dtype,
 			  cats = if (didLoadCategories.await()) loadedCategories.await() else null
 			).apply {
-			  setTheTestNeurons(imageSetLoader.localTestNeurons)
+			  putTestNeurons(imageSetLoader.localTestNeurons!!)
+//			  setTheTestNeurons()
 			  /*testNeurons = localTestNeurons*/ /*as Map<InterTestNeuron,TestNeuron<Float>>*/
 			  preds.startLoading()
 			  startPreloadingMaxActivations()

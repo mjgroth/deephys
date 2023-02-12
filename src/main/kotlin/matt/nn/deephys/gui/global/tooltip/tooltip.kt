@@ -15,17 +15,12 @@ import matt.fx.control.popup.tooltip.fixed.install
 import matt.fx.control.wrapper.label.LabelWrapper
 import matt.fx.control.wrapper.wrapped.wrapped
 import matt.fx.graphics.fxthread.runLater
-import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.node.attachTo
 import matt.fx.graphics.wrapper.node.shape.rect.rectangle
 import matt.fx.graphics.wrapper.pane.stack.StackPaneW
 import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.fx.node.proto.infosymbol.InfoSymbol
-import matt.fx.node.proto.infosymbol.WarningSymbol
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.fx.node.tex.TexNodeFactory
-import matt.lang.function.DSL
 import matt.lang.function.Produce
 import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
@@ -357,39 +352,9 @@ class DeephyTooltip(s: String, im: DeephyImage<*>?, settings: DeephysSettingsCon
   }
 }
 
-fun NW.deephysInfoSymbol(text: ObsS, op: DSL<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text.value).attachTo(this) {
-  textProperty.bind(text)
-  op()
-}
-
-fun NW.deephysInfoSymbol(text: String, op: DSL<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text).attachTo(this, op)
-
-
-class DeephysInfoSymbol(info: String): InfoSymbol(info) {
-  override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
-  val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
-  val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
-}
-
-
-fun NW.deephysWarningSymbol(text: ObsS, op: DSL<DeephysWarningSymbol> = {}) =
-  DeephysWarningSymbol(text.value).attachTo(this) {
-	textProperty.bind(text)
-	op()
-  }
-
-fun NW.deephysWarningSymbol(text: String, op: DSL<DeephysWarningSymbol> = {}) =
-  DeephysWarningSymbol(text).attachTo(this, op)
-
-
-class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {
-  override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
-  val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
-  val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
-}
 
 
 const val SUFFIX_WARNING = "The `suffix` key is no longer supported (this can just be appended to the `name`). Please update to a newer version of the pip deephys package"
 
-const val DEEPHYS_SYMBOL_SPACING = 5.0
+
 

@@ -11,7 +11,9 @@ import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 
 class ByNeuronView(
-  testLoader: TypedTestLike<*>, viewer: DatasetViewer, override val settings: DeephysSettingsController
+  testLoader: TypedTestLike<*>,
+  viewer: DatasetViewer,
+  override val settings: DeephysSettingsController
 ): Swapper<ResolvedLayer?, LayerView>(), DeephysNode {
   init {
 	val memSafeSettings = settings

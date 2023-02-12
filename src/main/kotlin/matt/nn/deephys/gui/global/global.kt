@@ -3,6 +3,7 @@ package matt.nn.deephys.gui.global
 import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.layout.Border
+import javafx.scene.layout.Priority.ALWAYS
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
@@ -27,6 +28,7 @@ import matt.fx.graphics.wrapper.ET
 import matt.fx.graphics.wrapper.EventTargetWrapper
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
+import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapper
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
@@ -56,6 +58,24 @@ fun ET.deephysLabeledControl(
   }
   +control.apply {
 	prefWidth = 100.0
+  }
+  op()
+}
+fun ET.deephysLabeledControl2(
+  label: String,
+  control: ControlWrapper,
+  op: HBoxWrapper<NW>.()->Unit = {}
+) = h {
+  alignment = Pos.CENTER_LEFT
+  h {
+    alignment = Pos.CENTER_LEFT
+    deephysText("$label:")
+    prefWidth = 60.0
+  }
+  hSpacer(5.0)
+  +control.apply {
+    prefWidth = 500.0
+    hgrow = ALWAYS
   }
   op()
 }
@@ -90,6 +110,7 @@ fun EventTargetWrapper.deephyActionText(s: String = "", op: ()->Unit) = actionTe
   font = DEEPHYS_FONT_DEFAULT
   cursor = Cursor.HAND
 }
+
 
 fun EventTargetWrapper.deephysLabel(s: String = "", op: LabelWrapper.()->Unit = {}) = label(s) {
   font = DEEPHYS_FONT_DEFAULT

@@ -9,18 +9,21 @@ import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
+import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.lang.function.Consume
 import matt.lang.go
 import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
+import matt.nn.deephys.calc.TopCategories
 import matt.nn.deephys.calc.TopImages
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
+import matt.nn.deephys.gui.dataset.byimage.preds.CategoryTable
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
+import matt.nn.deephys.gui.global.tooltip.symbol.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTexTooltip
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.node.DeephysNode
@@ -46,6 +49,7 @@ class NeuronView<A: Number>(
   showActivationRatio: Boolean,
   layoutForList: Boolean,
   loadImagesAsync: Boolean = false,
+  showTopCats: Boolean = false,
   override val settings: DeephysSettingsController
 ): VBoxWrapperImpl<NW>(), DeephysNode {
 
@@ -122,6 +126,22 @@ class NeuronView<A: Number>(
 	  }
 	}
 
+	if (showTopCats) {
+	  val topCats = TopCategories(neuron, testLoader)()
+	  +CategoryTable(
+		title = "Top Categories",
+		data = topCats.map { it.first to it.second.value },
+		settings = memSafeSettings,
+		weakViewer = weakViewer,
+		sigFigSett = weakViewer.deref()!!.averageRawActSigFigs,
+		tooltip = "Top categories for this neuron. Calculated by the average, un-normalized activation of this neuron for images grouped by their groundtruth"
+	  )
+	  spacer(5.0)
+	}
+
+
+
+
 	val noneText = deephysInfoSymbol(
 	  "There are no top images. This might happen if all activations are zero, NaN, or infinite"
 	)
@@ -171,12 +191,26 @@ class NeuronView<A: Number>(
 			if (realOldNumImages == null) {
 			  topImages.forEach {
 				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync,settings = memSafeSettings))
+				localImFlowPane.add(
+				  DeephyImView(
+					im,
+					localViewer,
+					loadAsync = loadImagesAsync,
+					settings = memSafeSettings
+				  )
+				)
 			  }
 			} else if (realNumImages > realOldNumImages) {
 			  topImages.subList(realOldNumImages.toInt()).toList().forEach {
 				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(DeephyImView(im, localViewer, loadAsync = loadImagesAsync,settings = memSafeSettings))
+				localImFlowPane.add(
+				  DeephyImView(
+					im,
+					localViewer,
+					loadAsync = loadImagesAsync,
+					settings = memSafeSettings
+				  )
+				)
 			  }
 			} else if (realNumImages < realOldNumImages) {
 			  localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {

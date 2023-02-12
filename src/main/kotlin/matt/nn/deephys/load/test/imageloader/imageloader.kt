@@ -15,6 +15,7 @@ import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.load.cache.Cacher
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
+import matt.nn.deephys.load.test.LoadException
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.FloatActivationData
@@ -26,6 +27,7 @@ import matt.nn.deephys.model.importformat.im.readFloatActivations
 import matt.nn.deephys.model.importformat.im.readPixels
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.obs.prop.BindableProperty
+import matt.prim.str.elementsToString
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -110,7 +112,11 @@ class ImageSetLoader(private val testLoader: TestLoader) {
 			val r = nextValueManualDontReadKey<ArrayReader, List2D<IntArray>> {
 			  readPixels()
 			}
-			pixelsShapePerImage.putLoadedValue(l(r.size, r[0].size, r[0][0].size))
+			val imDims = l(r.size, r[0].size, r[0][0].size)
+			pixelsShapePerImage.putLoadedValue(imDims)
+			if (r.size != 3) {
+			  throw LoadException("Images should have 3 color channels. The first dimension should be a length of 3, but the encountered dimensions were ${imDims.elementsToString()} ")
+			}
 			r
 		  }.let {
 			numDataBytes = it.second.size
@@ -134,7 +140,22 @@ class ImageSetLoader(private val testLoader: TestLoader) {
 			  val r = nextValueManualDontReadKey<ArrayReader, FloatActivationData> {
 				readFloatActivations()
 			  }
-			  activationsShapePerImage.putLoadedValue(r.map { it.size })
+			  val actsShapePerIm = r.map { it.size }
+			  activationsShapePerImage.putLoadedValue(actsShapePerIm)
+
+			  val modelShape = testLoader.model.layers.map { it.neurons.size }
+
+			  if (
+				actsShapePerIm.size != testLoader.model.layers.size
+				|| modelShape.zip(actsShapePerIm).any { it.first != it.second }
+			  ) {
+				throw LoadException("Activations shape from .test file (${actsShapePerIm.elementsToString()}) does not match shape from .model file (${modelShape.elementsToString()})")
+			  }
+
+
+
+
+
 			  println(testLoader.infoString)
 			  r
 			}.let {

@@ -85,6 +85,13 @@ class DeephysSettingsController: SettingsData("Main Settings") {
 }
 
 class AppearanceSettings: SettingsData("Appearance") {
+  val averageRawActSigFigs by IntSettingProv(
+	defaultValue = 2,
+	label = "average activation significant figures",
+	tooltip = "significant figures for top categories list in the Neuron view",
+	min = 1,
+	max = 10
+  )
   val predictionSigFigs by IntSettingProv(
 	defaultValue = 5,
 	label = "Prediction value significant figures",

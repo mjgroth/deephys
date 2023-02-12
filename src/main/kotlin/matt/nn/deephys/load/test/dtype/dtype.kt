@@ -241,7 +241,7 @@ value class DoubleArrayWrapper(private val v: DoubleArray): ArrayWrapper<Double>
 }
 
 
-sealed interface MultiArrayWrapper<N: Number> {
+sealed interface MultiArrayWrapper<N: Number>: Iterable<N> {
   fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean, skipZero: Boolean): List<Int>
 }
 
@@ -250,11 +250,19 @@ value class FloatMultiArrayWrapper(val a: MultiArray<Float, D1>): MultiArrayWrap
   override fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean, skipZero: Boolean): List<Int> {
 	return a.argmaxn2(n, skipInfinite = skipInfinite, skipNaN = skipNaN,skipZero=skipZero)
   }
+
+  override fun iterator(): Iterator<Float> {
+	return a.iterator()
+  }
 }
 
 @JvmInline
 value class DoubleMultiArrayWrapper(val a: MultiArray<Double, D1>): MultiArrayWrapper<Double> {
   override fun argmaxn2(n: Int, skipInfinite: Boolean, skipNaN: Boolean, skipZero: Boolean): List<Int> {
 	return a.argmaxn2(n, skipInfinite = skipInfinite, skipNaN = skipNaN,skipZero=skipZero)
+  }
+
+  override fun iterator(): Iterator<Double> {
+	return a.iterator()
   }
 }

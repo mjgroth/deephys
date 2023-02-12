@@ -8,6 +8,7 @@ import matt.lang.anno.PhaseOut
 import matt.lang.weak.MyWeakRef
 import matt.lang.weak.lazyWeak
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import matt.model.op.convert.StringConverter
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.TestLoader
@@ -40,6 +41,18 @@ class DeephyImage<A: Number>(
   pixelsRAF: EvenlySizedRAFCache,
   dtype: DType<A> /*just for generic*/
 ): RAFCaches() {
+
+  companion object {
+	fun stringConverterThatFallsBackToFirst(images: List<DeephyImage<*>>) = object: StringConverter<DeephyImage<*>> {
+	  override fun toString(t: DeephyImage<*>): String = "${t.index}"
+	  override fun fromString(s: String): DeephyImage<*> =
+		s.toIntOrNull()?.let { i -> images.firstOrNull { it.index == i } } ?: images.first()
+	}
+  }
+
+  override fun toString(): String {
+	return "[Deephy Image with ID=${imageID}]"
+  }
 
   val weak by lazy { MyWeakRef(this) }
 
@@ -167,7 +180,8 @@ sealed interface ImageActivationCborBytes<A: Number> {
 
 }
 
-@JvmInline value class ImageActivationCborBytesFloat64(override val bytes: ByteArray): ImageActivationCborBytes<Double> {
+@JvmInline
+value class ImageActivationCborBytesFloat64(override val bytes: ByteArray): ImageActivationCborBytes<Double> {
   override fun parse2DArray(): DoubleActivationData {
 	bytes.cborReader().readManually<ArrayReader, Unit> {
 	  return readDoubleActivations()

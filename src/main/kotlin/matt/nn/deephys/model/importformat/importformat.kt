@@ -8,9 +8,9 @@ import matt.collect.map.dmap.withStoringDefault
 import matt.collect.map.lazyMap
 import matt.collect.weak.lazyWeakMap
 import matt.log.profile.mem.throttle
-import matt.log.profile.stopwatch.stopwatch
 import matt.log.warn.warn
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
+import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.load.test.OLD_CAT_LOAD_WARNING
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.testcache.TestRAMCache
@@ -98,12 +98,12 @@ class Test<N: Number>(
   override val test = this
 
 
-  fun setTheTestNeurons(value: Map<InterTestNeuron, TestNeuron<*>>?) {
+  fun putTestNeurons(map: Map<InterTestNeuron, TestNeuron<*>>) {
 	@Suppress("UNCHECKED_CAST")
-	testNeurons = value as Map<InterTestNeuron, TestNeuron<N>>?
+	testNeurons.putLoadedValue(map as Map<InterTestNeuron, TestNeuron<N>> )
   }
 
-  var testNeurons: Map<InterTestNeuron, TestNeuron<N>>? = null
+  val testNeurons  = LoadedValueSlot<Map<InterTestNeuron, TestNeuron<N>>>()
 
 
   fun category(id: Int) = catsByID[id]!!
@@ -161,7 +161,16 @@ class Test<N: Number>(
 	.weakValues()
 	.makeMap<InterTestNeuron, MultiArray<N, D1>>()
 	.withStoringDefault {
-	  val something = testNeurons!![it]!!.activations.await()
+
+
+
+	  val theTestNeuron = testNeurons.await()[it]
+
+	  val something = try {
+		theTestNeuron!!.activations.await()
+	  } catch (e: Exception) {
+		throw Exception("Exception while getting activations of $theTestNeuron", e)
+	  }
 
 	  dtype.d1array(something)
 	  /*testNeurons!![it]!!.activations.await().asList().toNDArray()*/

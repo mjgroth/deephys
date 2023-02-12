@@ -25,7 +25,7 @@ import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.global.tooltip.deephysInfoSymbol
+import matt.nn.deephys.gui.global.tooltip.symbol.deephysInfoSymbol
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTexTooltip
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.neuron.NeuronView
@@ -170,7 +170,7 @@ class NeuronListView(
 		}*/
 
 
-		val startAsyncAt = (viewer.stage!!.width/NEURON_LIST_VIEW_WIDTH).ceilInt()
+		val startAsyncAt = (viewer.width/NEURON_LIST_VIEW_WIDTH).ceilInt()
 
 		if (topNeurons.isEmpty() && viewer.normalizer.value != null) {
 		  deephysInfoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
@@ -184,19 +184,13 @@ class NeuronListView(
 				val deReffedViewer = weakViewer.deref()!!
 				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
 				viewerToChange.navigateTo(neuronWithAct.neuron)
-			  }            /*val image = if (viewer.isBoundToDSet.value) null else viewer.imageSelection.value*/
-
-
+			  }
 			  spacer(10.0)
-
-			  /*val normalize = viewer.normalizeTopNeuronActivations*/
 			  swapperRNullable(
 				viewer.normalizer
-				/*.binding(*//*normalize*//*) { it }*/
-			  ) {                /*val inD = it*/                /*if (inD == null || inD == viewer) {*/
+			  ) {
 
 
-				/*anirban and xavier asked to hide the activation text in this case since it doesn't pertain to a specific image*/
 				if (neuronWithAct.activation !is ActivationRatio || (cfg.tops as TopNeurons<*>).images.isNotEmpty()) {
 				  val act = neuronWithAct.activation
 				  h {
@@ -223,7 +217,6 @@ class NeuronListView(
 						}
 
 						is ActivationRatio     -> {
-						  /*val forced = (cfg.tops as TopNeurons<*>).forcedNeuronIndices*/
 						  val numImages = (cfg.tops as TopNeurons<*>).images.size
 						  val num = when (numImages) {
 							0 -> MiscActivationRatioNumerator.MAX
@@ -234,33 +227,16 @@ class NeuronListView(
 							ActivationRatioCalc.latexTechnique(num)
 						  }
 						}
-						/*ActivationRatioCalc.technique*/
-						/*is NormalActivation    -> NormalizedAverageActivation.normalizeTopNeuronsBlurb*/
-
 					  }
-
-
 					}
-					//					infoSymbol("test")
 					act.extraInfo?.go { deephysInfoSymbol(it) }
 				  }
 				}
-
-
-				/*} else inD.testData.value?.let { inDTest ->
-				  deephyText(
-					ActivationRatioCalc(
-					  numTest = testLoader,
-					  denomTest = inDTest,
-					  neuron = neuronWithAct.neuron
-					)().formatted
-				  ) {
-					deephyTooltip(ActivationRatioCalc.technique)
-				  }*/                /*}*/ /*?: deephyText("error: no activation info")*/
 			  }
 
 
 			}
+
 			+NeuronView(
 			  neuronWithAct.neuron,
 			  numImages = cfg.viewer.numImagesPerNeuronInByImage,
