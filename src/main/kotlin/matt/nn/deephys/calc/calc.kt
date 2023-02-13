@@ -24,6 +24,7 @@ data class DescendingArgMaxMax<A: Number>(
   private val test: TypedTestLike<A>,
 ): GlobalRAMComputeInput<List<ImageIndex>>() {
   override val cacheManager get() = test.testRAMCache
+
   override fun compute(): List<ImageIndex> = run {
 	val theTest = test.test
 	val acts = theTest.activationsByNeuron[neuron]
@@ -37,6 +38,8 @@ data class DescendingArgMaxMax<A: Number>(
 	  acts[it].toDouble()
 	}.map { ImageIndex(it) }
   }
+
+
 }
 
 data class TopImages<A: Number>(
