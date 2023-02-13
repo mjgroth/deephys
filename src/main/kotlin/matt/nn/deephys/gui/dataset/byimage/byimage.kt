@@ -1,8 +1,5 @@
 package matt.nn.deephys.gui.dataset.byimage
 
-import javafx.scene.paint.Color
-import matt.fx.control.wrapper.control.spinner.spinner
-import matt.fx.graphics.style.border.FXBorder
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
@@ -18,18 +15,12 @@ import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.dataset.byimage.preds.PredictionsView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
-import matt.nn.deephys.gui.global.deephysLabeledControl
-import matt.nn.deephys.gui.global.deephysText
+import matt.nn.deephys.gui.global.deephysSpinner
 import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.obs.bind.binding
-import matt.obs.bindings.bool.ObsB
-import matt.obs.bindings.bool.and
-import matt.obs.col.olist.toBasicObservableList
-import matt.prim.str.isInt
 
 
 class ByImageView<A: Number>(
@@ -45,66 +36,18 @@ class ByImageView<A: Number>(
 	val weakViewer = MyWeakRef(viewer)
 	val weakTest = MyWeakRef(testLoader)
 
-	var badText: ObsB? = null
 	val images = testLoader.test.images
-	val firstImage = images[0]
-	val imageSpinner = spinner(
-	  items = images.toBasicObservableList(),
-	  editable = true,
-	  enableScroll = false,
-	  converter = DeephyImage.stringConverterThatFallsBackToFirst(images = images)
-	) {
 
-	  autoCommitOnType()
-
-	  valueFactory!!.wrapAround = true
-
-	  badText = textProperty.binding {
-		it == null || !it.isInt() || it.toInt() !in images.indices
-	  }
-
-	  badText!!.onChange {
-		border = if (it) FXBorder.solid(Color.RED, 10.0)
-		else null
-	  }
-
-	  val image = viewer.imageSelection.value ?: firstImage
-	  valueFactory!!.value = image
-	  viewer.imageSelection v image
-
-	  bindBidirectional(
-		viewer.imageSelection,
-		default = firstImage,
-		acceptIf = {
-		  true
-		}
-	  )
-
-	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
-
-	}
-
-	deephysText("please input valid integer image index between 0 and ${images.size}") {
-	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull.and(badText!!))
-	}
-
-	deephysLabeledControl("Image", imageSpinner) {
-	  visibleAndManagedProp.bind(viewer.boundToDSet.isNull)
-	}
-
-	/*
-		deephyButton("select random image") {
-		  setOnAction {
-			weakViewer.deref()!!.imageSelection.value = weakTest.deref()!!.tl.awaitNonUniformRandomImage()
-		  }
-		  visibleAndManagedProp.bind(viewer.imageSelection.isNull.and(viewer.isUnboundToDSet))
-		}*/
-
-
-
-
-
-	println("viewer.imageSelection.value1  = ${viewer.imageSelection.value}")
+	deephysSpinner(
+	  label = "Image",
+	  choices = images,
+	  defaultChoice = {images[0]},
+	  converter = DeephyImage.stringConverterThatFallsBackToFirst(images = images),
+	  viewer = viewer,
+	  getCurrent = viewer.imageSelection,
+	  acceptIf = { true },
+	  navAction = { navigateTo(it) }
+	)
 
 	swapperR(
 	  viewer.imageSelection,
@@ -112,8 +55,6 @@ class ByImageView<A: Number>(
 	  fadeOutDur = DEEPHYS_FADE_DUR,
 	  fadeInDur = DEEPHYS_FADE_DUR
 	) { img ->
-	  println("viewer.imageSelection.value2  = ${viewer.imageSelection.value}")
-	  println("image swapper img: $img")
 
 	  weakViewer.deref()?.let { deRefedViewer ->
 

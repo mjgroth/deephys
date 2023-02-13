@@ -90,7 +90,8 @@ fun NW.neuronListViewSwapper(
   val weakViewer = MyWeakRef(viewer)
   swapper(
 	MyBinding(
-	  /*viewer.normalizeTopNeuronActivations,*/ viewer.testData, top
+	  viewer.testData,
+	  top
 	) {
 	  weakViewer.deref()?.let { deRefedViewer ->
 		deRefedViewer.testData.value?.let { tst ->
@@ -102,7 +103,7 @@ fun NW.neuronListViewSwapper(
 		}
 	  }
 	},
-	nullMessage = "no top neurons",
+	nullMessage = "no top neurons. Did you select a layer and an image?",
 	fadeOutDur = if (fade) DEEPHYS_FADE_DUR else null,
 	fadeInDur = if (fade) DEEPHYS_FADE_DUR else null
   ) {
@@ -172,7 +173,7 @@ class NeuronListView(
 
 		val startAsyncAt = (viewer.width/NEURON_LIST_VIEW_WIDTH).ceilInt()
 
-		if (topNeurons.isEmpty() && viewer.normalizer.value != null) {
+		if (topNeurons.isEmpty()) {
 		  deephysInfoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
 		}
 
@@ -191,7 +192,11 @@ class NeuronListView(
 			  ) {
 
 
-				if (neuronWithAct.activation !is ActivationRatio || (cfg.tops as TopNeurons<*>).images.isNotEmpty()) {
+				if (
+				  true
+				  /*neuronWithAct.activation !is ActivationRatio
+				  || (cfg.tops as TopNeurons<*>).images.isNotEmpty()*/
+				) {
 				  val act = neuronWithAct.activation
 				  h {
 					deephysText(
@@ -204,14 +209,10 @@ class NeuronListView(
 						is AlwaysOneActivation -> veryLazyDeephysTooltip(memSafeSettings) { "activation is always 1 in this case, so it is not shown" }
 						is RawActivation       -> {
 						  val numImages = (cfg.tops as TopNeurons<*>).images.size
-						  if (numImages > 1) {
-							veryLazyDeephysTooltip(memSafeSettings) {
-							  "average activation value for the selected images"
-							}
-						  } else {
-							veryLazyDeephysTooltip(memSafeSettings) {
-							  "raw activation value for the selected image"
-							}
+						  veryLazyDeephysTooltip(memSafeSettings) {
+							if (numImages == 0) "maximum raw activation value for this neuron"
+							else if (numImages > 1) "average activation value for the selected images"
+							else "raw activation value for the selected image"
 						  }
 
 						}

@@ -2,23 +2,27 @@ package matt.nn.deephys.gui.neuron
 
 import matt.async.queue.QueueWorker
 import matt.collect.itr.subList
-import matt.collect.set.contents.contentsOf
 import matt.fx.base.prop.sizeProperty
 import matt.fx.control.wrapper.progressindicator.progressindicator
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNullable
+import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.fx.node.tex.dsl.tex
+import matt.lang.NEVER
 import matt.lang.function.Consume
 import matt.lang.go
+import matt.math.op.div
 import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
 import matt.nn.deephys.calc.TopCategories
 import matt.nn.deephys.calc.TopImages
-import matt.nn.deephys.calc.act.Activation
+import matt.nn.deephys.calc.act.ActivationRatio
+import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.dataset.byimage.preds.CategoryTable
 import matt.nn.deephys.gui.deephyimview.DeephyImView
@@ -69,57 +73,47 @@ class NeuronView<A: Number>(
 	}
 
 	if (showActivationRatio) {
-	  swapperR(viewer.normalizer) {
+	  swapperRNullable(viewer.normalizer) { normalizer ->
 		weakViewer.deref()!!.testData.value?.go { numTest ->
-		  it.testData.value?.go { denomTest ->
-			h {
+		  val denomTest = normalizer?.testData?.value
+		  h {
+			val doneLoading = numTest.isDoneLoading() && (denomTest?.isDoneLoading() ?: true)
 
+			if (!doneLoading) showing.value -= 1
 
-			  val doneLoading = denomTest.isDoneLoading() && numTest.isDoneLoading()
-
-			  @Suppress("UNCHECKED_CAST")
-			  val j = if (doneLoading) {
-				val ti = ActivationRatioCalc(
+			@Suppress("UNCHECKED_CAST")
+			val j = worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
+			  denomTest?.let {
+				neuron.activationRatio(
 				  numTest = numTest.preppedTest.await() as TypedTestLike<A>,
-				  images = contentsOf(),
 				  denomTest = denomTest.preppedTest.await() as TypedTestLike<A>,
-				  neuron = neuron
-				)()
-				object: Donable<Activation<A, *>> {
-				  override fun whenDone(c: Consume<Activation<A, *>>) {
-					c(ti)
-				  }
-				}
-			  } else {
-				showing.value -= 1
-				worker.schedule {
-				  ActivationRatioCalc(
-					numTest = numTest.preppedTest.await() as TypedTestLike<A>,
-					images = contentsOf(),
-					denomTest = denomTest.preppedTest.await() as TypedTestLike<A>,
-					neuron = neuron
-				  )()
-				}
-			  }
+				)
+			  } ?: neuron.maxActivationIn(
+				test = numTest.preppedTest.await() as TypedTestLike<A>,
+			  )
+			}
 
-			  j.whenDone { ratio ->
-				ensureInFXThreadOrRunLater {
-				  if (!doneLoading) {
-					showing.value += 1
-				  }
-				  deephysText(
-					ratio.formatted
-				  ) {
-					veryLazyDeephysTexTooltip(memSafeSettings) {
-					  ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX)
+			j.whenDone { activation ->
+			  ensureInFXThreadOrRunLater {
+				if (!doneLoading) {
+				  showing.value += 1
+				}
+				deephysText(
+				  activation.formatted
+				) {
+				  veryLazyDeephysTexTooltip(memSafeSettings) {
+
+					when (activation) {
+					  is ActivationRatio -> ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX)
+					  is RawActivation   -> tex { text("max raw activation of this neuron") }
+					  else               -> NEVER
 					}
+
+
 				  }
-				  ratio.extraInfo?.go { deephysInfoSymbol(it) }
-
 				}
+				activation.extraInfo?.go { deephysInfoSymbol(it) }
 			  }
-
-
 			}
 		  }
 		}
@@ -128,18 +122,32 @@ class NeuronView<A: Number>(
 
 	if (showTopCats) {
 	  val topCats = TopCategories(neuron, testLoader)()
-	  +CategoryTable(
-		title = "Top Categories",
-		data = topCats.map { it.first to it.second.value },
-		settings = memSafeSettings,
-		weakViewer = weakViewer,
-		sigFigSett = weakViewer.deref()!!.averageRawActSigFigs,
-		tooltip = "Top categories for this neuron. Calculated by the average, un-normalized activation of this neuron for images grouped by their groundtruth"
-	  )
+
+
+	  val dtype = testLoader.dtype
+
+	  swapperNullable(viewer.normalizer) {
+		val normalizer = this?.testData?.value?.preppedTest?.await()
+		val denom = normalizer?.let {
+		  neuron.maxActivationIn(normalizer).value/100
+		} ?: dtype.one
+
+		val normalizedString = if (normalizer == null) "un-normalized" else "normalized"
+
+		CategoryTable(
+		  title = "Top Categories",
+		  data = topCats.map { it.first to (it.second.value/denom) },
+		  settings = memSafeSettings,
+		  weakViewer = weakViewer,
+		  sigFigSett = weakViewer.deref()!!.averageRawActSigFigs,
+		  tooltip = "Top categories for this neuron. Calculated by the average, $normalizedString activation of this neuron for images grouped by their groundtruth",
+		  numSuffix = if (normalizer == null) "" else "%"
+		)
+	  }
+
+
 	  spacer(5.0)
 	}
-
-
 
 
 	val noneText = deephysInfoSymbol(

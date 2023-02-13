@@ -61,11 +61,10 @@ sealed interface DType<N: Number> {
   fun d2array(list: List2D<N>): NDArray<N, D2>
   fun exp(v: N): N
   fun sum(list: List<N>): N
-
   val emptyImageContents: Contents<DeephyImage<N>>
-
-
   val label: String
+  val one: N
+  val zero: N
 
 
 
@@ -81,14 +80,12 @@ sealed interface DType<N: Number> {
   layer: InterTestLayer,
   test: TypedTestLike<*>,
   denomTest: TypedTestLike<*>?,
-  /*normalized: Boolean,*/
   forcedNeuronIndices: List<Int>? = null
 ) = TopNeurons(
   images = images as Contents<DeephyImage<N>>,
   layer = layer,
   test = test as TypedTestLike<N>,
   denomTest = denomTest as TypedTestLike<N>?,
-  /*normalized = normalized,*/
   forcedNeuronIndices = forcedNeuronIndices
 )
 
@@ -123,6 +120,8 @@ object Float32: DtypeBase<Float>() {
   override fun d2array(list: List2D<Float>) = list.toNDArray()
   override fun exp(v: Float) = kotlin.math.exp(v)
   override fun sum(list: List<Float>) = list.sumOf { it }
+  override val one = 1f
+  override val zero = 0f
 }
 
 @Serializable
@@ -150,6 +149,8 @@ object Float64: DtypeBase<Double>() {
   override fun d2array(list: List2D<Double>) = list.toNDArray()
   override fun exp(v: Double) = kotlin.math.exp(v)
   override fun sum(list: List<Double>) = list.sum()
+  override val one = 1.0
+  override val zero = 0.0
 }
 
 

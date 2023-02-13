@@ -211,16 +211,15 @@ class DatasetViewer(
 
   private val topNeuronsFromMyImage = run {
 	imageSelection.binding(
-	  testData, layerSelection/*, normalizeTopNeuronActivations*/, normalizer
+	  testData, layerSelection, normalizer
 	) { im ->
 	  layerSelection.value?.let { lay ->
 		im?.let { theIm ->
 		  testData.value!!.dtype.topNeurons(
 			images = contentsOf(theIm),
 			layer = lay,
-			/*normalized = normalizeTopNeuronActivations.value,*/
 			test = testData.value!!.preppedTest.await(),
-			denomTest = normalizer.value/*.takeIf { it != this }*/?.testData?.value?.preppedTest?.await()
+			denomTest = normalizer.value?.testData?.value?.preppedTest?.await()
 		  )
 		}
 	  }
@@ -229,30 +228,24 @@ class DatasetViewer(
 
 
   val boundTopNeurons: MyBinding<TopNeurons<*>?> = boundToDSet.deepBinding(
-	/*normalizeTopNeuronActivations,*/
 	normalizer
   ) {
-
-
+//	println("maybe boundTopNeurons 1")
 	it?.topNeurons?.binding(
-	  /*normalizeTopNeuronActivations,*/ normalizer
+	  normalizer
 	) {
+//	  println("maybe boundTopNeurons 2")
 	  it?.let {
-
+//		println("getting actual boundTopNeurons for ${this@DatasetViewer}")
 		testData.value!!.dtype.topNeurons(
 		  images = contentsOf(),
 		  layer = it.layer,
 		  test = testData.value!!.preppedTest.await(),
 		  denomTest = normalizer.value?.testData?.value?.preppedTest?.await(),
-		  /*normalized = normalizeTopNeuronActivations.value,*/
 		  forcedNeuronIndices = it().map { it.neuron.index }
 		)
-
-
 	  }
 	} ?: BindableProperty(null)
-
-
   }
 
 
@@ -289,6 +282,7 @@ class DatasetViewer(
 
 
   val categorySelection = VarProp<CategorySelection?>(null).withNonNullUpdatesFrom(boundCategory)
+
   private val catSelectionForViewer = lazyWeakMap<DatasetViewer, ObsVal<CategorySelection?>> { viewer ->
 	categorySelection.weakBinding(viewer) { v, cat ->
 	  v.testData.value?.let { tst ->
@@ -341,6 +335,12 @@ class DatasetViewer(
   }
 
   fun navigateTo(theView: DatasetNodeView, addHistory: Boolean = true) {
+	if (categorySelection.value == null) {
+	  val cats = testData.value?.test?.categories
+	  if (cats?.isNotEmpty() == true) {
+		categorySelection.value = cats.first()
+	  }
+	}
 	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	if (addHistory) appendHistory(SelectView(theView))
 	view.value = theView
@@ -358,7 +358,7 @@ class DatasetViewer(
 	is SelectImage    -> navigateTo(action.image, addHistory = false)
 	is SelectCategory -> navigateTo(action.cat, addHistory = false)
 	is SelectNeuron   -> navigateTo(action.neuron, addHistory = false)
-	is SelectView -> navigateTo(action.view, addHistory = false)
+	is SelectView     -> navigateTo(action.view, addHistory = false)
   }
 
   private val canUseHistory = this@DatasetViewer.history.binding(historyIndex, boundToDSet) {
@@ -401,7 +401,7 @@ class DatasetViewer(
 	  val chooseTestButton = deephyButton("") {
 
 
-		graphic = svgIcon("open-file",25)
+		graphic = svgIcon("open-file", 25)
 
 
 		veryLazyDeephysTooltip("choose test file", settings)

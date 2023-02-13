@@ -1,6 +1,9 @@
 package matt.nn.deephys.model.data
 
+import matt.collect.set.contents.contentsOf
 import matt.model.op.convert.StringConverter
+import matt.nn.deephys.calc.ActivationRatioCalc
+import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.LayerLike
@@ -53,12 +56,36 @@ data class InterTestNeuron(
   }
 
 
+  fun <N: Number> maxActivationIn(
+	test: TypedTestLike<N>,
+  ) = test.dtype.rawActivation(test.test.maxActivations[this])
+
+  fun <N: Number> activationRatio(
+	numTest: TypedTestLike<N>,
+	denomTest: TypedTestLike<N>,
+  ): Activation<N, *> = ActivationRatioCalc(
+	numTest = numTest,
+	images = contentsOf(),
+	denomTest = denomTest,
+	neuron = this
+  )()
+
 }
 
 
 @JvmInline value class ImageIndex(val index: Int)
 
 sealed interface CategorySelection {
+
+  companion object {
+	fun stringConverterThatFallsBackToFirst(cats: List<Category>) = object: StringConverter<CategorySelection> {
+	  override fun toString(t: CategorySelection): String = t.allCategories.map { it.id }.joinToString()
+	  override fun fromString(s: String): CategorySelection =
+		s.toIntOrNull()?.let { i -> cats.firstOrNull { it.id == i } } ?: cats.first()
+	}
+  }
+
+
   val title: String
   val primaryCategory: Category
   val allCategories: Sequence<Category>
@@ -66,6 +93,11 @@ sealed interface CategorySelection {
 }
 
 data class Category(val id: Int, val label: String): CategorySelection {
+
+
+
+
+
   override val title = label
   override val primaryCategory = this
   override val allCategories get() = sequence { yield(this@Category) }

@@ -21,6 +21,7 @@ import matt.fx.graphics.wrapper.pane.stack.StackPaneW
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.fx.node.tex.TexNodeFactory
+import matt.fx.node.tex.dsl.TeXDSL
 import matt.lang.function.Produce
 import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
@@ -87,15 +88,15 @@ fun NodeWrapper.veryLazyDeephysTooltip(settings: DeephysSettingsController, op: 
   addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
 }
 
-fun DeephysNode.veryLazyDeephysTexTooltip(getCode: Produce<String>) = run {
+fun DeephysNode.veryLazyDeephysTexTooltip(getCode: Produce<TeXDSL>) = run {
   val memSafeNode = settings
   veryLazyDeephysTexTooltip(memSafeNode, getCode)
 }
 
-fun NodeWrapper.veryLazyDeephysTexTooltip(settings: DeephysSettingsController, getCode: Produce<String>) = run {
+fun NodeWrapper.veryLazyDeephysTexTooltip(settings: DeephysSettingsController, getCode: Produce<TeXDSL>) = run {
   veryLazyDeephysTooltipWithNode(/*darkBG = true*/settings) {
 	deephysTexNodeFactory.toCanvas(
-	  getCode()
+	  getCode().code()
 	) ?: TextWrapper("error")
   }
 }

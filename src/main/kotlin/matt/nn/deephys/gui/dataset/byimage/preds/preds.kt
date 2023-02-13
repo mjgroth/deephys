@@ -58,7 +58,8 @@ class CategoryTable(
   weakViewer: WeakRefInter<DatasetViewer>,
   override val settings: DeephysSettingsController,
   tooltip: String,
-  private val sigFigSett: ObsI
+  private val sigFigSett: ObsI,
+  numSuffix: String = ""
 ): VBoxW(), DeephysNode {
   init {
 	val memSafeWeakViewer = weakViewer
@@ -93,7 +94,7 @@ class CategoryTable(
 			  is Float  -> num.sigFigs(it).toString()
 			  is Double -> num.sigFigs(it).toString()
 			  else      -> error("not ready for different dtype")
-			}
+			} + numSuffix
 		  })
 		  veryLazyDeephysTooltip(fullString, memSafeSettings)
 		}
