@@ -64,11 +64,12 @@ class CategoryView<A: Number>(
 
 	  when (selection) {
 		is Category          -> {
+		  val acc = CategoryAccuracy(
+			selection, testLoader
+		  )
 		  deephysLabel(
 			"Accuracy: ${
-			  CategoryAccuracy(
-				selection, testLoader
-			  ).formatted()
+			  acc.formatted()
 			}"
 		  )
 		  deephysLabel("Category ID: ${selection.id}")
@@ -166,12 +167,12 @@ class CategoryView<A: Number>(
 		  val thePane = this
 		  exactWidth = 10.0
 		  /*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)*/
-//		  backgroundFill = FXColor.BLUE
-//		  Platform.runLater {
-			/*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)*/
-//			backgroundFill = FXColor.BLUE
-//		  }
-//		  style = "-fx-background: blue"
+		  //		  backgroundFill = FXColor.BLUE
+		  //		  Platform.runLater {
+		  /*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)*/
+		  //			backgroundFill = FXColor.BLUE
+		  //		  }
+		  //		  style = "-fx-background: blue"
 		  line {
 			startY = 5.0
 			endYProperty.bind(thePane.heightProperty.minus(10.0))
@@ -182,8 +183,8 @@ class CategoryView<A: Number>(
 			  fill = FXColor(0.5, 0.5, 0.5, 0.2)
 			  stroke = FXColor(0.5, 0.5, 0.5, 0.2)
 			}
-			startXProperty.bind(thePane.widthProperty / 2)
-			endXProperty.bind(thePane.widthProperty / 2)
+			startXProperty.bind(thePane.widthProperty/2)
+			endXProperty.bind(thePane.widthProperty/2)
 			strokeWidth = 5.0
 		  }
 		}

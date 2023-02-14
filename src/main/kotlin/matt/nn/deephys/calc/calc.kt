@@ -262,19 +262,27 @@ data class ImageTopPredictions<N: Number>(
 
 data class CategoryAccuracy(
   private val category: Category, private val testLoader: TypedTestLike<*>
-): GlobalRAMComputeInput<Double>() {
+): GlobalRAMComputeInput<Double?>() {
 
   override val cacheManager get() = testLoader.testRAMCache
 
-  override fun compute(): Double {
-	val r = testLoader.test.imagesWithGroundTruth(category).map {
+  override fun compute(): Double? {
+
+	val images = testLoader.test.imagesWithGroundTruth(category)
+	if (images.isEmpty()) {
+	  return null
+	}
+
+	val r = images.map {
 	  if (testLoader.test.preds.await()[it] == category) 1.0 else 0.0
 	}.let { it.sum()/it.size }
 
 	return r
   }
 
-  fun formatted() = "${compute()*100}%"
+
+  fun formatted() =
+	compute().let { if (it == null) "Cannot calculate accuracy because no images have groundtruth \"$category\"" else "${it*100}%" }
 
 }
 
