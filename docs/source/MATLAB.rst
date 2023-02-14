@@ -2,7 +2,7 @@ MATLAB
 ======
 
 .. note::
-	MATLAB support is experimental and incubating.
+	MATLAB support is experimental and incubating
 
 Exporting Neural Activity from MATLAB
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

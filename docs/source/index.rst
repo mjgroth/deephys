@@ -6,6 +6,6 @@ Welcome to the documentation for Deephys' python-exporter library!
 
 	terminology
 	usage
-	pytorch
+	MATLAB
 	api
 	changelist

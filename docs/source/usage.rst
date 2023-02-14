@@ -6,7 +6,7 @@ Before starting, install our Deephys exporter Python library. This library facil
 
 .. code-block:: console
 
-	 $ pip install deephys
+	pip install deephys
 
 Now, let's get started exporting your data  🚀
 

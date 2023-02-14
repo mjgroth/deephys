@@ -1,6 +1,12 @@
 Changelist
 ==========
 
+0.12.1
+~~~~~~
+
+- Fixed the ``importlib.util`` bug
+- Note: You can still use ``0.12.0`` if you add ``import importlib.util`` to the top of your scripts
+
 0.12.0
 ~~~~~~
 
