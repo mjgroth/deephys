@@ -230,13 +230,13 @@ class DatasetViewer(
   val boundTopNeurons: MyBinding<TopNeurons<*>?> = boundToDSet.deepBinding(
 	normalizer
   ) {
-//	println("maybe boundTopNeurons 1")
+	//	println("maybe boundTopNeurons 1")
 	it?.topNeurons?.binding(
 	  normalizer
 	) {
-//	  println("maybe boundTopNeurons 2")
+	  //	  println("maybe boundTopNeurons 2")
 	  it?.let {
-//		println("getting actual boundTopNeurons for ${this@DatasetViewer}")
+		//		println("getting actual boundTopNeurons for ${this@DatasetViewer}")
 		testData.value!!.dtype.topNeurons(
 		  images = contentsOf(),
 		  layer = it.layer,
@@ -335,12 +335,28 @@ class DatasetViewer(
   }
 
   fun navigateTo(theView: DatasetNodeView, addHistory: Boolean = true) {
-	if (categorySelection.value == null) {
-	  val cats = testData.value?.test?.categories
-	  if (cats?.isNotEmpty() == true) {
-		categorySelection.value = cats.first()
+	when (theView) {
+	  ByCategory -> {
+		if (categorySelection.value == null) {
+		  val cats = testData.value?.test?.categories
+		  if (cats?.isNotEmpty() == true) {
+			categorySelection.value = cats.first()
+		  }
+		}
 	  }
+
+	  ByImage    -> {
+		if (imageSelection.value == null) {
+		  val ims = testData.value?.test?.images
+		  if (ims?.isNotEmpty() == true) {
+			imageSelection.value = ims.first()
+		  }
+		}
+	  }
+
+	  ByNeuron   -> Unit /*we start here, so don't worry about this right now*/
 	}
+
 	if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
 	if (addHistory) appendHistory(SelectView(theView))
 	view.value = theView

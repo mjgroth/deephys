@@ -1,15 +1,15 @@
 package matt.nn.deephys.gui.dataset.byimage.preds
 
+import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.fx.graphics.wrapper.textflow.textflow
 import matt.lang.weak.MyWeakRef
 import matt.lang.weak.WeakRefInter
 import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ImageTopPredictions
+import matt.nn.deephys.gui.global.deephyActionLabel
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.subtitleFont
@@ -33,9 +33,9 @@ class PredictionsView(
 ): VBoxW(), DeephysNode {
   init {
 	val memSafeSettings = settings
-	textflow<TextWrapper> {
+	h {
 	  deephysText("Ground Truth: ").titleFont()
-	  deephyActionText(groundTruth.label) {
+	  deephyActionLabel(groundTruth.label) {
 		weakViewer.deref()!!.navigateTo(groundTruth)
 	  }.titleBoldFont()
 	}

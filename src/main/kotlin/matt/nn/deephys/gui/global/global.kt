@@ -40,6 +40,7 @@ import matt.fx.graphics.wrapper.style.FXColor
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.text.textlike.MONO_FONT
 import matt.fx.graphics.wrapper.text.textlike.TextLike
+import matt.gui.actiontext.actionLabel
 import matt.gui.actiontext.actionText
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.StringConverter
@@ -206,6 +207,13 @@ fun TextLike.titleBoldFont() {
 }
 
 fun EventTargetWrapper.deephyActionText(s: String = "", op: ()->Unit) = actionText(s) {
+  op()
+}.apply {
+  font = DEEPHYS_FONT_DEFAULT
+  cursor = Cursor.HAND
+}
+
+fun EventTargetWrapper.deephyActionLabel(s: String = "", op: ()->Unit) = actionLabel(s) {
   op()
 }.apply {
   font = DEEPHYS_FONT_DEFAULT

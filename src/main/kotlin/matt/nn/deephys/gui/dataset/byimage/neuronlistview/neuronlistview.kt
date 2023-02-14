@@ -11,6 +11,7 @@ import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.vbox
+import matt.fx.graphics.wrapper.text.textlike.highlightOnHover
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
 import matt.math.round.ceilInt

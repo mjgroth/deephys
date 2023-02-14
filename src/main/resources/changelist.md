@@ -11,6 +11,7 @@
 
 ### User Friendliness
 - Improved message when there are no TopNeurons showing
+- When there are no images with a certain category, explain this with a message rather than saying the accuracy is "NaN"
 
 
 
@@ -22,6 +23,7 @@
 ### Bug Fixes
 - Since the "Normalizer" functino was added to the app (used to be merged with the "Bind " function), the Image view has not correctly shown top neurons and activations in the case where there is a "bind" selected but not a "Normalizer". This is now fixed.
 - Fixed a bug where the app crashed instead of showing an error popup
+- Switch ground truth title to a label that does not wrap. This prevents a layout bug that was caused from when the ground truth category name is really long and wraps, which used to mess up the layout
 
 
 
