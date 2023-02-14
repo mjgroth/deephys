@@ -6,7 +6,7 @@ import numpy as np
 import struct
 from time import time
 from tqdm import tqdm
-import importlib
+import importlib.util
 
 # library already optimizes writes of int8
 # python cbor package has no way to make float32, also bytearray is smaller/faster

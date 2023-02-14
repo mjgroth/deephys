@@ -7,11 +7,14 @@ import javafx.scene.layout.BorderStroke
 import javafx.scene.layout.BorderStrokeStyle
 import javafx.scene.layout.BorderWidths
 import javafx.scene.layout.Priority.ALWAYS
+import matt.fx.graphics.icon.fav.FaviconLoader
+import matt.fx.graphics.icon.svg.svgToFXImage
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.style.FXColor
-import matt.fx.node.proto.svgIcon
+import matt.lang.url.toURL
+import matt.mstruct.rstruct.resourceStream
 import matt.nn.deephys.gui.global.deephyActionText
 import java.awt.Desktop
 import java.net.URI
@@ -27,7 +30,7 @@ class NavBox: VBoxW() {
 	spacing = 10.0
 	border = Border(
 	  BorderStroke(FXColor(0.5, 0.5, 0.5, 0.1), BorderStrokeStyle.SOLID, null, BorderWidths(1.0, 1.0, 0.0, 0.0))
-	)	/*border = Border()*/	/*borderProperty.bind(DarkModeController.darkModeProp.binding {
+	)    /*border = Border()*/    /*borderProperty.bind(DarkModeController.darkModeProp.binding {
 	  val c = if (it) FXColor(0.1f,0.1f,0.1f,1.0) else FXColor(0.9f,0.9f,0.9f,1.0)
 	  Border(BorderStroke(c, BorderStrokeStyle.SOLID, null, BorderWidths.DEFAULT))
 	})*/
@@ -45,7 +48,19 @@ class NavBox: VBoxW() {
 		hSpacer(50.0)
 		alignment = CENTER_LEFT
 		spacing = 7.5
-		svgIcon("web.svg", 18)
+
+
+		val favSize = 18
+		+FaviconLoader.loadAsynchronously(
+		  url = url.toURL(),
+		  backupImage = svgToFXImage(resourceStream("web.svg")!!, favSize),
+		  fitWidth = favSize.toDouble(),
+		  fitHeight = favSize.toDouble()
+		)
+
+		/*svgIcon("web.svg", favSize)*/
+
+
 		deephyActionText(label) {
 		  Desktop.getDesktop().browse(URI(url))
 		}
