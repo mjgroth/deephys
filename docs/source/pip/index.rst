@@ -1,5 +1,5 @@
-PIP Package
-~~~~~~~~~~~~~~~~~~~~~~
+🐍 PIP Package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
   :maxdepth: 2

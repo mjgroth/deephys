@@ -1,6 +1,6 @@
-===========
-Terminology
-===========
+==============
+📕 Terminology
+==============
 
 Here we define terms that may help to clarify other sections of the documentation, as well as function names and labels throughout our software.
 

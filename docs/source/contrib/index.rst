@@ -6,5 +6,4 @@
 
   github
   docs
-  python
-  app
+  instructions

@@ -2,9 +2,9 @@
 GitHub Repositories
 ===================
 
-The main repository for Deephys is `deephys-aio <https://github.com/mjgroth/deephys-aio>`_. **AIO** stands for all-in-one. It organized its code into several submodules.
+The main repository for the Deephys Visualizer is `deephys-aio <https://github.com/mjgroth/deephys-aio>`_. **AIO** stands for all-in-one. It organized its code into several submodules.
 
-The core submodule repository is `deephys <https://github.com/mjgroth/deephys>`_. The source code in this repository is only functional as a submodule within deephys-aio. It is not standalone. This GitHub repository also contains:
+The core submodule repository is `deephys <https://github.com/mjgroth/deephys>`_. The source code for the visualizer in this repository is only functional as a submodule within deephys-aio. It is not standalone. This GitHub repository also contains:
 
 - the CI actions that build the app on several platforms
   
