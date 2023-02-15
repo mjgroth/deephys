@@ -2,6 +2,10 @@
 Contributing to the Kotlin App
 ==============================
 
+.. note::
+
+  If you are considering contributing to the kotlin app, please :doc:`reach out to us <../../contact>` so we can help you get started.
+
 Before contributing to the kotlin app, please consider the following:
 
 - The app must be rigorously tested with each change to prevent memory leaks, cpu bottlenecks, and other issues
