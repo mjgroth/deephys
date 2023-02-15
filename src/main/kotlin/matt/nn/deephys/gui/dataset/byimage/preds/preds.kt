@@ -70,7 +70,6 @@ class CategoryTable(
 	}
 	spacer(5.0)
 	v {
-
 	  val predNamesBox = v {}
 	  spacer()
 	  val predValuesBox = v {}

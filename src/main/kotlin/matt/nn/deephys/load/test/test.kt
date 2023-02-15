@@ -48,6 +48,8 @@ class TestLoader(
   override val dtype get() = preppedTest.await().dtype
   private var finishedTest = LoadedValueSlot<Test<*>>()
 
+  val testName = LoadedValueSlot<String>()
+
   override val finishedLoadingAwaitable = finishedTest
   val imageSetLoader = ImageSetLoader(this)
   private val datasetHDCache = imageSetLoader.datasetHDCache
@@ -141,6 +143,7 @@ class TestLoader(
 			  when (theKey) {
 				theName      -> {
 				  name = nextKeyOrValueOnly()
+				  testName.putLoadedValue(name!!)
 				}
 
 				Keys.suffix  -> {

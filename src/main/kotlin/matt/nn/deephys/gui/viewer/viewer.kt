@@ -479,7 +479,14 @@ class DatasetViewer(
 
 	  sectionSpacer()
 
-	  deephysText(this@DatasetViewer.file.binding { it?.nameWithoutExtension ?: "please select a test" }) {
+
+	  /*.binding { it?.nameWithoutExtension ?: "please select a test" }*/
+
+	  deephysText(
+		this@DatasetViewer.testData.binding {
+		  it?.testName?.await() ?: "please select a test"
+		}
+	  ) {
 		titleFont()
 	  }
 	  hSpacer(10.0)

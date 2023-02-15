@@ -4,6 +4,7 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.attachTo
 import matt.fx.node.proto.infosymbol.InfoSymbol
 import matt.fx.node.proto.infosymbol.SevereWarningSymbol
+import matt.fx.node.proto.infosymbol.TutorialSymbol
 import matt.fx.node.proto.infosymbol.WarningSymbol
 import matt.lang.function.DSL
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipContent
@@ -21,6 +22,21 @@ fun NW.deephysInfoSymbol(text: String, op: DSL<DeephysInfoSymbol> = {}) = Deephy
 
 
 class DeephysInfoSymbol(info: String): InfoSymbol(info) {
+  override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
+  val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
+  val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
+}
+
+
+fun NW.deephysTutorialSymbol(text: ObsS, op: DSL<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text.value).attachTo(this) {
+  textProperty.bind(text)
+  op()
+}
+
+fun NW.deephysTutorialSymbol(text: String, op: DSL<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text).attachTo(this, op)
+
+
+class DeephysTutorialSymbol(info: String): TutorialSymbol(info) {
   override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
   val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
   val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty

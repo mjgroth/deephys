@@ -46,6 +46,7 @@ val gearImage = DaemonLoadedValueOp("gear.png") {
 }
 
 
+
 val modelBinding = DaemonLoadedValueOp(".model binding") {
   DeephyState.model.binding { f ->
 	f?.toMFile()?.loadCbor<Model>()

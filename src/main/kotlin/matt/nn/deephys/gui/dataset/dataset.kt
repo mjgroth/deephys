@@ -58,6 +58,7 @@ class DatasetNode(
 	  valueProperty.onChange {
 		println("layerCB value changed to $it")
 	  }
+
 	}
 	val layerController = deephysLabeledControl2(
 	  "Layer",

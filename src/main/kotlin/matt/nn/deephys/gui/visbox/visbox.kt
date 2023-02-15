@@ -2,11 +2,15 @@ package matt.nn.deephys.gui.visbox
 
 import javafx.application.Platform
 import javafx.geometry.Pos.TOP_CENTER
+import matt.file.CborFile
+import matt.file.MFile
 import matt.file.toSFile
 import matt.fx.base.prop.sizeProperty
 import matt.fx.graphics.dialog.openFile
+import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.disableWhen
+import matt.fx.graphics.wrapper.node.findRecursivelyFirstOrNull
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swap
 import matt.fx.graphics.wrapper.pane.hbox.h
@@ -44,6 +48,24 @@ class VisBox(
 ): VBoxW() {
 
 
+  fun load(
+	modelFile: MFile,
+	testFiles: List<MFile>
+  ) {
+	DeephyState.model.value = modelFile.toSFile()
+	runLater {
+	  val dSetViewsVBox = findRecursivelyFirstOrNull<DSetViewsVBox>() ?: error("no dset views box!")
+	  dSetViewsVBox.removeAllTests()
+	  runLater {
+		/*findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
+		testFiles.forEach { f ->
+		  val viewer = dSetViewsVBox.addTest()
+		  viewer.file.value = CborFile(f.path)
+		}
+	  }
+	}
+
+  }
 
 
   init {
@@ -104,11 +126,11 @@ class VisBox(
 		}
 	  }
 
-/*	  h {
-		hgrow = ALWAYS
-		alignment = Pos.CENTER_RIGHT
-		+settingsButton
-	  }*/
+	  /*	  h {
+			  hgrow = ALWAYS
+			  alignment = Pos.CENTER_RIGHT
+			  +settingsButton
+			}*/
 
 	}
 
@@ -132,6 +154,9 @@ class VisBox(
 
 		  h {
 			spacing = DEEPHYS_SYMBOL_SPACING
+
+
+
 			deephysInfoSymbol(
 			  string {
 				lineDelimited {
@@ -145,6 +170,12 @@ class VisBox(
 			  fontProperty v DEEPHYS_FONT_MONO
 			  /*wrapTextProp v true*/
 			}
+
+			/*
+						deephysTutorialSymbol(
+						  "This is a model, which is a definition of how many layers and neurons you have used."
+						)*/
+
 			if (model.wasLoadedWithSuffix) {
 			  deephysWarningSymbol(SUFFIX_WARNING)
 			}

@@ -6,18 +6,23 @@ import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
+import matt.async.pool.DaemonPool
 import matt.async.thread.daemon
 import matt.collect.itr.mapToArray
 import matt.exec.app.myVersion
+import matt.file.MFile
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.fx.control.inter.graphic
+import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.scroll.scrollpane
+import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
 import matt.fx.graphics.hotkey.hotkeys
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.parent.ParentWrapper
 import matt.fx.graphics.wrapper.pane.hbox.h
+import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.stage.StageWrapper
@@ -28,8 +33,12 @@ import matt.gui.interact.WinOwn
 import matt.gui.interact.openInNewWindow
 import matt.gui.mscene.MScene
 import matt.gui.mstage.ShowMode
+import matt.gui.mstage.ShowMode.SHOW_AND_WAIT
+import matt.gui.mstage.WMode.NOTHING
 import matt.image.ICON_SIZES
 import matt.lang.anno.SeeURL
+import matt.lang.err
+import matt.lang.sync
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.mstruct.rstruct.modID
@@ -40,8 +49,10 @@ import matt.nn.deephys.gui.Arg.reset
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
+import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.navbox.NavBox
+import matt.nn.deephys.gui.navbox.ZooExample
 import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.gui.settings.gui.settingsButton
 import matt.nn.deephys.gui.visbox.VisBox
@@ -49,7 +60,10 @@ import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.init.warmupFxComponents
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
+import matt.obs.prop.BindableProperty
 import matt.obs.subscribe.Pager
+import java.net.URI
+import java.util.concurrent.atomic.AtomicInteger
 
 val DEEPHY_USER_DATA_DIR by lazy {
   PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkdir("Deephys")
@@ -64,7 +78,8 @@ enum class Arg {
 
 class DeephysApp {
 
-  fun boot2(settingsNode: DeephySettingsNode, vararg args: Arg): Unit = boot(args.mapToArray { it.name },settingsNode=settingsNode)
+  fun boot2(settingsNode: DeephySettingsNode, vararg args: Arg): Unit =
+	boot(args.mapToArray { it.name }, settingsNode = settingsNode)
 
   /*invoked directly from test, in case I ever want to return something*/
   fun boot(
@@ -132,6 +147,92 @@ class DeephysApp {
   val readyForConfiguringWindowFromTest = LoadedValueSlot<StageWrapper>()
   val testReadyScene = LoadedValueSlot<MScene<ParentWrapper<*>>>()
 
+  var visBox: VisBox? = null
+  fun openZooDemo(demo: ZooExample) {
+
+	val pool = DaemonPool()
+
+	val modelURL = URI(demo.modelURL).toURL()
+	val testURLs = demo.testURLs.map { URI(it).toURL() }
+
+
+	val total = testURLs.size + 1
+	val done = AtomicInteger(0)
+	val progress = BindableProperty(0.0)
+
+	val monitor = object {}
+
+	val modelFile = pool.submit {
+	  val f = MFile.Companion.createTempFile("model_${demo.name}", suffix = "")
+	  modelURL.openStream().use { downloadStream ->
+		f.outputStream().use { writeStream ->
+		  downloadStream.transferTo(writeStream)
+		}
+	  }
+	  done.incrementAndGet()
+	  monitor.sync {
+		progress v done.get().toDouble()/total
+	  }
+	  f
+	}
+
+	val testFiles = testURLs.mapIndexed { i, testURL ->
+	  pool.submit {
+		val f = MFile.Companion.createTempFile("test_${i}", suffix = "")
+		testURL.openStream().use { downloadStream ->
+		  f.outputStream().use { writeStream ->
+			downloadStream.transferTo(writeStream)
+		  }
+		}
+		done.incrementAndGet()
+		monitor.sync {
+		  progress v done.get().toDouble()/total
+		}
+		f
+	  }
+	}
+
+
+
+
+	VBoxW().apply {
+
+
+	  deephysLabel("Downloading ${demo.name}...")
+
+	  val prog = progressbar {
+
+	  }
+
+	  deephysLabel("Loading Files... (0/${total})") {
+		progress.nonBlockingFXWatcher().onChange {
+		  prog.progress = it
+		  text = "Loading Files... (${done.get()}/${total})"
+		  if (done.get() == total) {
+			stage!!.close()
+			val theVisBox = visBox ?: err("no visBox!")
+			theVisBox.load(
+			  modelFile = modelFile.get(),
+			  testFiles = testFiles.map { it.get() }
+			)
+		  }
+		}
+	  }
+
+
+	}.openInNewWindow(
+	  showMode = SHOW_AND_WAIT,
+	  wMode = NOTHING,
+	  alwaysOnTop = true
+	) {
+
+	}
+
+	modelURL.openStream()
+
+
+	/*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
+  }
 
   fun startDeephyApp(
 	t: Stopwatch? = null,
@@ -191,15 +292,15 @@ class DeephysApp {
 
 	  val settButton = settingsButton(settingsNode.settings).value
 
-	  val navBox = NavBox().apply{
+	  val navBox = NavBox(this@DeephysApp).apply {
 		visibleAndManaged = false
 	  }
 
-	  val visBox = VisBox(
+
+	  visBox = VisBox(
 		app = this@DeephysApp,
 		settings = settingsNode.settings
 	  )
-
 
 
 	  hotkeys {
@@ -238,14 +339,14 @@ class DeephysApp {
 		  hbarPolicy = NEVER
 		  isFitToWidth = true
 
-		  content = visBox
+		  content = visBox!!
 		}
 	  }
 
-/*
-	  vbox<NodeWrapper> {
-		vgrow = ALWAYS
-	  }*/
+	  /*
+			vbox<NodeWrapper> {
+			  vgrow = ALWAYS
+			}*/
 
 	  vbox<NodeWrapper> {
 		alignment = BOTTOM_LEFT
