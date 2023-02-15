@@ -5,7 +5,7 @@ From Python
 Python
 ======
 
-Pip Package `here <https://pypi.org/project/deephys/>`_
+`See the Pip Package <https://pypi.org/project/deephys/>`_
 
 Before starting, install our Deephys exporter Python library. This library facilitates encapsulating your data into a format compatible with Deephys and saves the data to files.
 
