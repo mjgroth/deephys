@@ -1,7 +1,7 @@
 project = "Deephys"
 copyright = ""
 author = "MIT-Fujitsu Team"
-release = "0.12.1"
+release = "0.13.0"
 extensions = [
     "sphinx.ext.duration",
     "sphinx.ext.doctest",

@@ -29,8 +29,16 @@ class Layer:
 class DeephysData:
     name: str
 
-    def save(self):
-        fileName = f"{self.name}.{self.extension}"
+    def save(self, path: Optional[str] = None):
+        """
+
+        :param path: Optional file path to save to. Defaults to `<working directory>`/`name`.`<extension for class(test or model)>`
+                     Default: ``None``
+        """
+        if path == None:
+            fileName = f"{self.name}.{self.extension}"
+        else:
+            fileName = path
         print(f"Saving data to {fileName}...")
         with open(fileName, "wb") as fp:
             dump(asdict(self), fp)
@@ -250,7 +258,7 @@ def test(
                 f"dtype must be 'float32' or 'float64'. Input was '{dtype}'"
             )
         imageList.append(
-            ImageFile(
+            Image(
                 imageID=i,
                 categoryID=target,
                 category=category_names[target],
@@ -274,7 +282,7 @@ def test(
 
 
 @dataclass
-class ImageFile:
+class Image:
     imageID: int
     categoryID: int
     category: str
@@ -287,7 +295,7 @@ class ImageFile:
 class Test(DeephysData):
     dtype: Optional[str]
     classes: List[str]
-    images: List[ImageFile]
+    images: List[Image]
 
     def __post_init__(self):
         self.extension = f"test"

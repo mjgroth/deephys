@@ -1,6 +1,13 @@
 Changelist
 ==========
 
+0.13.0
+~~~~~~~~~~~~
+
+- Allow saving files to any path
+  
+- Change name of `ImageFile` to `Image`
+  
 0.12.1
 ~~~~~~~~~~~~
 

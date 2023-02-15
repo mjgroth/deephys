@@ -87,6 +87,8 @@ class TestDeephys(unittest.TestCase):
             model=model2,
         )
         test.save()
+        test.save("my_file.test")
+        test.save(path="my_file.test")
 
 
 if __name__ == "__main__":
