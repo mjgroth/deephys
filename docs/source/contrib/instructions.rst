@@ -89,6 +89,10 @@ Contribution Instructions
     
     The recommended approach is to append ``org.gradle.java.home=/path/to/your/jdk/home`` to your ``~/.gradle/gradle.properties``. For more detailed information on setting up your gradle environment, see the `Gradle documentation <https://docs.gradle.org/current/userguide/build_environment.html>`_
     
+    Common paths to java include:
+    
+    - **Mac:** ``/Library/Java/JavaVirtualMachines/corretto-17.0.5/Contents/Home``
+      
     .. raw:: html
     
       <h2>Running From Source</h2>
@@ -97,7 +101,21 @@ Contribution Instructions
     
     .. code-block:: console
     
-      ./gradlew :k:nn:deephys:run --stacktrace
+      ./gradlew :k:nn:deephys:run --stacktrace --no-configuration-cache
+    
+    Note that when running from source through Gradle, command line arguments are passed to the app through a special argument. So if, for example, you need to reset the app, you will need to use a different syntax.
+    
+    Normally if running the compiled app from source, you would use:
+    
+    .. code-block:: console
+    
+      ./deephys reset
+    
+    But through gradle, you will need to use:
+    
+    .. code-block:: console
+    
+      ./gradlew :k:nn:deephys:run --args="reset" --no-configuration-cache --stacktrace
     
     If you successfully ran the app, then you are almost ready to start editing the code!
     
@@ -121,7 +139,7 @@ Contribution Instructions
     
     .. code-block:: console
     
-      ./gradlew :k:nn:deephys:test --stacktrace
+      ./gradlew :k:nn:deephys:test --stacktrace --no-configuration-cache
     
     You may also add new tests to the test source code to test your new features.
     

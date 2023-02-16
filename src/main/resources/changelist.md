@@ -6,6 +6,9 @@
 - TopCategories can show normalized activations
 - Added Category Spinner
 - Added favicons for URL icons
+- Added "give me a demo" button
+- Added neuron zoo version 1
+- Mailto link for submitting bug reports
 
 
 

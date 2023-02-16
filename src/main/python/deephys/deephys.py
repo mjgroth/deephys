@@ -175,6 +175,10 @@ def test(
         raise Exception(f"Layers names are different from the layers of the model")
     for layer in neural_activity:  # convert the activity of each layer to numpy
         neural_activity[layer] = _to_np(neural_activity[layer])
+    if not isinstance(category_names, list):
+        raise Exception(
+            f"category_names should be a list, but a {type(category_names)} was given"
+        )
     for layer in model.layers:
         if layer.layerID == model.classification_layer:
             if len(layer.neurons) != len(category_names):
