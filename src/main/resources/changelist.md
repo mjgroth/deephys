@@ -16,6 +16,7 @@
 ### User Friendliness
 - Improved message when there are no TopNeurons showing
 - When there are no images with a certain category, explain this with a message rather than saying the accuracy is "NaN"
+- Change "Bind" button to say "Lead"
 
 
 
