@@ -26,6 +26,7 @@
 - Fixed a bug where the app crashed instead of showing an error popup
 - Switch ground truth title to a label that does not wrap. This prevents a layout bug that was caused from when the ground truth category name is really long and wraps, which used to mess up the layout
 - Fixed bug that occured when there were very few images in a .test file (less than 5)
+- prevent some crashes that can occur from errors when loading a file. Now the app is better at displaying an error message without crashing.
 
 
 

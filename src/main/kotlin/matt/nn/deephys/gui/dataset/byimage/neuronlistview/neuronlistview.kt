@@ -98,7 +98,9 @@ fun NW.neuronListViewSwapper(
 		deRefedViewer.testData.value?.let { tst ->
 		  top.value?.let { topCalc ->
 			NeuronListViewConfig(
-			  viewer = deRefedViewer, testLoader = tst.preppedTest.await(), tops = topCalc
+			  viewer = deRefedViewer,
+			  testLoader = tst.preppedTest.awaitRequireSuccessful(),
+			  tops = topCalc
 			)
 		  }
 		}

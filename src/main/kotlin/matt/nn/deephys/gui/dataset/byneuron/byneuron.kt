@@ -7,11 +7,11 @@ import matt.nn.deephys.gui.layer.LayerView
 import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.ResolvedLayer
-import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 
 class ByNeuronView(
-  testLoader: TypedTestLike<*>,
+  testLoader: TestLoader,
   viewer: DatasetViewer,
   override val settings: DeephysSettingsController
 ): Swapper<ResolvedLayer?, LayerView>(), DeephysNode {

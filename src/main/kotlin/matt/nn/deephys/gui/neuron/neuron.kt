@@ -127,7 +127,7 @@ class NeuronView<A: Number>(
 	  val dtype = testLoader.dtype
 
 	  swapperNullable(viewer.normalizer) {
-		val normalizer = this?.testData?.value?.preppedTest?.await()
+		val normalizer = this?.testData?.value?.preppedTest?.awaitRequireSuccessful()
 		val denom = normalizer?.let {
 		  neuron.maxActivationIn(normalizer).value/100
 		} ?: dtype.one

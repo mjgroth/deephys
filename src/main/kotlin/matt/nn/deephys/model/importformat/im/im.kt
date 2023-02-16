@@ -9,6 +9,7 @@ import matt.lang.weak.MyWeakRef
 import matt.lang.weak.lazyWeak
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.op.convert.StringConverter
+import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.TestLoader
@@ -36,7 +37,7 @@ class DeephyImage<A: Number>(
   val index: Int,
   val model: Model,
   val features: Map<String, String>?,
-  test: LoadedValueSlot<Test<*>>,
+  test: LoadedOrFailedValueSlot<Test<*>>,
   activationsRAF: EvenlySizedRAFCache,
   pixelsRAF: EvenlySizedRAFCache,
   dtype: DType<A> /*just for generic*/

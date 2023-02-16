@@ -41,6 +41,10 @@ fun settingsButton(settings: DeephysSettingsController) = lazy {
   }
 }
 
+
+
+
+
 private var gotSettingsWindow = false
 fun settingsWindow(settings: DeephysSettingsController) = lazy {
   synchronized(MONITOR) {
@@ -57,6 +61,9 @@ fun settingsWindow(settings: DeephysSettingsController) = lazy {
 	width = 1000.0
   }
 }
+
+
+
 
 fun <E: Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) = rec.apply {
   val tm = createBoundToggleMechanism()

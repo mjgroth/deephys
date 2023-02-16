@@ -11,7 +11,7 @@ import matt.lang.List2D
 import matt.lang.disabledCode
 import matt.lang.l
 import matt.log.profile.mem.throttle
-import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.Cacher
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
@@ -38,7 +38,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
 	private val daemonPool = DaemonPool()
   }
 
-  val finishedImages = LoadedValueSlot<BlockList<DeephyImage<*>>>()
+  val finishedImages = testLoader.LoadedOrFailedValueSlot<BlockList<DeephyImage<*>>>()
   var localTestNeurons: Map<InterTestNeuron, TestNeuron<*>>? = null
   var neuronActCacheTools: List<Cacher>? = null
   val datasetHDCache = DeephysCacheManager.newDatasetCache()
@@ -47,8 +47,8 @@ class ImageSetLoader(private val testLoader: TestLoader) {
   private var numDataBytes: Int? = null
   private var numActivationBytes: Int? = null
   private val numRead = AtomicInteger(0)
-  val pixelsShapePerImage = LoadedValueSlot<List<Int>>()
-  val activationsShapePerImage = LoadedValueSlot<List<Int>>()
+  val pixelsShapePerImage = testLoader.LoadedOrFailedValueSlot<List<Int>>()
+  val activationsShapePerImage = testLoader.LoadedOrFailedValueSlot<List<Int>>()
   private val numCachedPixels = AtomicInteger(0)
   private val numCachedActs = AtomicInteger(0)
   val progress by lazy { BindableProperty(0.0) }
@@ -60,7 +60,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
   fun readImages(
 	reader: MapReader,
 	dtype: DType<*>,
-	finishedTest: LoadedValueSlot<Test<*>>
+	finishedTest: LoadedOrFailedValueSlot<Test<*>>
   ) = reader.apply {
 
 	require(!didRead)

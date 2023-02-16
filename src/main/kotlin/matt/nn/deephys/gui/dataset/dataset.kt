@@ -33,15 +33,15 @@ class DatasetNode(
 
   private val byNeuronView by lazy {
 	ByNeuronView(
-	  dataset.preppedTest.await(),
+	  dataset,
 	  viewer,
 	  settings = weakSettings.get()!!
 	)
   }
-  private val byImageView by lazy { ByImageView(dataset.preppedTest.await(), viewer, settings = weakSettings.get()!!) }
+  private val byImageView by lazy { ByImageView(dataset.preppedTest.awaitRequireSuccessful(), viewer, settings = weakSettings.get()!!) }
   private val byCategoryView by lazy {
 	ByCategoryView(
-	  dataset.preppedTest.await(),
+	  dataset.preppedTest.awaitRequireSuccessful(),
 	  viewer,
 	  settings = weakSettings.get()!!
 	)

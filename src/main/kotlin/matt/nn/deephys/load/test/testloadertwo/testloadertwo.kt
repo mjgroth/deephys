@@ -13,7 +13,7 @@ class PreppedTestLoader<N: Number>(
   override val dtype: DType<N>
 ): TypedTestLike<N> {
   override fun numberOfImages(): ULong {
-	return tl.numImages.await()
+	return tl.numImages.awaitRequireSuccessful()
   }
 
   override fun imageAtIndex(i: Int): DeephyImage<N> {

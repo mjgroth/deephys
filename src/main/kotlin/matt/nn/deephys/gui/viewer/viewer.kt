@@ -218,8 +218,8 @@ class DatasetViewer(
 		  testData.value!!.dtype.topNeurons(
 			images = contentsOf(theIm),
 			layer = lay,
-			test = testData.value!!.preppedTest.await(),
-			denomTest = normalizer.value?.testData?.value?.preppedTest?.await()
+			test = testData.value!!.preppedTest.awaitRequireSuccessful(),
+			denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful()
 		  )
 		}
 	  }
@@ -240,8 +240,8 @@ class DatasetViewer(
 		testData.value!!.dtype.topNeurons(
 		  images = contentsOf(),
 		  layer = it.layer,
-		  test = testData.value!!.preppedTest.await(),
-		  denomTest = normalizer.value?.testData?.value?.preppedTest?.await(),
+		  test = testData.value!!.preppedTest.awaitRequireSuccessful(),
+		  denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful(),
 		  forcedNeuronIndices = it().map { it.neuron.index }
 		)
 	  }
@@ -484,7 +484,7 @@ class DatasetViewer(
 
 	  deephysText(
 		this@DatasetViewer.testData.binding {
-		  it?.testName?.await() ?: "please select a test"
+		  it?.testName?.awaitSuccessfulOrMessage()?.toString() ?: "please select a test"
 		}
 	  ) {
 		titleFont()
@@ -500,8 +500,8 @@ class DatasetViewer(
 			} else {
 			  string {
 				lineDelimited {
-				  +"dtype:       ${it.dtype.label}"
-				  +"Image Count: ${it.numImages.await()}"
+				  +"dtype:       ${it.dtypeOrNull()?.label}"
+				  +"Image Count: ${it.numImages.awaitSuccessfulOrMessage()}"
 				}
 			  }
 			}
@@ -558,7 +558,7 @@ class DatasetViewer(
 	}
 	content = v {
 	  asyncLoadSwapper(
-		this@DatasetViewer.testData,
+		this@DatasetViewer.testData.binding {it},
 		nullMessage = "select a test to view it",
 		fadeOutDur = DEEPHYS_FADE_DUR,
 		fadeInDur = DEEPHYS_FADE_DUR
