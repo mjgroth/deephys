@@ -148,6 +148,11 @@ class DeephysApp {
   val testReadyScene = LoadedValueSlot<MScene<ParentWrapper<*>>>()
 
   var visBox: VisBox? = null
+  var navBox: NavBox? = null
+  fun showDemos() {
+	navBox!!.visibleAndManaged = true
+	navBox!!.showDemos()
+  }
   fun openZooDemo(demo: ZooExample) {
 
 	val pool = DaemonPool()
@@ -292,7 +297,7 @@ class DeephysApp {
 
 	  val settButton = settingsButton(settingsNode.settings).value
 
-	  val navBox = NavBox(this@DeephysApp).apply {
+	  navBox = NavBox(this@DeephysApp).apply {
 		visibleAndManaged = false
 	  }
 
@@ -316,7 +321,7 @@ class DeephysApp {
 		  graphic = navDrawerButtonGraphic(prefHeight = settButton.heightProperty)
 		  prefHeightProperty.bind(settButton.heightProperty)
 		  setOnAction {
-			navBox.visibleAndManaged = !navBox.visibleAndManaged
+			navBox!!.visibleAndManaged = !navBox!!.visibleAndManaged
 		  }
 		}
 		h {
@@ -332,7 +337,7 @@ class DeephysApp {
 
 		fillHeightProperty.value = true
 
-		+navBox
+		+navBox!!
 
 		scrollpane<VBoxWrapperImpl<NW>> {
 		  hgrow = ALWAYS

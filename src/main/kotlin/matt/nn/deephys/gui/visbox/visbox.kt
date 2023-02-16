@@ -2,11 +2,14 @@ package matt.nn.deephys.gui.visbox
 
 import javafx.application.Platform
 import javafx.geometry.Pos.TOP_CENTER
+import javafx.scene.text.FontPosture.ITALIC
+import javafx.scene.text.FontWeight.BOLD
 import matt.file.CborFile
 import matt.file.MFile
 import matt.file.toSFile
 import matt.fx.base.prop.sizeProperty
 import matt.fx.graphics.dialog.openFile
+import matt.fx.graphics.font.fixed
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.disableWhen
@@ -17,10 +20,12 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
+import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.go
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
+import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
@@ -43,7 +48,7 @@ import matt.prim.str.truncateWithElipsesOrAddSpaces
 
 
 class VisBox(
-  app: DeephysApp,
+  private val app: DeephysApp,
   settings: DeephysSettingsController,
 ): VBoxW() {
 
@@ -105,6 +110,19 @@ class VisBox(
 		}
 	  }
 
+
+	  /*deephysInfoSymbol("here is some info")*/
+	  deephyActionText("give me a demo!") {
+		this@VisBox.app.showDemos()
+	  }.apply {
+
+		font = font.fixed().copy("times new roman", size = 12.0,weight = BOLD,posture = ITALIC).fx()
+
+		this.fill = FXColor.ORANGE
+
+	  }
+
+
 	  h {
 
 		deephyTooltip(
@@ -124,6 +142,7 @@ class VisBox(
 
 		  showVisualizer.bind(selectedProperty)
 		}
+
 	  }
 
 	  /*	  h {
@@ -218,7 +237,7 @@ class VisBox(
 
 		}
 		Platform.runLater {
-		  app.testReadyDSetViewsBbox.page(dSetViewsBox)
+		  this@VisBox.app.testReadyDSetViewsBbox.page(dSetViewsBox)
 		}
 	  }
 	}

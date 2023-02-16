@@ -8,6 +8,7 @@ import javafx.scene.layout.BorderStroke
 import javafx.scene.layout.BorderStrokeStyle
 import javafx.scene.layout.BorderWidths
 import javafx.scene.layout.Priority.ALWAYS
+import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.icon.fav.FaviconLoader
 import matt.fx.graphics.icon.svg.svgToFXImage
@@ -32,6 +33,13 @@ class ZooExample(
 )
 
 class NavBox(private val app: DeephysApp): VBoxW() {
+
+  var showDemosTab: ToggleButtonWrapper? = null
+
+  fun showDemos() {
+	showDemosTab!!.isSelected = true
+  }
+
   init {
 
 	alignment = TOP_CENTER
@@ -57,7 +65,7 @@ class NavBox(private val app: DeephysApp): VBoxW() {
 
 	  alignment = TOP_CENTER
 
-	  deephysLazyTab("Neuronal Activity Zoo") {
+	  this@NavBox.showDemosTab = deephysLazyTab("Neuronal Activity Zoo") {
 
 
 		VBoxW().apply {
