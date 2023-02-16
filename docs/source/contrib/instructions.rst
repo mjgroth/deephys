@@ -64,16 +64,40 @@ Contribution Instructions
     
       <h2>Setting up JDK</h2>
     
-    This is kotlin/gradle project. To compile and run from source requires JDK. If you have never worked on java or kotlin code before, you likely do not have them. There are multiple ways to install these.
+    This is kotlin/gradle project. To compile and run from source requires JDK. The project is developed in OpenJDK 17 on a silicon Mac. Other JDKs and operating systems may or may not work.
     
-    JDK 17 is recommended: We recommend installing openjdk17. Alternatively, JDK 17 corretto, which can be installed through IntelliJ, has worked for some users.
+    If you have never worked on java or kotlin code before, you likely do not have JDK. There are multiple ways to install it.
     
-    - Mac Installation: `Homebrew <https://brew.sh/>`_ with ``brew install openjdk@17``
-      
-    - Linux Installation: ``sudo apt install openjdk-17-jdk``
-      
-    - Windows Installation: (TBD)
-      
+    .. raw:: html
+    
+      <h3>Setting up JDK: Silicon Mac</h3>
+    
+    openjdk17 is recommended for Silicon Macs. You can install it with `Homebrew <https://brew.sh/>`_ like so:
+    
+    .. code-block:: console
+    
+      brew install openjdk@17
+    
+    .. raw:: html
+    
+      <h3>Setting up JDK: Intel Mac</h3>
+    
+    JDK 17 Corretto is recommended on intel macs. While the project is developed using openjdk17 on a silicon mac, for some unknown reason intel macs have an error with openjdk17 and we have found that JDK 17 Corretto works on them. JDK 17 Corretto can be installed through IntelliJ.
+    
+    .. raw:: html
+    
+      <h3>Setting up JDK: Linux</h3>
+    
+    .. code-block:: console
+    
+      sudo apt install openjdk-17-jdk
+    
+    .. raw:: html
+    
+      <h3>Setting up JDK: Windows</h3>
+    
+    Nobody has yet attempted to run the visualizer from source on Windows. Will you be the first? If so, please let us know how it goes.
+    
     .. raw:: html
     
       <h2>Setting up the Project</h2>
@@ -91,6 +115,8 @@ Contribution Instructions
     
     Common paths to java include:
     
+    - **Mac:** ``~/Library/Java/JavaVirtualMachines/openjdk-17.0.1/Contents/Home``
+      
     - **Mac:** ``/Library/Java/JavaVirtualMachines/corretto-17.0.5/Contents/Home``
       
     .. raw:: html

@@ -99,15 +99,15 @@ class Model(DeephysData):
         activations: List[bytearray]  # float32 or float64
 
 
-def model(model_name: str, layers: Dict[str, int], classification_layer: str):
+def model(name: str, layers: Dict[str, int], classification_layer: str):
     """
 
-    :param model_name: The name of the model
+    :param name: The name of the model
     :param layers: A dictionary with the names and number of neurons of each layer.
     :param classification_layer: The name of the classification layer. Must be the name of one of the layers defined in `layers`.
     """
     return Model(
-        name=model_name,
+        name=name,
         layers=list(
             map(
                 lambda item: Layer(layerID=item[0], neurons=[Neuron()] * item[1]),
@@ -140,7 +140,7 @@ def _to_list(value):
     return value
 
 
-def test(
+def dataset_activity(
     name: str,
     category_names: list,
     neural_activity: Dict[str, Union[list, np.ndarray]],
@@ -152,7 +152,7 @@ def test(
     """
     Prepare test results for Deephys. The order of the images should be consistent with the order of the groundtruth_categories per image and the neural_activity.
 
-    :param name: The name of the test
+    :param name: The name of the DatasetActivity
     :param category_names: an ordered list of strings representing class names
     :param neural_activity: A dictionary with the name of the layers and their neural activity. The neural activity is an ordered array or list of floats [#images,#neurons]. Length of activations must be the same as the number of images and in the same order.
     :param model: The model structure
@@ -161,7 +161,7 @@ def test(
     :param dtype: The data type to save activation data as: "float32" or "float64". "float64" is more precise but results in data files almost twice as large. "float64" may also be slower in the app. The input type does not matter, it will get converted to the type in this argument. Default: "float32")
                   Default: ``"float32"``
     :return: a formatted data object which may be saved to a file
-    :rtype: deephys.deephys.Test
+    :rtype: deephys.deephys.DatasetActivity
     """
     if len(name) > 40:
         raise Exception(f"Name of the test must be 40 characters or less")
@@ -281,7 +281,9 @@ def test(
                 features=None,
             )
         )
-    test = Test(name=name, classes=category_names, dtype=dtype, images=imageList)
+    test = DatasetActivity(
+        name=name, classes=category_names, dtype=dtype, images=imageList
+    )
     return test
 
 

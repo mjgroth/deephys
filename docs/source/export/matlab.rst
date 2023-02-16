@@ -30,5 +30,5 @@ The following minimal example generates random data and exports it. The data gen
   end
   images = py.list(images);
   groundtruth = {py.int(0),py.int(1),py.int(0),py.int(1)};
-  test = py.deephys.test("InD",{"cat","dog"},activity,model,images,groundtruth);
+  test = py.deephys.dataset_activity("InD",{"cat","dog"},activity,model,images,groundtruth);
   test.save()

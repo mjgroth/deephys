@@ -67,8 +67,6 @@ class DatasetNode(
 	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
 	}
 
-
-
 	+DeephysTabPane().apply {
 	  layerController.prefWidthProperty.bind(this.tabBar.widthProperty)
 	  val neuronTab = deephysLazyTab("Neuron") {
@@ -108,12 +106,6 @@ class DatasetNode(
 		}
 	  }
 
-
-	  /*tabs.forEach {
-		it.isClosable = false*/
-	  /*it.disableProperty.value = true*/
-	  /*}*/
-
 	  fun update(view: DatasetNodeView) {
 		when (view) {
 		  ByNeuron -> neuronTab.fire()
@@ -125,31 +117,6 @@ class DatasetNode(
 	  viewer.view.onChange {
 		update(it)
 	  }
-
-	  //	  this.node.selectionModel.selectedItemProperty()
-	  //	  this.selectedItemProperty.onChange {
-	  //		this.requestLayout()
-	  //	  }
-
-
 	}
-
-
-	//
-	//
-	//
-	//	setupSwapping(
-	//	  viewer.view,
-	//	  fadeOutDur = DEEPHYS_FADE_DUR,
-	//	  fadeInDur = DEEPHYS_FADE_DUR
-	//	) {
-	//	  VBoxWrapperImpl<NodeWrapper>().apply {
-	//
-	//		add(
-	//
-	//		)
-	//	  }
-	//
-	//	}
   }
 }

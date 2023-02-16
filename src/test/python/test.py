@@ -51,7 +51,7 @@ class TestDeephys(unittest.TestCase):
         }
         pixel_data = np.zeros([num_images, 3, 32, 32])
         ground_truths = [0] * num_images
-        test = dp.test(
+        test = dp.dataset_activity(
             name="test",
             category_names=classes,
             images=pixel_data,
@@ -60,7 +60,7 @@ class TestDeephys(unittest.TestCase):
             model=model,
         )
         pixel_data = pixel_data.tolist()
-        test = dp.test(
+        test = dp.dataset_activity(
             name="test",
             category_names=classes,
             images=pixel_data,
@@ -69,7 +69,7 @@ class TestDeephys(unittest.TestCase):
             model=model,
         )
         pixel_data = torch.zeros([num_images, 3, 32, 32])
-        test = dp.test(
+        test = dp.dataset_activity(
             name="test",
             category_names=classes,
             images=pixel_data,
@@ -78,7 +78,7 @@ class TestDeephys(unittest.TestCase):
             model=model,
         )
         test.save()
-        test = dp.test(
+        test = dp.dataset_activity(
             name="test",
             category_names=classes,
             images=pixel_data,

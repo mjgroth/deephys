@@ -6,6 +6,10 @@ Changelist
 
 - Throw an error if `category_names` is not a `list`
   
+- change `model_name` parameter back to `name`
+  
+- Rename class `Test` to `DatasetActivity` and function `test` to `dataset_activity`
+  
 0.13.0
 ~~~~~~~~~~~~
 

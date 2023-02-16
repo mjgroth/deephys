@@ -25,7 +25,7 @@ We first need to define the model to visualize. Any number of layers to be visua
   import deephys as dp
   
   dp_model = dp.model(
-      model_name="my_net",
+      name="my_net",
       layers={  # include any additional layers
           "penultimate_layer": num_neurons_layer,
           "output": num_neurons_output,
@@ -69,7 +69,7 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 
 .. code-block:: python
 
-  test = dp.test(
+  test = dp.dataset_activity(
       dataset_name="Data_Distribution_1",
       caregory_names=caregory_names,
       images=images,

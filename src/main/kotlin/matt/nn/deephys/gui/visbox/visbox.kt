@@ -21,6 +21,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.style.FXColor
+import matt.lang.disabledCode
 import matt.lang.go
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
@@ -131,17 +132,22 @@ class VisBox(
 		) /*tooltip has to be outside of checkbox or else it will not show when checkbox is disabled?*/
 
 
-		deephyCheckbox("Show Model Diagram") {
-		  prefHeightProperty.bind(prefButtonHeight)
-		  visualizer.onChange {
-			if (it == null) {
-			  isSelected = false
-			}
-		  }
-		  disableWhen { visualizer.isNull }
 
-		  showVisualizer.bind(selectedProperty)
+		disabledCode {
+		  /*- Model Diagram is removed (for now). Maybe this will be added later. The cost of maintaining this feature is currently not worth its value.*/
+		  deephyCheckbox("Show Model Diagram") {
+			prefHeightProperty.bind(prefButtonHeight)
+			visualizer.onChange {
+			  if (it == null) {
+				isSelected = false
+			  }
+			}
+			disableWhen { visualizer.isNull }
+
+			showVisualizer.bind(selectedProperty)
+		  }
 		}
+
 
 	  }
 

@@ -85,11 +85,11 @@ class NeuronView<A: Number>(
 			val j = worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
 			  denomTest?.let {
 				neuron.activationRatio(
-				  numTest = numTest.preppedTest.await() as TypedTestLike<A>,
-				  denomTest = denomTest.preppedTest.await() as TypedTestLike<A>,
+				  numTest = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
+				  denomTest = denomTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
 				)
 			  } ?: neuron.maxActivationIn(
-				test = numTest.preppedTest.await() as TypedTestLike<A>,
+				test = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
 			  )
 			}
 

@@ -19,6 +19,8 @@
 - Change "Bind" button to say "Lead"
 
 
+### Removed Features
+- Model Diagram is removed (for now). Maybe this will be added later. The cost of maintaining this feature is currently not worth its value.
 
 
 ### Cosmetic Changes
