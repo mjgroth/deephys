@@ -63,9 +63,9 @@ fun <A: Number> NW.neuronListViewSwapper(
 		  TopNeurons(
 			images = contents,
 			layer = lay,
-			test = deRefedViewer.testData.value!!.preppedTest.await() as TypedTestLike<A>,
+			test = deRefedViewer.testData.value!!.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
 			/*normalized = deRefedViewer.normalizeTopNeuronActivations.value,*/
-			denomTest = deRefedViewer.normalizer.value/*.takeIf { it != deRefedViewer }*/?.testData?.value?.preppedTest?.await() as TypedTestLike<A>?
+			denomTest = deRefedViewer.normalizer.value/*.takeIf { it != deRefedViewer }*/?.testData?.value?.preppedTest?.awaitRequireSuccessful() as TypedTestLike<A>?
 		  )
 		}
 	  }

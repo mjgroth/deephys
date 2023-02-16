@@ -26,6 +26,7 @@ import matt.lang.function.Produce
 import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_DEFAULT
+import matt.nn.deephys.gui.global.DEEPHYS_LATEX_TOOLTIP_SCALE
 import matt.nn.deephys.gui.global.color.DeephysPalette
 import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DEFAULT_BIG_IMAGE_SCALE
@@ -159,7 +160,7 @@ fun NodeWrapper.veryLazyDeephysTooltipWithNode(
 }
 
 val deephysTexNodeFactory by lazy {
-  TexNodeFactory(scale = 1.0)
+  TexNodeFactory(scale = DEEPHYS_LATEX_TOOLTIP_SCALE)
 }
 
 

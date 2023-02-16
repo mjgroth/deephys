@@ -9,27 +9,32 @@ import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
+import matt.lang.weak.WeakRefInter
 import matt.nn.deephys.calc.ImageTopPredictions
+import matt.nn.deephys.gui.dataset.MainDeephysView
 import matt.nn.deephys.gui.dataset.byimage.feat.FeaturesView
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.dataset.byimage.preds.PredictionsView
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephysSpinner
-import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
+import matt.obs.prop.BindableProperty
+import matt.obs.prop.ObsVal
 
 
 class ByImageView<A: Number>(
   testLoader: PreppedTestLoader<A>,
   viewer: DatasetViewer,
   override val settings: DeephysSettingsController
-): VBoxWrapperImpl<RegionWrapper<*>>(), DeephysNode {
+): VBoxWrapperImpl<RegionWrapper<*>>(), MainDeephysView {
 
 
+  override var control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
+	private set
 
   init {
 	val memSafeSettings = settings
@@ -41,13 +46,15 @@ class ByImageView<A: Number>(
 	deephysSpinner(
 	  label = "Image",
 	  choices = images,
-	  defaultChoice = {images[0]},
+	  defaultChoice = { images[0] },
 	  converter = DeephyImage.stringConverterThatFallsBackToFirst(images = images),
 	  viewer = viewer,
 	  getCurrent = viewer.imageSelection,
 	  acceptIf = { true },
 	  navAction = { navigateTo(it) }
-	)
+	).apply {
+	  (this@ByImageView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this.first)
+	}
 
 	swapperR(
 	  viewer.imageSelection,
@@ -92,5 +99,7 @@ class ByImageView<A: Number>(
 	  settings = memSafeSettings
 	)
   }
+
+
 }
 

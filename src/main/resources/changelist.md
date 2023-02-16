@@ -25,6 +25,7 @@
 
 ### Cosmetic Changes
 - Improved look of spinner when bad input is entered
+- Improved layout by using more of the empty space
 
 
 ### Bug Fixes

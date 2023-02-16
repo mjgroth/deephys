@@ -285,6 +285,8 @@ fun ButtonWrapper.deephysSingleCharButtonFont() {
 
 val DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE = 18.0
 
+const val DEEPHYS_LATEX_TOOLTIP_SCALE = 1.0
+
 val DEEPHYS_FONT_DEFAULT: Font by lazy { Font.font("Georgia") }
 val DEEPHYS_FONT_MONO by lazy {
   DEEPHYS_FONT_DEFAULT.fixed().copy(family = MONO_FONT.family).fx()

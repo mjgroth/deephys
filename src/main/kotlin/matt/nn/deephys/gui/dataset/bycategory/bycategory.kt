@@ -7,12 +7,14 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.lang.go
+import matt.lang.weak.MyWeakRef
+import matt.lang.weak.WeakRefInter
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.toStringConverter
 import matt.nn.deephys.gui.category.CategoryView
+import matt.nn.deephys.gui.dataset.MainDeephysView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephysSpinner
-import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
@@ -20,13 +22,17 @@ import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.prop.BindableProperty
+import matt.obs.prop.ObsVal
 import matt.prim.str.elementsToString
 
 class ByCategoryView(
   testLoader: TypedTestLike<*>,
   viewer: DatasetViewer,
   override val settings: DeephysSettingsController
-): VBoxWrapperImpl<RegionWrapper<*>>(), DeephysNode {
+): VBoxWrapperImpl<RegionWrapper<*>>(), MainDeephysView {
+
+  override val control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
+
   init {
 
 
@@ -35,6 +41,7 @@ class ByCategoryView(
 
 
 	h {
+	  (this@ByCategoryView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this)
 	  deephysSpinner(
 		label = "Category",
 		choices = cats,

@@ -7,7 +7,6 @@ import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.PhaseOut
 import matt.lang.weak.MyWeakRef
 import matt.lang.weak.lazyWeak
-import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.op.convert.StringConverter
 import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
@@ -99,13 +98,13 @@ class DeephyImage<A: Number>(
   }
 
   @Suppress("UNCHECKED_CAST")
-  @PhaseOut private val weakTest = WeakReference(test) as WeakReference<LoadedValueSlot<Test<A>>>
+  @PhaseOut private val weakTest = WeakReference(test) as WeakReference<LoadedOrFailedValueSlot<Test<A>>>
 
   val prediction by lazy {
-	weakTest.get()!!.await().preds.await()[this]!!
+	weakTest.get()!!.awaitRequireSuccessful().preds.await()[this]!!
   }
 
-  val dtype get() = weakTest.get()!!.await().dtype
+  val dtype get() = weakTest.get()!!.awaitRequireSuccessful().dtype
 
 
 }
