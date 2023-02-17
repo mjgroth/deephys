@@ -20,7 +20,7 @@ class TestDeephys(unittest.TestCase):
             testset, batch_size=128, shuffle=False, num_workers=2
         )
         num_images = len(testloader.dataset)
-        classes = (
+        classes = [
             "plane",
             "car",
             "bird",
@@ -31,7 +31,7 @@ class TestDeephys(unittest.TestCase):
             "horse",
             "ship",
             "truck",
-        )
+        ]
         num_classes = len(classes)
         layer1 = dp.Layer(layerID="layer1", neurons=[dp.Neuron()])
         layer2 = dp.Layer(layerID="layer2", neurons=[dp.Neuron()] * num_classes)

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 159 159">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: url(#Deephys_Blue_Gradient);
+        stroke-linecap: round;
+        stroke-miterlimit: 10;
+        stroke-width: 15px;
+      }
+    </style>
+    <linearGradient id="Deephys_Blue_Gradient" data-name="Deephys Blue Gradient" x1="0" y1="79.5" x2="159" y2="79.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00bbe2"/>
+      <stop offset="1" stop-color="#3360ad"/>
+    </linearGradient>
+  </defs>
+  <path class="cls-1" d="m7.5,79.5h144m-72,72V7.5"/>
+</svg>

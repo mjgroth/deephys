@@ -8,6 +8,7 @@ import javafx.scene.layout.Priority.ALWAYS
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight.BOLD
+import matt.fx.control.inter.graphic
 import matt.fx.control.lang.actionbutton
 import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.wrapper.button.radio.RadioButtonWrapper
@@ -41,6 +42,7 @@ import matt.fx.graphics.wrapper.style.FXColor
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.graphics.wrapper.text.textlike.MONO_FONT
 import matt.fx.graphics.wrapper.text.textlike.TextLike
+import matt.fx.node.proto.svgIcon
 import matt.gui.actiontext.actionLabel
 import matt.gui.actiontext.actionText
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
@@ -249,6 +251,17 @@ fun EventTargetWrapper.deephyCheckbox(
 
 fun EventTargetWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = button(s) {
   deephysButtonStyle()
+  theOp()
+}
+
+const private val DEEPHY_ICON_BUTTON_SIZE = 25
+
+fun EventTargetWrapper.deephyIconButton(icon: String, theOp: ButtonWrapper.()->Unit = {}) = deephyButton("") {
+  graphic = svgIcon(icon, DEEPHY_ICON_BUTTON_SIZE)
+  doMyOwnBackgroundStuff(
+	hoverColor = FXColor(0.5, 0.5, 0.5, 0.2),
+	clickColor = FXColor(1.0, 1.0, 0.0, 0.5)
+  )
   theOp()
 }
 

@@ -5,7 +5,7 @@ from deephys.deephys import (
     model,
     dataset_activity,
     Image,
-    Test,
+    DatasetActivity,
     Stopwatch,
 )
 
@@ -16,6 +16,6 @@ __all__ = [
     "model",
     "dataset_activity",
     "Image",
-    "Test",
+    "DatasetActivity",
     "Stopwatch",
 ]

@@ -339,7 +339,7 @@ class DeephysApp {
 		  hgrow = ALWAYS
 		  alignment = Pos.CENTER_RIGHT
 		  /*spacing = DEEPHYS_SYMBOL_SPACING*/
-		  actionbutton("Send us Feedback") {
+		  actionbutton("Send Feedback") {
 			mail(
 			  address = "deephys@mit.edu",
 			  subject = "This visualizer is so cool!",

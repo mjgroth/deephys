@@ -298,7 +298,7 @@ class Image:
 
 
 @dataclass
-class Test(DeephysData):
+class DatasetActivity(DeephysData):
     dtype: Optional[str]
     classes: List[str]
     images: List[Image]

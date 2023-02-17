@@ -1,4 +1,4 @@
-[![pip](https://img.shields.io/badge/compatible%20pip%20version-0.13.0-00bbe2?logo=pypi&logoColor=f5c39e)](https://pypi.org/project/deephys/0.13.0)
+[![pip](https://img.shields.io/badge/compatible%20pip%20version-0.14.0-00bbe2?logo=pypi&logoColor=f5c39e)](https://pypi.org/project/deephys/0.14.0)
 
 
 ### New Features
@@ -8,7 +8,7 @@
 - Added favicons for URL icons
 - Added "give me a demo" button
 - Added neuron zoo version 1
-- link for submitting bug reports
+- link for submitting bug reports and overall improved error window
 - Feedback button
 
 
@@ -28,6 +28,7 @@
 - Improved look of spinner when bad input is entered
 - Improved layout by using more of the empty space
 - Smaller latex tooltips
+- Replaced more buttons with original icons
 
 
 ### Bug Fixes

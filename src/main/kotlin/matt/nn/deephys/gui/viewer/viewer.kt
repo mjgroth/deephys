@@ -21,7 +21,6 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.fx.node.proto.svgIcon
 import matt.lang.disabledCode
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
@@ -36,8 +35,7 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
-import matt.nn.deephys.gui.global.deephyButton
-import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
+import matt.nn.deephys.gui.global.deephyIconButton
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.symbol.DEEPHYS_SYMBOL_SPACING
@@ -404,8 +402,7 @@ class DatasetViewer(
 
 	  sectionSpacer()
 
-	  val removeTestButton = deephyButton("-") {
-		deephysSingleCharButtonFont()
+	  val removeTestButton = deephyIconButton("icon/minus") {
 		veryLazyDeephysTooltip("remove this test viewer", settings)
 		setOnAction {
 		  this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
@@ -414,10 +411,7 @@ class DatasetViewer(
 
 
 	  /*"Choose Test"*/
-	  val chooseTestButton = deephyButton("") {
-
-
-		graphic = svgIcon("open-file", 25)
+	  val chooseTestButton = deephyIconButton("open-file") {
 
 
 		veryLazyDeephysTooltip("choose test file", settings)
@@ -445,8 +439,14 @@ class DatasetViewer(
 	  sectionSpacer()
 
 
-	  deephyButton("<-") {
+	  deephyIconButton("icon/arrow") {
+		graphic!!.apply {
+		  scaleX = -1.0
+		}
+
+
 		prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+
 		enableWhen {
 		  this@DatasetViewer.canUseHistory and this@DatasetViewer.historyIndex.gt(0)
 		}
@@ -456,7 +456,7 @@ class DatasetViewer(
 		}
 
 	  }
-	  deephyButton("->") {
+	  deephyIconButton("icon/arrow") {
 		prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
 		enableWhen {
 		  this@DatasetViewer.canUseHistory and this@DatasetViewer.historyIndex.lt(this@DatasetViewer.history.lastIndexProperty)
@@ -558,7 +558,7 @@ class DatasetViewer(
 	}
 	content = v {
 	  asyncLoadSwapper(
-		this@DatasetViewer.testData.binding {it},
+		this@DatasetViewer.testData.binding { it },
 		nullMessage = "select a test to view it",
 		fadeOutDur = DEEPHYS_FADE_DUR,
 		fadeInDur = DEEPHYS_FADE_DUR

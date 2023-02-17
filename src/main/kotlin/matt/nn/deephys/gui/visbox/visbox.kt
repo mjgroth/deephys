@@ -1,13 +1,14 @@
 package matt.nn.deephys.gui.visbox
 
 import javafx.application.Platform
+import javafx.geometry.Pos.CENTER
 import javafx.geometry.Pos.TOP_CENTER
+import javafx.scene.Cursor
 import javafx.scene.text.FontPosture.ITALIC
 import javafx.scene.text.FontWeight.BOLD
 import matt.file.CborFile
 import matt.file.MFile
 import matt.file.toSFile
-import matt.fx.base.prop.sizeProperty
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.font.fixed
 import matt.fx.graphics.fxthread.runLater
@@ -29,7 +30,7 @@ import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephysSingleCharButtonFont
+import matt.nn.deephys.gui.global.deephyIconButton
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
@@ -42,7 +43,6 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.init.modelBinding
 import matt.nn.deephys.load.loadSwapper
 import matt.nn.deephys.state.DeephyState
-import matt.obs.bind.binding
 import matt.obs.prop.BindableProperty
 import matt.prim.str.mybuild.string
 import matt.prim.str.truncateWithElipsesOrAddSpaces
@@ -112,15 +112,19 @@ class VisBox(
 	  }
 
 
-	  /*deephysInfoSymbol("here is some info")*/
-	  deephyActionText("give me a demo!") {
-		this@VisBox.app.showDemos()
-	  }.apply {
+	  v {
+		prefHeightProperty.bind(prefButtonHeight)
+		alignment = CENTER
+		deephyActionText("give me a demo!") {
+		  this@VisBox.app.showDemos()
+		}.apply {
 
-		font = font.fixed().copy("times new roman", size = 12.0,weight = BOLD,posture = ITALIC).fx()
+		  font = font.fixed().copy("Arial", size = 18.0, weight = BOLD, posture = ITALIC).fx()
 
-		this.fill = FXColor.ORANGE
+		  this.fill = FXColor.ORANGE
+		  cursor = Cursor.HAND
 
+		}
 	  }
 
 
@@ -231,11 +235,7 @@ class VisBox(
 		  dSetViewsBox += it
 		}
 		+dSetViewsBox
-		deephyButton("Add a test") {
-		  deephysSingleCharButtonFont()
-		  textProperty.bind(dSetViewsBox.children.sizeProperty.binding {
-			if (it == 0) "Add a test" else "+"
-		  })
+		deephyIconButton("icon/plus") {
 		  deephyTooltip("Add a test", settings = settings)
 		  setOnAction {
 			dSetViewsBox.addTest()
