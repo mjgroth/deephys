@@ -14,6 +14,7 @@ import matt.nn.deephys.gui.dataset.bycategory.ByCategoryView
 import matt.nn.deephys.gui.dataset.byimage.ByImageView
 import matt.nn.deephys.gui.dataset.byneuron.ByNeuronView
 import matt.nn.deephys.gui.dataset.dtab.DeephysTabPane
+import matt.nn.deephys.gui.global.configForDeephys
 import matt.nn.deephys.gui.global.deephysLabeledControl2
 import matt.nn.deephys.gui.global.tooltip.symbol.DEEPHYS_SYMBOL_SPACING
 import matt.nn.deephys.gui.node.DeephysNode
@@ -66,13 +67,17 @@ class DatasetNode(
 	spacing = DEEPHYS_SYMBOL_SPACING
 	isFillWidth = false
 
+
 	val layerCB = choicebox(
 	  nullableProp = viewer.layerSelection,
 	  values = viewer.model.resolvedLayers.map { it.interTest }
 	) {
+	  configForDeephys()
 	  valueProperty.onChange {
 		println("layerCB value changed to $it")
 	  }
+
+
 
 	}
 

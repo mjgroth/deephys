@@ -20,6 +20,7 @@ import matt.fx.control.wrapper.control.ControlWrapper
 import matt.fx.control.wrapper.control.button.ButtonWrapper
 import matt.fx.control.wrapper.control.button.base.ButtonBaseWrapper
 import matt.fx.control.wrapper.control.button.button
+import matt.fx.control.wrapper.control.choice.ChoiceBoxWrapper
 import matt.fx.control.wrapper.control.spinner.spinner
 import matt.fx.control.wrapper.label.LabelWrapper
 import matt.fx.control.wrapper.label.label
@@ -62,14 +63,14 @@ val DEEPHYS_FADE_DUR = null
 fun <E: Any> ET.deephysSpinner(
   label: String,
   choices: List<E>,
-  defaultChoice: () -> E,
+  defaultChoice: ()->E,
   converter: StringConverter<E>,
   viewer: DatasetViewer,
   getCurrent: ObsVal<E?>,
   acceptIf: (E)->Boolean,
   navAction: DatasetViewer.(E)->Unit,
 
-) = run {
+  ) = run {
   var theValueProp: ObsVal<E>? = null
   h {
 
@@ -182,6 +183,10 @@ fun ET.deephysLabeledControl2(
   op()
 }
 
+fun ChoiceBoxWrapper<*>.configForDeephys() {
+  stupidlySetFont(DEEPHYS_FONT_DEFAULT)
+}
+
 fun EventTargetWrapper.deephysText(s: String = "", op: DeephyText.()->Unit = {}) =
   DeephyText(BindableProperty(s)).apply(op).also { +it }
 
@@ -285,9 +290,12 @@ fun ButtonWrapper.deephysSingleCharButtonFont() {
 
 val DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE = 18.0
 
-const val DEEPHYS_LATEX_TOOLTIP_SCALE = 1.0
+const val DEEPHYS_LATEX_TOOLTIP_SCALE = 0.70
 
-val DEEPHYS_FONT_DEFAULT: Font by lazy { Font.font("Georgia") }
+val DEEPHYS_FONT_DEFAULT: Font by lazy {
+  Font.font("Georgia")
+
+}
 val DEEPHYS_FONT_MONO by lazy {
   DEEPHYS_FONT_DEFAULT.fixed().copy(family = MONO_FONT.family).fx()
 }

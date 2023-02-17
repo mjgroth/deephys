@@ -14,6 +14,8 @@ import matt.file.MFile
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.fx.control.inter.graphic
+import matt.fx.control.lang.actionbutton
+import matt.fx.control.mail
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
@@ -31,10 +33,13 @@ import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
 import matt.gui.interact.WinOwn
 import matt.gui.interact.openInNewWindow
+import matt.gui.interact.popupWarning
 import matt.gui.mscene.MScene
 import matt.gui.mstage.ShowMode
 import matt.gui.mstage.ShowMode.SHOW_AND_WAIT
 import matt.gui.mstage.WMode.NOTHING
+import matt.http.internet.TheInternet
+import matt.http.internet.isAvailable
 import matt.image.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.err
@@ -153,7 +158,13 @@ class DeephysApp {
 	navBox!!.visibleAndManaged = true
 	navBox!!.showDemos()
   }
+
   fun openZooDemo(demo: ZooExample) {
+
+	if (!TheInternet().isAvailable()) {
+	  popupWarning("No internet connection")
+	  return
+	}
 
 	val pool = DaemonPool()
 
@@ -327,6 +338,16 @@ class DeephysApp {
 		h {
 		  hgrow = ALWAYS
 		  alignment = Pos.CENTER_RIGHT
+		  /*spacing = DEEPHYS_SYMBOL_SPACING*/
+		  actionbutton("Send us Feedback") {
+			mail(
+			  address = "deephys@mit.edu",
+			  subject = "This visualizer is so cool!",
+			  body = "What I like about this tool:\n\n\n\nHow I think it can be improved:\n\n"
+			)
+		  }.apply{
+			prefHeightProperty.bind(settButton.heightProperty)
+		  }
 		  +settButton
 		}
 	  }

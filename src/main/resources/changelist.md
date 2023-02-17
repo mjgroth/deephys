@@ -8,7 +8,8 @@
 - Added favicons for URL icons
 - Added "give me a demo" button
 - Added neuron zoo version 1
-- Mailto link for submitting bug reports
+- link for submitting bug reports
+- Feedback button
 
 
 
@@ -26,6 +27,7 @@
 ### Cosmetic Changes
 - Improved look of spinner when bad input is entered
 - Improved layout by using more of the empty space
+- Smaller latex tooltips
 
 
 ### Bug Fixes
@@ -34,6 +36,7 @@
 - Switch ground truth title to a label that does not wrap. This prevents a layout bug that was caused from when the ground truth category name is really long and wraps, which used to mess up the layout
 - Fixed bug that occured when there were very few images in a .test file (less than 5)
 - prevent some crashes that can occur from errors when loading a file. Now the app is better at displaying an error message without crashing.
+- Font now correctly applies to ChoiceBoxes
 
 
 

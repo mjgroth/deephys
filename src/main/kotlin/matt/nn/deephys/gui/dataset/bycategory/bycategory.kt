@@ -14,6 +14,7 @@ import matt.model.op.convert.toStringConverter
 import matt.nn.deephys.gui.category.CategoryView
 import matt.nn.deephys.gui.dataset.MainDeephysView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
+import matt.nn.deephys.gui.global.configForDeephys
 import matt.nn.deephys.gui.global.deephysSpinner
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -58,6 +59,7 @@ class ByCategoryView(
 		nullableProp = BindableProperty(viewer.categorySelection.value),
 		values = testLoader.test.categories
 	  ) {
+		configForDeephys()
 		converter = toStringConverter<CategorySelection?> {
 		  when (it) {
 			is Category -> it.label
