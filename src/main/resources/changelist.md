@@ -11,8 +11,6 @@
 
 
 
-### Bug Fixes
-- Fixed a MAJOR bug that was causing releases for non Silicon Mac apps to be one version behind.
 
 
 
