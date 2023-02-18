@@ -1,7 +1,7 @@
 Changelist
 ==========
 
-0.13.1
+0.14.0
 ~~~~~~~~~~~~
 
 - Throw an error if `category_names` is not a `list`
