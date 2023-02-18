@@ -18,8 +18,8 @@ jobs:
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
-        latest: true
         fileName: nn-deephys-intel-0-all.jar
+        tag: ${{ github.event.inputs.version }}
     - name: mkdirs
       env: {}
       run: |-
@@ -196,8 +196,8 @@ jobs:
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
-        latest: true
         fileName: nn-deephys-linux-0-all.jar
+        tag: ${{ github.event.inputs.version }}
     - name: mkdirs
       env: {}
       run: |-
@@ -249,8 +249,8 @@ jobs:
       uses: robinraju/release-downloader@v1.7
       with:
         repository: mjgroth/deephys
-        latest: true
         fileName: nn-deephys-windows-0-all.jar
+        tag: ${{ github.event.inputs.version }}
     - name: mkdirs
       env: {}
       run: |-
