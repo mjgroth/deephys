@@ -2,7 +2,7 @@ name: Toy
 on:
   workflow_dispatch: {}
 jobs:
-  Toy Job:
+  Toy-Job:
     runs-on: macos-12
     steps:
     - env: {}
