@@ -2,6 +2,9 @@
 .git_knn
 /out/
 *.hprof
+*.iml
+*.ipr
+*.iws
 *.hprof.idom
 *.zip
 *.tgz
