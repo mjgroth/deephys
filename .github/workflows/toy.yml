@@ -6,4 +6,4 @@ jobs:
     runs-on: macos-12
     steps:
     - env: {}
-      run: bash -c "ls /Users/runner/hostedtoolcache *"
+      run: find /Users/runner/hostedtoolcache -maxdepth 3
