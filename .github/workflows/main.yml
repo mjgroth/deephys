@@ -11,7 +11,7 @@ jobs:
     - name: null
       uses: actions/setup-java@v3
       with:
-        distribution: corretto
+        distribution: temurin
         java-version: 18
         java-package: jdk
     - name: null
@@ -189,7 +189,7 @@ jobs:
     - name: null
       uses: actions/setup-java@v3
       with:
-        distribution: corretto
+        distribution: temurin
         java-version: 18
         java-package: jdk
     - name: null
@@ -242,7 +242,7 @@ jobs:
     - name: null
       uses: actions/setup-java@v3
       with:
-        distribution: corretto
+        distribution: temurin
         java-version: 18
         java-package: jdk
     - name: null
