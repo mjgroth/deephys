@@ -12,7 +12,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: temurin
-        java-version: 18
+        java-version: 17
         java-package: jdk
     - name: null
       uses: robinraju/release-downloader@v1.7
@@ -190,7 +190,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: temurin
-        java-version: 18
+        java-version: 17
         java-package: jdk
     - name: null
       uses: robinraju/release-downloader@v1.7
