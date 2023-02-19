@@ -1,9 +1,0 @@
-name: Toy
-on:
-  workflow_dispatch: {}
-jobs:
-  Toy-Job:
-    runs-on: macos-12
-    steps:
-    - env: {}
-      run: find /Users/runner/hostedtoolcache -maxdepth 3
