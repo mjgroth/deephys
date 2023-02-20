@@ -4,18 +4,18 @@ Changelist
 0.14.0
 ~~~~~~~~~~~~
 
-- Throw an error if `category_names` is not a `list`
+- Throw an error if ``category_names`` is not a ``list``
   
-- change `model_name` parameter back to `name`
+- change ``model_name`` parameter back to ``name``
   
-- Rename class `Test` to `DatasetActivity` and function `test` to `dataset_activity`
+- Rename class ``Test`` to ``DatasetActivity`` and function `test` to ``dataset_activity``
   
 0.13.0
 ~~~~~~~~~~~~
 
 - Allow saving files to any path
   
-- Change name of `ImageFile` to `Image`
+- Change name of ``ImageFile`` to ``Image``
   
 0.12.1
 ~~~~~~~~~~~~

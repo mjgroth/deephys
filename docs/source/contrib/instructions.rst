@@ -20,6 +20,8 @@ Contribution Instructions
        
     #. Run `these google colabs <https://drive.google.com/drive/u/0/folders/1Phh_iLZvToAZ1BZVbOTam5hD4MlN2Vg->`_ (additional python tests)
        
+    #. Before committing, please use `black <https://github.com/psf/black>`_ with the default settings to format any files you edit. This simplifies diffs as much as possible. The command should be something like ``python -m black source_file.py``.
+       
     #. Submit a pull request
        
   
