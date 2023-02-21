@@ -92,10 +92,7 @@ class VisBox(
 	h {
 	  spacing = 25.0
 
-
-
-
-	  deephyButton("Choose Model") {
+	  deephyButton("Select Model") {
 		prefHeightProperty.bind(prefButtonHeight)
 		setOnAction {
 

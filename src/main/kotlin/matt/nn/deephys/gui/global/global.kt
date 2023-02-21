@@ -45,14 +45,19 @@ import matt.fx.graphics.wrapper.text.textlike.TextLike
 import matt.fx.node.proto.svgIcon
 import matt.gui.actiontext.actionLabel
 import matt.gui.actiontext.actionText
+import matt.math.jmath.sigFigs
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.StringConverter
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.obs.bind.binding
+import matt.obs.bind.weakBinding
 import matt.obs.bindings.bool.ObsB
 import matt.obs.bindings.bool.and
 import matt.obs.bindings.str.ObsS
 import matt.obs.col.olist.toBasicObservableList
+import matt.obs.math.int.ObsI
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
 import matt.obs.prop.Var
@@ -191,6 +196,27 @@ fun ChoiceBoxWrapper<*>.configForDeephys() {
 
 fun EventTargetWrapper.deephysText(s: String = "", op: DeephyText.()->Unit = {}) =
   DeephyText(BindableProperty(s)).apply(op).also { +it }
+
+fun EventTargetWrapper.sigFigText(
+  num: Number,
+  sigFigSett: ObsI,
+  numSuffix: String,
+  settings: DeephysSettingsController,
+  tooltip: String,
+  op: DeephyText.()->Unit = {}
+) = deephysText {
+  textProperty.bindWeakly(sigFigSett.weakBinding(this) { _, it ->
+	when (num) {
+	  is Float  -> num.sigFigs(it).toString()
+	  is Double -> num.sigFigs(it).toString()
+	  else      -> error("not ready for different dtype")
+	} + numSuffix
+  })
+  veryLazyDeephysTooltip(tooltip, settings)
+  op()
+}
+
+
 
 fun EventTargetWrapper.deephysText(s: ObsS, op: DeephyText.()->Unit = {}) = DeephyText(s).apply(op).also { +it }
 fun DeephyText(s: String) = DeephyText(BindableProperty(s))

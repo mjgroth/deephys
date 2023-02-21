@@ -5,12 +5,14 @@
 - More automated bug reporting
 - Added app version number to bug report
 - "Report Bug" button
+- Expand and collapse numerical some data views
 
 
 
 
 ### User Friendliness
 - Easier and more friendly bug report popup
+- Changed "choose model" to "select model"
 
 
 

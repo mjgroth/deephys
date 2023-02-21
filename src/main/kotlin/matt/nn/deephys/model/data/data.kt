@@ -1,16 +1,23 @@
 package matt.nn.deephys.model.data
 
 import matt.collect.set.contents.contentsOf
+import matt.fx.graphics.wrapper.node.NW
+import matt.lang.weak.WeakRefInter
 import matt.model.op.convert.StringConverter
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
+import matt.nn.deephys.gui.global.deephyActionText
+import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.settings.DeephysSettingsController
+import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.prim.str.truncateWithElipsesOrAddSpacesAsNeeded
 
 
 data class InterTestLayer(
@@ -95,6 +102,17 @@ sealed interface CategorySelection {
 data class Category(val id: Int, val label: String): CategorySelection {
 
 
+  fun actionText(
+	r: NW,
+	tooltip: String,
+	settings: DeephysSettingsController,
+	weakViewer: WeakRefInter<DatasetViewer>,
+	allowedLengths: IntRange = 25..25
+  ) = r.deephyActionText(label.truncateWithElipsesOrAddSpacesAsNeeded(allowedLengths)) {
+	weakViewer.deref()!!.navigateTo(this)
+  }.apply{
+	veryLazyDeephysTooltip(tooltip, settings)
+  }
 
 
 

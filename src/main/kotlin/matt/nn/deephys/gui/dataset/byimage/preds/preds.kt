@@ -1,29 +1,34 @@
 package matt.nn.deephys.gui.dataset.byimage.preds
 
+import javafx.scene.Cursor
+import matt.fx.graphics.wrapper.node.NW
+import matt.fx.graphics.wrapper.pane.hSpacer
+import matt.fx.graphics.wrapper.pane.hbox.HBoxW
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.v
+import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
+import matt.fx.node.proto.infosymbol.plusMinusSymbol
 import matt.lang.weak.MyWeakRef
 import matt.lang.weak.WeakRefInter
-import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ImageTopPredictions
+import matt.nn.deephys.gui.global.color.DeephysPalette
 import matt.nn.deephys.gui.global.deephyActionLabel
-import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephysText
+import matt.nn.deephys.gui.global.sigFigText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.global.titleFont
 import matt.nn.deephys.gui.global.tooltip.deephyTooltip
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
-import matt.obs.bind.weakBinding
+import matt.obs.bindings.bool.not
 import matt.obs.math.int.ObsI
-import matt.prim.str.truncateWithElipsesOrAddSpaces
+import matt.obs.prop.BindableProperty
 
 class PredictionsView(
   groundTruth: Category,
@@ -51,7 +56,6 @@ class PredictionsView(
   }
 }
 
-
 class CategoryTable(
   title: String,
   data: List<Pair<Category, Number>>,
@@ -60,42 +64,79 @@ class CategoryTable(
   tooltip: String,
   private val sigFigSett: ObsI,
   numSuffix: String = ""
-): VBoxW(), DeephysNode {
+): HBoxW(), DeephysNode {
+
+
+
+
   init {
-	val memSafeWeakViewer = weakViewer
-	val memSafeSettings = settings
-	deephysText(title) {
-	  subtitleFont()
-	  deephyTooltip(tooltip, settings = memSafeSettings)
+	val b = BindableProperty(false)
+	plusMinusSymbol(b) {
+	  fill = DeephysPalette.deephysBlue2
+	  cursor = Cursor.HAND
 	}
-	spacer(5.0)
+	hSpacer(5.0)
 	v {
-	  val predNamesBox = v {}
-	  spacer()
-	  val predValuesBox = v {}
-	  hbox {
-		+predNamesBox
-		spacer()
-		+predValuesBox
-	  }
-	  data.forEach {
-		val category = it.first
-		val num = it.second
-		val fullString = "\t${category.label} (${num})"
-		predNamesBox.deephyActionText(category.label.truncateWithElipsesOrAddSpaces(25)) {
-		  memSafeWeakViewer.deref()!!.navigateTo(category)
-		}.apply {
-		  veryLazyDeephysTooltip(fullString, memSafeSettings)
+	  +TextFlowWrapper<NW>().apply {
+		visibleAndManagedProp.bindWeakly(b.not())
+		data.forEach { (cat, num) ->
+		  val fullString = "\t${cat.label} (${num})"
+		  cat.actionText(
+			r = this,
+			tooltip = fullString,
+			settings = this@CategoryTable.settings,
+			weakViewer = weakViewer,
+			allowedLengths = 1..5
+		  )
+		  deephysText("(")
+		  sigFigText(
+			num = num,
+			sigFigSett = this@CategoryTable.sigFigSett,
+			numSuffix = numSuffix,
+			settings = this@CategoryTable.settings,
+			tooltip = fullString
+		  )
+		  deephysText("), ")
 		}
-		predValuesBox.deephysText {
-		  textProperty.bindWeakly(this@CategoryTable.sigFigSett.weakBinding(this) { _, it ->
-			when (num) {
-			  is Float  -> num.sigFigs(it).toString()
-			  is Double -> num.sigFigs(it).toString()
-			  else      -> error("not ready for different dtype")
-			} + numSuffix
-		  })
-		  veryLazyDeephysTooltip(fullString, memSafeSettings)
+	  }
+	  v{
+		visibleAndManagedProp.bindWeakly(b)
+		val memSafeWeakViewer = weakViewer
+		val memSafeSettings = this@CategoryTable.settings
+		deephysText(title) {
+		  subtitleFont()
+		  deephyTooltip(tooltip, settings = memSafeSettings)
+		}
+		spacer(5.0)
+		v {
+		  val predNamesBox = v {}
+		  spacer()
+		  val predValuesBox = v {}
+		  hbox {
+			+predNamesBox
+			spacer()
+			+predValuesBox
+		  }
+		  data.forEach {
+			val category = it.first
+			val num = it.second
+
+			val fullString = "\t${category.label} (${num})"
+			category.actionText(
+			  r = predNamesBox,
+			  tooltip = fullString,
+			  settings = memSafeSettings,
+			  weakViewer = memSafeWeakViewer
+			)
+
+			predValuesBox.sigFigText(
+			  num = num,
+			  sigFigSett = this@CategoryTable.sigFigSett,
+			  numSuffix = numSuffix,
+			  settings = memSafeSettings,
+			  tooltip = fullString
+			)
+		  }
 		}
 	  }
 	}
