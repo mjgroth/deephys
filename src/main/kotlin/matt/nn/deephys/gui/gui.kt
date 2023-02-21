@@ -14,7 +14,6 @@ import matt.file.MFile
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.fx.control.inter.graphic
-import matt.fx.control.lang.actionbutton
 import matt.fx.control.mail
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.scroll.scrollpane
@@ -31,6 +30,7 @@ import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.fx.node.proto.navDrawerButtonGraphic
 import matt.gui.app.GuiApp
 import matt.gui.app.warmup.warmupJvmThreading
+import matt.gui.exception.openNewYouTrackIssue
 import matt.gui.interact.WinOwn
 import matt.gui.interact.openInNewWindow
 import matt.gui.interact.popupWarning
@@ -59,7 +59,7 @@ import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.navbox.NavBox
 import matt.nn.deephys.gui.navbox.ZooExample
 import matt.nn.deephys.gui.settings.DeephySettingsNode
-import matt.nn.deephys.gui.settings.gui.settingsButton
+import matt.nn.deephys.gui.settings.gui.SettingsWindow
 import matt.nn.deephys.gui.visbox.VisBox
 import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.init.warmupFxComponents
@@ -306,7 +306,7 @@ class DeephysApp {
 
 	  alignment = TOP_CENTER
 
-	  val settButton = settingsButton(settingsNode.settings).value
+	  val settButton = SettingsWindow(settingsNode.settings).button(this)
 
 	  navBox = NavBox(this@DeephysApp).apply {
 		visibleAndManaged = false
@@ -339,7 +339,15 @@ class DeephysApp {
 		  hgrow = ALWAYS
 		  alignment = Pos.CENTER_RIGHT
 		  /*spacing = DEEPHYS_SYMBOL_SPACING*/
-		  actionbutton("Send Feedback") {
+		  deephyActionButton ("Report Bug") {
+			openNewYouTrackIssue(
+			  summary = "Bug Report",
+			  description = ""
+			)
+		  }.apply {
+			prefHeightProperty.bind(settButton.heightProperty)
+		  }
+		  deephyActionButton("Send Feedback") {
 			mail(
 			  address = "deephys@mit.edu",
 			  subject = "This visualizer is so cool!",

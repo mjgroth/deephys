@@ -2,7 +2,8 @@ package matt.nn.deephys.gui.settings.gui
 
 import javafx.scene.control.TreeItem
 import javafx.scene.text.TextAlignment.CENTER
-import matt.fx.control.lang.actionbutton
+import javafx.stage.Modality.APPLICATION_MODAL
+import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.tree.treeview
 import matt.fx.control.wrapper.treeitem.TreeItemWrapper
 import matt.fx.graphics.wrapper.imageview.ImageViewWrapper
@@ -12,11 +13,13 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.stack.stackpane
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.gui.interact.openInNewWindow
+import matt.gui.interact.WindowConfig
+import matt.gui.mstage.MStage
 import matt.gui.mstage.ShowMode.DO_NOT_SHOW
 import matt.gui.mstage.WMode.CLOSE
 import matt.gui.option.EnumSetting
 import matt.gui.option.SettingsData
+import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyRadioButton
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.node.DeephysNode
@@ -24,45 +27,54 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.settings.gui.control.createControlFor
 import matt.nn.deephys.init.gearImage
 
-private object MONITOR
 
-private var gotSettingsButton = false
-fun settingsButton(settings: DeephysSettingsController) = lazy {
-  synchronized(MONITOR) {
-	require(!gotSettingsButton)
-	gotSettingsButton = true
+class SettingsWindow(settings: DeephysSettingsController): MStage() {
+  companion object {
+	private var instance: SettingsWindow? = null
   }
 
-  actionbutton(graphic = ImageViewWrapper(gearImage.await()).apply {
-	isPreserveRatio = true
-	fitWidth = 25.0
-  }) {
-	settingsWindow(settings).value.show()
+  init {
+	synchronized(SettingsWindow::class) {
+	  require(instance == null)
+	  instance = this
+	}
   }
-}
 
-
-
-
-
-private var gotSettingsWindow = false
-fun settingsWindow(settings: DeephysSettingsController) = lazy {
-  synchronized(MONITOR) {
-	require(!gotSettingsWindow)
-	gotSettingsWindow = true
-  }
-  SettingsPane(settings).openInNewWindow(
-	DO_NOT_SHOW,
-	CLOSE,
-	EscClosable = true,
-	decorated = true,
-	title = "Deephys Options",
-  ).apply {
+  fun setupFor(settings: DeephysSettingsController) {
+	WindowConfig(
+	  showMode = DO_NOT_SHOW,
+	  modality = APPLICATION_MODAL,
+	  wMode = CLOSE,
+	  EscClosable = true,
+	  decorated = true,
+	  title = "Deephys Options",
+	).applyTo(this, SettingsPane(settings))
 	width = 1000.0
   }
+
+  init {
+	setupFor(settings)
+  }
+
+  fun button(receiver: NodeWrapper) = receiver.deephyButton {
+
+	graphic = ImageViewWrapper(gearImage.await()).apply {
+	  isPreserveRatio = true
+	  fitWidth = 25.0
+	}
+	setOnAction {
+	  if (!this@SettingsWindow.isShowing) {
+		if (this@SettingsWindow.owner == null) {
+		  this@SettingsWindow.initOwner(receiver.stage)
+		}
+		println("waiting...")
+		this@SettingsWindow.showAndWait()
+		println("done waiting")
+	  }
+	}
+  }
+
 }
-
-
 
 
 fun <E: Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) = rec.apply {

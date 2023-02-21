@@ -228,14 +228,11 @@ class DatasetViewer(
   val boundTopNeurons: MyBinding<TopNeurons<*>?> = boundToDSet.deepBinding(
 	normalizer
   ) {
-	//	println("maybe boundTopNeurons 1")
 	it?.topNeurons?.binding(
 	  normalizer
 	) {
-	  //	  println("maybe boundTopNeurons 2")
 	  it?.let {
-		//		println("getting actual boundTopNeurons for ${this@DatasetViewer}")
-		testData.value!!.dtype.topNeurons(
+		testData.value?.dtype?.topNeurons(
 		  images = contentsOf(),
 		  layer = it.layer,
 		  test = testData.value!!.preppedTest.awaitRequireSuccessful(),
@@ -262,6 +259,7 @@ class DatasetViewer(
 	  ByImage    -> topNeurons.value?.findOrCompute() ?: listOf()
 	  ByCategory -> listOf<InterTestNeuron>().apply {
 		warn("did not make highlighted neurons from category view work yet")
+
 	  }
 	}
   }
