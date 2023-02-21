@@ -86,7 +86,7 @@ class CategoryTable(
 			tooltip = fullString,
 			settings = this@CategoryTable.settings,
 			weakViewer = weakViewer,
-			allowedLengths = 1..5
+			allowedLengths = 1..10
 		  )
 		  deephysText("(")
 		  sigFigText(
