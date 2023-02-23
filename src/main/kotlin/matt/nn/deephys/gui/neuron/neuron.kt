@@ -252,9 +252,10 @@ class NeuronView<A: Number>(
 	  }
 	  if (layoutForList) {
 		prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH
-		hgap = 10.0
-		vgap = 10.0
 	  }
+	  val gap = 3.0
+	  hgap = gap
+	  vgap = gap
 	}
   }
 

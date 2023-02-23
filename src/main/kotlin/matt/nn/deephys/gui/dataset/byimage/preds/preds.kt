@@ -72,11 +72,12 @@ class CategoryTable(
 
   init {
 	val b = BindableProperty(false)
-	plusMinusSymbol(b) {
+	plusMinusSymbol(b,radius = 6.5) {
 	  fill = DeephysPalette.deephysBlue2
 	  cursor = Cursor.HAND
+
 	}
-	hSpacer(1.0)
+	hSpacer(5.0)
 	v {
 	  +TextFlowWrapper<NW>().apply {
 		visibleAndManagedProp.bindWeakly(b.not())
@@ -108,10 +109,10 @@ class CategoryTable(
 		  subtitleFont()
 		  deephyTooltip(tooltip, settings = memSafeSettings)
 		}
-		spacer(5.0)
+		spacer(1.0)
 		v {
 		  val predNamesBox = v {}
-		  spacer()
+		  spacer(2.0)
 		  val predValuesBox = v {}
 		  hbox {
 			+predNamesBox

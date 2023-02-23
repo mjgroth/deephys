@@ -3,6 +3,7 @@ package matt.nn.deephys.gui.settings.gui
 import javafx.scene.control.TreeItem
 import javafx.scene.text.TextAlignment.CENTER
 import javafx.stage.Modality.APPLICATION_MODAL
+import javafx.stage.StageStyle
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.tree.treeview
 import matt.fx.control.wrapper.treeitem.TreeItemWrapper
@@ -63,6 +64,7 @@ class SettingsWindow(settings: DeephysSettingsController): MStage() {
 	  fitWidth = 25.0
 	}
 	setOnAction {
+	  this@SettingsWindow.initStyle(StageStyle.DECORATED)
 	  if (!this@SettingsWindow.isShowing) {
 		if (this@SettingsWindow.owner == null) {
 		  this@SettingsWindow.initOwner(receiver.stage)

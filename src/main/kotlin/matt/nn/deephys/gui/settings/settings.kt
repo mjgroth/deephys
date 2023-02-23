@@ -48,7 +48,7 @@ const val DEFAULT_BIG_IMAGE_SCALE = 128.0
 
 private object DeephySettingsSerializer: TypedObsHolderSerializer<DeephysSettingsController>(
   DeephysSettingsController::class,
-  3
+  4
 )
 
 @Serializable(with = DeephySettingsSerializer::class)
@@ -100,10 +100,10 @@ class AppearanceSettings: SettingsData("Appearance") {
 	max = 10
   )
   val numImagesPerNeuronInByImage by IntSettingProv(
-	defaultValue = 9,
+	defaultValue = 12,
 	label = "Number of images per neuron in top neurons row",
 	tooltip = "Number of images per neuron in top neurons row",
-	min = 9,
+	min = 8,
 	max = MAX_NUM_IMAGES_IN_TOP_NEURONS
   )
   val smallImageScale by DoubleSettingProv(
