@@ -99,8 +99,8 @@ class CategoryView<A: Number>(
 		  }
 		) {
 		  subtitleFont()
-		  font = font.fixed().copy(weight = BOLD).fx()
-		  pointlesslyTryToSetTextFillWithoutAFlicker(Color.GOLD)
+		  //font = font.fixed().copy(weight = BOLD).fx()
+		  //pointlesslyTryToSetTextFillWithoutAFlicker(Color.)
 		}
 	  }
 

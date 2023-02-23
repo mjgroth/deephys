@@ -14,6 +14,7 @@ import matt.fx.graphics.wrapper.pane.vbox.vbox
 import matt.fx.graphics.wrapper.text.textlike.highlightOnHover
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
+import matt.math.jmath.sigfig
 import matt.math.round.ceilInt
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
@@ -184,12 +185,12 @@ class NeuronListView(
 		  val neuronIndex = neuronWithAct.neuron.index
 		  vbox {
 			h {
-			  deephyActionText("neuron $neuronIndex") {
+			  deephyActionText("neuron $neuronIndex ") {
 				val deReffedViewer = weakViewer.deref()!!
 				val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
 				viewerToChange.navigateTo(neuronWithAct.neuron)
 			  }
-			  spacer(10.0)
+			  spacer(.0)
 			  swapperRNullable(
 				viewer.normalizer
 			  ) {
@@ -201,9 +202,25 @@ class NeuronListView(
 				  || (cfg.tops as TopNeurons<*>).images.isNotEmpty()*/
 				) {
 				  val act = neuronWithAct.activation
+				  val case_activ = (cfg.tops as TopNeurons<*>).images.size
 				  h {
+
+					var text = "(max:100%)"
+
+					if (act is RawActivation) text = "(max:" + act.value.sigfig(2).toString() + ")"
+					if (act is ActivationRatio) text = "(max:" + (act.value.toFloat() * 100).sigfig(3).toInt().toString() + "%" + ")"
+
+					if (case_activ == 1)  {
+						if (act is RawActivation) text = " Y=" + act.value.sigfig(2).toString()
+						if (act is ActivationRatio) text = " Y=" + (act.value.toFloat() * 100).sigfig(3).toInt().toString() + "%"
+					}
+					if (case_activ > 1)  {
+						if (act is RawActivation) text = "(" + "ave:" + act.value.sigfig(2).toString() + ")"
+						if (act is ActivationRatio) text =  "(" + "ave:" + (act.value.toFloat() * 100).sigfig(3).toInt().toString() + "%" + ")"
+					}
+
 					deephysText(
-					  act.formatted
+							text
 					) {
 
 					  highlightOnHover()
@@ -211,7 +228,7 @@ class NeuronListView(
 					  when (act) {
 						is AlwaysOneActivation -> veryLazyDeephysTooltip(memSafeSettings) { "activation is always 1 in this case, so it is not shown" }
 						is RawActivation       -> {
-						  val numImages = (cfg.tops as TopNeurons<*>).images.size
+						  val numImages = (cfg.tops).images.size
 						  veryLazyDeephysTooltip(memSafeSettings) {
 							if (numImages == 0) "maximum raw activation value for this neuron"
 							else if (numImages > 1) "average activation value for the selected images"
@@ -221,7 +238,7 @@ class NeuronListView(
 						}
 
 						is ActivationRatio     -> {
-						  val numImages = (cfg.tops as TopNeurons<*>).images.size
+						  val numImages = (cfg.tops).images.size
 						  val num = when (numImages) {
 							0 -> MiscActivationRatioNumerator.MAX
 							1 -> SINGLE_IMAGE(cfg.tops.images.first().imageID)
