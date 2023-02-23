@@ -45,6 +45,7 @@ class PredictionsView(
 	  }.titleBoldFont()
 	}
 	spacer()
+	  deephysText("Predictions: ").titleFont()
 	+CategoryTable(
 	  title = "Predictions:",
 	  data = topPreds().map { it.first to it.second },
@@ -75,7 +76,7 @@ class CategoryTable(
 	  fill = DeephysPalette.deephysBlue2
 	  cursor = Cursor.HAND
 	}
-	hSpacer(5.0)
+	hSpacer(1.0)
 	v {
 	  +TextFlowWrapper<NW>().apply {
 		visibleAndManagedProp.bindWeakly(b.not())
@@ -88,7 +89,7 @@ class CategoryTable(
 			weakViewer = weakViewer,
 			allowedLengths = 1..5
 		  )
-		  deephysText("(")
+		  deephysText(" (")
 		  sigFigText(
 			num = num,
 			sigFigSett = this@CategoryTable.sigFigSett,
@@ -96,7 +97,7 @@ class CategoryTable(
 			settings = this@CategoryTable.settings,
 			tooltip = fullString
 		  )
-		  deephysText("), ")
+		  deephysText(")   ")
 		}
 	  }
 	  v{

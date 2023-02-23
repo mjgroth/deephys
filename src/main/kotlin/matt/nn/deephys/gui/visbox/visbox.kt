@@ -116,7 +116,7 @@ class VisBox(
 		  this@VisBox.app.showDemos()
 		}.apply {
 
-		  font = font.fixed().copy("Arial", size = 18.0, weight = BOLD, posture = ITALIC).fx()
+		  font = font.fixed().copy("Courier New", size = 18.0, weight = BOLD).fx()
 
 		  this.fill = FXColor.ORANGE
 		  cursor = Cursor.HAND

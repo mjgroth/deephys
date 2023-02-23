@@ -7,6 +7,7 @@ import matt.fx.node.tex.dsl.TeXDSL
 import matt.fx.node.tex.dsl.tex
 import matt.lang.function.DSL
 import matt.log.profile.stopwatch.tic
+import matt.math.jmath.sigFigs
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
@@ -282,7 +283,7 @@ data class CategoryAccuracy(
 
 
   fun formatted() =
-	compute().let { if (it == null) "Cannot calculate accuracy because no images have groundtruth \"$category\"" else "${it*100}%" }
+	compute().let { if (it == null) "Cannot calculate accuracy because no images have groundtruth \"$category\"" else "${(it*100).sigFigs(3)}%" }
 
 }
 

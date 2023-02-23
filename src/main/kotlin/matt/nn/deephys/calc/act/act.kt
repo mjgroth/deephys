@@ -41,7 +41,7 @@ object AlwaysOneActivationFloat32: AlwaysOneActivation<Float, AlwaysOneActivatio
   }
 
   override val value = 1f
-  override val formatted: String get() = ""
+  override val formatted: String get() = "max: 100%"
 
 }
 
@@ -62,7 +62,7 @@ sealed interface RawActivation<A: Number, T: RawActivation<A, T>>: Activation<A,
 
 
   companion object {
-	const val RAW_ACT_SYMBOL = "Y"
+	const val RAW_ACT_SYMBOL = "max"
   }
 
   override val extraInfo: String?
@@ -75,7 +75,7 @@ value class RawActivationFloat32(override val value: Float): RawActivation<Float
 															 ActivationFloat32<RawActivationFloat32> {
 
 
-  override val formatted get() = " $RAW_ACT_SYMBOL=${value.sigFigs(3)}"
+  override val formatted get() = "$RAW_ACT_SYMBOL: ${value.sigFigs(3)}"
   override fun fromFloat(d: Float): RawActivationFloat32 {
 	return RawActivationFloat32(d)
   }
@@ -88,7 +88,7 @@ value class RawActivationFloat64(override val value: Double): RawActivation<Doub
 															  ActivationFloat64<RawActivationFloat64> {
 
 
-  override val formatted get() = " $RAW_ACT_SYMBOL=${value.sigFigs(3)}"
+  override val formatted get() = "$RAW_ACT_SYMBOL: ${value.sigFigs(3)}"
   override fun fromDouble(d: Double): RawActivationFloat64 {
 	return RawActivationFloat64(d)
   }
@@ -174,7 +174,7 @@ value class ActivationRatioFloat32(override val value: Float): ActivationRatio<F
 															   ActivationFloat32<ActivationRatioFloat32> {
 
 
-  override val formatted get() = " ${(value*100).sigFigs(3)}${ACT_RATIO_SYMBOL}"
+  override val formatted get() = "max: ${(value*100).sigFigs(3)}${ACT_RATIO_SYMBOL}"
   override fun plus(m: ActivationRatioFloat32): ActivationRatioFloat32 {
 	return ActivationRatioFloat32(value + m.value)
   }
@@ -194,7 +194,7 @@ value class ActivationRatioFloat64(override val value: Double): ActivationRatio<
 																ActivationFloat64<ActivationRatioFloat64> {
 
 
-  override val formatted get() = " ${(value*100).sigFigs(3)}$ACT_RATIO_SYMBOL"
+  override val formatted get() = "max: ${(value*100).sigFigs(3)}$ACT_RATIO_SYMBOL"
   override fun plus(m: ActivationRatioFloat64): ActivationRatioFloat64 {
 	return ActivationRatioFloat64(value + m.value)
   }

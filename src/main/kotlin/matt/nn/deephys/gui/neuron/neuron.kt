@@ -135,7 +135,7 @@ class NeuronView<A: Number>(
 		val normalizedString = if (normalizer == null) "un-normalized" else "normalized"
 
 		CategoryTable(
-		  title = "Top Categories",
+		  title = "Average for top categories",
 		  data = topCats.map { it.first to (it.second.value/denom) },
 		  settings = memSafeSettings,
 		  weakViewer = weakViewer,
@@ -146,7 +146,7 @@ class NeuronView<A: Number>(
 	  }
 
 
-	  spacer(5.0)
+	  spacer(1.0)
 	}
 
 
@@ -159,7 +159,7 @@ class NeuronView<A: Number>(
 	  )
 	  val imFlowPane = this
 	  /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
-	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.8)
+	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.95)
 
 	  fun update(
 		weakThing: WeakNeuronViewRefs<A>,

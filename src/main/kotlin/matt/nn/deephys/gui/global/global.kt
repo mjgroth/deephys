@@ -338,8 +338,8 @@ val DEEPHYS_FONT_DEFAULT: Font by lazy {
 val DEEPHYS_FONT_MONO by lazy {
   DEEPHYS_FONT_DEFAULT.fixed().copy(family = MONO_FONT.family).fx()
 }
-val DEEPHY_FONT_SUBTITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size*1.5).fx() }
-val DEEPHY_FONT_TITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size*2).fx() }
+val DEEPHY_FONT_SUBTITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size*1.2).fx() }
+val DEEPHY_FONT_TITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size*1.5).fx() }
 val DEEPHY_FONT_TITLE_BOLD by lazy { DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx() }
 
 

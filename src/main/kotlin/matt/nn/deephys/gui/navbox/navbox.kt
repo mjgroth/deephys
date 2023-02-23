@@ -83,10 +83,10 @@ class NavBox(private val app: DeephysApp): VBoxW() {
 			  name = "Colored MNIST Demo",
 			  modelURL = "https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2Fcolored_mnist.model",
 			  testURLs = listOf(
-				"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FArbitrary_colored_MNIST.test",
-				"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FColored_MNIST.test",
-				"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FNoisy_colored_MNIST.test",
-				"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FPermuted_colored_MNIST.test"
+					  "https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FColored_MNIST.test",
+					  "https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FPermuted_colored_MNIST.test",
+					"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FArbitrary_colored_MNIST.test",
+					"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FNoisy_colored_MNIST.test"
 			  )
 			)
 		  ).forEach { demo ->
