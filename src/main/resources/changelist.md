@@ -9,12 +9,22 @@
 
 
 
+### Cosmetic Changes
+- Many polishes by @xboix (layout and text)
+
+
+### Bug Fixes
+- fix info symbols in light mode
+- get x button back for settings window
+- fix grey text turning white
 
 
 
 
 
 
+### Notes
+- Added ImageNet demo to Zoo
 
-
+- All Zoo links moved from DO Spaces to AWS
 
