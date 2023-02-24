@@ -72,25 +72,46 @@ class NavBox(private val app: DeephysApp): VBoxW() {
 		  spacer()
 		  listOf(
 			ZooExample(
-			  name = "CIFAR Demo",
-			  modelURL = "https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcifar%2Fresnet18_cifar.model",
+			  name = "CIFAR",
+			  modelURL = "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/CIFAR10_Example/resnet18_cifar.model",
 			  testURLs = listOf(
-				"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcifar%2FCIFAR10.test",
-				"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcifar%2FCIFARV2.test"
+				"https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/CIFAR10_Example/CIFAR10.test",
+				"https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/CIFAR10_Example/CIFARV2.test"
 			  )
 			),
 			ZooExample(
-			  name = "Colored MNIST Demo",
-			  modelURL = "https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2Fcolored_mnist.model",
+			  name = "Colored MNIST",
+			  modelURL = "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Colored_MNIST_Example/colored_mnist.model",
 			  testURLs = listOf(
-					  "https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FColored_MNIST.test",
-					  "https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FPermuted_colored_MNIST.test",
-					"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FArbitrary_colored_MNIST.test",
-					"https://deephys.nyc3.digitaloceanspaces.com/zoo%2Fv1%2Fcolored_mnist%2FNoisy_colored_MNIST.test"
+					  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Colored_MNIST_Example/Colored_MNIST.test",
+					  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Colored_MNIST_Example/Permuted_colored_MNIST.test",
+					"https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Colored_MNIST_Example/Arbitrary_colored_MNIST.test",
+					"https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Colored_MNIST_Example/Drifted_colored_MNIST.test"
 			  )
-			)
+			),
+			ZooExample(
+					name = "ImageNet ResNet18",
+				  modelURL = "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/ResNet18_ImageNet/resnet18_imagenet.model",
+				  testURLs = listOf(
+						  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/ResNet18_ImageNet/ImageNetV1.test",
+						  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/ResNet18_ImageNet/ImageNetV2.test",
+						  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/ResNet18_ImageNet/ImageNet_sketch.test",
+						  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/ResNet18_ImageNet/ImageNet_style.test"
+				  )
+		    ),
+			  ZooExample(
+					  name = "ImageNet Cvt",
+					  modelURL = "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/cvt13_imagenet.model",
+					  testURLs = listOf(
+							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNetV1_cvt13.test",
+							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNetV2_cvt13.test",
+							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNet_sketch_cvt13.test",
+							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNet_sketch_cvt13.test"
+					  )
+			  )
+
 		  ).forEach { demo ->
-			deephyButton("Open ${demo.name}") {
+			deephyButton("${demo.name}") {
 			  setOnAction {
 				this@NavBox.app.openZooDemo(demo)
 			  }

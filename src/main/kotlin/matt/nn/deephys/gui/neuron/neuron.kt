@@ -106,7 +106,7 @@ class NeuronView<A: Number>(
 					when (activation) {
 					  is ActivationRatio -> ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX)
 					  is RawActivation   -> tex { text("max raw activation of this neuron") }
-					  else               -> NEVER
+					  else               -> ActivationRatioCalc.latexTechnique(MiscActivationRatioNumerator.MAX)
 					}
 
 
@@ -135,7 +135,8 @@ class NeuronView<A: Number>(
 		val normalizedString = if (normalizer == null) "un-normalized" else "normalized"
 
 		CategoryTable(
-		  title = "Average for top categories",
+		  title = "Average activity for top categories: ",
+		  title_unfolded = "ave: ",
 		  data = topCats.map { it.first to (it.second.value/denom) },
 		  settings = memSafeSettings,
 		  weakViewer = weakViewer,

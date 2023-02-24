@@ -47,7 +47,8 @@ class PredictionsView(
 	spacer()
 	  deephysText("Predictions: ").titleFont()
 	+CategoryTable(
-	  title = "Predictions:",
+	  title = "",
+	  title_unfolded = "",
 	  data = topPreds().map { it.first to it.second },
 	  settings = memSafeSettings,
 	  weakViewer = weakViewer,
@@ -59,6 +60,7 @@ class PredictionsView(
 
 class CategoryTable(
   title: String,
+  title_unfolded: String,
   data: List<Pair<Category, Number>>,
   weakViewer: WeakRefInter<DatasetViewer>,
   override val settings: DeephysSettingsController,
@@ -81,8 +83,9 @@ class CategoryTable(
 	v {
 	  +TextFlowWrapper<NW>().apply {
 		visibleAndManagedProp.bindWeakly(b.not())
+		deephysText(title_unfolded)
 		data.forEach { (cat, num) ->
-		  val fullString = "\t${cat.label} (${num})"
+		  val fullString = "${cat.label} (${num})"
 		  cat.actionText(
 			r = this,
 			tooltip = fullString,
@@ -123,7 +126,7 @@ class CategoryTable(
 			val category = it.first
 			val num = it.second
 
-			val fullString = "\t${category.label} (${num})"
+			val fullString = "${category.label} (${num})"
 			category.actionText(
 			  r = predNamesBox,
 			  tooltip = fullString,
