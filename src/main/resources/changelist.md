@@ -5,6 +5,8 @@
 
 
 
+### User Friendliness
+- Nav box on left closes when demo is openned
 
 
 

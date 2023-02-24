@@ -15,7 +15,6 @@ import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.fx.control.inter.graphic
 import matt.fx.control.mail
-import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
 import matt.fx.control.wrapper.progressbar.progressbar
 import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
@@ -227,6 +226,7 @@ class DeephysApp {
 		  text = "Loading Files... (${done.get()}/${total})"
 		  if (done.get() == total) {
 			stage!!.close()
+			navBox!!.visibleAndManaged = false
 			val theVisBox = visBox ?: err("no visBox!")
 			theVisBox.load(
 			  modelFile = modelFile.get(),
