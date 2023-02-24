@@ -89,7 +89,4 @@ Finally, ``distribution.save()`` will create a file called ``Data_Distribution_1
 
 🎏 Remember to follow step 1 and 2 for each dataset distribution separately. This will generate a different visualization file for each distribution that can then be visualized in Deephys all together.
 
-Neural activity zoo:
-====================
 
-See `here <https://drive.google.com/drive/folders/1755Srmf39sBMjWa_1lEpS-FPo1ANCWFV?usp=sharing>`_
