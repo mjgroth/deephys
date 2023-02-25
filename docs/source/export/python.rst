@@ -70,8 +70,8 @@ We are now ready to convert the data in a Deephys-compatible format. Just plug a
 .. code-block:: python
 
   test = dp.dataset_activity(
-      dataset_name="Data_Distribution_1",
-      caregory_names=caregory_names,
+      name="Data_Distribution_1",
+      category_names=category_names,
       images=images,
       groundtruth=groundtruth,
       neural_activity={
@@ -88,8 +88,3 @@ Note that ``dp_model`` is the model that was defined at the beginning of the pro
 Finally, ``distribution.save()`` will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
 
 🎏 Remember to follow step 1 and 2 for each dataset distribution separately. This will generate a different visualization file for each distribution that can then be visualized in Deephys all together.
-
-Neural activity zoo:
-====================
-
-See `here <https://drive.google.com/drive/folders/1755Srmf39sBMjWa_1lEpS-FPo1ANCWFV?usp=sharing>`_
