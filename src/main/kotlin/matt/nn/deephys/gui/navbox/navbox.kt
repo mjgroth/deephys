@@ -106,7 +106,7 @@ class NavBox(private val app: DeephysApp): VBoxW() {
 							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNetV1_cvt13.test",
 							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNetV2_cvt13.test",
 							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNet_sketch_cvt13.test",
-							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNet_sketch_cvt13.test"
+							  "https://deephys-tutorial-deps.s3.us-east-2.amazonaws.com/ActivityZoo/Cvt13/ImageNet_style_cvt13.test"
 					  )
 			  )
 
