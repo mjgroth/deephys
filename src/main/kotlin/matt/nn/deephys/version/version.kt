@@ -1,6 +1,7 @@
 package matt.nn.deephys.version
 
 import javafx.application.Platform.runLater
+import kotlinx.coroutines.runBlocking
 import matt.async.pool.MyThreadPriorities
 import matt.async.schedule.AccurateTimer
 import matt.async.schedule.every
@@ -30,7 +31,7 @@ object VersionChecker {
 	every(60.sec, timer = AccurateTimer(priority = MyThreadPriorities.CREATING_NEW_CACHE), zeroDelayFirst = true) {
 	  checking = true
 	  try {
-		val releases = gh.GitHubRepo(ghUser, modID.appName).unAuthenticatedReleases()
+		val releases = runBlocking {gh.GitHubRepo(ghUser, modID.appName).unAuthenticatedReleases()}
 		if (releases == null) {
 		  warnOnce("releases == null")
 		  error = true
