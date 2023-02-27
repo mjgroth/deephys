@@ -16,7 +16,7 @@ Contribution Instructions
        
     #. Check to make sure your edits are still compatible with these docs. If they are not, please edit the docs and include it in your pull request.
        
-    #. Add your changes to the `changelist <https://github.com/mjgroth/deephys/blob/master/docs/source/pip/changelist.rst>`_
+    #. Add your changes to the `changelist <https://github.com/$mjgroth/deephys/blob/master/docs/source/pip/changelist.rst>`_
        
     #. Run `these google colabs <https://drive.google.com/drive/u/0/folders/1Phh_iLZvToAZ1BZVbOTam5hD4MlN2Vg->`_ (additional python tests)
        
