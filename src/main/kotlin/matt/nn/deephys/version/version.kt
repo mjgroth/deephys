@@ -32,7 +32,10 @@ object VersionChecker {
 	every(60.sec, timer = AccurateTimer(priority = MyThreadPriorities.CREATING_NEW_CACHE), zeroDelayFirst = true) {
 	  checking = true
 	  try {
-		val releases = runBlocking {gh.GitHubRepo(gh.Organization(GH_ORG_NAME), modID.appName).unAuthenticatedReleases()}
+		val releases = runBlocking {
+		  gh.GitHubRepo(gh.Organization(GH_ORG_NAME), modID.appName)
+			.unAuthenticatedReleases()
+		}
 		if (releases == null) {
 		  warnOnce("releases == null")
 		  error = true
