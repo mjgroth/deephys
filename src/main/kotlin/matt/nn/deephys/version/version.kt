@@ -10,6 +10,7 @@ import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
+import matt.kjlib.git.hub.GH_ORG_NAME
 import matt.kjlib.git.hub.GitHubClient
 import matt.log.warn.warnOnce
 import matt.model.data.release.Release
@@ -24,14 +25,13 @@ import java.net.ConnectException
 
 object VersionChecker {
   private val gh by lazy { GitHubClient() }
-  private val ghUser by lazy { gh.myOrg }
   private var error = false
   private var checking = false
   fun checkForUpdatesInBackground() = daemon {
 	every(60.sec, timer = AccurateTimer(priority = MyThreadPriorities.CREATING_NEW_CACHE), zeroDelayFirst = true) {
 	  checking = true
 	  try {
-		val releases = runBlocking {gh.GitHubRepo(ghUser, modID.appName).unAuthenticatedReleases()}
+		val releases = runBlocking {gh.GitHubRepo(gh.Organization(GH_ORG_NAME), modID.appName).unAuthenticatedReleases()}
 		if (releases == null) {
 		  warnOnce("releases == null")
 		  error = true
@@ -66,7 +66,7 @@ object VersionChecker {
 	  else if (new != null && new.version > myVersion) {
 		deephysText("Version ${new.version} Available: ")
 		deephyHyperlink("Click here to update") {
-		  opens(ghUser.mainPageOf(appName).jURL.toURI())
+		  opens(gh.Organization(GH_ORG_NAME).mainPageOf(appName).jURL.toURI())
 		}
 	  } else if (new != null && new.version < myVersion) {
 		deephysText("developing unreleased version (last pushed was ${new.version})")
