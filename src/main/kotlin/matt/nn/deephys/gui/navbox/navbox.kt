@@ -17,6 +17,7 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.style.FXColor
+import matt.kjlib.git.hub.GH_ORG_NAME
 import matt.lang.url.toURL
 import matt.mstruct.rstruct.resourceStream
 import matt.nn.deephys.gui.DeephysApp
@@ -131,7 +132,7 @@ class NavBox(private val app: DeephysApp): VBoxW() {
 			"Homepage" to "https://deephys.org/",
 			"Neural Activity Zoo" to "https://deephys.org/",
 			"Documentation" to "https://deephys.readthedocs.io/en/latest/?badge=latest",
-			"GitHub" to "https://github.com/mjgroth/deephys-aio",
+			"GitHub" to "https://github.com/$$GH_ORG_NAME/deephys-aio",
 			"Report a Bug" to "https://deephys.youtrack.cloud/"
 		  ).forEach { label, url ->
 			h {
