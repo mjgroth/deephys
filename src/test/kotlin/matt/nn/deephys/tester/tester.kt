@@ -33,7 +33,7 @@ import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.state.DeephyState
 import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.test.assertTrueLazyMessage
-import matt.test.prop.ManualTests
+import matt.test.prop.TestSwitch.ManualTests
 import matt.time.dur.sleep
 import kotlin.concurrent.thread
 import kotlin.test.assertEquals
