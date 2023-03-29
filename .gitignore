@@ -25,4 +25,5 @@ deps.txt
 /jar/
 /jars/
 /bin/jar/
+plugins.xml
 local.properties
