@@ -23,6 +23,8 @@
 - Set default exception handler for threads created before GUI started (helps error handling, less silent errors and crashes, more logging)
 
 
+### Internal Development
+- Added MSI (for installing windows apps), though we may not use this
 
 
 
