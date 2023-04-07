@@ -12,7 +12,7 @@
 
 
 ### Bug Fixes
-- fix icon files
+- fix windows icon files
 
 
 
@@ -20,3 +20,8 @@
 
 
 
+
+### Todo
+- Wndows Code Signing
+- Windows Installer
+- Font issues
