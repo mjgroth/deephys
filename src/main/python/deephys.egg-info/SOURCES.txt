@@ -1,3 +1,4 @@
+README.rst
 pyproject.toml
 deephys/__init__.py
 deephys/deephys.py
