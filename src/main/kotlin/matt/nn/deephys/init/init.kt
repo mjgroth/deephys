@@ -9,7 +9,7 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.log.profile.stopwatch.tic
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
-import matt.mstruct.rstruct.resourceStream
+import matt.rstruct.resourceStream
 import matt.nn.deephys.gui.global.DeephyText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyToggleButton

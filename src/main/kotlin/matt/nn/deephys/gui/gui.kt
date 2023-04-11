@@ -47,8 +47,8 @@ import matt.lang.err
 import matt.lang.sync
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
-import matt.mstruct.rstruct.modID
-import matt.mstruct.rstruct.resourceURL
+import matt.rstruct.modID
+import matt.rstruct.resourceURL
 import matt.nn.deephys.gui.Arg.*
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyActionButton

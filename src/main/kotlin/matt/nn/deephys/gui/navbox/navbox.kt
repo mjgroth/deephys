@@ -19,7 +19,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.kjlib.git.hub.GH_ORG_NAME
 import matt.lang.url.toURL
-import matt.mstruct.rstruct.resourceStream
+import matt.rstruct.resourceStream
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dataset.dtab.DeephysTabPane
 import matt.nn.deephys.gui.global.deephyActionText

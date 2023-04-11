@@ -16,8 +16,8 @@ import matt.kjlib.git.hub.mainPageOf
 import matt.log.warn.warnOnce
 import matt.model.data.release.Release
 import matt.model.data.release.Version
-import matt.mstruct.rstruct.appName
-import matt.mstruct.rstruct.modID
+import matt.rstruct.appName
+import matt.rstruct.modID
 import matt.nn.deephys.gui.global.deephyHyperlink
 import matt.nn.deephys.gui.global.deephysText
 import matt.obs.prop.BindableProperty

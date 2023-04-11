@@ -1,6 +1,6 @@
 package matt.nn.deephys.gui.viewer.lig
 
-import matt.mstruct.rstruct.resourceURL
+import matt.rstruct.resourceURL
 
 /*https://mail.openjdk.org/pipermail/openjfx-dev/2022-October/036313.html*/
 object LigatureFont {
