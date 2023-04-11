@@ -1,62 +1,95 @@
 {
-  "type" :         "matt.mstruct.bj.BasicJvmOnlyMod",
-  "jvmExec" :      {
-	"type" : "Typical"
+  "type": "matt.mstruct.bj.BasicJvmOnlyMod",
+  "jvmExec": {
+    "type": "Typical"
   },
-  "dependencies" : [
-	{
-	  "type" : "Project",
-	  "cfg" :  "implementation",
-	  "path" : ":k:fx:node:tex"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "implementation",
-	  "path" : ":k:cbor"
-	},	{
-	  "type" : "Project",
-	  "cfg" :  "implementation",
-	  "path" : ":k:image"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "implementation",
-	  "path" : ":k:fx:node:proto"
-	},
-	{
-	  "type" : "Lib",
-	  "cfg" :  "implementation",
-	  "key" :  "slf4j-nop"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "implementation",
-	  "path" : ":k:math:mat"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "implementation",
-	  "path" : ":k:kjlib:git"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "testImplementation",
-	  "path" : ":k:test"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "testImplementation",
-	  "path" : ":k:gui"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "testImplementation",
-	  "path" : ":k:log:profile:yk"
-	},
-	{
-	  "type" : "Lib",
-	  "cfg" :  "implementation",
-	  "key" :  "guava"
-	}
-  ]
+  "dependencies": [
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:fx:node:tex"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:cbor"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:image"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:fx:node:proto"
+    },
+    {
+      "type": "Lib",
+      "cfg": "implementation",
+      "key": "slf4j-nop"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:math:mat"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:kjlib:git"
+    },
+    {
+      "type": "Project",
+      "cfg": "testImplementation",
+      "path": ":k:test"
+    },
+    {
+      "type": "Project",
+      "cfg": "testImplementation",
+      "path": ":k:gui"
+    },
+    {
+      "type": "Project",
+      "cfg": "testImplementation",
+      "path": ":k:log:profile:yk"
+    },
+    {
+      "type": "Lib",
+      "cfg": "implementation",
+      "key": "guava"
+    }
+  ],
+  "python": {
+    "description": "Library to export neural activity to a Deephys-compatible format",
+    "urls": {
+      "Homepage": "https://deephys.org",
+      "Documentation": "https://deephys.readthedocs.io/en/latest/",
+      "Bug Tracker": "https://deephys.youtrack.cloud/"
+    },
+    "dependencies": [
+      {
+        "type": "Lib",
+        "key": "cbor"
+      },
+      {
+        "type": "Lib",
+        "key": "np"
+      },
+      {
+        "type": "Lib",
+        "key": "tqdm"
+      },
+      {
+        "type": "Lib",
+        "key": "torch",
+        "testOnly": true
+      },
+      {
+        "type": "Lib",
+        "key": "torchvision",
+        "testOnly": true
+      }
+    ]
+  }
 }
