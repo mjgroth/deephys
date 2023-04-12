@@ -2,8 +2,7 @@
 0.14.1
 ======
 
-
-
-
-### - Developed more automated release system
 Internal Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Developed more automated release system
