@@ -1,5 +1,5 @@
 {
-  "type": "matt.mstruct.bj.BasicJvmOnlyMod",
+  "type": "BasicJvmOnlyMod",
   "jvmExec": {
     "type": "Typical"
   },
