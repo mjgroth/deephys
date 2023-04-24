@@ -4,7 +4,6 @@ import javafx.application.Platform
 import javafx.geometry.Pos.CENTER
 import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.Cursor
-import javafx.scene.text.FontPosture.ITALIC
 import javafx.scene.text.FontWeight.BOLD
 import matt.file.CborFile
 import matt.file.MFile

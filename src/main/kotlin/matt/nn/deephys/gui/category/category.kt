@@ -1,11 +1,8 @@
 package matt.nn.deephys.gui.category
 
 import javafx.geometry.Pos.TOP_CENTER
-import javafx.scene.paint.Color
-import javafx.scene.text.FontWeight.BOLD
 import matt.collect.set.contents.Contents
 import matt.color.colorMap
-import matt.fx.graphics.font.fixed
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.line.line

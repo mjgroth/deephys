@@ -1,7 +1,6 @@
 package matt.nn.deephys.model.importformat.layer
 
 import kotlinx.serialization.Serializable
-import matt.log.tab
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.importformat.neuron.Neuron
 
