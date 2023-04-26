@@ -10,7 +10,7 @@ import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
-import matt.kjlib.git.hub.GH_ORG_NAME
+import matt.http.commons.GH_ORG_NAME
 import matt.kjlib.git.hub.GitHubClient
 import matt.kjlib.git.hub.mainPageOf
 import matt.log.warn.warnOnce

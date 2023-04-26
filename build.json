@@ -3,6 +3,7 @@
   "jvmExec": {
     "type": "Typical"
   },
+  "publicApp": true,
   "dependencies": [
     {
       "type": "Project",

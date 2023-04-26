@@ -17,13 +17,13 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.style.FXColor
-import matt.kjlib.git.hub.GH_ORG_NAME
+import matt.http.commons.GH_ORG_NAME
 import matt.lang.url.toURL
-import matt.rstruct.resourceStream
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dataset.dtab.DeephysTabPane
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
+import matt.rstruct.resourceStream
 import java.awt.Desktop
 import java.net.URI
 
