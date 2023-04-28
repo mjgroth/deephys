@@ -10,3 +10,4 @@
 - Windows Installer
 - Font issues
 - Bug Tomotake mentioned
+- test that MSI correctly updates windows app with new version
