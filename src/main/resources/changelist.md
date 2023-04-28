@@ -9,3 +9,4 @@
 - Wndows Code Signing
 - Windows Installer
 - Font issues
+- Bug Tomotake mentioned
