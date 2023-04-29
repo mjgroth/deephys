@@ -2,16 +2,14 @@
 
 
 ### User Friendliness
-- Windows Installer for X86 version
+- MSI Windows Installer for X86 version
+- Windows app is officially codesigned with an OV certificate (may still warn users until app is "trusted", but this is a significant step up from being an unsigned app)
 
 
 ### Bug Fixes
 - Fix windows icon files
+- Fix URLs in windows not using correct path separator
 
 
 ### Todo
-- Wndows Code Signing
-- Windows Installer
 - Font issues
-- Bug Tomotake mentioned
-- test that MSI correctly updates windows app with new version
