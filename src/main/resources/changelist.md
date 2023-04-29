@@ -13,3 +13,4 @@
 
 ### Todo
 - Font issues
+- Point website to MSI
