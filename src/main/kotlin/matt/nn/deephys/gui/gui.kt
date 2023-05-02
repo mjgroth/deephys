@@ -47,9 +47,9 @@ import matt.lang.err
 import matt.lang.sync
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
-import matt.rstruct.modID
-import matt.rstruct.resourceURL
-import matt.nn.deephys.gui.Arg.*
+import matt.nn.deephys.gui.Arg.`erase-settings`
+import matt.nn.deephys.gui.Arg.`erase-state`
+import matt.nn.deephys.gui.Arg.reset
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
@@ -66,6 +66,8 @@ import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
 import matt.obs.prop.BindableProperty
 import matt.obs.subscribe.Pager
+import matt.rstruct.modID
+import matt.rstruct.resourceURL
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -90,8 +92,6 @@ class DeephysApp {
         args: Array<String>,
         settingsNode: DeephySettingsNode = DeephySettingsNode()
     ) {
-
-
         if (args.size == 1 && args[0] == `erase-state`.name) {
             DeephyState.delete()
         } else if (args.size == 1 && args[0] == `erase-settings`.name) {
