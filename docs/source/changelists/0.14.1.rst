@@ -2,6 +2,11 @@
 0.14.1
 ======
 
+Bug Fixes
+~~~~~~~~~~~~~~~~~~
+
+- fixed a bug with the stopwatch
+
 Internal Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
