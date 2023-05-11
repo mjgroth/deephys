@@ -15,6 +15,7 @@ import matt.log.profile.data.TestSession
 import matt.log.profile.stopwatch.tic
 import matt.log.profile.yk.YourKit
 import matt.log.report.MemReport
+import matt.model.data.byte.mebibytes
 import matt.nn.deephys.DeephysTestData
 import matt.nn.deephys.MAC_MAYBE_MIN_SCREEN_SIZE
 import matt.nn.deephys.NUM_IM_CLICKS
@@ -287,7 +288,7 @@ class DeephysTestSession {
         sleep(1.seconds)
         val postGCWaitSecs = 20
         println("running gc for $postGCWaitSecs sec")
-        val threshold = 500.megabytes
+        val threshold = 500.mebibytes
 
         for (it in 0..postGCWaitSecs) {
             /*ahh... finally found a solution. A loop with multiple collections instead of just one collections followed by endless pointless waiting. I best I know what happened: I was doing the gc too early and some things were still strongly reachable for whatever reasons deep in some internal libs*/
