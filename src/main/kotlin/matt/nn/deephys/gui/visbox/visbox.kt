@@ -106,7 +106,7 @@ class VisBox(
             v {
                 prefHeightProperty.bind(prefButtonHeight)
                 alignment = CENTER
-                deephyButton("give me a demo!") {
+                deephyButton("Give me a demo!") {
                     prefHeightProperty.bind(prefButtonHeight)
                     setOnAction {
                         this@VisBox.app.showDemos()
