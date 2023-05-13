@@ -1,5 +1,6 @@
 package matt.nn.deephys.version
 
+import io.ktor.http.*
 import javafx.application.Platform.runLater
 import kotlinx.coroutines.runBlocking
 import matt.async.pool.MyThreadPriorities
@@ -10,22 +11,21 @@ import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
-import matt.http.commons.GH_ORG_NAME
-import matt.kjlib.git.hub.GitHubClient
-import matt.kjlib.git.hub.mainPageOf
+import matt.gui.exception.deephysSite
+import matt.http.http
+import matt.http.json.requireIs
 import matt.log.warn.warnOnce
-import matt.model.data.release.Release
 import matt.model.data.release.Version
-import matt.rstruct.appName
-import matt.rstruct.modID
+import matt.model.data.release.VersionInfo
 import matt.nn.deephys.gui.global.deephyHyperlink
 import matt.nn.deephys.gui.global.deephysText
 import matt.obs.prop.BindableProperty
 import matt.time.dur.sec
 import java.net.ConnectException
+import java.net.URI
 
 object VersionChecker {
-    private val gh by lazy { GitHubClient() }
+
     private var error = false
     private var checking = false
     fun checkForUpdatesInBackground() = daemon {
@@ -37,19 +37,24 @@ object VersionChecker {
         ) {
             checking = true
             try {
-                val releases = runBlocking {
-                    gh.GitHubRepo(gh.Organization(GH_ORG_NAME), modID.appName)
-                        .unAuthenticatedReleases()
-                }
-                if (releases == null) {
-                    warnOnce("releases == null")
+
+                val latestVersionFromServer =
+                    runBlocking {
+                        val resp = http(deephysSite.productionHost + "latest-version")
+                        if (resp.statusCode() != HttpStatusCode.OK) {
+                            null
+                        } else {
+                            resp.requireIs<VersionInfo>()
+                        }
+                    }
+                if (latestVersionFromServer == null) {
+                    warnOnce("latestVersionFromServer == null")
                     error = true
                     runLater { update(null) }
                     cancel()
                 } else {
-                    val newest = releases.maxBy { it.version }
                     runLater {
-                        newestRelease.setIfDifferent(newest)
+                        newestRelease.setIfDifferent(latestVersionFromServer)
                     }
                 }
             } catch (e: ConnectException) {
@@ -60,7 +65,7 @@ object VersionChecker {
         }
     }
 
-    private val newestRelease by lazy { BindableProperty<Release?>(null) }
+    private val newestRelease by lazy { BindableProperty<VersionInfo?>(null) }
 
     val statusNode by lazy {
         TextFlowWrapper<NodeWrapper>().apply {
@@ -68,17 +73,17 @@ object VersionChecker {
         }
     }
 
-    private fun update(new: Release?) = statusNode.apply {
+    private fun update(new: VersionInfo?) = statusNode.apply {
         clear()
         if (!error) {
             if (new == null && checking) text("checking for updates...")
             else if (new != null && new.version > myVersion) {
                 deephysText("Version ${new.version} Available: ")
                 deephyHyperlink("Click here to update") {
-                    opens(gh.Organization(GH_ORG_NAME).mainPageOf(appName).jURL.toURI())
+                    opens(URI(new.downloadURL))
                 }
             } else if (new != null && new.version < myVersion) {
-                deephysText("developing unreleased version (last pushed was ${new.version})")
+                deephysText("developing unreleased version (last pushed was ${new})")
             }
         }
     }
