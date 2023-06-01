@@ -12,6 +12,7 @@ import matt.json.prim.loadJson
 import matt.json.prim.save
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
+import matt.log.profile.real.Profiler
 import matt.log.profile.stopwatch.tic
 import matt.log.profile.yk.YourKit
 import matt.log.report.MemReport
@@ -45,10 +46,12 @@ private const val ENABLE_CPU_PROFILING = false
 class DeephysTestSession {
 
     private val yk by lazy {
-        YourKit(
-            enableAll = ENABLE_CPU_PROFILING,
-            openAllSnapshots = true
-        )
+        Profiler(
+            engine = YourKit,
+            enableAll = ENABLE_CPU_PROFILING
+        ) {
+            YourKit.openSnapshot(it)
+        }
     }
 
     private val app by lazy {
