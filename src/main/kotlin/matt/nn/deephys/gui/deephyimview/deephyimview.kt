@@ -1,15 +1,15 @@
 package matt.nn.deephys.gui.deephyimview
 
 import javafx.scene.Cursor
-import matt.async.queue.pool.FakeWorkerPool
-import matt.async.queue.pool.QueueWorkerPool
+import matt.async.thread.queue.pool.FakeWorkerPool
+import matt.async.thread.queue.pool.QueueWorkerPool
 import matt.fx.graphics.dialog.saveFile
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.graphics.wrapper.style.toAwtColor
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.gui.menu.context.mcontextmenu
-import matt.lang.RUNTIME
+import matt.lang.NUM_LOGICAL_CORES
 import matt.log.todo.todoOnce
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
@@ -38,7 +38,7 @@ class DeephyImView(
 ) {
 
   companion object {
-	val realPool = QueueWorkerPool(RUNTIME.availableProcessors(), "DeephyImView Worker")
+	val realPool = QueueWorkerPool(NUM_LOGICAL_CORES, "DeephyImView Worker")
 	val fakePool = FakeWorkerPool() /*because of the flickering*/
   }
 

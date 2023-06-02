@@ -6,7 +6,7 @@ import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
-import matt.async.pool.DaemonPool
+import matt.async.pool.DaemonPoolExecutor
 import matt.async.thread.daemon
 import matt.collect.itr.mapToArray
 import matt.exec.app.myVersion
@@ -165,7 +165,7 @@ class DeephysApp {
             return
         }
 
-        val pool = DaemonPool()
+        val pool = DaemonPoolExecutor()
 
         val modelURL = URI(demo.modelURL).toURL()
         val testURLs = demo.testURLs.map { URI(it).toURL() }

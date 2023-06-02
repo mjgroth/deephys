@@ -2,7 +2,7 @@ package matt.nn.deephys.model.importformat
 
 import com.google.common.collect.MapMaker
 import kotlinx.serialization.Serializable
-import matt.async.pool.MyThreadPriorities.CREATING_NEW_CACHE
+import matt.async.pri.MyThreadPriorities.CREATING_NEW_CACHE
 import matt.async.thread.daemon
 import matt.collect.map.dmap.withStoringDefault
 import matt.collect.map.lazyMap

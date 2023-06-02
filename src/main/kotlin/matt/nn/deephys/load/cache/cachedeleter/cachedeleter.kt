@@ -1,8 +1,8 @@
 package matt.nn.deephys.load.cache.cachedeleter
 
-import matt.async.pool.MyThreadPriorities.DELETING_OLD_CACHE
+import matt.async.pri.MyThreadPriorities.DELETING_OLD_CACHE
 import matt.file.MFile
-import matt.lang.RUNTIME
+import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.function.Produce
 import matt.math.round.ceilInt
 import matt.model.flowlogic.await.Awaitable
@@ -23,7 +23,7 @@ class CacheDeleter(
             val toDelete = files()
             if (toDelete.isNotEmpty()) {
                 val chunks =
-                    toDelete.chunked((toDelete.size.toDouble() / RUNTIME.availableProcessors().toDouble()).ceilInt())
+                    toDelete.chunked((toDelete.size.toDouble() / NUM_LOGICAL_CORES.toDouble()).ceilInt())
                 val ts = chunks.mapIndexed { idx, it ->
                     thread(name = "delete caches $idx", isDaemon = true, priority = DELETING_OLD_CACHE.ordinal) {
                         it.forEach {

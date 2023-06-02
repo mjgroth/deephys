@@ -1,6 +1,6 @@
 package matt.nn.deephys.load.test.imageloader
 
-import matt.async.pool.DaemonPool
+import matt.async.pool.DaemonPoolExecutor
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.withByteStoring
@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class ImageSetLoader(private val testLoader: TestLoader) {
 
   companion object {
-	private val daemonPool = DaemonPool()
+	private val daemonPool = DaemonPoolExecutor()
   }
 
   val finishedImages = testLoader.LoadedOrFailedValueSlot<BlockList<DeephyImage<*>>>()

@@ -3,10 +3,10 @@ package matt.nn.deephys.version
 import io.ktor.http.*
 import javafx.application.Platform.runLater
 import kotlinx.coroutines.runBlocking
-import matt.async.pool.MyThreadPriorities
-import matt.async.schedule.AccurateTimer
-import matt.async.schedule.every
+import matt.async.pri.MyThreadPriorities.CREATING_NEW_CACHE
 import matt.async.thread.daemon
+import matt.async.thread.schedule.AccurateTimer
+import matt.async.thread.schedule.every
 import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
@@ -32,7 +32,7 @@ object VersionChecker {
         every(
             60.sec, timer = AccurateTimer(
                 name = "VersionChecker Timer",
-                priority = MyThreadPriorities.CREATING_NEW_CACHE
+                priority = CREATING_NEW_CACHE
             ), zeroDelayFirst = true
         ) {
             checking = true

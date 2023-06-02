@@ -1,6 +1,6 @@
 package matt.nn.deephys.gui.neuron
 
-import matt.async.queue.QueueWorker
+import matt.async.thread.queue.QueueWorker
 import matt.collect.itr.subList
 import matt.fx.base.prop.sizeProperty
 import matt.fx.control.wrapper.progressindicator.progressindicator
