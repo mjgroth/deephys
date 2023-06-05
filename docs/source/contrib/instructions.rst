@@ -143,7 +143,7 @@ Contribution Instructions
     
     .. code-block:: console
     
-      ./gradlew :k:nn:deephys:run --args="reset" --no-configuration-cache --stacktrace
+      ./gradlew :k:nn:deephys:run "--args="reset"" --no-configuration-cache --stacktrace
     
     If you successfully ran the app, then you are almost ready to start editing the code!
     
