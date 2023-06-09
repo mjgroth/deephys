@@ -6,8 +6,6 @@ import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.contentsOf
 import matt.collect.weak.lazyWeakMap
 import matt.file.CborFile
-import matt.fx.base.prop.lastIndexProperty
-import matt.fx.base.prop.sizeProperty
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.ControlWrapper
@@ -69,6 +67,8 @@ import matt.obs.bindings.bool.not
 import matt.obs.bindings.comp.gt
 import matt.obs.bindings.comp.lt
 import matt.obs.col.olist.basicMutableObservableListOf
+import matt.obs.col.olist.lastIndexProperty
+import matt.obs.col.olist.sizeProperty
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
 import matt.obs.prop.VarProp

@@ -2,7 +2,6 @@ package matt.nn.deephys.gui.neuron
 
 import matt.async.thread.queue.QueueWorker
 import matt.collect.itr.subList
-import matt.fx.base.prop.sizeProperty
 import matt.fx.control.wrapper.progressindicator.progressindicator
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.NW
@@ -40,6 +39,7 @@ import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.weakBinding
 import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.not
+import matt.obs.col.olist.sizeProperty
 import matt.obs.math.double.op.times
 import matt.obs.prop.BindableProperty
 import matt.reflect.weak.WeakThing
