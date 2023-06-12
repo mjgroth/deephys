@@ -26,3 +26,4 @@ deps.txt
 /jars/
 /bin/jar/
 local.properties
+.auth.json
