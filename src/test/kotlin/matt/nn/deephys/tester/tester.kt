@@ -34,7 +34,7 @@ import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.state.DeephyState
 import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.test.assertTrueLazyMessage
-import matt.test.prop.TestSwitch.ManualChecks
+import matt.test.prop.ManualTests
 import matt.time.dur.sleep
 import kotlin.concurrent.thread
 import kotlin.test.assertEquals
@@ -83,7 +83,7 @@ class DeephysTestSession {
     }
 
     fun testConfirmation(prompt: String, force: Boolean = false) =
-        if (force || ManualChecks.isEnabled) matt.test.testConfirmation(prompt, confirmService) else Unit
+        if (force || ManualTests.get()) matt.test.testConfirmation(prompt, confirmService) else Unit
 
 
     fun testHasCorrectTitle() = assertEquals(
