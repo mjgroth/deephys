@@ -30,10 +30,12 @@ object VersionChecker {
     private var checking = false
     fun checkForUpdatesInBackground() = daemon {
         every(
-            60.sec, timer = AccurateTimer(
+            60.sec,
+            timer = AccurateTimer(
                 name = "VersionChecker Timer",
                 priority = CREATING_NEW_CACHE
-            ), zeroDelayFirst = true
+            ),
+            zeroDelayFirst = true
         ) {
             checking = true
             try {
