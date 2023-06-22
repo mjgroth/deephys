@@ -39,7 +39,6 @@ object VersionChecker {
         ) {
             checking = true
             try {
-
                 val latestVersionFromServer =
                     runBlocking {
                         val resp = http(deephysSite.productionHost + "latest-version")

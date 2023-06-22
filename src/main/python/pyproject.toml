@@ -1,6 +1,6 @@
 [project]
 name = 'deephys'
-version = '0.14.0'
+version = '0.14.1'
 authors = [
 	{ name = 'Matt Groth', email = 'mjgroth@mit.edu'} 
 ]
