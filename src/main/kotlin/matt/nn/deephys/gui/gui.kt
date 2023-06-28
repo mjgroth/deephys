@@ -167,8 +167,8 @@ class DeephysApp {
 
         val pool = DaemonPoolExecutor()
 
-        val modelURL = URI(demo.modelURL).toURL()
-        val testURLs = demo.testURLs.map { URI(it).toURL() }
+        val modelURL = URI(demo.modelURL.cpath).toURL()
+        val testURLs = demo.testURLs.map { URI(it.cpath).toURL() }
 
 
         val total = testURLs.size + 1
