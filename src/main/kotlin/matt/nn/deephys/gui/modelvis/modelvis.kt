@@ -7,6 +7,8 @@ import javafx.scene.paint.Color
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.LineWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
+import matt.lang.require.requireNotEmpty
+import matt.lang.require.requireNull
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephysText
@@ -39,9 +41,9 @@ class ModelVisualizer(
 
   var dsetViewsBox: DSetViewsVBox? = null
 	set(value) {
-	  require(field == null)
-	  require(value != null)
-	  require(circles!!.isNotEmpty())
+	  requireNull(field)
+	  requireNotNull(value)
+	  requireNotEmpty(circles!!)
 	  field = value
 	  @Suppress("SENSELESS_COMPARISON")
 	  if (value == null) {

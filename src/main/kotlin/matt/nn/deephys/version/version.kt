@@ -14,6 +14,7 @@ import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.gui.exception.deephysSite
 import matt.http.http
 import matt.http.json.requireIs
+import matt.http.url.MURL
 import matt.log.warn.warnOnce
 import matt.model.data.release.Version
 import matt.model.data.release.VersionInfo
@@ -41,7 +42,7 @@ object VersionChecker {
             try {
                 val latestVersionFromServer =
                     runBlocking {
-                        val resp = http(deephysSite.productionHost + "latest-version")
+                        val resp = http(MURL(deephysSite)/*.productionHost*/ + "latest-version")
                         if (resp.statusCode() != HttpStatusCode.OK) {
                             null
                         } else {

@@ -20,6 +20,7 @@ import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.lang.disabledCode
+import matt.lang.require.requireNot
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
@@ -306,7 +307,7 @@ class DatasetViewer(
   }
 
   fun navigateTo(neuron: InterTestNeuron, addHistory: Boolean = true) {
-	require(!isBoundToDSet.value)
+	requireNot(isBoundToDSet.value)
 	neuronSelection.value = null
 	layerSelection.value = neuron.layer
 	neuronSelection.value = neuron

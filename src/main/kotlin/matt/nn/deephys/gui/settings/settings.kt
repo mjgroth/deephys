@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import matt.async.thread.ThreadReport
 import matt.gui.option.SettingsData
+import matt.lang.require.requireNull
 import matt.log.report.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
 import matt.nn.deephys.state.DeephyState
@@ -31,7 +32,7 @@ class DeephySettingsNode: ObsPrefNode(
 
   init {
 	synchronized(DeephySettingsNode::class) {
-	  require(instance == null)
+	  requireNull(instance)
 	  instance = this
 	}
   }

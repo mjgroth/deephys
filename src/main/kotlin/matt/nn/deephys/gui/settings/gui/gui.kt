@@ -20,6 +20,7 @@ import matt.gui.mstage.ShowMode.DO_NOT_SHOW
 import matt.gui.mstage.WMode.CLOSE
 import matt.gui.option.EnumSetting
 import matt.gui.option.SettingsData
+import matt.lang.require.requireNull
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyRadioButton
 import matt.nn.deephys.gui.global.deephysText
@@ -36,7 +37,7 @@ class SettingsWindow(settings: DeephysSettingsController) : MStage() {
 
     init {
         synchronized(SettingsWindow::class) {
-            require(instance == null)
+            requireNull(instance)
             instance = this
         }
     }
@@ -95,7 +96,7 @@ class SettingsPane(override val settings: DeephysSettingsController) : VBoxWrapp
 
     init {
         synchronized(SettingsPane::class) {
-            require(instance == null)
+            requireNull(instance)
             instance = this
         }
     }
