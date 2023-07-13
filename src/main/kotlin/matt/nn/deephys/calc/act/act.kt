@@ -1,6 +1,5 @@
 package matt.nn.deephys.calc.act
 
-import matt.lang.require.requireEquals
 import matt.lang.require.requireOne
 import matt.math.jmath.sigFigs
 import matt.model.data.mathable.DoubleWrapper
