@@ -10,7 +10,7 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.vbox
+import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.text.textlike.highlightOnHover
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
@@ -183,7 +183,7 @@ class NeuronListView(
 
 		topNeurons.forEachIndexed { idx, neuronWithAct ->
 		  val neuronIndex = neuronWithAct.neuron.index
-		  vbox {
+		  v {
 			h {
 			  deephyActionText("neuron $neuronIndex ") {
 				val deReffedViewer = weakViewer.deref()!!

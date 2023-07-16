@@ -5,7 +5,6 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.HBoxW
 import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.hbox.hbox
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.v
@@ -117,7 +116,7 @@ class CategoryTable(
 		  val predNamesBox = v {}
 		  spacer(2.0)
 		  val predValuesBox = v {}
-		  hbox {
+		  h {
 			+predNamesBox
 			spacer()
 			+predValuesBox

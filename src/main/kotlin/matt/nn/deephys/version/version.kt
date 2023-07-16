@@ -15,7 +15,7 @@ import matt.gui.exception.deephysSite
 import matt.http.http
 import matt.http.json.requireIs
 import matt.http.url.MURL
-import matt.log.warn.warnOnce
+import matt.log.warn.warn
 import matt.model.data.release.Version
 import matt.model.data.release.VersionInfo
 import matt.nn.deephys.gui.global.deephyHyperlink
@@ -50,7 +50,7 @@ object VersionChecker {
                         }
                     }
                 if (latestVersionFromServer == null) {
-                    warnOnce("latestVersionFromServer == null")
+                    warn("latestVersionFromServer == null")
                     error = true
                     runLater { update(null) }
                     cancel()
