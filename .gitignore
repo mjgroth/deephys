@@ -27,3 +27,4 @@ deps.txt
 /bin/jar/
 local.properties
 .auth.json
+.ipynb_checkpoints
