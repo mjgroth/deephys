@@ -7,12 +7,10 @@ import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.global.tooltip.DeephyTooltip
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import java.io.OutputStream
 
 class TestRAMCache(settings: DeephysSettingsController): RAMComputeCacheManager() {
   /*a single tooltip can be installed on multiple nodes, (and this seems important for performance)*/
   val tooltips = run {
-	  OutputStream
 	lazyWeakMap<DeephyImage<*>, Map<String, DeephyTooltip>> { im ->
 	  val weakIm = MyWeakRef(im) /*prevents the tooltip map from leaking DeephyImages into memory*/
 	  lazyMap { str ->

@@ -132,7 +132,7 @@ class TestLoader(
                 val reader = stream.cborReader()
                 reader.readManually<MapReader, Unit> {
 
-                    val keys = Keys.values()
+                    val keys = Keys.entries
 
                     expectCount(keys.count { it.required }..keys.size)
                     val countInt = count.toInt()
