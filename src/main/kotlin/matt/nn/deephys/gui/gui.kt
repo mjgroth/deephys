@@ -72,7 +72,7 @@ import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
 val DEEPHY_USER_DATA_DIR by lazy {
-    PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkdir("Deephys")
+    PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkFold("Deephys")
 }
 val DEEPHYS_LOG_CONTEXT by lazy {
     LogContext(DEEPHY_USER_DATA_DIR)

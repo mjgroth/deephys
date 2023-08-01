@@ -13,9 +13,9 @@ import matt.sys.idgen.IDGenerator
 
 object DeephysCacheManager {
 
-  private val DEEPHY_CACHE_DIR = DEEPHY_USER_DATA_DIR.mkdir("Cache")
+  private val DEEPHY_CACHE_DIR = DEEPHY_USER_DATA_DIR.mkFold("Cache")
 
-  private val DATA_SETS_CACHE_DIR = DEEPHY_CACHE_DIR.mkdir("datasets")
+  private val DATA_SETS_CACHE_DIR = DEEPHY_CACHE_DIR.mkFold("datasets")
 
   private val oldDatasetCaches = DATA_SETS_CACHE_DIR.listFiles()!!
 
@@ -31,7 +31,7 @@ object DeephysCacheManager {
   private val idGenerator = IDGenerator(taken = oldDatasetIDs)
   @Synchronized private fun getNextDatasetID() = idGenerator.next()
 
-  fun newDatasetCache() = DatasetCache(DATA_SETS_CACHE_DIR.mkdir(getNextDatasetID()))
+  fun newDatasetCache() = DatasetCache(DATA_SETS_CACHE_DIR.mkFold(getNextDatasetID()))
 
 
   class DatasetCache(
@@ -53,7 +53,7 @@ abstract class FileCaches(
   private val rootCacheFolder: MFile
 ): Caches(), Cacheable {
   private val cacheFold by lazy {
-	rootCacheFolder.mkdir("$cacheID")
+	rootCacheFolder.mkFold("$cacheID")
   }
 
 
