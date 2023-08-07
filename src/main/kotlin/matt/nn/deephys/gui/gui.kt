@@ -13,6 +13,7 @@ import matt.exec.app.myVersion
 import matt.file.MFile
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
+import matt.fx.control.fxapp.DEFAULT_THROW_ON_APP_THREAD_THROWABLE
 import matt.fx.control.inter.graphic
 import matt.fx.control.mail
 import matt.fx.control.wrapper.progressbar.progressbar
@@ -43,6 +44,7 @@ import matt.http.internet.TheInternet
 import matt.http.internet.isAvailable
 import matt.image.ICON_SIZES
 import matt.lang.anno.SeeURL
+import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.err
 import matt.lang.sync
 import matt.log.profile.stopwatch.Stopwatch
@@ -82,15 +84,25 @@ enum class Arg {
     `erase-state`, `erase-settings`, reset
 }
 
+
 class DeephysApp {
 
-    fun boot2(settingsNode: DeephySettingsNode, vararg args: Arg): Unit =
-        boot(args.mapToArray { it.name }, settingsNode = settingsNode)
+    fun boot2(
+        settingsNode: DeephySettingsNode,
+        vararg args: Arg,
+        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE,
+    ): Unit =
+        boot(
+            args.mapToArray { it.name },
+            settingsNode = settingsNode,
+            throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
+        )
 
     /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: Array<String>,
-        settingsNode: DeephySettingsNode = DeephySettingsNode()
+        settingsNode: DeephySettingsNode = DeephySettingsNode(),
+        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
     ) {
         if (args.size == 1 && args[0] == `erase-state`.name) {
             DeephyState.delete()
@@ -102,9 +114,27 @@ class DeephysApp {
         } else {
             warmupJvmThreading()
 
-            daemon {
-                stageTitle.putLoadedValue("${modID.appName} $myVersion")
+//            TEMP_DEBUG_LOG_FILE.appendln("boot1")
+            daemon(name = "Stage Title Loader") {
+//                TEMP_DEBUG_LOG_FILE.appendln("boot2")
+                try {
+//                    TEMP_DEBUG_LOG_FILE.appendln("boot3")
+                    stageTitle.putLoadedValue("${modID.appName} $myVersion")
+//                    TEMP_DEBUG_LOG_FILE.appendln("boot4")
+                } finally {
+//                    TEMP_DEBUG_LOG_FILE.appendln("boot5")
+                    if (!stageTitle.isDoneOrCancelled()) {
+//                        TEMP_DEBUG_LOG_FILE.appendln("boot5.5")
+                        stageTitle.cancel("${Thread.currentThread().name} failed")
+//                        TEMP_DEBUG_LOG_FILE.appendln("boot5.6")
+                    } else {
+//                        TEMP_DEBUG_LOG_FILE.appendln("boot5.7")
+                    }
+//                    TEMP_DEBUG_LOG_FILE.appendln("boot6")
+                }
+//                TEMP_DEBUG_LOG_FILE.appendln("boot7")
             }
+//            TEMP_DEBUG_LOG_FILE.appendln("boot8")
 
             daemon {
                 initializeWhatICan()
@@ -138,7 +168,8 @@ class DeephysApp {
             startDeephyApp(
                 settingsNode = settingsNode,
                 settingsDidReset = didSettingsReset,
-                openedNewVersion = openedNewVersion
+                openedNewVersion = openedNewVersion,
+                throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
             )
 
 
@@ -146,6 +177,13 @@ class DeephysApp {
     }
 
     val stageTitle = LoadedValueSlot<String>()
+
+    @ExperimentalMattCode(incomplete = "might not have cancelled all of the latches")
+    fun cancelAllLatches(cause: Throwable) {
+        testReadyScene.cancel(cause)
+        readyForConfiguringWindowFromTest.cancel(cause)
+        stageTitle.cancel(cause)
+    }
 
     val testReadyDSetViewsBbox = Pager<DSetViewsVBox>()
     val readyForConfiguringWindowFromTest = LoadedValueSlot<StageWrapper>()
@@ -254,11 +292,17 @@ class DeephysApp {
         settingsNode: DeephySettingsNode,
         settingsDidReset: Boolean,
         @Suppress("UNUSED_PARAMETER")
-        openedNewVersion: Boolean
+        openedNewVersion: Boolean,
+        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
     ) = GuiApp(decorated = true) {
 
 
+        println("stage123=$stage")
+
+//        TEMP_DEBUG_LOG_FILE.appendln("startDeephyApp 1")
+
         warmupFxComponents(settingsNode.settings)
+
 
 
         val myStageTitle = stageTitle.await()
@@ -283,6 +327,15 @@ class DeephysApp {
             )
         }
 
+
+//        TEMP_DEBUG_LOG_FILE.appendln("startDeephyApp 2: ${Thread.currentThread().name},${Thread.currentThread().id},${Thread.currentThread().uncaughtExceptionHandler}")
+
+
+
+
+//        unsafeErr("test error")
+
+//        TEMP_DEBUG_LOG_FILE.appendln("startDeephyApp 3")
 
         stage.icons.addAll(
             ICON_SIZES.map {
@@ -371,7 +424,6 @@ class DeephysApp {
                                 }
                             }
                         }
-
                     }.apply {
                         prefHeightProperty.bind(settButton.heightProperty)
                     }
@@ -418,7 +470,8 @@ class DeephysApp {
 
     }.runBlocking(
         logContext = DEEPHYS_LOG_CONTEXT,
-        t = t
+        t = t,
+        throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
     )
 
 }

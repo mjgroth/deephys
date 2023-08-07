@@ -38,111 +38,138 @@ val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
 val TEST_DATA_FOLDER = DEEPHYS_DATA_FOLDER["test"]
 
 class DeephysTestData(
-  val name: String, model: String, tests: List<String>, val expectedLoadTime: Duration
+    val name: String,
+    model: String,
+    tests: List<String>,
+    val expectedLoadTime: Duration
 ) {
-  private val root = TEST_DATA_FOLDER[name]
-  val model = root[model]
-  val tests = tests.map { root[it] }
+    private val root = TEST_DATA_FOLDER[name]
+    val model = root[model]
+    val tests = tests.map { root[it] }
 }
 
 
 val tests = list {
-  add(
-	DeephysTestData(
-	  name = "CIFARX2", model = "resnet18_cifar.model", tests = listOf(
-		"CIFARV1.test", "CIFARV2.test"
-	  ), expectedLoadTime = 5.seconds
-	)
-  )
-  add(
-	DeephysTestData(
-	  name = "INX3", model = "resnet50_imagenet.model", tests = listOf(
-		"ImageNetV1_resnet50.test", "ImageNet_style_resnet50.test", "ImageNet_sketch_resnet50.test"
-	  ), expectedLoadTime = 30.seconds
-	)
-  )
+    add(
+        DeephysTestData(
+            name = "CIFARX2", model = "resnet18_cifar.model", tests = listOf(
+                "CIFARV1.test", "CIFARV2.test"
+            ), expectedLoadTime = 5.seconds
+        )
+    )
+    add(
+        DeephysTestData(
+            name = "INX3", model = "resnet50_imagenet.model", tests = listOf(
+                "ImageNetV1_resnet50.test", "ImageNet_style_resnet50.test", "ImageNet_sketch_resnet50.test"
+            ), expectedLoadTime = 30.seconds
+        )
+    )
 }
 
 
 @SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")    /*@TestClassOrder()*/
 val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
-  width = 1366.0, height = 768.0
+    width = 1366.0, height = 768.0
 )
 
-@TestInstance(PER_CLASS) class TestDeephys {
+@TestInstance(PER_CLASS)
+class TestDeephys {
 
-  val session = DeephysTestSession()
-
-
-  companion object {
-
-	private val ramSamples = mutableListOf<RamSample>()
+    val session = DeephysTestSession()
 
 
-	init {
-	  DEEPHYS_RAM_SAMPLES_FOLDER.mkdirs()
-	}
+    companion object {
 
-	private val myRamSamplesJson by lazy {
-	  RAM_NUMBERED_FILES.nextFile()
-	}
+        private val ramSamples = mutableListOf<RamSample>()
 
 
-	@Synchronized fun sampleRam() {
-	  ramSamples.add(ramSample())
-	  ramSamples.saveAsJsonTo(myRamSamplesJson, false)
-	}
+        init {
+            DEEPHYS_RAM_SAMPLES_FOLDER.mkdirs()
+        }
+
+        private val myRamSamplesJson by lazy {
+            RAM_NUMBERED_FILES.nextFile()
+        }
+
+//        @JvmStatic
+//        @BeforeAll
+//        fun enableHeadlessMode() {
+//            println("setting headless to true")
+//
+//            println("set headless to true")
+//        }
 
 
-	private var getRamSamples = true
-	@JvmStatic @BeforeAll fun startSamplingRam() {
-	  daemon {
-		while (getRamSamples) {
-		  sampleRam()
-		  sleep(500.milliseconds)
-		}
-	  }
-	}
-
-	@JvmStatic @AfterAll fun stopSamplingRam() {
-	  getRamSamples = false
-	}
-
-	@JvmStatic @AfterAll fun shutdownJavaFX() {
-	  Platform.exit()
-	}
+        @Synchronized
+        fun sampleRam() {
+            ramSamples.add(ramSample())
+            ramSamples.saveAsJsonTo(myRamSamplesJson, false)
+        }
 
 
-  }
+        private var getRamSamples = true
+
+        @JvmStatic
+        @BeforeAll
+        fun startSamplingRam() {
+            daemon {
+                while (getRamSamples) {
+                    sampleRam()
+                    sleep(500.milliseconds)
+                }
+            }
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun stopSamplingRam() {
+            getRamSamples = false
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun shutdownJavaFX() {
+            Platform.exit()
+        }
 
 
-  @Test fun computeInputsAreData() {
-	GlobalRAMComputeInput::class.mattSubClasses().forEach {
-	  assertTrueLazyMessage(it.isData || it.isAbstract) {
-		"$it is a ComputeInput but not data... how is it supposed to cache stuff correctly?"
-	  }
-	}
-  }
+    }
 
 
-  @Test fun correctTitle() = session.testHasCorrectTitle()
+    @Test
+    fun computeInputsAreData() {
+        GlobalRAMComputeInput::class.mattSubClasses().forEach {
+            assertTrueLazyMessage(it.isData || it.isAbstract) {
+                "$it is a ComputeInput but not data... how is it supposed to cache stuff correctly?"
+            }
+        }
+    }
 
 
-  @Test fun fitsInSmallestScreen() = session.testFitsInSmallestScreen()
+    @Test
+    fun correctTitle() = session.testHasCorrectTitle()
 
-  @TestMethodOrder(OrderAnnotation::class) @Nested inner class TestRunningApp {
 
-	@Test @Order(1) fun loadDataRunThroughFeaturesAndDispose() {
+    @Test
+    fun fitsInSmallestScreen() = session.testFitsInSmallestScreen()
 
-	  tests.forEach {
-		session.loadDataAndCheckItWasFastEnough(
-		  key = it.name, testData = it, maxTime = it.expectedLoadTime
-		)
-		session.runThroughByImageView()
-		session.runThroughCategoryView()
-		session.disposeAllTestsAndCheckMemory()
-	  }
-	}
-  }
+    @TestMethodOrder(OrderAnnotation::class)
+    @Nested
+    inner class TestRunningApp {
+
+        @Test
+        @Order(1)
+        fun loadDataRunThroughFeaturesAndDispose() {
+
+            tests.forEach {
+                session.loadDataAndCheckItWasFastEnough(
+                    key = it.name, testData = it, maxTime = it.expectedLoadTime
+                )
+                session.runThroughByImageView()
+                session.runThroughCategoryView()
+                session.disposeAllTestsAndCheckMemory()
+            }
+        }
+    }
 }
 

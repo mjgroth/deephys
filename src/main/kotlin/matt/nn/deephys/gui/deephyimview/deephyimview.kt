@@ -40,6 +40,7 @@ class DeephyImView(
     companion object {
         val realPool = QueueWorkerPool(NUM_LOGICAL_CORES, "DeephyImView Worker")
         val fakePool = FakeWorkerPool() /*because of the flickering*/
+        private var didWarnAboutCombiningMethods = false
     }
 
     private val weakViewer = viewer.weakRef
@@ -53,7 +54,11 @@ class DeephyImView(
         val localWeakIm = weakIm
         val localWeakViewer = weakViewer
         val weakThis = WeakReference(this)
-        warn("combine draw methods for V1 and deephy")
+        if (!didWarnAboutCombiningMethods) {
+            warn("combine draw methods for V1 and deephy")
+            didWarnAboutCombiningMethods = true
+        }
+
 
         cursor = Cursor.HAND
 

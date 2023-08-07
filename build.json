@@ -1,8 +1,8 @@
 {
   "type": "BasicJvmOnlyMod",
-  "jvmExec": {
+ "jvm":{ "exec": {
     "type": "Typical"
-  },
+  }},
   "publicApp": true,
   "dependencies": [
     {

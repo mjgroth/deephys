@@ -4,18 +4,22 @@ import javafx.application.Platform
 import matt.file.CborFile
 import matt.file.commons.DEEPHYS_TEST_RESULT_JSON
 import matt.file.toSFile
+import matt.fx.graphics.fxthread.RunLaterReturnLatchManager
 import matt.fx.graphics.fxthread.runLaterReturn
 import matt.fx.graphics.wrapper.node.findRecursivelyFirstOrNull
 import matt.fx.graphics.wrapper.node.recurseSelfAndChildNodes
 import matt.gui.service.AsyncFXActionAbilitiesService
 import matt.json.prim.loadJson
-import matt.json.prim.save
+import matt.json.prim.saveJson
+import matt.lang.anno.optin.ExperimentalMattCode
+import matt.lang.sysprop.props.JavaAwtHeadless
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
 import matt.log.profile.real.Profiler
 import matt.log.profile.stopwatch.tic
 import matt.log.profile.yk.YourKit
 import matt.log.report.MemReport
+import matt.model.code.errreport.reportAndReThrowErrorsBetter
 import matt.model.data.byte.mebibytes
 import matt.nn.deephys.DeephysTestData
 import matt.nn.deephys.MAC_MAYBE_MIN_SCREEN_SIZE
@@ -38,11 +42,13 @@ import matt.test.prop.ManualTests
 import matt.time.dur.sleep
 import kotlin.concurrent.thread
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 private const val ENABLE_CPU_PROFILING = false
 
+@OptIn(ExperimentalMattCode::class)
 class DeephysTestSession {
 
     private val yk by lazy {
@@ -63,17 +69,28 @@ class DeephysTestSession {
         app.readyForConfiguringWindowFromTest.await()
     }
 
+
     init {
-        val settingsNode = DeephySettingsNode()
-        app.boot2(settingsNode = settingsNode, reset) /*need this so tests are deterministic*/
-        thread {
-            app.boot2(args = arrayOf(), settingsNode = settingsNode)
-        }
-        mainStage.apply {
+        reportAndReThrowErrorsBetter {
+            println("JavaAwtHeadless=${JavaAwtHeadless.get()}")
+//        JavaAwtHeadless.setTrue()
+            val settingsNode = DeephySettingsNode()
+            app.boot2(settingsNode = settingsNode, reset) /*need this so tests are deterministic*/
+            thread(name = "App Launcher") {
+                println("HERE1")
+                try {
+                    app.boot2(args = arrayOf(), settingsNode = settingsNode, throwOnApplicationThreadThrowable = true)
+                } catch (e: Throwable) {
+                    println("CANCELLING ALL LATCHES")
+                    app.cancelAllLatches(e)
+                }
+                println("HERE2")
+            }
+            val theMainStage = mainStage
             runLaterReturn {
-                width = MAC_MAYBE_MIN_SCREEN_SIZE.width
-                height = MAC_MAYBE_MIN_SCREEN_SIZE.height
-                centerOnScreen()
+                theMainStage.width = MAC_MAYBE_MIN_SCREEN_SIZE.width
+                theMainStage.height = MAC_MAYBE_MIN_SCREEN_SIZE.height
+                theMainStage.centerOnScreen()
             }
         }
     }
@@ -82,7 +99,10 @@ class DeephysTestSession {
         AsyncFXActionAbilitiesService(mainStage)
     }
 
-    fun testConfirmation(prompt: String, force: Boolean = false) =
+    fun testConfirmation(
+        prompt: String,
+        force: Boolean = false
+    ) =
         if (force || ManualTests.get()) matt.test.testConfirmation(prompt, confirmService) else Unit
 
 
@@ -135,7 +155,7 @@ class DeephysTestSession {
                 root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
                 DeephyState.model.value = testData.model.toSFile()
             }
-            sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe()
+            sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe(RunLaterReturnLatchManager)
             tocAndSampleRam("GUI ready")
 
 
@@ -179,26 +199,30 @@ class DeephysTestSession {
                 name = key, loadMillis = totalTime.inWholeMilliseconds
             )
         )
-        DEEPHYS_TEST_RESULT_JSON.save(sessionList, pretty = true)
+        DEEPHYS_TEST_RESULT_JSON.saveJson(sessionList, pretty = true)
         assertTrueLazyMessage(
             totalTime < maxTime
         ) {
-            "took to long to load: $totalTime"
+            "took to long to load: took=$totalTime expected=$maxTime"
         }
         TestDeephys.sampleRam()
     }
 
     fun runThroughByImageView() {
 
-        testConfirmation(
-            prompt = "If I click images on the top, does the dataset on the bottom correctly follow?"
-        )
+//        testConfirmation(
+//            prompt = "If I click images on the top, does the dataset on the bottom correctly follow?"
+//        )
 
-        println("automatically clicking through $NUM_IM_CLICKS images")
+
+        println("awaiting scene to be ready...")
         val scene = app.testReadyScene.await()
+        println("automatically clicking through $NUM_IM_CLICKS images")
         val root = scene.root
         val dSetViewsBox = root.findRecursivelyFirstOrNull<DSetViewsVBox>()!!
-        val firstViewer = dSetViewsBox.children.first()
+        val viewers = dSetViewsBox.children
+        val firstViewer = viewers.first()
+        val secondViewer = viewers[1]
         runLaterReturn {
             firstViewer.navigateTo(firstViewer.testData.value!!.awaitImage(0))
         }
@@ -210,11 +234,29 @@ class DeephysTestSession {
                 im != firstViewer.imageSelection.value
             }
             println("clicking an image...")
+
+            val secondViewerImagesBefore: List<Int> = runLaterReturn {
+                secondViewer.recurseSelfAndChildNodes<DeephyImView>().map {
+                    it.weakIm.deref()!!.imageID
+                }.toList()
+            }
+
             runLaterReturn {
                 dIm.click()
             }
+
             println("clicked")
+
+            val secondViewerImagesAfter: List<Int> = runLaterReturn {
+                secondViewer.recurseSelfAndChildNodes<DeephyImView>().map {
+                    it.weakIm.deref()!!.imageID
+                }.toList()
+            }
+
+            assertNotEquals(secondViewerImagesBefore, secondViewerImagesAfter)
+
             clicked++
+
             if (clicked < NUM_IM_CLICKS) {
                 println("sleeping...")
                 sleep(WAIT_FOR_GUI_INTERVAL)
@@ -233,7 +275,7 @@ class DeephysTestSession {
         }
         /*warn("not animating CategoryPie")
         CategoryPie.ANIMATE = false*/
-        testConfirmation("click and shift-click around different categories. Does the ByCategoryView look ok?")
+//        testConfirmation("click and shift-click around different categories. Does the ByCategoryView look ok?")
         val dSetViewsBox = root.findRecursivelyFirstOrNull<DSetViewsVBox>()!!
         val firstViewer = dSetViewsBox.children.first()
         sleep(WAIT_FOR_GUI_INTERVAL)
