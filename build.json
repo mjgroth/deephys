@@ -51,6 +51,11 @@
       "path": ":k:log:profile:yk"
     },
     {
+      "type": "Project",
+      "cfg": "testImplementation",
+      "path": ":k:log:profile:jp"
+    },
+    {
       "type": "Lib",
       "cfg": "implementation",
       "key": "guava"

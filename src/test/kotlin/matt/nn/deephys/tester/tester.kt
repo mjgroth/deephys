@@ -12,9 +12,12 @@ import matt.gui.service.AsyncFXActionAbilitiesService
 import matt.json.prim.loadJson
 import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
+import matt.lang.profiling.IsProfilingWithJProfiler
+import matt.lang.profiling.IsProfilingWithYourKit
 import matt.lang.sysprop.props.JavaAwtHeadless
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
+import matt.log.profile.jp.JProfiler
 import matt.log.profile.real.Profiler
 import matt.log.profile.stopwatch.tic
 import matt.log.profile.yk.YourKit
@@ -46,17 +49,21 @@ import kotlin.test.assertNotEquals
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-private const val ENABLE_CPU_PROFILING = false
-
 @OptIn(ExperimentalMattCode::class)
 class DeephysTestSession {
 
-    private val yk by lazy {
+    private val profiler by lazy {
+        val engine = when {
+            IsProfilingWithYourKit   -> YourKit
+            IsProfilingWithJProfiler -> JProfiler(snapshotFolder = JProfiler.defaultSnapshotFolder())
+            else                     -> null
+        }
+
         Profiler(
-            engine = YourKit,
-            enableAll = ENABLE_CPU_PROFILING
+            engine = engine ?: YourKit,
+            enableAll = engine != null
         ) {
-            YourKit.openSnapshot(it)
+            engine!!.openSnapshot(it)
         }
     }
 
@@ -150,7 +157,7 @@ class DeephysTestSession {
         tocAndSampleRam("got scene")
         val root = scene.root
         val sub = app.testReadyDSetViewsBbox.subscribe()
-        yk.recordCPU {
+        profiler.recordCPU {
             Platform.runLater {
                 root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
                 DeephyState.model.value = testData.model.toSFile()
@@ -352,7 +359,7 @@ class DeephysTestSession {
         assertTrueLazyMessage(u < threshold) {
             //	  println("sleeping forever 2")
             //	  sleep(1.days)
-            yk.captureMemorySnapshot()
+            profiler.captureMemorySnapshot()
             "test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is $u"
         }
     }
