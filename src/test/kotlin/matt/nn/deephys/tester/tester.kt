@@ -42,6 +42,7 @@ import matt.nn.deephys.state.DeephyState
 import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.test.assertTrueLazyMessage
 import matt.test.prop.ManualTests
+import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
 import kotlin.concurrent.thread
 import kotlin.test.assertEquals
@@ -208,7 +209,8 @@ class DeephysTestSession {
         )
         DEEPHYS_TEST_RESULT_JSON.saveJson(sessionList, pretty = true)
         assertTrueLazyMessage(
-            totalTime < maxTime
+            !TestPerformance.get()
+                    || totalTime < maxTime
         ) {
             "took to long to load: took=$totalTime expected=$maxTime"
         }
