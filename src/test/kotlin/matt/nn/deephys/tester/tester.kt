@@ -241,12 +241,15 @@ class DeephysTestSession {
             val dIm = firstViewer.recurseSelfAndChildNodes<DeephyImView>().firstOrNull {
                 val im = it.weakIm.deref()!!
                 im != firstViewerSelection
-            } ?: error(
-                "could not find an image different from $firstViewerSelection, all=${
-                    firstViewer.recurseSelfAndChildNodes<DeephyImView>().toList().map { it.weakIm.deref()?.imageID }
-                        .elementsToString()
-                }"
-            )
+            } ?: run {
+                val imViews = firstViewer.recurseSelfAndChildNodes<DeephyImView>().toList()
+                error(
+                    "could not find an image different from $firstViewerSelection, all=${
+                        imViews.map { it.weakIm.deref()?.imageID }
+                            .elementsToString()
+                    }, imViews=${imViews.size}"
+                )
+            }
             println("clicking an image...")
 
             val secondViewerImagesBefore: List<Int> = runLaterReturn {
