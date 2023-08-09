@@ -28,3 +28,4 @@ deps.txt
 local.properties
 .auth.json
 .ipynb_checkpoints
+coverage-error.log
