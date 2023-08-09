@@ -40,6 +40,7 @@ import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.state.DeephyState
 import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
+import matt.prim.str.elementsToString
 import matt.test.assertTrueLazyMessage
 import matt.test.prop.ManualTests
 import matt.test.prop.TestPerformance
@@ -55,9 +56,9 @@ class DeephysTestSession {
 
     private val profiler by lazy {
         val engine = when {
-            IsProfilingWithYourKit   -> YourKit
+            IsProfilingWithYourKit -> YourKit
             IsProfilingWithJProfiler -> JProfiler(snapshotFolder = JProfiler.defaultSnapshotFolder())
-            else                     -> null
+            else -> null
         }
 
         Profiler(
@@ -85,14 +86,12 @@ class DeephysTestSession {
             val settingsNode = DeephySettingsNode()
             app.boot2(settingsNode = settingsNode, reset) /*need this so tests are deterministic*/
             thread(name = "App Launcher") {
-                println("HERE1")
                 try {
                     app.boot2(args = arrayOf(), settingsNode = settingsNode, throwOnApplicationThreadThrowable = true)
                 } catch (e: Throwable) {
                     println("CANCELLING ALL LATCHES")
                     app.cancelAllLatches(e)
                 }
-                println("HERE2")
             }
             val theMainStage = mainStage
             runLaterReturn {
@@ -238,10 +237,16 @@ class DeephysTestSession {
         sleep(WAIT_FOR_GUI_INTERVAL)
         var clicked = 0
         while (clicked < NUM_IM_CLICKS) {
-            val dIm = firstViewer.recurseSelfAndChildNodes<DeephyImView>().first {
+            val firstViewerSelection = firstViewer.imageSelection.value
+            val dIm = firstViewer.recurseSelfAndChildNodes<DeephyImView>().firstOrNull {
                 val im = it.weakIm.deref()!!
-                im != firstViewer.imageSelection.value
-            }
+                im != firstViewerSelection
+            } ?: error(
+                "could not find an image different from $firstViewerSelection, all=${
+                    firstViewer.recurseSelfAndChildNodes<DeephyImView>().toList().map { it.weakIm.deref()?.imageID }
+                        .elementsToString()
+                }"
+            )
             println("clicking an image...")
 
             val secondViewerImagesBefore: List<Int> = runLaterReturn {
