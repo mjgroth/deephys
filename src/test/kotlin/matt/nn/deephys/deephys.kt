@@ -15,6 +15,7 @@ import matt.model.data.rect.RectSize
 import matt.nn.deephys.tester.DeephysTestSession
 import matt.reflect.reflections.mattSubClasses
 import matt.test.assertTrueLazyMessage
+import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -29,8 +30,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-const val NUM_IM_CLICKS = 10
-const val NUM_SLICE_CLICKS = 10
+val NUM_IM_CLICKS = if (TestPerformance.get()) 10 else 2
+val NUM_SLICE_CLICKS = if (TestPerformance.get()) 10 else 2
 val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
 //val WAIT_FOR_GUI_INTERVAL = 1.seconds
 
@@ -52,18 +53,24 @@ class DeephysTestData(
 val tests = list {
     add(
         DeephysTestData(
-            name = "CIFARX2", model = "resnet18_cifar.model", tests = listOf(
+            name = "CIFARX2",
+            model = "resnet18_cifar.model",
+            tests = listOf(
                 "CIFARV1.test", "CIFARV2.test"
             ), expectedLoadTime = 5.seconds
         )
     )
-    add(
-        DeephysTestData(
-            name = "INX3", model = "resnet50_imagenet.model", tests = listOf(
-                "ImageNetV1_resnet50.test", "ImageNet_style_resnet50.test", "ImageNet_sketch_resnet50.test"
-            ), expectedLoadTime = 30.seconds
+    if (TestPerformance.get()) {
+        add(
+            DeephysTestData(
+                name = "INX3",
+                model = "resnet50_imagenet.model",
+                tests = listOf(
+                    "ImageNetV1_resnet50.test", "ImageNet_style_resnet50.test", "ImageNet_sketch_resnet50.test"
+                ), expectedLoadTime = 30.seconds
+            )
         )
-    )
+    }
 }
 
 
@@ -90,15 +97,6 @@ class TestDeephys {
         private val myRamSamplesJson by lazy {
             RAM_NUMBERED_FILES.nextFile()
         }
-
-//        @JvmStatic
-//        @BeforeAll
-//        fun enableHeadlessMode() {
-//            println("setting headless to true")
-//
-//            println("set headless to true")
-//        }
-
 
         @Synchronized
         fun sampleRam() {
