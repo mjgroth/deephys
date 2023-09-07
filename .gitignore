@@ -28,4 +28,5 @@ deps.txt
 local.properties
 .auth.json
 .ipynb_checkpoints
+*.comp_mem
 coverage-error.log

@@ -7,7 +7,7 @@ import matt.lang.NOT_IMPLEMENTED
 import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.anno.SeeURL
 import matt.lang.lastIndex
-import matt.model.flowlogic.latch.SimpleLatch
+import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
 import matt.nn.deephys.load.cache.raf.deed.DeedImpl
 import matt.time.dur.sleep
@@ -258,7 +258,7 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: MFile) : RAFLike {
     private var finishedWrites = AtomicInteger()
 
     fun markFinishedWriting() {
-        val l = SimpleLatch()
+        val l = SimpleThreadLatch()
         latch = l
         fun done() = finishedWrites.get() == startedWrites.get()
         if (done()) {
@@ -282,7 +282,7 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: MFile) : RAFLike {
 
     fun awaitAsyncOps() = latch!!.await()
 
-    private var latch: SimpleLatch? = null
+    private var latch: SimpleThreadLatch? = null
 
     override val channel by lazy {
         AsynchronousFileChannel.open(file.toPath(), options, pool)

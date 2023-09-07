@@ -3,11 +3,13 @@ import sys
 import os
 import numpy as np
 import torch
-import torchvision
 from torchvision import transforms
+import torchvision
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "main", "python"))
 import deephys as dp
+
+dp = dp
 
 
 class TestDeephys(unittest.TestCase):

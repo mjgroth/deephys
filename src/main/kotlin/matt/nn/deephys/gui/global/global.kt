@@ -45,7 +45,7 @@ import matt.fx.graphics.wrapper.text.textlike.TextLike
 import matt.fx.node.proto.svgIcon
 import matt.gui.actiontext.actionLabel
 import matt.gui.actiontext.actionText
-import matt.math.jmath.sigFigs
+import matt.math.sigfig.withPrecision
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.StringConverter
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
@@ -207,8 +207,8 @@ fun EventTargetWrapper.sigFigText(
 ) = deephysText {
   textProperty.bindWeakly(sigFigSett.weakBinding(this) { _, it ->
 	when (num) {
-	  is Float  -> num.sigFigs(it).toString()
-	  is Double -> num.sigFigs(it).toString()
+	  is Float  -> num.withPrecision(it).toString()
+	  is Double -> num.withPrecision(it).toString()
 	  else      -> error("not ready for different dtype")
 	} + numSuffix
   })

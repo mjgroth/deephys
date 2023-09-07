@@ -2,13 +2,13 @@ package matt.nn.deephys.calc
 
 import matt.caching.compcache.GlobalRAMComputeInput
 import matt.caching.compcache.globalman.FakeCacheManager
+import matt.codegen.tex.TeXDSL
+import matt.codegen.tex.tex
 import matt.collect.set.contents.Contents
-import matt.fx.node.tex.dsl.TeXDSL
-import matt.fx.node.tex.dsl.tex
 import matt.lang.function.DSL
 import matt.lang.require.requireEquals
 import matt.log.profile.stopwatch.tic
-import matt.math.jmath.sigFigs
+import matt.math.sigfig.withPrecision
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
@@ -294,7 +294,7 @@ data class CategoryAccuracy(
     fun formatted() =
         compute().let {
             if (it == null) "Cannot calculate accuracy because no images have groundtruth \"$category\"" else "${
-                (it * 100).sigFigs(
+                (it * 100).withPrecision(
                     3
                 )
             }%"

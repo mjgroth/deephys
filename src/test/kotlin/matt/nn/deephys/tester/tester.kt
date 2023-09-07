@@ -1,6 +1,7 @@
 package matt.nn.deephys.tester
 
 import javafx.application.Platform
+import matt.async.thread.namedThread
 import matt.file.CborFile
 import matt.file.commons.DEEPHYS_TEST_RESULT_JSON
 import matt.file.toSFile
@@ -14,7 +15,6 @@ import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.profiling.IsProfilingWithJProfiler
 import matt.lang.profiling.IsProfilingWithYourKit
-import matt.lang.sysprop.props.JavaAwtHeadless
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
 import matt.log.profile.jp.JProfiler
@@ -30,7 +30,7 @@ import matt.nn.deephys.NUM_IM_CLICKS
 import matt.nn.deephys.NUM_SLICE_CLICKS
 import matt.nn.deephys.TestDeephys
 import matt.nn.deephys.WAIT_FOR_GUI_INTERVAL
-import matt.nn.deephys.gui.Arg.reset
+import matt.nn.deephys.gui.DeephysArg.reset
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.category.pie.CategoryPie.CategorySlice
 import matt.nn.deephys.gui.deephyimview.DeephyImView
@@ -45,7 +45,6 @@ import matt.test.assertTrueLazyMessage
 import matt.test.prop.ManualTests
 import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
-import kotlin.concurrent.thread
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.time.Duration
@@ -81,13 +80,11 @@ class DeephysTestSession {
 
     init {
         reportAndReThrowErrorsBetter {
-            println("JavaAwtHeadless=${JavaAwtHeadless.get()}")
-//        JavaAwtHeadless.setTrue()
             val settingsNode = DeephySettingsNode()
-            app.boot2(settingsNode = settingsNode, reset) /*need this so tests are deterministic*/
-            thread(name = "App Launcher") {
+            app.boot2(settingsNode = settingsNode, listOf(reset)) /*need this so tests are deterministic*/
+            namedThread(name = "App Launcher") {
                 try {
-                    app.boot2(args = arrayOf(), settingsNode = settingsNode, throwOnApplicationThreadThrowable = true)
+                    app.boot2(args = listOf(), settingsNode = settingsNode, throwOnApplicationThreadThrowable = true)
                 } catch (e: Throwable) {
                     println("CANCELLING ALL LATCHES")
                     app.cancelAllLatches(e)

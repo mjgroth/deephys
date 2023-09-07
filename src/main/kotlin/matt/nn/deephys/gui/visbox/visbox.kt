@@ -5,6 +5,7 @@ import javafx.geometry.Pos.CENTER
 import javafx.geometry.Pos.TOP_CENTER
 import matt.file.CborFile
 import matt.file.MFile
+import matt.file.ext.FileExtension
 import matt.file.toSFile
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.fxthread.runLater
@@ -93,7 +94,7 @@ class VisBox(
 
 
                     val f = openFile {
-                        extensionFilter("model files", "*.model")
+                        extensionFilter("model files", FileExtension.MODEL)
                     }?.toSFile()
 
                     if (f != null) {

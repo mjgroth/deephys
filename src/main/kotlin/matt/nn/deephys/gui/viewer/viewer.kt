@@ -6,6 +6,7 @@ import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.contentsOf
 import matt.collect.weak.lazyWeakMap
 import matt.file.CborFile
+import matt.file.ext.FileExtension
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.ControlWrapper
@@ -418,7 +419,7 @@ class DatasetViewer(
 
 		  val f = openFile(stage = weakViewer.get()!!.stage) {
 			title = "choose test data"
-			extensionFilter("tests", "*.test")
+			extensionFilter("tests", FileExtension.TEST)
 		  }
 
 		  if (f != null) {

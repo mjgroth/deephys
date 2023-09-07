@@ -1,6 +1,7 @@
 package matt.nn.deephys.init
 
 import javafx.scene.image.Image
+import matt.async.thread.TheThreadProvider
 import matt.async.thread.daemon
 import matt.file.toMFile
 import matt.fx.control.toggle.mech.ToggleMechanism
@@ -9,7 +10,6 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.log.profile.stopwatch.tic
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
-import matt.rstruct.resourceStream
 import matt.nn.deephys.gui.global.DeephyText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyToggleButton
@@ -22,57 +22,56 @@ import matt.nn.deephys.load.loadCbor
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.binding
+import matt.rstruct.resourceStream
 
 fun initializeWhatICan() {
-  val t = tic("initializeWhatICan")
-  t.toc("START")
+    val t = tic("initializeWhatICan")
+    t.toc("START")
 
-  gearImage.startLoading()
-  modelBinding.startLoading()
+    gearImage.startLoading()
+    modelBinding.startLoading()
 
-  daemon {
-	DarkModeController.darkModeProp.value
-	t.toc("END DarkModeController DAEMON")
-  }
+    daemon("initializeWhatICan inner Thread") {
+        DarkModeController.darkModeProp.value
+        t.toc("END DarkModeController DAEMON")
+    }
 
 
 
-  t.toc("END")
+    t.toc("END")
 }
 
 
-val gearImage = DaemonLoadedValueOp("gear.png") {
-  Image(resourceStream("gear.png"))
+val gearImage = DaemonLoadedValueOp(TheThreadProvider,"gear.png") {
+    Image(resourceStream("gear.png"))
 }
 
-
-
-val modelBinding = DaemonLoadedValueOp(".model binding") {
-  DeephyState.model.binding { f ->
-	f?.toMFile()?.loadCbor<Model>()
-  }
+val modelBinding = DaemonLoadedValueOp(TheThreadProvider,".model binding") {
+    DeephyState.model.binding { f ->
+        f?.toMFile()?.loadCbor<Model>()
+    }
 }
 
 fun warmupFxComponents(settings: DeephysSettingsController) {
-  HBoxWrapperImpl<NodeWrapper>().apply {
-	DeephyText("placeholder").apply {
-	  subtitleFont()
-	  titleFont()
-	  titleBoldFont()
+    HBoxWrapperImpl<NodeWrapper>().apply {
+        DeephyText("placeholder").apply {
+            subtitleFont()
+            titleFont()
+            titleBoldFont()
 
 
-	  deephyTooltip("placeholder", settings = settings)
+            deephyTooltip("placeholder", settings = settings)
 
-	  /*
-	  Exception in thread "Thread-2" java.lang.ExceptionInInitializerError
-		at matt.fx.control.wrapper.tooltip.tooltipWrapper.<init>(tooltip.kt:52)
+            /*
+            Exception in thread "Thread-2" java.lang.ExceptionInInitializerError
+              at matt.fx.control.wrapper.tooltip.tooltipWrapper.<init>(tooltip.kt:52)
 
-		this ended up being due to YourKit..
-	  * */
+              this ended up being due to YourKit..
+            * */
 
 
-	}
-	deephyButton("placeholder")
-	deephyToggleButton("placeholder", 0.0, ToggleMechanism())
-  }
+        }
+        deephyButton("placeholder")
+        deephyToggleButton("placeholder", 0.0, ToggleMechanism())
+    }
 }

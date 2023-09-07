@@ -110,7 +110,7 @@ class TestDeephys {
         @JvmStatic
         @BeforeAll
         fun startSamplingRam() {
-            daemon {
+            daemon("startSamplingRam Thread") {
                 while (getRamSamples) {
                     sampleRam()
                     sleep(500.milliseconds)

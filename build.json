@@ -1,8 +1,10 @@
 {
   "type": "BasicJvmOnlyMod",
- "jvm":{ "exec": {
-    "type": "Typical"
-  }},
+  "jvm": {
+    "exec": {
+      "type": "Typical"
+    }
+  },
   "publicApp": true,
   "dependencies": [
     {
@@ -24,6 +26,11 @@
       "type": "Project",
       "cfg": "implementation",
       "path": ":k:fx:node:proto"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:codegen"
     },
     {
       "type": "Lib",

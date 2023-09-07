@@ -20,6 +20,7 @@ import matt.gui.mstage.ShowMode.DO_NOT_SHOW
 import matt.gui.mstage.WMode.CLOSE
 import matt.gui.option.EnumSetting
 import matt.gui.option.SettingsData
+import matt.lang.go
 import matt.lang.require.requireNull
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyRadioButton
@@ -68,7 +69,10 @@ class SettingsWindow(settings: DeephysSettingsController) : MStage() {
             this@SettingsWindow.initStyle(StageStyle.DECORATED)
             if (!this@SettingsWindow.isShowing) {
                 if (this@SettingsWindow.owner == null) {
-                    this@SettingsWindow.initOwner(receiver.stage)
+                    receiver.stage?.go {
+                        this@SettingsWindow.initOwner(it)
+                    }
+
                 }
                 println("waiting...")
                 this@SettingsWindow.showAndWait()

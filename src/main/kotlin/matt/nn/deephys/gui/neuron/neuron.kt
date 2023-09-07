@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.neuron
 
 import matt.async.thread.queue.QueueWorker
+import matt.codegen.tex.tex
 import matt.collect.itr.subList
 import matt.fx.control.wrapper.progressindicator.progressindicator
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
@@ -10,7 +11,6 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.fx.node.tex.dsl.tex
 import matt.lang.function.Consume
 import matt.lang.go
 import matt.math.op.div

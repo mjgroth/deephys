@@ -7,6 +7,7 @@ import javafx.scene.control.ContentDisplay.BOTTOM
 import javafx.scene.input.MouseEvent
 import javafx.scene.paint.Color
 import javafx.util.Duration
+import matt.codegen.tex.TeXDSL
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.popup.tooltip.Owner
@@ -21,7 +22,6 @@ import matt.fx.graphics.wrapper.pane.stack.StackPaneW
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.fx.node.tex.TexNodeFactory
-import matt.fx.node.tex.dsl.TeXDSL
 import matt.lang.function.Produce
 import matt.lang.weak.MyWeakRef
 import matt.nn.deephys.gui.draw.draw
@@ -97,7 +97,7 @@ fun DeephysNode.veryLazyDeephysTexTooltip(getCode: Produce<TeXDSL>) = run {
 fun NodeWrapper.veryLazyDeephysTexTooltip(settings: DeephysSettingsController, getCode: Produce<TeXDSL>) = run {
   veryLazyDeephysTooltipWithNode(/*darkBG = true*/settings) {
 	deephysTexNodeFactory.toCanvas(
-	  getCode().code()
+	  getCode().generate()
 	) ?: TextWrapper("error")
   }
 }

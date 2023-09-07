@@ -1,17 +1,17 @@
 package matt.nn.deephys.gui.global.color
 
 import javafx.scene.paint.CycleMethod.NO_CYCLE
-import matt.color.hexToColor
+import matt.color.rgb
 import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.style.gradient.linearGradient
 import matt.fx.graphics.wrapper.style.toFXColor
 import matt.obs.bind.binding
 
 object DeephysPalette {
-    val deephysBlue1 = hexToColor("#00bbe2").toFXColor()
-    val deephysBlue2 = hexToColor("#3360ad").toFXColor()
-    val deephysRed1 = hexToColor("#f5c39e").toFXColor()
-    val deephysRed2 = hexToColor("#da1d52").toFXColor()
+    val deephysBlue1 = rgb(0x00bbe2).toFXColor()
+    val deephysBlue2 = rgb(0x3360ad).toFXColor()
+    val deephysRed1 = rgb(0xf5c39e).toFXColor()
+    val deephysRed2 = rgb(0xda1d52).toFXColor()
     val deephysSelectGradient by lazy {
         linearGradient {
             startX = 0.0
@@ -35,9 +35,9 @@ object DeephysPalette {
     val tooltipBackground by lazy {
         DarkModeController.darkModeProp.binding {
             if (it) {
-                hexToColor("#111111").toFXColor()
+                rgb(0x11_11_11).toFXColor()
             } else {
-                hexToColor("#eeeeee").toFXColor()
+                rgb(0xEE_EE_EE).toFXColor()
             }
         }
     }

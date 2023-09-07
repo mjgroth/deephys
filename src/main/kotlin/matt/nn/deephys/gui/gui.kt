@@ -8,7 +8,6 @@ import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
 import matt.async.pool.DaemonPoolExecutor
 import matt.async.thread.daemon
-import matt.collect.itr.mapToArray
 import matt.exec.app.myVersion
 import matt.file.MFile
 import matt.file.commons.LogContext
@@ -42,16 +41,16 @@ import matt.gui.mstage.ShowMode.SHOW_AND_WAIT
 import matt.gui.mstage.WMode.NOTHING
 import matt.http.internet.TheInternet
 import matt.http.internet.isAvailable
-import matt.image.ICON_SIZES
+import matt.image.icon.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.err
 import matt.lang.sync
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
-import matt.nn.deephys.gui.Arg.`erase-settings`
-import matt.nn.deephys.gui.Arg.`erase-state`
-import matt.nn.deephys.gui.Arg.reset
+import matt.nn.deephys.gui.DeephysArg.`erase-settings`
+import matt.nn.deephys.gui.DeephysArg.`erase-state`
+import matt.nn.deephys.gui.DeephysArg.reset
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyActionButton
 import matt.nn.deephys.gui.global.deephyButton
@@ -80,35 +79,36 @@ val DEEPHYS_LOG_CONTEXT by lazy {
     LogContext(DEEPHY_USER_DATA_DIR)
 }
 
-enum class Arg {
+enum class DeephysArg {
     `erase-state`, `erase-settings`, reset
 }
+typealias DeephysArgs = List<DeephysArg>
 
 
 class DeephysApp {
 
     fun boot2(
         settingsNode: DeephySettingsNode,
-        vararg args: Arg,
+        args: DeephysArgs,
         throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE,
     ): Unit =
         boot(
-            args.mapToArray { it.name },
+            args = args,
             settingsNode = settingsNode,
             throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
         )
 
     /*invoked directly from test, in case I ever want to return something*/
     fun boot(
-        args: Array<String>,
+        args: DeephysArgs,
         settingsNode: DeephySettingsNode = DeephySettingsNode(),
         throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
     ) {
-        if (args.size == 1 && args[0] == `erase-state`.name) {
+        if (args.size == 1 && args[0] == `erase-state`) {
             DeephyState.delete()
-        } else if (args.size == 1 && args[0] == `erase-settings`.name) {
+        } else if (args.size == 1 && args[0] == `erase-settings`) {
             settingsNode.delete()
-        } else if (args.size == 1 && args[0] == reset.name) {
+        } else if (args.size == 1 && args[0] == reset) {
             DeephyState.delete()
             settingsNode.delete()
         } else {
@@ -136,7 +136,7 @@ class DeephysApp {
             }
 //            TEMP_DEBUG_LOG_FILE.appendln("boot8")
 
-            daemon {
+            daemon("initializeWhatICan Thread") {
                 initializeWhatICan()
             }
 
@@ -304,7 +304,6 @@ class DeephysApp {
         warmupFxComponents(settingsNode.settings)
 
 
-
         val myStageTitle = stageTitle.await()
         stage.title = myStageTitle
 
@@ -329,8 +328,6 @@ class DeephysApp {
 
 
 //        TEMP_DEBUG_LOG_FILE.appendln("startDeephyApp 2: ${Thread.currentThread().name},${Thread.currentThread().id},${Thread.currentThread().uncaughtExceptionHandler}")
-
-
 
 
 //        unsafeErr("test error")

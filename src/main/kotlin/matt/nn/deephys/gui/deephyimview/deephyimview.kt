@@ -3,12 +3,14 @@ package matt.nn.deephys.gui.deephyimview
 import javafx.scene.Cursor
 import matt.async.thread.queue.pool.FakeWorkerPool
 import matt.async.thread.queue.pool.QueueWorkerPool
+import matt.file.ext.FileExtension
 import matt.fx.graphics.dialog.saveFile
 import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
 import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.graphics.wrapper.style.toAwtColor
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.gui.menu.context.mcontextmenu
+import matt.image.save
 import matt.lang.NUM_LOGICAL_CORES
 import matt.log.warn.warn
 import matt.nn.deephys.gui.draw.draw
@@ -22,7 +24,6 @@ import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
-import javax.imageio.ImageIO
 import kotlin.time.Duration.Companion.milliseconds
 
 class DeephyImView(
@@ -84,7 +85,7 @@ class DeephyImView(
                             title = "choose where to save png"
                             extensionFilter(
                                 description = "png",
-                                "*.png"
+                                FileExtension.PNG,
                             )
                             initialSaveFileName =
                                 localWeakIm.deref()!!.category.label + "_" + localWeakIm.deref()!!.index.toString() + ".png"
@@ -115,11 +116,8 @@ class DeephyImView(
                             }
 
 
-                            ImageIO.write(
-                                bi,
-                                "png",
-                                pngFile
-                            )
+                            require(pngFile.path.endsWith(".png"))
+                            bi.save(pngFile)
                         }
 
                     }

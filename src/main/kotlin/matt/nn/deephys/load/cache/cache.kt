@@ -2,7 +2,7 @@ package matt.nn.deephys.load.cache
 
 import matt.file.MFile
 import matt.lang.function.Produce
-import matt.model.flowlogic.await.Awaitable
+import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.DelegatedSlot
 import matt.nn.deephys.gui.DEEPHY_USER_DATA_DIR
 import matt.nn.deephys.load.cache.cachedeleter.CacheDeleter
@@ -112,7 +112,7 @@ interface Cacher {
 }
 
 abstract class Caches {
-  abstract inner class CachedProp<R: Any> protected constructor(): Awaitable<R> {
+  abstract inner class CachedProp<R: Any> protected constructor(): ThreadAwaitable<R> {
 	private val slot = DelegatedSlot<R>()
 	override fun await() = slot.await()
 	fun strong(r: R) {

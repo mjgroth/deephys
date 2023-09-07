@@ -29,7 +29,7 @@ object VersionChecker {
 
     private var error = false
     private var checking = false
-    fun checkForUpdatesInBackground() = daemon {
+    fun checkForUpdatesInBackground() = daemon("VersionChecker Thread") {
         every(
             60.sec,
             timer = AccurateTimer(

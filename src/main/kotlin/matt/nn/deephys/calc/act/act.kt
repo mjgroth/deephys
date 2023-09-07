@@ -1,7 +1,7 @@
 package matt.nn.deephys.calc.act
 
 import matt.lang.require.requireOne
-import matt.math.jmath.sigFigs
+import matt.math.sigfig.withPrecision
 import matt.model.data.mathable.DoubleWrapper
 import matt.model.data.mathable.FloatWrapper
 import matt.model.data.mathable.NumberWrapper
@@ -76,7 +76,7 @@ value class RawActivationFloat32(override val value: Float) : RawActivation<Floa
     ActivationFloat32<RawActivationFloat32> {
 
 
-    override val formatted get() = "$RAW_ACT_SYMBOL: ${value.sigFigs(3)}"
+    override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
     override fun fromFloat(d: Float): RawActivationFloat32 {
         return RawActivationFloat32(d)
     }
@@ -89,7 +89,7 @@ value class RawActivationFloat64(override val value: Double) : RawActivation<Dou
     ActivationFloat64<RawActivationFloat64> {
 
 
-    override val formatted get() = "$RAW_ACT_SYMBOL: ${value.sigFigs(3)}"
+    override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
     override fun fromDouble(d: Double): RawActivationFloat64 {
         return RawActivationFloat64(d)
     }
@@ -174,7 +174,7 @@ value class ActivationRatioFloat32(override val value: Float) : ActivationRatio<
     ActivationFloat32<ActivationRatioFloat32> {
 
 
-    override val formatted get() = "max: ${(value * 100).sigFigs(3)}${ACT_RATIO_SYMBOL}"
+    override val formatted get() = "max: ${(value * 100).withPrecision(3)}${ACT_RATIO_SYMBOL}"
     override fun plus(m: ActivationRatioFloat32): ActivationRatioFloat32 {
         return ActivationRatioFloat32(value + m.value)
     }
@@ -194,7 +194,7 @@ value class ActivationRatioFloat64(override val value: Double) : ActivationRatio
     ActivationFloat64<ActivationRatioFloat64> {
 
 
-    override val formatted get() = "max: ${(value * 100).sigFigs(3)}$ACT_RATIO_SYMBOL"
+    override val formatted get() = "max: ${(value * 100).withPrecision(3)}$ACT_RATIO_SYMBOL"
     override fun plus(m: ActivationRatioFloat64): ActivationRatioFloat64 {
         return ActivationRatioFloat64(value + m.value)
     }
