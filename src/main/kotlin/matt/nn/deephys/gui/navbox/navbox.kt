@@ -25,7 +25,7 @@ import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dataset.dtab.DeephysTabPane
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
-import matt.rstruct.resourceStream
+import matt.rstruct.loader.systemResourceLoader
 import java.awt.Desktop
 import java.net.URI
 
@@ -153,7 +153,7 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
                             val favSize = 18
                             +FaviconLoader.loadAsynchronously(
                                 url = url.toURL(),
-                                backupImage = svgToFXImage(resourceStream("web.svg")!!, favSize),
+                                backupImage = svgToFXImage(systemResourceLoader().resourceStream("web.svg")!!, favSize),
                                 fitWidth = favSize.toDouble(),
                                 fitHeight = favSize.toDouble()
                             )

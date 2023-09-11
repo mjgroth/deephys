@@ -22,7 +22,7 @@ import matt.nn.deephys.load.loadCbor
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.binding
-import matt.rstruct.resourceStream
+import matt.rstruct.loader.systemResourceLoader
 
 fun initializeWhatICan() {
     val t = tic("initializeWhatICan")
@@ -43,7 +43,7 @@ fun initializeWhatICan() {
 
 
 val gearImage = DaemonLoadedValueOp(TheThreadProvider,"gear.png") {
-    Image(resourceStream("gear.png"))
+    Image(systemResourceLoader().resourceStream("gear.png"))
 }
 
 val modelBinding = DaemonLoadedValueOp(TheThreadProvider,".model binding") {

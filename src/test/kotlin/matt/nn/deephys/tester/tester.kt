@@ -30,8 +30,8 @@ import matt.nn.deephys.NUM_IM_CLICKS
 import matt.nn.deephys.NUM_SLICE_CLICKS
 import matt.nn.deephys.TestDeephys
 import matt.nn.deephys.WAIT_FOR_GUI_INTERVAL
-import matt.nn.deephys.gui.DeephysArg.reset
 import matt.nn.deephys.gui.DeephysApp
+import matt.nn.deephys.gui.DeephysArg.reset
 import matt.nn.deephys.gui.category.pie.CategoryPie.CategorySlice
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
@@ -159,6 +159,7 @@ class DeephysTestSession {
                 root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
                 DeephyState.model.value = testData.model.toSFile()
             }
+
             sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe(RunLaterReturnLatchManager)
             tocAndSampleRam("GUI ready")
 

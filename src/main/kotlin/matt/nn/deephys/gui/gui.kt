@@ -67,8 +67,8 @@ import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
 import matt.obs.prop.BindableProperty
 import matt.obs.subscribe.Pager
+import matt.rstruct.loader.systemResourceLoader
 import matt.rstruct.modID
-import matt.rstruct.resourceURL
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -336,7 +336,7 @@ class DeephysApp {
 
         stage.icons.addAll(
             ICON_SIZES.map {
-                Image(resourceURL("logo_$it.png").toString())
+                Image(systemResourceLoader().resourceURL("logo_$it.png").toString())
             }
         )
 

@@ -13,7 +13,8 @@ import matt.log.profile.data.RamSample
 import matt.log.profile.data.ramSample
 import matt.model.data.rect.RectSize
 import matt.nn.deephys.tester.DeephysTestSession
-import matt.reflect.reflections.mattSubClasses
+import matt.reflect.scan.mattSubClasses
+import matt.reflect.scan.systemScanner
 import matt.test.assertTrueLazyMessage
 import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
@@ -135,7 +136,7 @@ class TestDeephys {
 
 
     @Test
-    fun computeInputsAreData() {
+    fun computeInputsAreData() = with(systemScanner().usingClassGraph()) {
         GlobalRAMComputeInput::class.mattSubClasses().forEach {
             assertTrueLazyMessage(it.isData || it.isAbstract) {
                 "$it is a ComputeInput but not data... how is it supposed to cache stuff correctly?"
