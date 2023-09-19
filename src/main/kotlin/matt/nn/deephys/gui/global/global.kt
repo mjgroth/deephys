@@ -47,7 +47,6 @@ import matt.gui.actiontext.actionLabel
 import matt.gui.actiontext.actionText
 import matt.math.sigfig.withPrecision
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
-import matt.model.op.convert.StringConverter
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -61,270 +60,298 @@ import matt.obs.math.int.ObsI
 import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
 import matt.obs.prop.Var
+import matt.prim.converters.StringConverter
 import matt.prim.str.isInt
 
 /*null because gets in the way of existing animations for pie slices*/
 /*val DEEPHYS_FADE_DUR = 500.milliseconds*/
 val DEEPHYS_FADE_DUR = null
 
-fun <E: Any> ET.deephysSpinner(
-  label: String,
-  choices: List<E>,
-  defaultChoice: ()->E,
-  converter: StringConverter<E>,
-  viewer: DatasetViewer,
-  getCurrent: ObsVal<E?>,
-  acceptIf: (E)->Boolean,
-  navAction: DatasetViewer.(E)->Unit,
+fun <E : Any> ET.deephysSpinner(
+    label: String,
+    choices: List<E>,
+    defaultChoice: () -> E,
+    converter: StringConverter<E>,
+    viewer: DatasetViewer,
+    getCurrent: ObsVal<E?>,
+    acceptIf: (E) -> Boolean,
+    navAction: DatasetViewer.(E) -> Unit,
 
-  ) = run {
-  var theValueProp: ObsVal<E>? = null
-  h {
+    ) = run {
+    var theValueProp: ObsVal<E>? = null
+    h {
 
-	alignment = CENTER_LEFT
-
-
-	var badText: ObsB? = null
-
-	val theSpinner = spinner(
-	  items = choices.toBasicObservableList(),
-	  editable = true,
-	  enableScroll = false,
-	  converter = converter
-	) {
-
-	  autoCommitOnType()
-
-	  valueFactory!!.wrapAround = true
-
-	  badText = textProperty.binding {
-		it == null || !it.isInt() || it.toInt() !in choices.indices
-	  }
-	  /*
-			border = FXBorder.solid(Color.TRANSPARENT, 10.0)
-			badText!!.onChange {
-			  border = if (it) FXBorder.solid(Color.RED, 10.0)
-			  else FXBorder.solid(Color.TRANSPARENT, 10.0)
-			}*/
-
-	  val current = getCurrent.value?.takeIf { acceptIf(it) } ?: defaultChoice()
-	  valueFactory!!.value = current
+        alignment = CENTER_LEFT
 
 
-	  val rBlocker = RecursionBlocker()
+        var badText: ObsB? = null
 
-	  valueFactory!!.valueProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
-		rBlocker.with {
-		  deRefedViewer.navAction(selection)
-		}
-	  }
+        val theSpinner = spinner(
+            items = choices.toBasicObservableList(),
+            editable = true,
+            enableScroll = false,
+            converter = converter
+        ) {
 
+            autoCommitOnType()
 
+            valueFactory!!.wrapAround = true
 
-	  getCurrent.onChangeWithWeak(this) { _, newValue ->
-		rBlocker.with {
-		  if (newValue != null && acceptIf(newValue)) {
-			valueFactory!!.valueProperty v newValue
-		  } else {
-			valueFactory!!.valueProperty v defaultChoice()
-		  }
-		}
-	  }
+            badText = textProperty.binding {
+                it == null || !it.isInt() || it.toInt() !in choices.indices
+            }
+            /*
+                  border = FXBorder.solid(Color.TRANSPARENT, 10.0)
+                  badText!!.onChange {
+                    border = if (it) FXBorder.solid(Color.RED, 10.0)
+                    else FXBorder.solid(Color.TRANSPARENT, 10.0)
+                  }*/
 
-	  theValueProp = valueFactory!!.valueProperty
-
-	}
-
-
-	deephysLabeledControl(label, theSpinner) {
-	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
-	  backgroundProperty.bindWeakly(
-		badText!!.binding {
-		  if (it) backgroundFromColor(FXColor.RED)
-		  else null
-		}
-	  )
-	}
-	deephysText("please input valid integer index between 0 and ${choices.size}") {
-	  visibleAndManagedProp.bind(viewer.isUnboundToDSet.and(badText!!))
-	}
+            val current = getCurrent.value?.takeIf { acceptIf(it) } ?: defaultChoice()
+            valueFactory!!.value = current
 
 
-  } to theValueProp!!
+            val rBlocker = RecursionBlocker()
+
+            valueFactory!!.valueProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
+                rBlocker.with {
+                    deRefedViewer.navAction(selection)
+                }
+            }
+
+
+
+            getCurrent.onChangeWithWeak(this) { _, newValue ->
+                rBlocker.with {
+                    if (newValue != null && acceptIf(newValue)) {
+                        valueFactory!!.valueProperty v newValue
+                    } else {
+                        valueFactory!!.valueProperty v defaultChoice()
+                    }
+                }
+            }
+
+            theValueProp = valueFactory!!.valueProperty
+
+        }
+
+
+        deephysLabeledControl(label, theSpinner) {
+            visibleAndManagedProp.bind(viewer.isUnboundToDSet)
+            backgroundProperty.bindWeakly(
+                badText!!.binding {
+                    if (it) backgroundFromColor(FXColor.RED)
+                    else null
+                }
+            )
+        }
+        deephysText("please input valid integer index between 0 and ${choices.size}") {
+            visibleAndManagedProp.bind(viewer.isUnboundToDSet.and(badText!!))
+        }
+
+
+    } to theValueProp!!
 }
 
 
 fun ET.deephysLabeledControl(
-  label: String,
-  control: ControlWrapper,
-  op: HBoxWrapper<NW>.()->Unit = {}
+    label: String,
+    control: ControlWrapper,
+    op: HBoxWrapper<NW>.() -> Unit = {}
 ) = h {
-  alignment = Pos.CENTER_LEFT
-  h {
-	alignment = Pos.CENTER_LEFT
-	deephysText("$label:")
-	prefWidth = 60.0
-  }
-  +control.apply {
-	prefWidth = 100.0
-  }
-  op()
+    alignment = Pos.CENTER_LEFT
+    h {
+        alignment = Pos.CENTER_LEFT
+        deephysText("$label:")
+        prefWidth = 60.0
+    }
+    +control.apply {
+        prefWidth = 100.0
+    }
+    op()
 }
 
 fun ET.deephysLabeledControl2(
-  label: String,
-  control: ControlWrapper,
-  op: HBoxWrapper<NW>.()->Unit = {}
+    label: String,
+    control: ControlWrapper,
+    op: HBoxWrapper<NW>.() -> Unit = {}
 ) = h {
-  alignment = Pos.CENTER_LEFT
-  h {
-	alignment = Pos.CENTER_LEFT
-	deephysText("$label:")
-	prefWidth = 60.0
-  }
-  hSpacer(5.0)
-  +control.apply {
-	prefWidth = 500.0
-	hgrow = ALWAYS
-  }
-  op()
+    alignment = Pos.CENTER_LEFT
+    h {
+        alignment = Pos.CENTER_LEFT
+        deephysText("$label:")
+        prefWidth = 60.0
+    }
+    hSpacer(5.0)
+    +control.apply {
+        prefWidth = 500.0
+        hgrow = ALWAYS
+    }
+    op()
 }
 
 fun ChoiceBoxWrapper<*>.configForDeephys() {
-  stupidlySetFont(DEEPHYS_FONT_DEFAULT)
+    stupidlySetFont(DEEPHYS_FONT_DEFAULT)
 }
 
-fun EventTargetWrapper.deephysText(s: String = "", op: DeephyText.()->Unit = {}) =
-  DeephyText(BindableProperty(s)).apply(op).also { +it }
+fun EventTargetWrapper.deephysText(
+    s: String = "",
+    op: DeephyText.() -> Unit = {}
+) =
+    DeephyText(BindableProperty(s)).apply(op).also { +it }
 
 fun EventTargetWrapper.sigFigText(
-  num: Number,
-  sigFigSett: ObsI,
-  numSuffix: String,
-  settings: DeephysSettingsController,
-  tooltip: String,
-  op: DeephyText.()->Unit = {}
+    num: Number,
+    sigFigSett: ObsI,
+    numSuffix: String,
+    settings: DeephysSettingsController,
+    tooltip: String,
+    op: DeephyText.() -> Unit = {}
 ) = deephysText {
-  textProperty.bindWeakly(sigFigSett.weakBinding(this) { _, it ->
-	when (num) {
-	  is Float  -> num.withPrecision(it).toString()
-	  is Double -> num.withPrecision(it).toString()
-	  else      -> error("not ready for different dtype")
-	} + numSuffix
-  })
-  veryLazyDeephysTooltip(tooltip, settings)
-  op()
+    textProperty.bindWeakly(sigFigSett.weakBinding(this) { _, it ->
+        when (num) {
+            is Float -> num.withPrecision(it).toString()
+            is Double -> num.withPrecision(it).toString()
+            else -> error("not ready for different dtype")
+        } + numSuffix
+    })
+    veryLazyDeephysTooltip(tooltip, settings)
+    op()
 }
 
 
+fun EventTargetWrapper.deephysText(
+    s: ObsS,
+    op: DeephyText.() -> Unit = {}
+) = DeephyText(s).apply(op).also { +it }
 
-fun EventTargetWrapper.deephysText(s: ObsS, op: DeephyText.()->Unit = {}) = DeephyText(s).apply(op).also { +it }
 fun DeephyText(s: String) = DeephyText(BindableProperty(s))
-class DeephyText(s: ObsS): TextWrapper() {
-  init {
-	textProperty.bind(s)
-	font = DEEPHYS_FONT_DEFAULT
-  }
+class DeephyText(s: ObsS) : TextWrapper() {
+    init {
+        textProperty.bind(s)
+        font = DEEPHYS_FONT_DEFAULT
+    }
 }
 
 fun TextLike.subtitleFont() {
-  font = DEEPHY_FONT_SUBTITLE
+    font = DEEPHY_FONT_SUBTITLE
 }
 
 fun TextLike.titleFont() {
-  font = DEEPHY_FONT_TITLE
+    font = DEEPHY_FONT_TITLE
 }
 
 fun TextLike.titleBoldFont() {
-  font = DEEPHY_FONT_TITLE_BOLD
+    font = DEEPHY_FONT_TITLE_BOLD
 }
 
-fun EventTargetWrapper.deephyActionText(s: String = "", op: ()->Unit) = actionText(s) {
-  op()
+fun EventTargetWrapper.deephyActionText(
+    s: String = "",
+    op: () -> Unit
+) = actionText(s) {
+    op()
 }.apply {
-  font = DEEPHYS_FONT_DEFAULT
-  cursor = Cursor.HAND
+    font = DEEPHYS_FONT_DEFAULT
+    cursor = Cursor.HAND
 }
 
-fun EventTargetWrapper.deephyActionLabel(s: String = "", op: ()->Unit) = actionLabel(s) {
-  op()
+fun EventTargetWrapper.deephyActionLabel(
+    s: String = "",
+    op: () -> Unit
+) = actionLabel(s) {
+    op()
 }.apply {
-  font = DEEPHYS_FONT_DEFAULT
-  cursor = Cursor.HAND
+    font = DEEPHYS_FONT_DEFAULT
+    cursor = Cursor.HAND
 }
 
 
-fun EventTargetWrapper.deephysLabel(s: String = "", op: LabelWrapper.()->Unit = {}) = label(s) {
-  font = DEEPHYS_FONT_DEFAULT
-  op()
+fun EventTargetWrapper.deephysLabel(
+    s: String = "",
+    op: LabelWrapper.() -> Unit = {}
+) = label(s) {
+    font = DEEPHYS_FONT_DEFAULT
+    op()
 }
 
-fun EventTargetWrapper.deephyHyperlink(s: String = "", op: HyperlinkWrapper.()->Unit = {}) = hyperlink(s) {
-  font = DEEPHYS_FONT_DEFAULT
-  op()
+fun EventTargetWrapper.deephyHyperlink(
+    s: String = "",
+    op: HyperlinkWrapper.() -> Unit = {}
+) = hyperlink(s) {
+    font = DEEPHYS_FONT_DEFAULT
+    op()
 }
 
 
 fun EventTargetWrapper.deephyCheckbox(
-  s: String = "",
-  prop: Var<Boolean>? = null,
-  weakBothWays: Boolean? = null,
-  op: CheckBoxWrapper.()->Unit = {}
+    s: String = "",
+    prop: Var<Boolean>? = null,
+    weakBothWays: Boolean? = null,
+    op: CheckBoxWrapper.() -> Unit = {}
 ) = checkbox(s, property = prop, weakBothWays = weakBothWays) {
-  font = DEEPHYS_FONT_DEFAULT
-  op()
+    font = DEEPHYS_FONT_DEFAULT
+    op()
 }
 
-fun EventTargetWrapper.deephyButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = button(s) {
-  deephysButtonStyle()
-  theOp()
+fun EventTargetWrapper.deephyButton(
+    s: String = "",
+    theOp: ButtonWrapper.() -> Unit = {}
+) = button(s) {
+    deephysButtonStyle()
+    theOp()
 }
 
 const private val DEEPHY_ICON_BUTTON_SIZE = 25
 
-fun EventTargetWrapper.deephyIconButton(icon: String, theOp: ButtonWrapper.()->Unit = {}) = deephyButton("") {
-  graphic = svgIcon(icon, DEEPHY_ICON_BUTTON_SIZE)
-  doMyOwnBackgroundStuff(
-	hoverColor = FXColor(0.5, 0.5, 0.5, 0.2),
-	clickColor = FXColor(1.0, 1.0, 0.0, 0.5)
-  )
-  theOp()
+fun EventTargetWrapper.deephyIconButton(
+    icon: String,
+    theOp: ButtonWrapper.() -> Unit = {}
+) = deephyButton("") {
+    graphic = svgIcon(icon, DEEPHY_ICON_BUTTON_SIZE)
+    doMyOwnBackgroundStuff(
+        hoverColor = FXColor(0.5, 0.5, 0.5, 0.2),
+        clickColor = FXColor(1.0, 1.0, 0.0, 0.5)
+    )
+    theOp()
 }
 
 fun ButtonBaseWrapper<*>.deephysButtonStyle() {
-  font = DEEPHYS_FONT_DEFAULT
-  /*so when I highlight the button later, the layout does not change. Also the bit of space is nice.*/
-  border = Border.stroke(Color.TRANSPARENT)
+    font = DEEPHYS_FONT_DEFAULT
+    /*so when I highlight the button later, the layout does not change. Also the bit of space is nice.*/
+    border = Border.stroke(Color.TRANSPARENT)
 }
 
-fun <V: Any> EventTargetWrapper.deephyRadioButton(
-  s: String,
-  group: ToggleMechanism<V>,
-  value: V,
-  theOp: RadioButtonWrapper.()->Unit = {}
+fun <V : Any> EventTargetWrapper.deephyRadioButton(
+    s: String,
+    group: ToggleMechanism<V>,
+    value: V,
+    theOp: RadioButtonWrapper.() -> Unit = {}
 ) = radiobutton<V>(s, group, value) {
-  deephysButtonStyle()
-  theOp()
+    deephysButtonStyle()
+    theOp()
 }
 
-fun <V: Any> NodeWrapper.deephyToggleButton(
-  s: String = "",
-  value: V,
-  group: ToggleMechanism<V>,
-  op: ToggleButtonWrapper.()->Unit = {}
+fun <V : Any> NodeWrapper.deephyToggleButton(
+    s: String = "",
+    value: V,
+    group: ToggleMechanism<V>,
+    op: ToggleButtonWrapper.() -> Unit = {}
 ) = togglebutton(s, value = value, group = group) {
-  deephysButtonStyle()
-  op()
+    deephysButtonStyle()
+    op()
 }
 
-fun NodeWrapper.deephyActionButton(s: String = "", theOp: ButtonWrapper.()->Unit = {}) = actionbutton(s) {
-  theOp()
+fun NodeWrapper.deephyActionButton(
+    s: String = "",
+    theOp: ButtonWrapper.() -> Unit = {}
+) = actionbutton(s) {
+    theOp()
 }.apply {
-  deephysButtonStyle()
+    deephysButtonStyle()
 }
 
 fun ButtonWrapper.deephysSingleCharButtonFont() {
-  font = font.fixed().copy(size = DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE).fx()
+    font = font.fixed().copy(size = DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE).fx()
 }
 
 val DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE = 18.0
@@ -332,23 +359,23 @@ val DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE = 18.0
 const val DEEPHYS_LATEX_TOOLTIP_SCALE = 0.70
 
 val DEEPHYS_FONT_DEFAULT: Font by lazy {
-  Font.font("Georgia")
+    Font.font("Georgia")
 
 }
 val DEEPHYS_FONT_MONO by lazy {
-  DEEPHYS_FONT_DEFAULT.fixed().copy(family = MONO_FONT.family).fx()
+    DEEPHYS_FONT_DEFAULT.fixed().copy(family = MONO_FONT.family).fx()
 }
-val DEEPHY_FONT_SUBTITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size*1.2).fx() }
-val DEEPHY_FONT_TITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size*1.5).fx() }
+val DEEPHY_FONT_SUBTITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size * 1.2).fx() }
+val DEEPHY_FONT_TITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size * 1.5).fx() }
 val DEEPHY_FONT_TITLE_BOLD by lazy { DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx() }
 
 
-val deephysNullMessageFact: (message: String)->NW = { message ->
-  VBoxW().apply {
-	spacer()
-	h {
-	  spacer()
-	  deephysText(message)
-	}
-  }
+val deephysNullMessageFact: (message: String) -> NW = { message ->
+    VBoxW().apply {
+        spacer()
+        h {
+            spacer()
+            deephysText(message)
+        }
+    }
 }

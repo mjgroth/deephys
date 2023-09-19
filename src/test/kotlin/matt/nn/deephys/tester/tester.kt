@@ -2,9 +2,11 @@ package matt.nn.deephys.tester
 
 import javafx.application.Platform
 import matt.async.thread.namedThread
-import matt.file.CborFile
 import matt.file.commons.DEEPHYS_TEST_RESULT_JSON
-import matt.file.toSFile
+import matt.file.construct.mFile
+import matt.file.ext.mkparents
+import matt.file.toMacFile
+import matt.file.types.checkType
 import matt.fx.graphics.fxthread.RunLaterReturnLatchManager
 import matt.fx.graphics.fxthread.runLaterReturn
 import matt.fx.graphics.wrapper.node.findRecursivelyFirstOrNull
@@ -13,6 +15,7 @@ import matt.gui.service.AsyncFXActionAbilitiesService
 import matt.json.prim.loadJson
 import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
+import matt.lang.model.file.MacFileSystem
 import matt.lang.profiling.IsProfilingWithJProfiler
 import matt.lang.profiling.IsProfilingWithYourKit
 import matt.log.profile.data.TestResults
@@ -50,6 +53,7 @@ import kotlin.test.assertNotEquals
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+context(matt.lang.shutdown.preaper.ProcessReaper)
 @OptIn(ExperimentalMattCode::class)
 class DeephysTestSession {
 
@@ -157,7 +161,7 @@ class DeephysTestSession {
         profiler.recordCPU {
             Platform.runLater {
                 root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
-                DeephyState.model.value = testData.model.toSFile()
+                DeephyState.model.value = testData.model.toMacFile()
             }
 
             sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe(RunLaterReturnLatchManager)
@@ -177,7 +181,7 @@ class DeephysTestSession {
 
             runLaterReturn {
                 testViewersAndFiles.forEach {
-                    it.first.file.value = CborFile(it.second.abspath)
+                    it.first.file.value = (mFile(it.second.abspath, MacFileSystem)).checkType()
                 }
             }
             tocAndSampleRam("set test files")

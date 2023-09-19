@@ -23,7 +23,7 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.layer.Layer
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.prim.str.mybuild.string
+import matt.prim.str.mybuild.api.string
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1

@@ -2,10 +2,11 @@ package matt.nn.deephys.load.cache.raf
 
 import matt.async.executors.ThreadPool
 import matt.async.thread.daemon
-import matt.file.MFile
+import matt.lang.model.file.FsFile
 import matt.lang.NOT_IMPLEMENTED
 import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.anno.SeeURL
+import matt.lang.file.toJFile
 import matt.lang.lastIndex
 import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
@@ -28,20 +29,20 @@ import kotlin.time.Duration.Companion.milliseconds
 
 
 class EvenlySizedRAFCache(private val rafCache: RAFCacheImpl, private val deedSize: Int) : RAFCache {
-    constructor(f: MFile, deedSize: Int) : this(rafCache = RAFCacheImpl(f), deedSize = deedSize)
+    constructor(f: FsFile, deedSize: Int) : this(rafCache = RAFCacheImpl(f), deedSize = deedSize)
 
     fun rent() = rafCache.rent(deedSize)
 }
 
 
 class RAFCacheImpl(
-    private val f: MFile
+    private val f: FsFile
 ) : RAFCache {
 
     private var fact: Lazy<RAFLike> = lazy {
         /*AsyncSparseWriter(f)*/
         /*SparseWriter(f)*/
-        RealRAF(RandomAccessFile(f, "rw"))
+        RealRAF(RandomAccessFile(f.toJFile(), "rw"))
     }
 
     private val raf: RAFLike
@@ -60,7 +61,7 @@ class RAFCacheImpl(
             raf.close()
         }
         fact = lazy {
-            RealRAF(RandomAccessFile(f, "r"))
+            RealRAF(RandomAccessFile(f.toJFile(), "r"))
         }
         didCloseWriting = true
     }
@@ -92,7 +93,7 @@ class RAFCacheImpl(
 
     private val readerRAFs by lazy {
         List(NUM_LOGICAL_CORES) {
-            lazy { RealRAF(RandomAccessFile(f, "r")) }
+            lazy { RealRAF(RandomAccessFile(f.toJFile(), "r")) }
         }
     }
     private var nextReaderRAFI = 0
@@ -198,7 +199,7 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
 
 
 @SeeURL("https://stackoverflow.com/questions/50191063/java-using-randomaccessfile-after-seek-is-very-slow-what-is-the-reason")
-class SparseWriter(file: MFile) : SeekableRAFLike() {
+class SparseWriter(file: FsFile) : SeekableRAFLike() {
 
     companion object {
         private val options = arrayOf(
@@ -209,7 +210,7 @@ class SparseWriter(file: MFile) : SeekableRAFLike() {
     }
 
     override val channel by lazy {
-        Files.newByteChannel(file.toPath(), *options)
+        Files.newByteChannel(file.toJFile().toPath(), *options)
     }
 
     override fun seek(pos: Long) {
@@ -239,7 +240,7 @@ class SparseWriter(file: MFile) : SeekableRAFLike() {
 }
 
 @SeeURL("https://stackoverflow.com/questions/50191063/java-using-randomaccessfile-after-seek-is-very-slow-what-is-the-reason")
-class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: MFile) : RAFLike {
+class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: FsFile) : RAFLike {
 
     companion object {
         private val options = setOf(
@@ -285,7 +286,7 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: MFile) : RAFLike {
     private var latch: SimpleThreadLatch? = null
 
     override val channel by lazy {
-        AsynchronousFileChannel.open(file.toPath(), options, pool)
+        AsynchronousFileChannel.open(file.toJFile().toPath(), options, pool)
     }
 
 

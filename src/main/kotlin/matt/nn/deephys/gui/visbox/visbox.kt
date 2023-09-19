@@ -3,10 +3,10 @@ package matt.nn.deephys.gui.visbox
 import javafx.application.Platform
 import javafx.geometry.Pos.CENTER
 import javafx.geometry.Pos.TOP_CENTER
-import matt.file.CborFile
-import matt.file.MFile
+import matt.file.construct.mFile
 import matt.file.ext.FileExtension
-import matt.file.toSFile
+import matt.file.toMacFile
+import matt.file.types.checkType
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -20,6 +20,8 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.lang.disabledCode
 import matt.lang.go
+import matt.lang.model.file.FsFile
+import matt.lang.model.file.MacFileSystem
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
@@ -39,7 +41,7 @@ import matt.nn.deephys.init.modelBinding
 import matt.nn.deephys.load.loadSwapper
 import matt.nn.deephys.state.DeephyState
 import matt.obs.prop.BindableProperty
-import matt.prim.str.mybuild.string
+import matt.prim.str.mybuild.api.string
 import matt.prim.str.truncateWithElipsesOrAddSpaces
 
 
@@ -50,10 +52,10 @@ class VisBox(
 
 
     fun load(
-        modelFile: MFile,
-        testFiles: List<MFile>
+        modelFile: FsFile,
+        testFiles: List<FsFile>
     ) {
-        DeephyState.model.value = modelFile.toSFile()
+        DeephyState.model.value = modelFile.toMacFile()
         runLater {
             val dSetViewsVBox = findRecursivelyFirstOrNull<DSetViewsVBox>() ?: error("no dset views box!")
             dSetViewsVBox.removeAllTests()
@@ -61,13 +63,12 @@ class VisBox(
                 /*findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
                 testFiles.forEach { f ->
                     val viewer = dSetViewsVBox.addTest()
-                    viewer.file.value = CborFile(f.path)
+                    viewer.file.value = (mFile(f.path, MacFileSystem)).checkType()
                 }
             }
         }
 
     }
-
 
 
     init {
@@ -95,7 +96,7 @@ class VisBox(
 
                     val f = openFile {
                         extensionFilter("model files", FileExtension.MODEL)
-                    }?.toSFile()
+                    }?.toMacFile()
 
                     if (f != null) {
                         DeephyState.tests.value = null

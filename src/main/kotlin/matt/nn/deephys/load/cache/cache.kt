@@ -1,6 +1,8 @@
 package matt.nn.deephys.load.cache
 
-import matt.file.MFile
+import matt.lang.model.file.FsFile
+import matt.file.ext.mkFold
+import matt.file.toJioFile
 import matt.lang.function.Produce
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.DelegatedSlot
@@ -13,123 +15,124 @@ import matt.sys.idgen.IDGenerator
 
 object DeephysCacheManager {
 
-  private val DEEPHY_CACHE_DIR = DEEPHY_USER_DATA_DIR.mkFold("Cache")
+    private val DEEPHY_CACHE_DIR = DEEPHY_USER_DATA_DIR.toJioFile().mkFold("Cache").toJioFile()
 
-  private val DATA_SETS_CACHE_DIR = DEEPHY_CACHE_DIR.mkFold("datasets")
+    private val DATA_SETS_CACHE_DIR = DEEPHY_CACHE_DIR.mkFold("datasets").toJioFile()
 
-  private val oldDatasetCaches = DATA_SETS_CACHE_DIR.listFiles()!!
+    private val oldDatasetCaches = DATA_SETS_CACHE_DIR.listFiles()!!
 
-  val cacheDeleter = CacheDeleter {
-	val weirdCaches = DEEPHY_CACHE_DIR.listFiles()!!.filter { it !in listOf(DATA_SETS_CACHE_DIR) }
-	weirdCaches + oldDatasetCaches
-  }
+    val cacheDeleter = CacheDeleter {
+        val weirdCaches = DEEPHY_CACHE_DIR.listFiles()!!.filter { it !in listOf(DATA_SETS_CACHE_DIR) }
+        weirdCaches + oldDatasetCaches
+    }
 
-  private val oldDatasetIDs = oldDatasetCaches.mapNotNull {
-	it.name.toIntOrNull()
-  }
+    private val oldDatasetIDs = oldDatasetCaches.mapNotNull {
+        it.name.toIntOrNull()
+    }
 
-  private val idGenerator = IDGenerator(taken = oldDatasetIDs)
-  @Synchronized private fun getNextDatasetID() = idGenerator.next()
+    private val idGenerator = IDGenerator(taken = oldDatasetIDs)
+    @Synchronized
+    private fun getNextDatasetID() = idGenerator.next()
 
-  fun newDatasetCache() = DatasetCache(DATA_SETS_CACHE_DIR.mkFold(getNextDatasetID()))
+    fun newDatasetCache() = DatasetCache(DATA_SETS_CACHE_DIR.mkFold(getNextDatasetID()).toJioFile())
 
 
-  class DatasetCache(
-	folder: MFile,
-  ) {
-	val neuronsRAF = RAFCacheImpl(folder["neurons.raf"])
-	val activationsRAF = RAFCacheImpl(folder["activations.raf"])
-	val pixelsRAF = RAFCacheImpl(folder["pixels.raf"])
+    class DatasetCache(
+        folder: FsFile,
+    ) {
+        val neuronsRAF = RAFCacheImpl(folder["neurons.raf"])
+        val activationsRAF = RAFCacheImpl(folder["activations.raf"])
+        val pixelsRAF = RAFCacheImpl(folder["pixels.raf"])
 
-  }
+    }
 }
 
 interface Cacheable {
-  val cacheID: Int
+    val cacheID: Int
 }
 
 
 abstract class FileCaches(
-  private val rootCacheFolder: MFile
-): Caches(), Cacheable {
-  private val cacheFold by lazy {
-	rootCacheFolder.mkFold("$cacheID")
-  }
+    private val rootCacheFolder: FsFile
+) : Caches(), Cacheable {
+    private val cacheFold by lazy {
+        rootCacheFolder.toJioFile().mkFold("$cacheID")
+    }
 
 
-  abstract inner class CachedFileProp<R: Any> protected constructor(): CachedProp<R>() {
+    abstract inner class CachedFileProp<R : Any> protected constructor() : CachedProp<R>() {
 
-	/*example: "pixels.cbor"*/
-	protected abstract val propFileName: String
+        /*example: "pixels.cbor"*/
+        protected abstract val propFileName: String
 
-	private val propFile get() = cacheFold[propFileName]
-	override fun cache(bytes: ByteArray) {
-	  propFile.writeBytes(bytes)
-	  lazyWeak {
-		decode(propFile.readBytes())
-	  }
-	}
-  }
+        private val propFile get() = cacheFold[propFileName].toJioFile()
+        override fun cache(bytes: ByteArray) {
+            propFile.writeBytes(bytes)
+            lazyWeak {
+                decode(propFile.readBytes())
+            }
+        }
+    }
 
 
 }
 
-abstract class RAFCaches: Caches() {
-  abstract inner class CachedRAFProp<R: Any> protected constructor(
-	rafCache: EvenlySizedRAFCache,
-  ): CachedProp<R>() {
-	val deed by lazy { rafCache.rent() }
-	override fun cache(bytes: ByteArray) {
-	  deed.write(bytes)
-	  lazyWeak {
-		decode(deed.read())
-	  }
-	}
+abstract class RAFCaches : Caches() {
+    abstract inner class CachedRAFProp<R : Any> protected constructor(
+        rafCache: EvenlySizedRAFCache,
+    ) : CachedProp<R>() {
+        val deed by lazy { rafCache.rent() }
+        override fun cache(bytes: ByteArray) {
+            deed.write(bytes)
+            lazyWeak {
+                decode(deed.read())
+            }
+        }
 
-	private inner class CacherImpl: Cacher {
-	  private val stream by lazy { deed.outputStream().buffered(2000) }
-	  override fun finalize() {
-		stream.flush()
-		lazyWeak {
-		  decode(deed.read())
-		}
-	  }
+        private inner class CacherImpl : Cacher {
+            private val stream by lazy { deed.outputStream().buffered(2000) }
+            override fun finalize() {
+                stream.flush()
+                lazyWeak {
+                    decode(deed.read())
+                }
+            }
 
-	  override fun write(bytes: ByteArray) {
-		stream.write(bytes)
-	  }
-	}
+            override fun write(bytes: ByteArray) {
+                stream.write(bytes)
+            }
+        }
 
-	val cacher: Cacher by lazy {
-	  CacherImpl()
-	}
-  }
+        val cacher: Cacher by lazy {
+            CacherImpl()
+        }
+    }
 }
 
 interface Cacher {
-  fun write(bytes: ByteArray)
-  fun finalize()
+    fun write(bytes: ByteArray)
+    fun finalize()
 }
 
 abstract class Caches {
-  abstract inner class CachedProp<R: Any> protected constructor(): ThreadAwaitable<R> {
-	private val slot = DelegatedSlot<R>()
-	override fun await() = slot.await()
-	fun strong(r: R) {
-	  slot.putGetter { r }
-	}
+    abstract inner class CachedProp<R : Any> protected constructor() : ThreadAwaitable<R> {
+        private val slot = DelegatedSlot<R>()
+        override fun await() = slot.await()
+        fun strong(r: R) {
+            slot.putGetter { r }
+        }
 
-	fun strong(r: Produce<R>) {
-	  slot.putGetter { r() }
-	}
+        fun strong(r: Produce<R>) {
+            slot.putGetter { r() }
+        }
 
-	fun lazyWeak(r: Produce<R>) {
-	  slot.putLazyWeakGetter { r() }
-	}
+        fun lazyWeak(r: Produce<R>) {
+            slot.putLazyWeakGetter { r() }
+        }
 
-	abstract fun cache(bytes: ByteArray)
-	protected abstract fun decode(bytes: ByteArray): R
-  }
+        abstract fun cache(bytes: ByteArray)
+        protected abstract fun decode(bytes: ByteArray): R
+    }
 }
 
 

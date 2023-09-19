@@ -12,6 +12,7 @@ import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.gui.menu.context.mcontextmenu
 import matt.image.save
 import matt.lang.NUM_LOGICAL_CORES
+import matt.lang.file.toJFile
 import matt.log.warn.warn
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
@@ -117,7 +118,7 @@ class DeephyImView(
 
 
                             require(pngFile.path.endsWith(".png"))
-                            bi.save(pngFile)
+                            bi.save(pngFile.toJFile())
                         }
 
                     }

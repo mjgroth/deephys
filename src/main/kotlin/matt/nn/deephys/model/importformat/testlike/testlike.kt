@@ -12,6 +12,8 @@ interface TestOrLoader {
   val dtype: DType<*>
   val model: Model
   fun isDoneLoading(): Boolean
+
+
 }
 
 

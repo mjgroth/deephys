@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import matt.async.thread.ThreadReport
 import matt.gui.option.SettingsData
+import matt.lang.file.toJFile
 import matt.lang.require.requireNull
 import matt.log.report.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
@@ -176,7 +177,7 @@ class DebugSettings : SettingsData("Debug") {
         label = "Open Log Folder",
         tooltip = "Open Log Folder",
     ) {
-        Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder)
+        Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder.toJFile())
     }
 
 }

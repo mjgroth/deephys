@@ -7,7 +7,6 @@ import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.PhaseOut
 import matt.lang.weak.MyWeakRef
 import matt.lang.weak.lazyWeak
-import matt.model.op.convert.StringConverter
 import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
@@ -23,6 +22,7 @@ import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
+import matt.prim.converters.StringConverter
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
 import java.lang.ref.WeakReference

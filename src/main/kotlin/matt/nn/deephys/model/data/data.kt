@@ -1,10 +1,10 @@
 package matt.nn.deephys.model.data
 
+import matt.caching.compcache.globalman.FakeCacheManager
 import matt.collect.set.contents.contentsOf
 import matt.fx.graphics.wrapper.node.NW
 import matt.lang.require.requireEquals
 import matt.lang.weak.WeakRefInter
-import matt.model.op.convert.StringConverter
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
@@ -18,6 +18,7 @@ import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.prim.converters.StringConverter
 import matt.prim.str.truncateWithElipsesOrAddSpacesAsNeeded
 
 
@@ -26,7 +27,6 @@ data class InterTestLayer(
     override val layerID: String,
     val neuronCount: Int
 ) : LayerLike {
-    @OptIn(ExperimentalStdlibApi::class)
     val neurons get() = (0..<neuronCount).map { InterTestNeuron(this, it) }
     override fun isClassification(model: Model) = layerID == model.classification_layer
     override fun toString() = layerID
@@ -79,13 +79,14 @@ data class InterTestNeuron(
     fun <N : Number> activationRatio(
         numTest: TypedTestLike<N>,
         denomTest: TypedTestLike<N>,
-    ): Activation<N, *> = ActivationRatioCalc(
-        numTest = numTest,
-        images = contentsOf(),
-        denomTest = denomTest,
-        neuron = this
-    )()
-
+    ): Activation<N, *> = with(FakeCacheManager) {
+        ActivationRatioCalc(
+            numTest = numTest,
+            images = contentsOf(),
+            denomTest = denomTest,
+            neuron = this@InterTestNeuron
+        )()
+    }
 }
 
 

@@ -3,7 +3,7 @@ package matt.nn.deephys.init
 import javafx.scene.image.Image
 import matt.async.thread.TheThreadProvider
 import matt.async.thread.daemon
-import matt.file.toMFile
+import matt.file.toJioFile
 import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -48,7 +48,7 @@ val gearImage = DaemonLoadedValueOp(TheThreadProvider,"gear.png") {
 
 val modelBinding = DaemonLoadedValueOp(TheThreadProvider,".model binding") {
     DeephyState.model.binding { f ->
-        f?.toMFile()?.loadCbor<Model>()
+        f?.toJioFile()?.loadCbor<Model>()
     }
 }
 

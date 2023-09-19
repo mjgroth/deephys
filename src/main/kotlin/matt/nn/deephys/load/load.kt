@@ -3,7 +3,8 @@ package matt.nn.deephys.load
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
-import matt.file.MFile
+import matt.file.JioFile
+import matt.lang.model.file.FsFile
 import matt.fx.graphics.wrapper.EventTargetWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
@@ -17,12 +18,12 @@ import kotlin.time.Duration
 
 sealed interface CborSyncLoadResult<T>
 
-class FileNotFound<T>(val f: MFile): CborSyncLoadResult<T>
+class FileNotFound<T>(val f: FsFile): CborSyncLoadResult<T>
 class ParseError<T>(val message: String?): CborSyncLoadResult<T>
 class Loaded<T>(val data: T): CborSyncLoadResult<T>
 
 
-inline fun <reified T: Any> MFile.loadCbor(): CborSyncLoadResult<T> =
+inline fun <reified T: Any> JioFile.loadCbor(): CborSyncLoadResult<T> =
   if (doesNotExist) FileNotFound(this) else try {
 	val bytes = readBytes()
 	Loaded(Cbor.decodeFromByteArray(bytes))

@@ -9,9 +9,10 @@ import javafx.scene.layout.Priority.ALWAYS
 import matt.async.pool.DaemonPoolExecutor
 import matt.async.thread.daemon
 import matt.exec.app.myVersion
-import matt.file.MFile
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
+import matt.file.ext.mkFold
+import matt.file.toJioFile
 import matt.fx.control.fxapp.DEFAULT_THROW_ON_APP_THREAD_THROWABLE
 import matt.fx.control.inter.graphic
 import matt.fx.control.mail
@@ -45,6 +46,8 @@ import matt.image.icon.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.err
+import matt.lang.model.file.MacFileSystem
+import matt.lang.shutdown.ShutdownContext
 import matt.lang.sync
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
@@ -73,7 +76,7 @@ import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
 val DEEPHY_USER_DATA_DIR by lazy {
-    PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.mkFold("Deephys")
+    PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.toJioFile().mkFold("Deephys")
 }
 val DEEPHYS_LOG_CONTEXT by lazy {
     LogContext(DEEPHY_USER_DATA_DIR)
@@ -87,6 +90,7 @@ typealias DeephysArgs = List<DeephysArg>
 
 class DeephysApp {
 
+    context(ShutdownContext)
     fun boot2(
         settingsNode: DeephySettingsNode,
         args: DeephysArgs,
@@ -98,7 +102,8 @@ class DeephysApp {
             throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
         )
 
-    /*invoked directly from test, in case I ever want to return something*/
+    context(ShutdownContext)
+            /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: DeephysArgs,
         settingsNode: DeephySettingsNode = DeephySettingsNode(),
@@ -216,23 +221,9 @@ class DeephysApp {
         val monitor = object {}
 
         val modelFile = pool.submit {
-            val f = MFile.Companion.createTempFile("model_${demo.name}", suffix = "")
-            modelURL.openStream().use { downloadStream ->
-                f.outputStream().use { writeStream ->
-                    downloadStream.transferTo(writeStream)
-                }
-            }
-            done.incrementAndGet()
-            monitor.sync {
-                progress v done.get().toDouble() / total
-            }
-            f
-        }
-
-        val testFiles = testURLs.mapIndexed { i, testURL ->
-            pool.submit {
-                val f = MFile.Companion.createTempFile("test_${i}", suffix = "")
-                testURL.openStream().use { downloadStream ->
+            with(MacFileSystem) {
+                val f = matt.file.ext.createTempFile("model_${demo.name}", suffix = "")
+                modelURL.openStream().use { downloadStream ->
                     f.outputStream().use { writeStream ->
                         downloadStream.transferTo(writeStream)
                     }
@@ -242,6 +233,24 @@ class DeephysApp {
                     progress v done.get().toDouble() / total
                 }
                 f
+            }
+        }
+
+        val testFiles = testURLs.mapIndexed { i, testURL ->
+            pool.submit {
+                with(MacFileSystem) {
+                    val f = matt.file.ext.createTempFile("test_${i}", suffix = "")
+                    testURL.openStream().use { downloadStream ->
+                        f.outputStream().use { writeStream ->
+                            downloadStream.transferTo(writeStream)
+                        }
+                    }
+                    done.incrementAndGet()
+                    monitor.sync {
+                        progress v done.get().toDouble() / total
+                    }
+                    f
+                }
             }
         }
 
@@ -287,6 +296,7 @@ class DeephysApp {
         /*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
     }
 
+    context(ShutdownContext)
     fun startDeephyApp(
         t: Stopwatch? = null,
         settingsNode: DeephySettingsNode,

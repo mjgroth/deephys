@@ -2,11 +2,12 @@ package matt.nn.deephys
 
 import javafx.application.Platform
 import matt.async.thread.daemon
-import matt.caching.compcache.GlobalRAMComputeInput
+import matt.caching.compcache.ComputeInput
 import matt.collect.itr.list
 import matt.file.commons.DEEPHYS_DATA_FOLDER
 import matt.file.commons.DEEPHYS_RAM_SAMPLES_FOLDER
 import matt.file.commons.RAM_NUMBERED_FILES
+import matt.file.toJioFile
 import matt.json.prim.saveAsJsonTo
 import matt.lang.anno.SeeURL
 import matt.log.profile.data.RamSample
@@ -14,7 +15,8 @@ import matt.log.profile.data.ramSample
 import matt.model.data.rect.RectSize
 import matt.nn.deephys.tester.DeephysTestSession
 import matt.reflect.scan.mattSubClasses
-import matt.reflect.scan.systemScanner
+import matt.reflect.scan.systemScope
+import matt.test.Tests
 import matt.test.assertTrueLazyMessage
 import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
@@ -81,7 +83,7 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
 )
 
 @TestInstance(PER_CLASS)
-class TestDeephys {
+class TestDeephys: Tests() {
 
     val session = DeephysTestSession()
 
@@ -96,7 +98,7 @@ class TestDeephys {
         }
 
         private val myRamSamplesJson by lazy {
-            RAM_NUMBERED_FILES.nextFile()
+            RAM_NUMBERED_FILES.nextFile().toJioFile()
         }
 
         @Synchronized
@@ -136,8 +138,8 @@ class TestDeephys {
 
 
     @Test
-    fun computeInputsAreData() = with(systemScanner().usingClassGraph()) {
-        GlobalRAMComputeInput::class.mattSubClasses().forEach {
+    fun computeInputsAreData() = with(systemScope().usingClassGraph()) {
+        ComputeInput::class.mattSubClasses().forEach {
             assertTrueLazyMessage(it.isData || it.isAbstract) {
                 "$it is a ComputeInput but not data... how is it supposed to cache stuff correctly?"
             }

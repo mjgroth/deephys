@@ -6,8 +6,10 @@ import matt.cbor.err.CborParseException
 import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.major.txtstr.TextStringReader
 import matt.cbor.read.streamman.cborReader
-import matt.file.CborFile
+import matt.file.toJioFile
 import matt.lang.err
+import matt.lang.model.file.types.Cbor
+import matt.lang.model.file.types.TypedFile
 import matt.lang.require.requireEquals
 import matt.lang.require.requireNot
 import matt.log.warn.warn
@@ -29,14 +31,14 @@ import matt.nn.deephys.model.importformat.Test
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.obs.col.olist.basicMutableObservableListOf
 import matt.prim.str.elementsToString
-import matt.prim.str.mybuild.string
+import matt.prim.str.mybuild.api.string
 import java.io.IOException
 
 const val OLD_CAT_LOAD_WARNING =
     "Getting category the old way. This will fail if the image list didn't contain the category."
 
 class TestLoader(
-    file: CborFile,
+    file: TypedFile<Cbor>,
     override val model: Model,
     settings: DeephysSettingsController
 ) : AsyncLoader(file), TestOrLoader {
@@ -122,13 +124,13 @@ class TestLoader(
     val start = SingleCall {
         daemon("TestLoader-${file.name}") {
 
-            if (!file.exists()) {
+            if (!file.toJioFile().exists()) {
                 signalFileNotFound()
                 return@daemon
             }
             try {
 
-                val stream = file.inputStream()
+                val stream = file.toJioFile().inputStream()
                 val reader = stream.cborReader()
                 reader.readManually<MapReader, Unit> {
 

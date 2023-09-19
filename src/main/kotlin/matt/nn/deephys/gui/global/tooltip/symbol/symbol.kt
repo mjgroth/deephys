@@ -6,19 +6,19 @@ import matt.fx.node.proto.infosymbol.InfoSymbol
 import matt.fx.node.proto.infosymbol.SevereWarningSymbol
 import matt.fx.node.proto.infosymbol.TutorialSymbol
 import matt.fx.node.proto.infosymbol.WarningSymbol
-import matt.lang.function.DSL
+import matt.lang.function.Dsl
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipContent
 import matt.obs.bindings.str.ObsS
 
 
 const val DEEPHYS_SYMBOL_SPACING = 5.0
 
-fun NW.deephysInfoSymbol(text: ObsS, op: DSL<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text.value).attachTo(this) {
+fun NW.deephysInfoSymbol(text: ObsS, op: Dsl<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text.value).attachTo(this) {
   textProperty.bind(text)
   op()
 }
 
-fun NW.deephysInfoSymbol(text: String, op: DSL<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text).attachTo(this, op)
+fun NW.deephysInfoSymbol(text: String, op: Dsl<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text).attachTo(this, op)
 
 
 class DeephysInfoSymbol(info: String): InfoSymbol(info) {
@@ -28,12 +28,12 @@ class DeephysInfoSymbol(info: String): InfoSymbol(info) {
 }
 
 
-fun NW.deephysTutorialSymbol(text: ObsS, op: DSL<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text.value).attachTo(this) {
+fun NW.deephysTutorialSymbol(text: ObsS, op: Dsl<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text.value).attachTo(this) {
   textProperty.bind(text)
   op()
 }
 
-fun NW.deephysTutorialSymbol(text: String, op: DSL<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text).attachTo(this, op)
+fun NW.deephysTutorialSymbol(text: String, op: Dsl<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text).attachTo(this, op)
 
 
 class DeephysTutorialSymbol(info: String): TutorialSymbol(info) {
@@ -43,13 +43,13 @@ class DeephysTutorialSymbol(info: String): TutorialSymbol(info) {
 }
 
 
-fun NW.deephysWarningSymbol(text: ObsS, op: DSL<DeephysWarningSymbol> = {}) =
+fun NW.deephysWarningSymbol(text: ObsS, op: Dsl<DeephysWarningSymbol> = {}) =
   DeephysWarningSymbol(text.value).attachTo(this) {
     textProperty.bind(text)
     op()
   }
 
-fun NW.deephysWarningSymbol(text: String, op: DSL<DeephysWarningSymbol> = {}) =
+fun NW.deephysWarningSymbol(text: String, op: Dsl<DeephysWarningSymbol> = {}) =
   DeephysWarningSymbol(text).attachTo(this, op)
 
 
@@ -61,13 +61,13 @@ class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {
 
 
 
-fun NW.deephysSevereWarningSymbol(text: ObsS, op: DSL<DeephysSevereWarningSymbol> = {}) =
+fun NW.deephysSevereWarningSymbol(text: ObsS, op: Dsl<DeephysSevereWarningSymbol> = {}) =
   DeephysSevereWarningSymbol(text.value).attachTo(this) {
 	textProperty.bind(text)
 	op()
   }
 
-fun NW.deephysSevereWarningSymbol(text: String, op: DSL<DeephysSevereWarningSymbol> = {}) =
+fun NW.deephysSevereWarningSymbol(text: String, op: Dsl<DeephysSevereWarningSymbol> = {}) =
   DeephysSevereWarningSymbol(text).attachTo(this, op)
 
 

@@ -45,231 +45,236 @@ import matt.obs.prop.BindableProperty
 import matt.reflect.weak.WeakThing
 import kotlin.math.min
 
-class NeuronView<A: Number>(
-  neuron: InterTestNeuron,
-  numImages: BindableProperty<Int> = BindableProperty(MAX_NUM_IMAGES_IN_TOP_IMAGES),
-  testLoader: TypedTestLike<A>,
-  viewer: DatasetViewer,
-  showActivationRatio: Boolean,
-  layoutForList: Boolean,
-  loadImagesAsync: Boolean = false,
-  showTopCats: Boolean = false,
-  override val settings: DeephysSettingsController
-): VBoxWrapperImpl<NW>(), DeephysNode {
+class NeuronView<A : Number>(
+    neuron: InterTestNeuron,
+    numImages: BindableProperty<Int> = BindableProperty(MAX_NUM_IMAGES_IN_TOP_IMAGES),
+    testLoader: TypedTestLike<A>,
+    viewer: DatasetViewer,
+    showActivationRatio: Boolean,
+    layoutForList: Boolean,
+    loadImagesAsync: Boolean = false,
+    showTopCats: Boolean = false,
+    override val settings: DeephysSettingsController
+) : VBoxWrapperImpl<NW>(), DeephysNode {
 
-  companion object {
-	private val worker = QueueWorker("NeuronView Worker")
-  }
-
-
-  init {
-	val memSafeSettings = settings
-	val weakViewer = viewer.weakRef
-	val showing = BindableProperty(2)
-	val progIndicator = progressindicator {
-	  visibleAndManagedProp.bindWeakly(showing.weakBinding(this@NeuronView) { _, it ->
-		it < 2
-	  })
-	}
-
-	if (showActivationRatio) {
-	  swapperRNullable(viewer.normalizer) { normalizer ->
-		weakViewer.deref()!!.testData.value?.go { numTest ->
-		  val denomTest = normalizer?.testData?.value
-		  h {
-			val doneLoading = numTest.isDoneLoading() && (denomTest?.isDoneLoading() ?: true)
-
-			if (!doneLoading) showing.value -= 1
-
-			@Suppress("UNCHECKED_CAST")
-			val j = worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
-			  denomTest?.let {
-				neuron.activationRatio(
-				  numTest = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
-				  denomTest = denomTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
-				)
-			  } ?: neuron.maxActivationIn(
-				test = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
-			  )
-			}
-
-			j.whenDone { activation ->
-			  ensureInFXThreadOrRunLater {
-				if (!doneLoading) {
-				  showing.value += 1
-				}
-				deephysText(
-				  activation.formatted
-				) {
-				  veryLazyDeephysTexTooltip(memSafeSettings) {
-
-					when (activation) {
-					  is ActivationRatio     -> ActivationRatioCalc.latexTechnique(MAX)
-					  is RawActivation       -> tex { text("max raw activation of this neuron") }
-					  is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
-
-					}
+    companion object {
+        private val worker = QueueWorker("NeuronView Worker")
+    }
 
 
-				  }
-				}
-				activation.extraInfo?.go { deephysInfoSymbol(it) }
-			  }
-			}
-		  }
-		}
-	  }
-	}
+    init {
+        val memSafeSettings = settings
+        val weakViewer = viewer.weakRef
+        val showing = BindableProperty(2)
+        val progIndicator = progressindicator {
+            visibleAndManagedProp.bindWeakly(showing.weakBinding(this@NeuronView) { _, it ->
+                it < 2
+            })
+        }
 
-	if (showTopCats) {
-	  val topCats = TopCategories(neuron, testLoader)()
+        if (showActivationRatio) {
+            swapperRNullable(viewer.normalizer) { normalizer ->
+                weakViewer.deref()!!.testData.value?.go { numTest ->
+                    val denomTest = normalizer?.testData?.value
+                    h {
+                        val doneLoading = numTest.isDoneLoading() && (denomTest?.isDoneLoading() ?: true)
 
+                        if (!doneLoading) showing.value -= 1
 
-	  val dtype = testLoader.dtype
+                        @Suppress("UNCHECKED_CAST")
+                        val j = worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
+                            denomTest?.let {
+                                with(viewer.cacheContext) {
+                                    neuron.activationRatio(
+                                        numTest = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
+                                        denomTest = denomTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
+                                    )
+                                }
+                            } ?: neuron.maxActivationIn(
+                                test = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
+                            )
+                        }
 
-	  swapperNullable(viewer.normalizer) {
-		val normalizer = this?.testData?.value?.preppedTest?.awaitRequireSuccessful()
-		val denom = normalizer?.let {
-		  neuron.maxActivationIn(normalizer).value/100
-		} ?: dtype.one
+                        j.whenDone { activation ->
+                            ensureInFXThreadOrRunLater {
+                                if (!doneLoading) {
+                                    showing.value += 1
+                                }
+                                deephysText(
+                                    activation.formatted
+                                ) {
+                                    veryLazyDeephysTexTooltip(memSafeSettings) {
 
-		val normalizedString = if (normalizer == null) "un-normalized" else "normalized"
+                                        when (activation) {
+                                            is ActivationRatio     -> ActivationRatioCalc.latexTechnique(MAX)
+                                            is RawActivation       -> tex { text("max raw activation of this neuron") }
+                                            is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
 
-		CategoryTable(
-		  title = "Average activity for top categories: ",
-		  title_unfolded = "ave: ",
-		  data = topCats.map { it.first to (it.second.value/denom) },
-		  settings = memSafeSettings,
-		  weakViewer = weakViewer,
-		  sigFigSett = weakViewer.deref()!!.averageRawActSigFigs,
-		  tooltip = "Top categories for this neuron. Calculated by the average, $normalizedString activation of this neuron for images grouped by their groundtruth",
-		  numSuffix = if (normalizer == null) "" else "%"
-		)
-	  }
-
-
-	  spacer(1.0)
-	}
-
-
-	val noneText = deephysInfoSymbol(
-	  "There are no top images. This might happen if all activations are zero, NaN, or infinite"
-	)
-	+ImageFlowPane(viewer).apply {
-	  noneText.visibleAndManagedProp.bindWeakly(
-		children.sizeProperty.eq(0) and progIndicator.visibleProperty.not()
-	  )
-	  val imFlowPane = this
-	  /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
-	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.95)
-
-	  fun update(
-		weakThing: WeakNeuronViewRefs<A>,
-		oldNumImages: Int?,
-		newNumImages: Int
-	  ) {
-		val localTestLoader = weakThing.testLoader
-		val localViewer = weakThing.viewer
-		val localNeuron = weakThing.neuron
-		val localImFlowPane = weakThing.imFlowPane
-
-		val realOldNumImages = oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }?.toULong()
-		val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
-
-		val doneLoading = localTestLoader.isDoneLoading()
-
-		val topImagesJob = if (localTestLoader.isDoneLoading()) {
-		  val ti = TopImages(localNeuron, localTestLoader, realNumImages.toInt())()
-		  object: Donable<List<ImageIndex>> {
-			override fun whenDone(c: Consume<List<ImageIndex>>) {
-			  c(ti)
-			}
-		  }
-		} else {
-		  showing.value -= 1
-		  worker.schedule {
-			TopImages(localNeuron, localTestLoader, realNumImages.toInt())()
-		  }
-		}
-		topImagesJob.whenDone { topImages ->
-		  ensureInFXThreadOrRunLater {
-
-			//			if (localNeuron.index == 10) {
-			//			  taball("neuron 10 images", topImages)
-			//			}
-
-			if (realOldNumImages == null) {
-			  topImages.forEach {
-				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(
-				  DeephyImView(
-					im,
-					localViewer,
-					loadAsync = loadImagesAsync,
-					settings = memSafeSettings
-				  )
-				)
-			  }
-			} else if (realNumImages > realOldNumImages) {
-			  topImages.subList(realOldNumImages.toInt()).toList().forEach {
-				val im = localTestLoader.imageAtIndex(it.index)
-				localImFlowPane.add(
-				  DeephyImView(
-					im,
-					localViewer,
-					loadAsync = loadImagesAsync,
-					settings = memSafeSettings
-				  )
-				)
-			  }
-			} else if (realNumImages < realOldNumImages) {
-			  localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
-				it.removeFromParent()
-			  }
-			}
-			if (!doneLoading) {
-			  showing.value += 1
-			}
-		  }
+                                        }
 
 
-		}
+                                    }
+                                }
+                                activation.extraInfo?.go { deephysInfoSymbol(it) }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (showTopCats) {
+            val topCats = with(testLoader.testRAMCache) { TopCategories(neuron, testLoader)() }
 
 
-	  }
+            val dtype = testLoader.dtype
+
+            swapperNullable(viewer.normalizer) {
+                val normalizer = this?.testData?.value?.preppedTest?.awaitRequireSuccessful()
+                val denom = normalizer?.let {
+                    neuron.maxActivationIn(normalizer).value / 100
+                } ?: dtype.one
+
+                val normalizedString = if (normalizer == null) "un-normalized" else "normalized"
+
+                CategoryTable(
+                    title = "Average activity for top categories: ",
+                    title_unfolded = "ave: ",
+                    data = topCats.map { it.first to (it.second.value / denom) },
+                    settings = memSafeSettings,
+                    weakViewer = weakViewer,
+                    sigFigSett = weakViewer.deref()!!.averageRawActSigFigs,
+                    tooltip = "Top categories for this neuron. Calculated by the average, $normalizedString activation of this neuron for images grouped by their groundtruth",
+                    numSuffix = if (normalizer == null) "" else "%"
+                )
+            }
 
 
-	  val weakThing = WeakNeuronViewRefs<A>().apply {
-		this.testLoader = testLoader
-		this.viewer = viewer
-		this.neuron = neuron
-		this.imFlowPane = imFlowPane
-	  }
+            spacer(1.0)
+        }
 
 
-	  update(weakThing.deref()!!, null, numImages.value)
+        val noneText = deephysInfoSymbol(
+            "There are no top images. This might happen if all activations are zero, NaN, or infinite"
+        )
+        +ImageFlowPane(viewer).apply {
+            noneText.visibleAndManagedProp.bindWeakly(
+                children.sizeProperty.eq(0) and progIndicator.visibleProperty.not()
+            )
+            val imFlowPane = this
+            /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
+            prefWrapLengthProperty.bindWeakly(viewer.widthProperty * 0.95)
 
-	  numImages.onChangeWithAlreadyWeakAndOld(weakThing) { tl, o, n ->
-		update(tl, o, n)
-	  }
-	  if (layoutForList) {
-		prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH
-	  }
-	  val gap = 3.0
-	  hgap = gap
-	  vgap = gap
-	}
-  }
+            fun update(
+                weakThing: WeakNeuronViewRefs<A>,
+                oldNumImages: Int?,
+                newNumImages: Int
+            ) {
+                val localTestLoader = weakThing.testLoader
+                val localViewer = weakThing.viewer
+                val localNeuron = weakThing.neuron
+                val localImFlowPane = weakThing.imFlowPane
+
+                val realOldNumImages =
+                    oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }?.toULong()
+                val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
+
+                val doneLoading = localTestLoader.isDoneLoading()
+
+                val topImagesJob = with(viewer.cacheContext) {
+                    if (localTestLoader.isDoneLoading()) {
+                        val ti = with(localTestLoader.testRAMCache) {TopImages(localNeuron, localTestLoader, realNumImages.toInt())()}
+                        object : Donable<List<ImageIndex>> {
+                            override fun whenDone(c: Consume<List<ImageIndex>>) {
+                                c(ti)
+                            }
+                        }
+                    } else {
+                        showing.value -= 1
+                        worker.schedule {
+                           with(localTestLoader.testRAMCache){ TopImages(localNeuron, localTestLoader, realNumImages.toInt())()}
+                        }
+                    }
+                }
+                topImagesJob.whenDone { topImages ->
+                    ensureInFXThreadOrRunLater {
+
+                        //			if (localNeuron.index == 10) {
+                        //			  taball("neuron 10 images", topImages)
+                        //			}
+
+                        if (realOldNumImages == null) {
+                            topImages.forEach {
+                                val im = localTestLoader.imageAtIndex(it.index)
+                                localImFlowPane.add(
+                                    DeephyImView(
+                                        im,
+                                        localViewer,
+                                        loadAsync = loadImagesAsync,
+                                        settings = memSafeSettings
+                                    )
+                                )
+                            }
+                        } else if (realNumImages > realOldNumImages) {
+                            topImages.subList(realOldNumImages.toInt()).toList().forEach {
+                                val im = localTestLoader.imageAtIndex(it.index)
+                                localImFlowPane.add(
+                                    DeephyImView(
+                                        im,
+                                        localViewer,
+                                        loadAsync = loadImagesAsync,
+                                        settings = memSafeSettings
+                                    )
+                                )
+                            }
+                        } else if (realNumImages < realOldNumImages) {
+                            localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
+                                it.removeFromParent()
+                            }
+                        }
+                        if (!doneLoading) {
+                            showing.value += 1
+                        }
+                    }
+
+
+                }
+
+
+            }
+
+
+            val weakThing = WeakNeuronViewRefs<A>().apply {
+                this.testLoader = testLoader
+                this.viewer = viewer
+                this.neuron = neuron
+                this.imFlowPane = imFlowPane
+            }
+
+
+            update(weakThing.deref()!!, null, numImages.value)
+
+            numImages.onChangeWithAlreadyWeakAndOld(weakThing) { tl, o, n ->
+                update(tl, o, n)
+            }
+            if (layoutForList) {
+                prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH
+            }
+            val gap = 3.0
+            hgap = gap
+            vgap = gap
+        }
+    }
 
 
 }
 
-private class WeakNeuronViewRefs<A: Number>: WeakThing<WeakNeuronViewRefs<A>>() {
+private class WeakNeuronViewRefs<A : Number> : WeakThing<WeakNeuronViewRefs<A>>() {
 
-  var testLoader by weak<TypedTestLike<A>>()
-  var viewer by weak<DatasetViewer>()
-  var neuron by weak<InterTestNeuron>()
-  var imFlowPane by weak<ImageFlowPane>()
+    var testLoader by weak<TypedTestLike<A>>()
+    var viewer by weak<DatasetViewer>()
+    var neuron by weak<InterTestNeuron>()
+    var imFlowPane by weak<ImageFlowPane>()
 
 }
 
