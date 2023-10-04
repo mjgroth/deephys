@@ -6,7 +6,7 @@ import matt.file.commons.DEEPHYS_TEST_RESULT_JSON
 import matt.file.construct.mFile
 import matt.file.ext.mkparents
 import matt.file.toMacFile
-import matt.file.types.checkType
+import matt.file.types.forceType
 import matt.fx.graphics.fxthread.RunLaterReturnLatchManager
 import matt.fx.graphics.fxthread.runLaterReturn
 import matt.fx.graphics.wrapper.node.findRecursivelyFirstOrNull
@@ -16,6 +16,7 @@ import matt.json.prim.loadJson
 import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.model.file.MacFileSystem
+import matt.lang.model.file.types.Cbor
 import matt.lang.profiling.IsProfilingWithJProfiler
 import matt.lang.profiling.IsProfilingWithYourKit
 import matt.log.profile.data.TestResults
@@ -44,7 +45,7 @@ import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.state.DeephyState
 import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.prim.str.elementsToString
-import matt.test.assertTrueLazyMessage
+import matt.test.assertions.assertTrueLazyMessage
 import matt.test.prop.ManualTests
 import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
@@ -111,7 +112,7 @@ class DeephysTestSession {
         prompt: String,
         force: Boolean = false
     ) =
-        if (force || ManualTests.get()) matt.test.testConfirmation(prompt, confirmService) else Unit
+        if (force || ManualTests.get()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
 
 
     fun testHasCorrectTitle() = assertEquals(
@@ -181,7 +182,7 @@ class DeephysTestSession {
 
             runLaterReturn {
                 testViewersAndFiles.forEach {
-                    it.first.file.value = (mFile(it.second.abspath, MacFileSystem)).checkType()
+                    it.first.file.value = (mFile(it.second.abspath, MacFileSystem)).forceType(Cbor)
                 }
             }
             tocAndSampleRam("set test files")
@@ -369,6 +370,9 @@ class DeephysTestSession {
         val u = MemReport().used
         println("uFinal=$u")
         assertTrueLazyMessage(u < threshold) {
+            check(profiler.engine is YourKit) {
+                "Programmatic JProfiler memory snapshots do not seem to work from tests, which I think are a bit weird in how they fork from the gradle jvm. Yourkit on the other hand, works perfectly. It is also more automated, and deserves more of my attention as it does the same essential things as JProfiler and in many ways seems to do it way more conveniently."
+            }
             //	  println("sleeping forever 2")
             //	  sleep(1.days)
             profiler.captureMemorySnapshot()

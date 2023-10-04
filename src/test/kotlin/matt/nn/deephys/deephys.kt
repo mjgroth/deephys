@@ -17,7 +17,7 @@ import matt.nn.deephys.tester.DeephysTestSession
 import matt.reflect.scan.mattSubClasses
 import matt.reflect.scan.systemScope
 import matt.test.Tests
-import matt.test.assertTrueLazyMessage
+import matt.test.assertions.assertTrueLazyMessage
 import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
 import org.junit.jupiter.api.AfterAll
@@ -138,7 +138,7 @@ class TestDeephys: Tests() {
 
 
     @Test
-    fun computeInputsAreData() = with(systemScope().usingClassGraph()) {
+    fun computeInputsAreData() = with(systemScope(includePlatformClassloader=false).usingClassGraph()) {
         ComputeInput::class.mattSubClasses().forEach {
             assertTrueLazyMessage(it.isData || it.isAbstract) {
                 "$it is a ComputeInput but not data... how is it supposed to cache stuff correctly?"

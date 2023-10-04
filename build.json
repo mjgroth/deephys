@@ -3,9 +3,18 @@
   "jvm": {
     "exec": {
       "type": "Typical"
+    },
+    "test": {
+      "memory": {
+        "bytes": 2147483648
+      }
     }
   },
   "publicApp": true,
+  "release": {},
+  "aio": {
+    "checkSubmodulesArePublic": false
+  },
   "dependencies": [
     {
       "type": "Project",
@@ -16,11 +25,6 @@
       "type": "Project",
       "cfg": "implementation",
       "path": ":k:cbor"
-    },
-    {
-      "type": "Project",
-      "cfg": "implementation",
-      "path": ":k:image"
     },
     {
       "type": "Project",
