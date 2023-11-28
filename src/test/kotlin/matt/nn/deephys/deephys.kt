@@ -12,7 +12,7 @@ import matt.json.prim.saveAsJsonTo
 import matt.lang.anno.SeeURL
 import matt.log.profile.data.RamSample
 import matt.log.profile.data.ramSample
-import matt.model.data.rect.RectSize
+import matt.model.data.rect.DoubleRectSize
 import matt.nn.deephys.tester.DeephysTestSession
 import matt.reflect.scan.mattSubClasses
 import matt.reflect.scan.systemScope
@@ -78,7 +78,7 @@ val tests = list {
 
 
 @SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")    /*@TestClassOrder()*/
-val MAC_MAYBE_MIN_SCREEN_SIZE = RectSize(
+val MAC_MAYBE_MIN_SCREEN_SIZE = DoubleRectSize(
     width = 1366.0, height = 768.0
 )
 

@@ -10,8 +10,8 @@ import matt.file.toJioFile
 import matt.lang.err
 import matt.lang.model.file.types.Cbor
 import matt.lang.model.file.types.TypedFile
-import matt.lang.require.requireEquals
-import matt.lang.require.requireNot
+import matt.lang.assertions.require.requireEquals
+import matt.lang.assertions.require.requireNot
 import matt.log.warn.warn
 import matt.model.code.errreport.ThrowReport
 import matt.model.obj.single.SingleCall

@@ -3,6 +3,9 @@ package matt.nn.deephys.model.importformat.im
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.bytestr.ByteStringReader
 import matt.cbor.read.streamman.cborReader
+import matt.collect.list.array.ArrayWrapper
+import matt.collect.list.array.DoubleArrayWrapper
+import matt.collect.list.array.FloatArrayWrapper
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.PhaseOut
 import matt.lang.weak.MyWeakRef
@@ -11,12 +14,9 @@ import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.TestLoader
-import matt.nn.deephys.load.test.dtype.ArrayWrapper
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.DoubleActivationData
-import matt.nn.deephys.load.test.dtype.DoubleArrayWrapper
 import matt.nn.deephys.load.test.dtype.FloatActivationData
-import matt.nn.deephys.load.test.dtype.FloatArrayWrapper
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron

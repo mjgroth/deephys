@@ -10,7 +10,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.ArcType.ROUND
 import javafx.util.Duration
-import matt.fig.model.PieChartIrPlaceholder
+import matt.fig.modell.PieChartIrPlaceholder
 import matt.fig.render.PieChartRenderer
 import matt.fx.base.wrapper.obs.obsval.prop.toNonNullableProp
 import matt.fx.control.wrapper.scroll.scrollpane
@@ -27,7 +27,7 @@ import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
-import matt.math.sigfig.withPrecision
+import matt.math.numalg.precision.withPrecision
 import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.deephyCheckbox
 import matt.nn.deephys.gui.global.deephysLabel

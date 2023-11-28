@@ -3,7 +3,7 @@ package matt.nn.deephys.model.data
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.collect.set.contents.contentsOf
 import matt.fx.graphics.wrapper.node.NW
-import matt.lang.require.requireEquals
+import matt.lang.assertions.require.requireEquals
 import matt.lang.weak.WeakRefInter
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.act.Activation

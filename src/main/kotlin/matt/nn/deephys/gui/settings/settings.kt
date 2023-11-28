@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import matt.async.thread.ThreadReport
 import matt.gui.option.SettingsData
 import matt.lang.file.toJFile
-import matt.lang.require.requireNull
+import matt.lang.assertions.require.requireNull
 import matt.log.report.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
 import matt.nn.deephys.state.DeephyState

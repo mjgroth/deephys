@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.category
 import javafx.geometry.Pos.TOP_CENTER
 import matt.collect.set.contents.Contents
 import matt.color.colorMap
-import matt.fig.model.PieChartIrPlaceholder
+import matt.fig.modell.PieChartIrPlaceholder
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.line.line
@@ -65,31 +65,37 @@ class CategoryView<A : Number>(
                         val acc = CategoryAccuracy(
                             selection, testLoader
                         )
-                        deephysLabel(
-                            "Accuracy: ${
-                                acc.formatted()
-                            }"
-                        )
+                        with(testLoader.testRAMCache) {
+                            deephysLabel(
+                                "Accuracy: ${
+                                    acc.formatted()
+                                }"
+                            )
+                        }
+
                         deephysLabel("Category ID: ${selection.id}")
                     }
 
+
                     is CategoryConfusion -> {
-                        deephysLabel(
-                            "Accuracy of ${selection.first.label}: ${
-                                CategoryAccuracy(
-                                    selection.first,
-                                    testLoader
-                                ).formatted()
-                            }"
-                        )
-                        deephysLabel(
-                            "Accuracy of ${selection.second.label}: ${
-                                CategoryAccuracy(
-                                    selection.second,
-                                    testLoader
-                                ).formatted()
-                            }"
-                        )
+                        with(testLoader.testRAMCache) {
+                            deephysLabel(
+                                "Accuracy of ${selection.first.label}: ${
+                                    CategoryAccuracy(
+                                        selection.first,
+                                        testLoader
+                                    ).formatted()
+                                }"
+                            )
+                            deephysLabel(
+                                "Accuracy of ${selection.second.label}: ${
+                                    CategoryAccuracy(
+                                        selection.second,
+                                        testLoader
+                                    ).formatted()
+                                }"
+                            )
+                        }
                         deephysLabel(
                             "Category IDs: ${
                                 selection.allCategories.toList().map { it.id }.elementsToString()

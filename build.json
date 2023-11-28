@@ -29,6 +29,16 @@
     {
       "type": "Project",
       "cfg": "implementation",
+      "path": ":k:math"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:math:numalg:matalg"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
       "path": ":k:fx:node:proto"
     },
     {
@@ -36,16 +46,8 @@
       "cfg": "implementation",
       "path": ":k:codegen"
     },
-    {
-      "type": "Lib",
-      "cfg": "implementation",
-      "key": "slf4j-nop"
-    },
-    {
-      "type": "Project",
-      "cfg": "implementation",
-      "path": ":k:math:mat"
-    },
+
+
     {
       "type": "Project",
       "cfg": "testImplementation",

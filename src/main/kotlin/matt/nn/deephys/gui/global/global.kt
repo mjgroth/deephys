@@ -45,7 +45,7 @@ import matt.fx.graphics.wrapper.text.textlike.TextLike
 import matt.fx.node.proto.svgIcon
 import matt.gui.actiontext.actionLabel
 import matt.gui.actiontext.actionText
-import matt.math.sigfig.withPrecision
+import matt.math.numalg.precision.withPrecision
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.settings.DeephysSettingsController

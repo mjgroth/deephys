@@ -14,8 +14,8 @@ import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.text.textlike.highlightOnHover
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
-import matt.math.jmath.sigfig
-import matt.math.round.ceilInt
+import matt.prim.int.ceilInt
+import matt.math.numalg.format.sigfig.toScientificNotation
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.SINGLE_IMAGE
@@ -209,21 +209,20 @@ class NeuronListView(
 
                                         var text = "(max:100%)"
 
-                                        if (act is RawActivation) text = "(max:" + act.value.sigfig(2).toString() + ")"
+                                        if (act is RawActivation) text = "(max:" + act.value.toDouble().toScientificNotation(2).toString() + ")"
                                         if (act is ActivationRatio) text =
-                                            "(max:" + (act.value.toFloat() * 100).sigfig(3).toInt()
-                                                .toString() + "%" + ")"
+                                            "(max:" + (act.value.toFloat() * 100).toDouble().toScientificNotation(3).toString() + "%" + ")"
 
                                         if (case_activ == 1) {
-                                            if (act is RawActivation) text = " Y=" + act.value.sigfig(2).toString()
+                                            if (act is RawActivation) text = " Y=" + act.value.toDouble().toScientificNotation(2).toString()
                                             if (act is ActivationRatio) text =
-                                                " Y=" + (act.value.toFloat() * 100).sigfig(3).toInt().toString() + "%"
+                                                " Y=" + (act.value.toFloat() * 100).toDouble().toScientificNotation(3).toString() + "%"
                                         }
                                         if (case_activ > 1) {
                                             if (act is RawActivation) text =
-                                                "(" + "ave:" + act.value.sigfig(2).toString() + ")"
+                                                "(" + "ave:" + act.value.toDouble().toScientificNotation(2).toString() + ")"
                                             if (act is ActivationRatio) text =
-                                                "(" + "ave:" + (act.value.toFloat() * 100).sigfig(3).toInt()
+                                                "(" + "ave:" + (act.value.toFloat() * 100).toDouble().toScientificNotation(3)
                                                     .toString() + "%" + ")"
                                         }
 

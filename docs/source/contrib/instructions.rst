@@ -92,7 +92,7 @@ Contribution Instructions
     
     .. code-block:: console
     
-      sudo apt install openjdk-17-jdk
+      sudo apt-get install openjdk-17-jdk
     
     .. raw:: html
     

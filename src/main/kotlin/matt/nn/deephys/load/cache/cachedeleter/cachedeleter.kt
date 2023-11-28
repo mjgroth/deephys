@@ -6,7 +6,7 @@ import matt.file.toJioFile
 import matt.lang.model.file.FsFile
 import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.function.Produce
-import matt.math.round.ceilInt
+import matt.prim.int.ceilInt
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 

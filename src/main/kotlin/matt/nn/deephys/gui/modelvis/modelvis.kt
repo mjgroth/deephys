@@ -7,8 +7,8 @@ import javafx.scene.paint.Color
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.line.LineWrapper
 import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
-import matt.lang.require.requireNotEmpty
-import matt.lang.require.requireNull
+import matt.lang.assertions.require.requireNotEmpty
+import matt.lang.assertions.require.requireNull
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephysText

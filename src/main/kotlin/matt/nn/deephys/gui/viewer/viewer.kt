@@ -27,7 +27,7 @@ import matt.lang.model.file.MacFileSystem
 import matt.lang.model.file.fName
 import matt.lang.model.file.types.Cbor
 import matt.lang.model.file.types.TypedFile
-import matt.lang.require.requireNot
+import matt.lang.assertions.require.requireNot
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic

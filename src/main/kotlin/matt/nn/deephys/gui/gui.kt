@@ -47,7 +47,8 @@ import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.err
 import matt.lang.model.file.MacFileSystem
-import matt.lang.shutdown.ShutdownContext
+import matt.lang.shutdown.CancellableShutdownTask
+import matt.lang.shutdown.MyShutdownContext
 import matt.lang.sync
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
@@ -90,7 +91,7 @@ typealias DeephysArgs = List<DeephysArg>
 
 class DeephysApp {
 
-    context(ShutdownContext)
+    context(MyShutdownContext<CancellableShutdownTask>)
     fun boot2(
         settingsNode: DeephySettingsNode,
         args: DeephysArgs,
@@ -102,7 +103,7 @@ class DeephysApp {
             throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
         )
 
-    context(ShutdownContext)
+    context(MyShutdownContext<CancellableShutdownTask>)
             /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: DeephysArgs,
@@ -296,7 +297,7 @@ class DeephysApp {
         /*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
     }
 
-    context(ShutdownContext)
+    context(MyShutdownContext<CancellableShutdownTask>)
     fun startDeephyApp(
         t: Stopwatch? = null,
         settingsNode: DeephySettingsNode,

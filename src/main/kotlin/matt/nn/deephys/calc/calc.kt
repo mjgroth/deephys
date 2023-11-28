@@ -6,10 +6,10 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.codegen.tex.TeXDSL
 import matt.codegen.tex.tex
 import matt.collect.set.contents.Contents
+import matt.lang.assertions.require.requireEquals
 import matt.lang.function.Dsl
-import matt.lang.require.requireEquals
 import matt.log.profile.stopwatch.tic
-import matt.math.sigfig.withPrecision
+import matt.math.numalg.precision.withPrecision
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
@@ -34,6 +34,7 @@ data class DescendingArgMaxMax<A : Number>(
 ) : TestComputeInput<List<ImageIndex>>() {
 //    override val cacheManager get() = test.testRAMCache
 
+    context(TestRAMCache)
     override fun compute(): List<ImageIndex> = run {
         val theTest = test.test
         val acts = theTest.activationsByNeuron[neuron]
@@ -70,6 +71,7 @@ data class TopCategories<N : Number>(
 
 //    override val cacheManager get() = test.testRAMCache
 
+    context(TestRAMCache)
     override fun compute(): List<Pair<Category, RawActivation<*, *>>> {
         val t = tic("TopCategories for ${neuron}")
         t.tic("starting to get top categories")
@@ -210,6 +212,7 @@ data class ActivationRatioCalc<A : Number>(
         }
     }
 
+    context(FakeCacheManager)
     /*TODO: make this a lazy val so I don't need to make params above vals*/
     override fun compute(): Activation<A, *> {
 
@@ -240,6 +243,7 @@ data class ImageSoftMaxDenom<N : Number>(
 
 //    override val cacheManager get() = testLoader.testRAMCache
 
+    context(TestRAMCache)
     override fun compute(): N {
         val clsLay = testLoader.model.classificationLayer
         val preds = image.activationsFor(clsLay.interTest)
@@ -287,6 +291,7 @@ data class CategoryAccuracy(
 
 //    override val cacheManager get() = testLoader.testRAMCache
 
+    context(TestRAMCache)
     override fun compute(): Double? {
 
         val images = testLoader.test.imagesWithGroundTruth(category)
@@ -301,7 +306,7 @@ data class CategoryAccuracy(
         return r
     }
 
-
+    context(TestRAMCache)
     fun formatted() =
         compute().let {
             if (it == null) "Cannot calculate accuracy because no images have groundtruth \"$category\"" else "${

@@ -1,7 +1,7 @@
 package matt.nn.deephys.calc.act
 
-import matt.lang.require.requireOne
-import matt.math.sigfig.withPrecision
+import matt.lang.assertions.require.requireOne
+import matt.math.numalg.precision.withPrecision
 import matt.model.data.mathable.DoubleWrapper
 import matt.model.data.mathable.FloatWrapper
 import matt.model.data.mathable.NumberWrapper

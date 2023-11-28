@@ -21,7 +21,7 @@ import matt.gui.mstage.WMode.CLOSE
 import matt.gui.option.EnumSetting
 import matt.gui.option.SettingsData
 import matt.lang.go
-import matt.lang.require.requireNull
+import matt.lang.assertions.require.requireNull
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyRadioButton
 import matt.nn.deephys.gui.global.deephysText
