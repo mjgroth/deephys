@@ -1,6 +1,6 @@
 package matt.nn.deephys.load.test.imageloader
 
-import matt.async.pool.DaemonPoolExecutor
+import matt.async.thread.pool.DaemonPoolExecutor
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.withByteStoring
@@ -9,9 +9,10 @@ import matt.collect.list.awaitlist.BlockListBuilder
 import matt.collect.queue.JQueueWrapper
 import matt.collect.queue.pollUntilEnd
 import matt.lang.List2D
+import matt.lang.assertions.require.requireNot
+import matt.lang.atomic.AtomicInt
 import matt.lang.disabledCode
 import matt.lang.l
-import matt.lang.assertions.require.requireNot
 import matt.log.profile.mem.throttle
 import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.Cacher
@@ -31,7 +32,6 @@ import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.obs.prop.BindableProperty
 import matt.prim.str.elementsToString
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.atomic.AtomicInteger
 
 
 class ImageSetLoader(private val testLoader: TestLoader) {
@@ -48,11 +48,11 @@ class ImageSetLoader(private val testLoader: TestLoader) {
 
     private var numDataBytes: Int? = null
     private var numActivationBytes: Int? = null
-    private val numRead = AtomicInteger(0)
+    private val numRead = AtomicInt(0)
     val pixelsShapePerImage = testLoader.LoadedOrFailedValueSlot<List<Int>>()
     val activationsShapePerImage = testLoader.LoadedOrFailedValueSlot<List<Int>>()
-    private val numCachedPixels = AtomicInteger(0)
-    private val numCachedActs = AtomicInteger(0)
+    private val numCachedPixels = AtomicInt(0)
+    private val numCachedActs = AtomicInt(0)
     val progress by lazy { BindableProperty(0.0) }
     val cacheProgressPixels by lazy { BindableProperty(0.0) }
     val cacheProgressActs by lazy { BindableProperty(0.0) }

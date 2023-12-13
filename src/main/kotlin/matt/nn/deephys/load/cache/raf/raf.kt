@@ -1,13 +1,13 @@
 package matt.nn.deephys.load.cache.raf
 
-import matt.async.executors.ThreadPool
 import matt.async.thread.daemon
+import matt.async.thread.executors.ThreadPool
 import matt.lang.model.file.FsFile
 import matt.lang.NOT_IMPLEMENTED
 import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.anno.SeeURL
+import matt.lang.atomic.AtomicInt
 import matt.lang.file.toJFile
-import matt.lang.lastIndex
 import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
 import matt.nn.deephys.load.cache.raf.deed.DeedImpl
@@ -24,7 +24,6 @@ import java.nio.file.StandardOpenOption.CREATE_NEW
 import java.nio.file.StandardOpenOption.SPARSE
 import java.nio.file.StandardOpenOption.WRITE
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -255,8 +254,8 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: FsFile) : RAFLike {
         error("obvious bug where bytes are being written to wrong pos. But might be supper fast if the async part is done right! Maybe try again another time")
     }
 
-    private var startedWrites = AtomicInteger()
-    private var finishedWrites = AtomicInteger()
+    private var startedWrites = AtomicInt()
+    private var finishedWrites = AtomicInt()
 
     fun markFinishedWriting() {
         val l = SimpleThreadLatch()

@@ -1,9 +1,6 @@
 package matt.nn.deephys.load.test.dtype
 
 import kotlinx.serialization.Serializable
-import matt.collect.list.array.ArrayWrapper
-import matt.collect.list.array.DoubleArrayWrapper
-import matt.collect.list.array.FloatArrayWrapper
 import matt.collect.set.contents.Contents
 import matt.collect.set.contents.contentsOf
 import matt.lang.List2D
@@ -59,7 +56,7 @@ sealed interface DType<N : Number> {
     fun bytesToArray(
         bytes: ByteArray,
         numIms: Int
-    ): ArrayWrapper<N>
+    ): List<N>
 
     fun rawActivation(act: N): RawActivation<N, *>
 
@@ -114,10 +111,10 @@ object Float32 : DtypeBase<Float>() {
     override fun bytesToArray(
         bytes: ByteArray,
         numIms: Int
-    ): FloatArrayWrapper {
-        return FloatArrayWrapper(FloatArray(numIms).also {
+    ): List<Float> {
+        return FloatArray(numIms).also {
             ByteBuffer.wrap(bytes).asFloatBuffer().get(it)
-        })
+        }.asList()
     }
 
     override fun rawActivation(act: Float) = RawActivationFloat32(act)
@@ -150,10 +147,10 @@ object Float64 : DtypeBase<Double>() {
     override fun bytesToArray(
         bytes: ByteArray,
         numIms: Int
-    ): DoubleArrayWrapper {
-        return DoubleArrayWrapper(DoubleArray(numIms).also {
+    ): List<Double> {
+        return DoubleArray(numIms).also {
             ByteBuffer.wrap(bytes).asDoubleBuffer().get(it)
-        })
+        }.asList()
     }
 
     override fun rawActivation(act: Double) = RawActivationFloat64(act)
@@ -179,7 +176,7 @@ object Float64 : DtypeBase<Double>() {
 }
 
 
-typealias FloatActivationData = List<FloatArrayWrapper>
-typealias DoubleActivationData = List<DoubleArrayWrapper>
+typealias FloatActivationData = List<List<Float>>
+typealias DoubleActivationData = List<List<Double>>
 
 

@@ -3,9 +3,6 @@ package matt.nn.deephys.model.importformat.im
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.bytestr.ByteStringReader
 import matt.cbor.read.streamman.cborReader
-import matt.collect.list.array.ArrayWrapper
-import matt.collect.list.array.DoubleArrayWrapper
-import matt.collect.list.array.FloatArrayWrapper
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.PhaseOut
 import matt.lang.weak.MyWeakRef
@@ -77,8 +74,8 @@ class DeephyImage<A: Number>(
   }
 
 
-  val activations = object: CachedRAFProp<List<ArrayWrapper<A>>>(activationsRAF) {
-	override fun decode(bytes: ByteArray): List<ArrayWrapper<A>> {
+  val activations = object: CachedRAFProp<List<List<A>>>(activationsRAF) {
+	override fun decode(bytes: ByteArray): List<List<A>> {
 	  val byteThing = dtype.bytesThing(bytes)
 	  return byteThing.parse2DArray()
 	}
@@ -88,7 +85,7 @@ class DeephyImage<A: Number>(
 	activations.await()
   }
 
-  fun activationsFor(rLayer: InterTestLayer): ArrayWrapper<A> = weakActivations[rLayer.index]
+  fun activationsFor(rLayer: InterTestLayer): List<A> = weakActivations[rLayer.index]
   fun activationFor(neuron: InterTestNeuron) = dtype.rawActivation(weakActivations[neuron.layer.index][neuron.index])
 
   val data = object: CachedRAFProp<PixelData3>(pixelsRAF) {
@@ -130,22 +127,22 @@ fun readPixels(cborPixelBytes3d: ByteArray): PixelData3 {
 }
 
 
-fun ArrayReader.readFloatActivations() = readEachManually<ByteStringReader, FloatArrayWrapper> {
+fun ArrayReader.readFloatActivations() = readEachManually<ByteStringReader, List<Float>> {
   val r = FloatArray(count.toInt()/FLOAT_BYTE_LEN)
   ByteBuffer.wrap(read().raw).asFloatBuffer().get(r)
-  FloatArrayWrapper(r)
+  r.asList()
 }
 
-fun ArrayReader.readDoubleActivations() = readEachManually<ByteStringReader, DoubleArrayWrapper> {
+fun ArrayReader.readDoubleActivations() = readEachManually<ByteStringReader, List<Double>> {
   val r = DoubleArray(count.toInt()/DOUBLE_BYTE_LEN)
   ByteBuffer.wrap(read().raw).asDoubleBuffer().get(r)
-  DoubleArrayWrapper(r)
+  r.asList()
 }
 
 
 sealed interface ImageActivationCborBytes<A: Number> {
   val bytes: ByteArray
-  fun parse2DArray(): List<ArrayWrapper<A>>
+  fun parse2DArray(): List<List<A>>
   fun rawBytes() = bytes.cborReader().readManually<ArrayReader, ByteArray> {
 	readEachManually<ByteStringReader, ByteArray> {
 	  read().raw

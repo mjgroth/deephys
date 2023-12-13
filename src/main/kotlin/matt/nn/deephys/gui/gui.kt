@@ -6,8 +6,8 @@ import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
-import matt.async.pool.DaemonPoolExecutor
 import matt.async.thread.daemon
+import matt.async.thread.pool.DaemonPoolExecutor
 import matt.exec.app.myVersion
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
@@ -45,6 +45,7 @@ import matt.http.internet.isAvailable
 import matt.image.icon.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
+import matt.lang.atomic.AtomicInt
 import matt.lang.err
 import matt.lang.model.file.MacFileSystem
 import matt.lang.shutdown.CancellableShutdownTask
@@ -74,7 +75,6 @@ import matt.obs.subscribe.Pager
 import matt.rstruct.loader.systemResourceLoader
 import matt.rstruct.modID
 import java.net.URI
-import java.util.concurrent.atomic.AtomicInteger
 
 val DEEPHY_USER_DATA_DIR by lazy {
     PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.toJioFile().mkFold("Deephys")
@@ -216,7 +216,7 @@ class DeephysApp {
 
 
         val total = testURLs.size + 1
-        val done = AtomicInteger(0)
+        val done = AtomicInt(0)
         val progress = BindableProperty(0.0)
 
         val monitor = object {}
