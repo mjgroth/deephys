@@ -73,7 +73,7 @@ import matt.nn.deephys.version.VersionChecker
 import matt.obs.prop.BindableProperty
 import matt.obs.subscribe.Pager
 import matt.rstruct.loader.systemResourceLoader
-import matt.rstruct.modID
+import matt.rstruct.modId
 import java.net.URI
 
 val DEEPHY_USER_DATA_DIR by lazy {
@@ -125,7 +125,7 @@ class DeephysApp {
 //                TEMP_DEBUG_LOG_FILE.appendln("boot2")
                 try {
 //                    TEMP_DEBUG_LOG_FILE.appendln("boot3")
-                    stageTitle.putLoadedValue("${modID.appName} $myVersion")
+                    stageTitle.putLoadedValue("${modId.appName} $myVersion")
 //                    TEMP_DEBUG_LOG_FILE.appendln("boot4")
                 } finally {
 //                    TEMP_DEBUG_LOG_FILE.appendln("boot5")
@@ -147,7 +147,7 @@ class DeephysApp {
             }
 
             val lastVersion = DeephyState.lastVersionOpened.value!!
-            val thisVersion = modID.version.toString()
+            val thisVersion = modId.version.toString()
             var openedNewVersion = false
             if (lastVersion != thisVersion) {
                 DeephyState.lastVersionOpened v thisVersion

@@ -22,12 +22,12 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperR
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
+import matt.lang.assertions.require.requireNot
 import matt.lang.disabledCode
 import matt.lang.model.file.MacFileSystem
 import matt.lang.model.file.fName
 import matt.lang.model.file.types.Cbor
 import matt.lang.model.file.types.TypedFile
-import matt.lang.assertions.require.requireNot
 import matt.lang.weak.MyWeakRef
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
@@ -188,8 +188,9 @@ class DatasetViewer(
     ).withNonNullUpdatesFrom(boundLayer)
 
     val layerSelectionResolved = layerSelection.binding(
-        testData /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+        testData
     ) { layer ->
+        println("remove testData dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
         model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
     }
 
@@ -207,9 +208,10 @@ class DatasetViewer(
     ).withNonNullUpdatesFrom(boundNeuron)
 
     val neuronSelectionResolved = neuronSelection.binding(
-        testData, /*TODO: remove this dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data*/
+        testData,
         layerSelectionResolved
     ) { neuron ->
+        println("remove layerSelectionResolved dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
         layerSelectionResolved.value?.neurons?.firstOrNull { it.index == neuron?.index }
     }
 

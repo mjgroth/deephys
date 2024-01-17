@@ -347,8 +347,6 @@ class DeephysTestSession {
         println("waiting for delete caches thread...")
         DeephysCacheManager.cacheDeleter.await() /*can hold a significant amount of memory*/
         println("finished waiting for delete caches thread")
-        //	println("sleeping forever 1")
-        //	sleep(1.days)
         println("sleeping for 1 sec")
         sleep(1.seconds)
         val postGCWaitSecs = 20

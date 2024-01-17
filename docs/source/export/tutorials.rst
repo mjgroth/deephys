@@ -8,5 +8,5 @@ We are maintaining a set of full python tutorials for exporting your data:
     :alt: Main Tutorial
   
   
-- todo: organize new list of tutorials from the updated files here https://github.com/$mjgroth/deephys-aio/tree/master/tutorials
+- new list of tutorials with updated files here: https://github.com/$mjgroth/deephys-aio/tree/master/tutorials
   

@@ -27,6 +27,7 @@ import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
+import matt.lang.anno.Duplicated
 import matt.math.numalg.precision.withPrecision
 import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.deephyCheckbox
@@ -342,6 +343,7 @@ class CategoryPie(
 
     }
 
+    @Duplicated(234234)
     class CategorySlice(
         private val cat: Category,
         private val viewer: DatasetViewer,
@@ -355,7 +357,8 @@ class CategoryPie(
         radiusX = 100.0,
         radiusY = 100.0,
         startAngle = startAngle,
-        length = arcLength
+        length = arcLength,
+        type = ROUND
     ), CategoryShape {
 
 
@@ -372,9 +375,6 @@ class CategoryPie(
             veryLazyDeephysTooltip(cat.label + " (shift-click for Confusion View)", settings)
             fill = color
             stroke = color.invert()
-            node.apply {
-                type = ROUND
-            }
             cursor = Cursor.HAND
             strokeWidth = 0.0
             setOnMouseClicked {

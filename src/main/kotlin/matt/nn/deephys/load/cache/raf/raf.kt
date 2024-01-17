@@ -221,7 +221,7 @@ class SparseWriter(file: FsFile) : SeekableRAFLike() {
     }
 
     override fun readFully(buff: ByteArray) {
-        TODO("Not yet implemented")
+        TODO()
     }
 
     override fun write(bytes: ByteArray) {
@@ -311,15 +311,15 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: FsFile) : RAFLike {
     }
 
     override fun write(bytes: ByteArray) {
-        TODO("Not yet implemented")
+        TODO()
     }
 
     override fun readFully(buff: ByteArray) {
-        TODO("Not yet implemented")
+        TODO()
     }
 
     override fun readFully(pos: Long, buff: ByteArray) {
-        TODO("Not yet implemented")
+        TODO()
     }
 
     override fun write(pos: Long, bytes: ByteArray) {

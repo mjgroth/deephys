@@ -8,7 +8,7 @@ To contribute to the documentation, please follow these simple steps
    
 #. Edit the documentation code
    
-#. It is possible to test the documentation locally (todo: add instructions for this)
+#. It is possible to test the documentation locally (remind Matt to add instructions for this)
    
 #. Submit a pull request
    

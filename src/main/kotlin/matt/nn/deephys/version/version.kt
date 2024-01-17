@@ -1,6 +1,6 @@
 package matt.nn.deephys.version
 
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import javafx.application.Platform.runLater
 import kotlinx.coroutines.runBlocking
 import matt.async.pri.MyThreadPriorities.CREATING_NEW_CACHE

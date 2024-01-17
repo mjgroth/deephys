@@ -213,9 +213,8 @@ data class ActivationRatioCalc<A : Number>(
     }
 
     context(FakeCacheManager)
-    /*TODO: make this a lazy val so I don't need to make params above vals*/
     override fun compute(): Activation<A, *> {
-
+        println("make this a lazy val so I don't need to make params above vals")
         val dType = numTest.dtype
         val r = if (images.isEmpty()) {
             if (numTest == denomTest) dType.alwaysOneActivation()

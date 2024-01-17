@@ -11,7 +11,6 @@ import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.wrapper.control.ControlWrapper
 import matt.fx.graphics.anim.animation.keyframe
 import matt.fx.graphics.anim.animation.timeline
-import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.style.FXColor
@@ -156,8 +155,6 @@ class DSetViewsVBox(
         t.boundToDSet.removeAllDependencies()
         t.outerBox.save()
         requestFocus() /*make this into scene.oldFocusOwner to remove possibility of that causing memory leak*/
-        settings.millisecondsBeforeTooltipsVanish.cleanWeakListeners()
-        DarkModeController.darkModeProp.cleanWeakListeners()
     }
 
     fun removeAllTests() {
