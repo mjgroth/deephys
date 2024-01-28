@@ -1,5 +1,6 @@
 package matt.nn.deephys.calc.act
 
+import matt.lang.anno.Open
 import matt.lang.assertions.require.requireOne
 import matt.math.numalg.precision.withPrecision
 import matt.model.data.mathable.DoubleWrapper
@@ -17,6 +18,7 @@ sealed interface Activation<N : Number, T : Activation<N, T>> : NumberWrapper<T>
 
 sealed interface ActivationFloat32<T : ActivationFloat32<T>> : Activation<Float, T>, FloatWrapper<T> {
     override val value: Float
+    @Open
     override val asFloat: Float
         get() = value
 
@@ -24,6 +26,7 @@ sealed interface ActivationFloat32<T : ActivationFloat32<T>> : Activation<Float,
 
 sealed interface ActivationFloat64<T : ActivationFloat64<T>> : Activation<Double, T>, DoubleWrapper<T> {
     override val value: Double
+    @Open
     override val asDouble: Double
         get() = value
 
@@ -31,7 +34,7 @@ sealed interface ActivationFloat64<T : ActivationFloat64<T>> : Activation<Double
 
 
 sealed interface AlwaysOneActivation<N : Number, T : AlwaysOneActivation<N, T>> : Activation<N, T> {
-    override val extraInfo get() = null /*"In this case, the activation is always exactly 1"*/
+    @Open override val extraInfo get() = null /*"In this case, the activation is always exactly 1"*/
 }
 
 object AlwaysOneActivationFloat32 : AlwaysOneActivation<Float, AlwaysOneActivationFloat32>,
@@ -66,7 +69,7 @@ sealed interface RawActivation<A : Number, T : RawActivation<A, T>> : Activation
         const val RAW_ACT_SYMBOL = "max"
     }
 
-    override val extraInfo: String?
+    @Open override val extraInfo: String?
         get() = null
 
 }
@@ -164,7 +167,7 @@ sealed interface ActivationRatio<A : Number, T : ActivationRatio<A, T>> : Activa
         const val ACT_RATIO_SYMBOL = "%"
     }
 
-    override val extraInfo: String?
+    @Open override val extraInfo: String?
         get() = if (isNaN || isInfinite) "The activation percentage will be infinite or NaN if the corresponding activation in the InD network is absolute 0. If the activation was extremely small but non-zero in python and the current test is float32, it may have become zero when the precision was lost. You may try recreating the .test file with float64 precision to see if that fixes it." else null
 
 }

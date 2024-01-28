@@ -1,7 +1,6 @@
 package matt.nn.deephys.state
 
-import matt.model.data.message.FileList
-import matt.model.data.message.MacFile
+import matt.model.data.message.AbsLinuxFile
 import matt.pref.obs.ObsPrefNode
 
 object DeephyState: ObsPrefNode(
@@ -15,8 +14,8 @@ object DeephyState: ObsPrefNode(
 	"datasets"
   )
 ) {
-  val model by obj<MacFile>()
-  val tests by obj<FileList>()
+  val model by obj<AbsLinuxFile>()
+  val tests by obj<List<AbsLinuxFile>>()
   val lastVersionOpened by string("")
 }
 

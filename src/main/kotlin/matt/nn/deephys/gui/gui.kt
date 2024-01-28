@@ -11,6 +11,7 @@ import matt.async.thread.pool.DaemonPoolExecutor
 import matt.exec.app.myVersion
 import matt.file.commons.LogContext
 import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
+import matt.file.ext.createTempFile
 import matt.file.ext.mkFold
 import matt.file.toJioFile
 import matt.fx.control.fxapp.DEFAULT_THROW_ON_APP_THREAD_THROWABLE
@@ -51,6 +52,7 @@ import matt.lang.model.file.MacFileSystem
 import matt.lang.shutdown.CancellableShutdownTask
 import matt.lang.shutdown.MyShutdownContext
 import matt.lang.sync
+import matt.lang.sync.SimpleReferenceMonitor
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.gui.DeephysArg.`erase-settings`
@@ -62,7 +64,7 @@ import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephysLabel
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.navbox.NavBox
-import matt.nn.deephys.gui.navbox.ZooExample
+import matt.nn.deephys.gui.navbox.zoo.ZooExample
 import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.gui.settings.gui.SettingsWindow
 import matt.nn.deephys.gui.visbox.VisBox
@@ -211,19 +213,19 @@ class DeephysApp {
 
         val pool = DaemonPoolExecutor()
 
-        val modelURL = URI(demo.modelURL.cpath).toURL()
-        val testURLs = demo.testURLs.map { URI(it.cpath).toURL() }
+        val modelURL = URI(demo.modelURL.path).toURL()
+        val testURLs = demo.testURLs.map { URI(it.path).toURL() }
 
 
         val total = testURLs.size + 1
         val done = AtomicInt(0)
         val progress = BindableProperty(0.0)
 
-        val monitor = object {}
+        val monitor = SimpleReferenceMonitor()
 
         val modelFile = pool.submit {
             with(MacFileSystem) {
-                val f = matt.file.ext.createTempFile("model_${demo.name}", suffix = "")
+                val f = createTempFile("model_${demo.name}", suffix = "")
                 modelURL.openStream().use { downloadStream ->
                     f.outputStream().use { writeStream ->
                         downloadStream.transferTo(writeStream)
@@ -240,7 +242,7 @@ class DeephysApp {
         val testFiles = testURLs.mapIndexed { i, testURL ->
             pool.submit {
                 with(MacFileSystem) {
-                    val f = matt.file.ext.createTempFile("test_${i}", suffix = "")
+                    val f = createTempFile("test_${i}", suffix = "")
                     testURL.openStream().use { downloadStream ->
                         f.outputStream().use { writeStream ->
                             downloadStream.transferTo(writeStream)

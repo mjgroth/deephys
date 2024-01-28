@@ -36,7 +36,6 @@ import kotlin.time.Duration.Companion.seconds
 val NUM_IM_CLICKS = if (TestPerformance.get()) 10 else 2
 val NUM_SLICE_CLICKS = if (TestPerformance.get()) 10 else 2
 val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
-//val WAIT_FOR_GUI_INTERVAL = 1.seconds
 
 
 val TEST_DATA_FOLDER = DEEPHYS_DATA_FOLDER["test"]
@@ -77,13 +76,13 @@ val tests = list {
 }
 
 
-@SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")    /*@TestClassOrder()*/
+@SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
 val MAC_MAYBE_MIN_SCREEN_SIZE = DoubleRectSize(
     width = 1366.0, height = 768.0
 )
 
 @TestInstance(PER_CLASS)
-class TestDeephys: Tests() {
+class TestDeephys : Tests() {
 
     val session = DeephysTestSession()
 
@@ -138,7 +137,7 @@ class TestDeephys: Tests() {
 
 
     @Test
-    fun computeInputsAreData() = with(systemScope(includePlatformClassloader=false).usingClassGraph()) {
+    fun computeInputsAreData() = with(systemScope(includePlatformClassloader = false).usingClassGraph()) {
         ComputeInput::class.mattSubClasses().forEach {
             assertTrueLazyMessage(it.isData || it.isAbstract) {
                 "$it is a ComputeInput but not data... how is it supposed to cache stuff correctly?"

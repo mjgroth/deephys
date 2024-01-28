@@ -18,8 +18,6 @@ import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.http.commons.GH_ORG_NAME
-import matt.http.s3.rawS3Url
-import matt.http.url.MURL
 import matt.lang.unsafeErr
 import matt.lang.url.toURL
 import matt.model.data.rect.IntSquareSize
@@ -27,15 +25,11 @@ import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.dataset.dtab.DeephysTabPane
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
+import matt.nn.deephys.gui.navbox.zoo.NeuronalActivityZoo
 import matt.rstruct.loader.systemResourceLoader
 import java.awt.Desktop
 import java.net.URI
 
-class ZooExample(
-    val name: String,
-    val modelURL: MURL,
-    val testURLs: List<MURL>
-)
 
 class NavBox(private val app: DeephysApp) : VBoxW() {
 
@@ -70,59 +64,14 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
 
             alignment = TOP_CENTER
 
-            fun zooURL(path: String) = rawS3Url(
-                bucket = "deephys-tutorial-deps",
-                path = path,
-                region = "us-east-2"
-            )
+
 
             this@NavBox.showDemosTab = deephysLazyTab("Neuronal Activity Zoo") {
 
 
                 VBoxW().apply {
                     spacer()
-                    listOf(
-                        ZooExample(
-                            name = "CIFAR",
-                            modelURL = zooURL(
-                                path = "ActivityZoo/CIFAR10_Example/resnet18_cifar.model",
-                            ),
-                            testURLs = listOf(
-                                zooURL("ActivityZoo/CIFAR10_Example/CIFAR10.test"),
-                                zooURL("ActivityZoo/CIFAR10_Example/CIFARV2.test"),
-                            )
-                        ),
-                        ZooExample(
-                            name = "Colored MNIST",
-                            modelURL = zooURL("ActivityZoo/Colored_MNIST_Example/colored_mnist.model"),
-                            testURLs = listOf(
-                                zooURL("ActivityZoo/Colored_MNIST_Example/Colored_MNIST.test"),
-                                zooURL("ActivityZoo/Colored_MNIST_Example/Permuted_colored_MNIST.test"),
-                                zooURL("ActivityZoo/Colored_MNIST_Example/Arbitrary_colored_MNIST.test"),
-                                zooURL("ActivityZoo/Colored_MNIST_Example/Drifted_colored_MNIST.test"),
-                            )
-                        ),
-                        ZooExample(
-                            name = "ImageNet ResNet18",
-                            modelURL = zooURL("ActivityZoo/ResNet18_ImageNet/resnet18_imagenet.model"),
-                            testURLs = listOf(
-                                zooURL("ActivityZoo/ResNet18_ImageNet/ImageNetV1.test"),
-                                zooURL("ActivityZoo/ResNet18_ImageNet/ImageNetV2.test"),
-                                zooURL("ActivityZoo/ResNet18_ImageNet/ImageNet_sketch.test"),
-                                zooURL("ActivityZoo/ResNet18_ImageNet/ImageNet_style.test"),
-                            )
-                        ),
-                        ZooExample(
-                            name = "ImageNet Cvt",
-                            modelURL = zooURL("ActivityZoo/Cvt13/cvt13_imagenet.model"),
-                            testURLs = listOf(
-                                zooURL("ActivityZoo/Cvt13/ImageNetV1_cvt13.test"),
-                                zooURL("ActivityZoo/Cvt13/ImageNetV2_cvt13.test"),
-                                zooURL("ActivityZoo/Cvt13/ImageNet_sketch_cvt13.test"),
-                                zooURL("ActivityZoo/Cvt13/ImageNet_style_cvt13.test"),
-                            )
-                        )
-                    ).forEach { demo ->
+                    NeuronalActivityZoo.EXAMPLES.forEach { demo ->
                         deephyButton(demo.name) {
                             setOnAction {
                                 this@NavBox.app.openZooDemo(demo)

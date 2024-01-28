@@ -31,6 +31,7 @@ object DeephysCacheManager {
     }
 
     private val idGenerator = IDGenerator(taken = oldDatasetIDs)
+
     @Synchronized
     private fun getNextDatasetID() = idGenerator.next()
 
@@ -66,7 +67,7 @@ abstract class FileCaches(
         protected abstract val propFileName: String
 
         private val propFile get() = cacheFold[propFileName].toJioFile()
-        override fun cache(bytes: ByteArray) {
+        final override fun cache(bytes: ByteArray) {
             propFile.writeBytes(bytes)
             lazyWeak {
                 decode(propFile.readBytes())
@@ -82,7 +83,7 @@ abstract class RAFCaches : Caches() {
         rafCache: EvenlySizedRAFCache,
     ) : CachedProp<R>() {
         val deed by lazy { rafCache.rent() }
-        override fun cache(bytes: ByteArray) {
+        final override fun cache(bytes: ByteArray) {
             deed.write(bytes)
             lazyWeak {
                 decode(deed.read())
@@ -117,7 +118,7 @@ interface Cacher {
 abstract class Caches {
     abstract inner class CachedProp<R : Any> protected constructor() : ThreadAwaitable<R> {
         private val slot = DelegatedSlot<R>()
-        override fun await() = slot.await()
+        final override fun await() = slot.await()
         fun strong(r: R) {
             slot.putGetter { r }
         }

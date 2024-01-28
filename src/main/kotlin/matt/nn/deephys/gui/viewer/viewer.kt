@@ -84,11 +84,11 @@ import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.withNonNullUpdatesFrom
 import matt.prim.str.mybuild.api.string
-import matt.reflect.tostring.toStringBuilder
 import java.lang.ref.WeakReference
+import kotlin.reflect.KProperty
 
 class DatasetViewer(
-    initialFile: TypedFile<Cbor>? = null,
+    initialFile: TypedFile<Cbor,*>? = null,
     val outerBox: DSetViewsVBox,
     settings: DeephysSettingsController,
     val cacheContext: ComputeCacheContext
@@ -107,9 +107,13 @@ class DatasetViewer(
 
     val siblings by lazy { outerBox.children.filtered { it != this } }
 
-    override fun toString() = toStringBuilder("current file" to file.value?.fName)
+    private val currentFile get() = file.value?.fName
+    override fun reflectingToStringProps(): Set<KProperty<*>> {
+        return setOf(::currentFile)
+    }
+//    override fun toString() = toStringBuilder("current file" to file.value?.fName)
 
-    val file: VarProp<TypedFile<Cbor>?> = VarProp(initialFile).withChangeListener {
+    val file: VarProp<TypedFile<Cbor,*>?> = VarProp(initialFile).withChangeListener {
         outerBox.save()
     }
 

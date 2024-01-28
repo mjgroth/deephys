@@ -5,7 +5,7 @@ import matt.async.thread.namedThread
 import matt.file.commons.DEEPHYS_TEST_RESULT_JSON
 import matt.file.construct.mFile
 import matt.file.ext.mkparents
-import matt.file.toMacFile
+import matt.file.toAbsLinuxFile
 import matt.file.types.forceType
 import matt.fx.graphics.fxthread.RunLaterReturnLatchManager
 import matt.fx.graphics.fxthread.runLaterReturn
@@ -19,6 +19,7 @@ import matt.lang.model.file.MacFileSystem
 import matt.lang.model.file.types.Cbor
 import matt.lang.profiling.IsProfilingWithJProfiler
 import matt.lang.profiling.IsProfilingWithYourKit
+import matt.lang.shutdown.preaper.ProcessReaper
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
 import matt.log.profile.jp.JProfiler
@@ -54,7 +55,7 @@ import kotlin.test.assertNotEquals
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-context(matt.lang.shutdown.preaper.ProcessReaper)
+context(ProcessReaper)
 @OptIn(ExperimentalMattCode::class)
 class DeephysTestSession {
 
@@ -162,7 +163,7 @@ class DeephysTestSession {
         profiler.recordCPU {
             Platform.runLater {
                 root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
-                DeephyState.model.value = testData.model.toMacFile()
+                DeephyState.model.value = testData.model.toAbsLinuxFile()
             }
 
             sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe(RunLaterReturnLatchManager)
@@ -220,11 +221,6 @@ class DeephysTestSession {
     }
 
     fun runThroughByImageView() {
-
-//        testConfirmation(
-//            prompt = "If I click images on the top, does the dataset on the bottom correctly follow?"
-//        )
-
 
         println("awaiting scene to be ready...")
         val scene = app.testReadyScene.await()
@@ -295,16 +291,11 @@ class DeephysTestSession {
         }
         /*warn("not animating CategoryPie")
         CategoryPie.ANIMATE = false*/
-//        testConfirmation("click and shift-click around different categories. Does the ByCategoryView look ok?")
         val dSetViewsBox = root.findRecursivelyFirstOrNull<DSetViewsVBox>()!!
         val firstViewer = dSetViewsBox.children.first()
         sleep(WAIT_FOR_GUI_INTERVAL)
         var clicked = 0
         while (clicked < NUM_SLICE_CLICKS) {
-            //		if (clicked == 3) {
-            //		  YourKit.captureAndOpenMemorySnapshot()
-            //		  testConfirmation("done checking memory snapshot", force = true)
-            //		}
             val dIm = firstViewer.findRecursivelyFirstOrNull<CategorySlice>()!!
             println("clicking a slice...")
             runLaterReturn {

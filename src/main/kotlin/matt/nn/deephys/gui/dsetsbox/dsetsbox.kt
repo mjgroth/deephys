@@ -5,7 +5,7 @@ import javafx.scene.layout.Border
 import javafx.util.Duration
 import matt.caching.compcache.ComputeCacheContextImpl
 import matt.file.construct.mFile
-import matt.file.toMacFile
+import matt.file.toAbsLinuxFile
 import matt.file.types.checkType
 import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.wrapper.control.ControlWrapper
@@ -18,7 +18,7 @@ import matt.lang.model.file.MacFileSystem
 import matt.lang.model.file.types.Cbor
 import matt.lang.model.file.types.TypedFile
 import matt.math.ranges.step
-import matt.model.data.message.FileList
+import matt.model.data.message.AbsLinuxFile
 import matt.nn.deephys.gui.global.color.DeephysPalette.deephysSelectGradient
 import matt.nn.deephys.gui.global.deephyToggleButton
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
@@ -49,18 +49,18 @@ class DSetViewsVBox(
 
     var modelVisualizer: ModelVisualizer? = null
 
-    operator fun plusAssign(file: TypedFile<Cbor>) {
+    operator fun plusAssign(file: TypedFile<Cbor,*>) {
         this += DatasetViewer(file, this, settings, cacheContext)
     }
 
-    operator fun plusAssign(list: FileList) {
+    operator fun plusAssign(list: List<AbsLinuxFile>) {
         list.forEach {
             this += (mFile(it.path, MacFileSystem)).checkType()
         }
     }
 
     fun save() {
-        DeephyState.tests.value = FileList(children.mapNotNull { it.file.value?.toMacFile() })
+        DeephyState.tests.value = children.mapNotNull { it.file.value?.toAbsLinuxFile() }
     }
 
 

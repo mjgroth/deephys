@@ -38,7 +38,7 @@ const val OLD_CAT_LOAD_WARNING =
     "Getting category the old way. This will fail if the image list didn't contain the category."
 
 class TestLoader(
-    file: TypedFile<Cbor>,
+    file: TypedFile<Cbor, *>,
     override val model: Model,
     settings: DeephysSettingsController
 ) : AsyncLoader(file), TestOrLoader {

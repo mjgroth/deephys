@@ -98,7 +98,7 @@ sealed interface DType<N : Number> {
 )
 
 sealed class DtypeBase<N : Number>() : DType<N> {
-    override val emptyImageContents by lazy { contentsOf<DeephyImage<N>>() }
+    final override val emptyImageContents by lazy { contentsOf<DeephyImage<N>>() }
 }
 
 @Serializable

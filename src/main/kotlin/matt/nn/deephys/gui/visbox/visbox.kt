@@ -5,7 +5,7 @@ import javafx.geometry.Pos.CENTER
 import javafx.geometry.Pos.TOP_CENTER
 import matt.file.construct.mFile
 import matt.file.ext.FileExtension
-import matt.file.toMacFile
+import matt.file.toAbsLinuxFile
 import matt.file.types.checkType
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.fxthread.runLater
@@ -55,7 +55,7 @@ class VisBox(
         modelFile: FsFile,
         testFiles: List<FsFile>
     ) {
-        DeephyState.model.value = modelFile.toMacFile()
+        DeephyState.model.value = modelFile.toAbsLinuxFile()
         runLater {
             val dSetViewsVBox = findRecursivelyFirstOrNull<DSetViewsVBox>() ?: error("no dset views box!")
             dSetViewsVBox.removeAllTests()
@@ -96,7 +96,7 @@ class VisBox(
 
                     val f = openFile {
                         extensionFilter("model files", FileExtension.MODEL)
-                    }?.toMacFile()
+                    }?.toAbsLinuxFile()
 
                     if (f != null) {
                         DeephyState.tests.value = null

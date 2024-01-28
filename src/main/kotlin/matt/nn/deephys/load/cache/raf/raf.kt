@@ -133,25 +133,25 @@ sealed class SeekableRAFLike : RAFLike {
     abstract override val channel: WritableByteChannel
     abstract fun seek(pos: Long)
 
-    @Synchronized
+    final @Synchronized
     override fun write(pos: Long, byte: Int) {
         seek(pos)
         write(byte)
     }
 
-    @Synchronized
+    final @Synchronized
     override fun readFully(pos: Long, buff: ByteArray) {
         seek(pos)
         readFully(buff)
     }
 
-    @Synchronized
+    final @Synchronized
     override fun write(pos: Long, bytes: ByteArray) {
         seek(pos)
         write(bytes)
     }
 
-    @Synchronized
+    final @Synchronized
     override fun write(pos: Long, bytes: ByteArray, srcOffset: Int, srcLen: Int) {
         seek(pos)
         write(bytes, srcOffset, srcLen)
