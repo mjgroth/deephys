@@ -49,9 +49,7 @@ class DeephyImage<A : Number>(
             }
     }
 
-    override fun toString(): String {
-        return "[Deephy Image with ID=${imageID}]"
-    }
+    override fun toString(): String = "[Deephy Image with ID=$imageID]"
 
     val weak by lazy { MyWeakRef(this) }
 
@@ -91,9 +89,7 @@ class DeephyImage<A : Number>(
     fun activationFor(neuron: InterTestNeuron) = dtype.rawActivation(weakActivations[neuron.layer.index][neuron.index])
 
     val data = object : CachedRAFProp<PixelData3>(pixelsRAF) {
-        override fun decode(bytes: ByteArray): PixelData3 {
-            return readPixels(bytes)
-        }
+        override fun decode(bytes: ByteArray): PixelData3 = readPixels(bytes)
     }
 
     @Suppress("UNCHECKED_CAST")

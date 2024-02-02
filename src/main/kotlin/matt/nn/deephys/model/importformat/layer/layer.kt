@@ -5,8 +5,8 @@ import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.importformat.neuron.Neuron
 
 @Serializable class Layer(
-  override val layerID: String, val neurons: List<Neuron>
+    override val layerID: String, val neurons: List<Neuron>
 ): LayerLike {
-  override fun toString() = layerID
+    override fun toString() = layerID
 
 }

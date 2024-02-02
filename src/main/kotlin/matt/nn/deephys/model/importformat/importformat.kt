@@ -81,21 +81,15 @@ class Test<N : Number>(
     override val dtype: DType<N>
 ) : DeephyFileObject, TypedTestLike<N> {
 
-    override fun isDoneLoading(): Boolean {
-        return true
-    }
+    override fun isDoneLoading(): Boolean = true
 
     @Suppress("UNCHECKED_CAST")
     val images = images as List<DeephyImage<N>>
 
 
-    override fun numberOfImages(): ULong {
-        return images.size.toULong()
-    }
+    override fun numberOfImages(): ULong = images.size.toULong()
 
-    override fun imageAtIndex(i: Int): DeephyImage<N> {
-        return images[i]
-    }
+    override fun imageAtIndex(i: Int): DeephyImage<N> = images[i]
 
     override val test = this
 
@@ -217,7 +211,7 @@ class Test<N : Number>(
                     maxActivations[it]
                 }
             }
-            println("finished preloading all maxActivations of ${name}!")
+            println("finished preloading all maxActivations of $name!")
         }
     }
 

@@ -27,75 +27,75 @@ import matt.obs.prop.ObsVal
 import matt.prim.str.elementsToString
 
 class ByCategoryView(
-  testLoader: TypedTestLike<*>,
-  viewer: DatasetViewer,
-  override val settings: DeephysSettingsController
+    testLoader: TypedTestLike<*>,
+    viewer: DatasetViewer,
+    override val settings: DeephysSettingsController
 ): VBoxWrapperImpl<RegionWrapper<*>>(), MainDeephysView {
 
-  override val control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
+    override val control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
 
-  init {
-
-
-	@Suppress("USELESS_CAST")
-	val cats = testLoader.test.categories.map { it as CategorySelection }
+    init {
 
 
-	h {
-	  (this@ByCategoryView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this)
-	  deephysSpinner(
-		label = "Category",
-		choices = cats,
-		defaultChoice = { viewer.categorySelection.value?.primaryCategory ?: cats[0] },
-		converter = CategorySelection.stringConverterThatFallsBackToFirst(cats = cats.map { it as Category }),
-		viewer = viewer,
-		getCurrent = viewer.categorySelection,
-		acceptIf = { it is Category },
-		navAction = { navigateTo(it) }
-	  )
+        @Suppress("USELESS_CAST")
+        val cats = testLoader.test.categories.map { it as CategorySelection }
 
 
-	  choicebox(
-		nullableProp = BindableProperty(viewer.categorySelection.value),
-		values = testLoader.test.categories
-	  ) {
-		configForDeephys()
-		converter = toStringConverter<CategorySelection?> {
-		  when (it) {
-			is Category -> it.label
-			is CategoryConfusion -> it.allCategories.map { it.label }.toList().elementsToString()
-			else -> "no category selected"
-		  }
-		}.toFXConverter()
+        h {
+            (this@ByCategoryView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this)
+            deephysSpinner(
+                label = "Category",
+                choices = cats,
+                defaultChoice = { viewer.categorySelection.value?.primaryCategory ?: cats[0] },
+                converter = CategorySelection.stringConverterThatFallsBackToFirst(cats = cats.map { it as Category }),
+                viewer = viewer,
+                getCurrent = viewer.categorySelection,
+                acceptIf = { it is Category },
+                navAction = { navigateTo(it) }
+            )
 
 
-		val rBlocker = RecursionBlocker()
-
-		selectedItemProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
-		  selection?.go {
-			rBlocker.with {
-			  deRefedViewer.navigateTo(it)
-			}
-		  }
-		}
-
-		viewer.categorySelection.onChange {
-		  rBlocker.with {
-			select(it)
-		  }
-		}
+            choicebox(
+                nullableProp = BindableProperty(viewer.categorySelection.value),
+                values = testLoader.test.categories
+            ) {
+                configForDeephys()
+                converter = toStringConverter<CategorySelection?> {
+                    when (it) {
+                        is Category -> it.label
+                        is CategoryConfusion -> it.allCategories.map { it.label }.toList().elementsToString()
+                        else -> "no category selected"
+                    }
+                }.toFXConverter()
 
 
-	  }
-	}
+                val rBlocker = RecursionBlocker()
 
-	swapper(
-	  viewer.categorySelection,
-	  nullMessage = "select a category",
-	  fadeOutDur = DEEPHYS_FADE_DUR,
-	  fadeInDur = DEEPHYS_FADE_DUR
-	) {
-	  CategoryView(this, testLoader = testLoader, viewer = viewer, settings = settings)
-	}
-  }
+                selectedItemProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
+                    selection?.go {
+                        rBlocker.with {
+                            deRefedViewer.navigateTo(it)
+                        }
+                    }
+                }
+
+                viewer.categorySelection.onChange {
+                    rBlocker.with {
+                        select(it)
+                    }
+                }
+
+
+            }
+        }
+
+        swapper(
+            viewer.categorySelection,
+            nullMessage = "select a category",
+            fadeOutDur = DEEPHYS_FADE_DUR,
+            fadeInDur = DEEPHYS_FADE_DUR
+        ) {
+            CategoryView(this, testLoader = testLoader, viewer = viewer, settings = settings)
+        }
+    }
 }

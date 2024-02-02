@@ -166,14 +166,14 @@ class DSetViewsVBox(
 
     fun flashBindButtons() {
         @Suppress("UselessCallOnCollection")
-                /*might have debug children*/
+        /*might have debug children*/
         val buttons = children.filterIsInstance<DatasetViewer>().mapNotNull { it.bindButton }
         flashControls(buttons)
     }
 
     fun flashOODButtons() {
         @Suppress("UselessCallOnCollection")
-                /*might have debug children*/
+        /*might have debug children*/
         val buttons = children.filterIsInstance<DatasetViewer>().mapNotNull { it.oodButton }
         flashControls(buttons)
     }

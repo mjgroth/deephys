@@ -67,7 +67,7 @@ fun warmupFxComponents(settings: DeephysSettingsController) {
               at matt.fx.control.wrapper.tooltip.tooltipWrapper.<init>(tooltip.kt:52)
 
               this ended up being due to YourKit..
-            * */
+             * */
 
 
         }

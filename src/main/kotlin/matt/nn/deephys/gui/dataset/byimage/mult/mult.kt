@@ -17,44 +17,44 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.math.op.times
 
 class MultipleImagesView<A: Number>(
-  viewer: DatasetViewer,
-  images: List<DeephyImage<A>>,
-  title: String?,
-  tooltip: String,
-  fade: Boolean = true,
-  override val settings: DeephysSettingsController
+    viewer: DatasetViewer,
+    images: List<DeephyImage<A>>,
+    title: String?,
+    tooltip: String,
+    fade: Boolean = true,
+    override val settings: DeephysSettingsController
 ): VBoxWrapperImpl<NW>(), DeephysNode {
-  companion object {
-	private const val MAX_IMS = 25
-  }
+    companion object {
+        private const val MAX_IMS = 25
+    }
 
-  init {
-	val memSafeSettings = settings
-	title?.go {
-	  deephysText("$title (${images.size})").apply {
-		subtitleFont()
-	  }
-	}
-	veryLazyDeephysTooltip(
-	  "$tooltip (first $MAX_IMS)",
-	  settings = memSafeSettings
-	)
-	+ImageFlowPane(viewer).apply {
-	  prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.4)
-	  images.take(MAX_IMS).forEach {
-		+DeephyImView(it, viewer, settings = memSafeSettings).apply {
-		  //		  scale.bind(viewer.smallImageScale / it.widthMaybe)
-		}
-	  }
-	  if (images.size > MAX_IMS) {
-		deephysText("(+${images.size - MAX_IMS} more)")
-	  }
-	}
-	neuronListViewSwapper(
-	  viewer = viewer,
-	  contents = Contents(images),
-	  fade = fade,
-	  settings = memSafeSettings
-	)
-  }
+    init {
+        val memSafeSettings = settings
+        title?.go {
+            deephysText("$title (${images.size})").apply {
+                subtitleFont()
+            }
+        }
+        veryLazyDeephysTooltip(
+            "$tooltip (first $MAX_IMS)",
+            settings = memSafeSettings
+        )
+        +ImageFlowPane(viewer).apply {
+            prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.4)
+            images.take(MAX_IMS).forEach {
+                +DeephyImView(it, viewer, settings = memSafeSettings).apply {
+                    //		  scale.bind(viewer.smallImageScale / it.widthMaybe)
+                }
+            }
+            if (images.size > MAX_IMS) {
+                deephysText("(+${images.size - MAX_IMS} more)")
+            }
+        }
+        neuronListViewSwapper(
+            viewer = viewer,
+            contents = Contents(images),
+            fade = fade,
+            settings = memSafeSettings
+        )
+    }
 }

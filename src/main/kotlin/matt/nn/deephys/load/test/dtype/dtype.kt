@@ -41,13 +41,11 @@ sealed interface DType<N : Number> {
         fun leastPrecise(
             type: DType<*>,
             vararg types: DType<*>
-        ): DType<*> {
-            return if (types.isEmpty()) type
-            else {
-                val all = setOf(type, *types)
-                if (Float32 in all) Float32
-                else Float64
-            }
+        ): DType<*> = if (types.isEmpty()) type
+        else {
+            val all = setOf(type, *types)
+            if (Float32 in all) Float32
+            else Float64
         }
     }
 
@@ -111,11 +109,9 @@ object Float32 : DtypeBase<Float>() {
     override fun bytesToArray(
         bytes: ByteArray,
         numIms: Int
-    ): List<Float> {
-        return FloatArray(numIms).also {
-            ByteBuffer.wrap(bytes).asFloatBuffer().get(it)
-        }.asList()
-    }
+    ): List<Float> = FloatArray(numIms).also {
+        ByteBuffer.wrap(bytes).asFloatBuffer().get(it)
+    }.asList()
 
     override fun rawActivation(act: Float) = RawActivationFloat32(act)
     override fun activationRatio(act: Float) = ActivationRatioFloat32(act)
@@ -127,9 +123,7 @@ object Float32 : DtypeBase<Float>() {
     override fun div(
         num: Float,
         denom: Float
-    ): Float {
-        return num / denom
-    }
+    ): Float = num / denom
 
     override fun d1array(list: List<Float>) = list.toNDArray()
     override fun d2array(list: List2D<Float>) = list.toNDArray()
@@ -147,11 +141,9 @@ object Float64 : DtypeBase<Double>() {
     override fun bytesToArray(
         bytes: ByteArray,
         numIms: Int
-    ): List<Double> {
-        return DoubleArray(numIms).also {
-            ByteBuffer.wrap(bytes).asDoubleBuffer().get(it)
-        }.asList()
-    }
+    ): List<Double> = DoubleArray(numIms).also {
+        ByteBuffer.wrap(bytes).asDoubleBuffer().get(it)
+    }.asList()
 
     override fun rawActivation(act: Double) = RawActivationFloat64(act)
     override fun activationRatio(act: Double) = ActivationRatioFloat64(act)
@@ -163,9 +155,7 @@ object Float64 : DtypeBase<Double>() {
     override fun div(
         num: Double,
         denom: Double
-    ): Double {
-        return num / denom
-    }
+    ): Double = num / denom
 
     override fun d1array(list: List<Double>) = list.toNDArray()
     override fun d2array(list: List2D<Double>) = list.toNDArray()

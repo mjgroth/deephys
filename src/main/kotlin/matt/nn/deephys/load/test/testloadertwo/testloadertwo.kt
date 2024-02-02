@@ -9,26 +9,22 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 
 class PreppedTestLoader<N: Number>(
-  val tl: TestLoader,
-  override val dtype: DType<N>
+    val tl: TestLoader,
+    override val dtype: DType<N>
 ): TypedTestLike<N> {
-  override fun numberOfImages(): ULong {
-	return tl.numImages.awaitRequireSuccessful()
-  }
+    override fun numberOfImages(): ULong = tl.numImages.awaitRequireSuccessful()
 
-  override fun imageAtIndex(i: Int): DeephyImage<N> {
-	@Suppress("UNCHECKED_CAST")
-	return tl.awaitImage(i) as DeephyImage<N>
-  }
+    override fun imageAtIndex(i: Int): DeephyImage<N> {
+        @Suppress("UNCHECKED_CAST")
+        return tl.awaitImage(i) as DeephyImage<N>
+    }
 
-  @Suppress("UNCHECKED_CAST")
-  override val test: Test<N> get() = tl.awaitFinishedTest() as Test<N>
+    @Suppress("UNCHECKED_CAST")
+    override val test: Test<N> get() = tl.awaitFinishedTest() as Test<N>
 
-  override fun isDoneLoading(): Boolean {
-	return tl.isDoneLoading()
-  }
+    override fun isDoneLoading(): Boolean = tl.isDoneLoading()
 
-  override val testRAMCache: TestRAMCache get() = tl.testRAMCache
-  override val model: Model get() = tl.model
+    override val testRAMCache: TestRAMCache get() = tl.testRAMCache
+    override val model: Model get() = tl.model
 }
 

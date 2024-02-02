@@ -108,9 +108,7 @@ class DatasetViewer(
     val siblings by lazy { outerBox.children.filtered { it != this } }
 
     private val currentFile get() = file.value?.fName
-    override fun reflectingToStringProps(): Set<KProperty<*>> {
-        return setOf(::currentFile)
-    }
+    override fun reflectingToStringProps(): Set<KProperty<*>> = setOf(::currentFile)
 //    override fun toString() = toStringBuilder("current file" to file.value?.fName)
 
     val file: VarProp<TypedFile<Cbor,*>?> = VarProp(initialFile).withChangeListener {

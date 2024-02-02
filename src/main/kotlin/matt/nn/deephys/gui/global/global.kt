@@ -77,7 +77,7 @@ fun <E : Any> ET.deephysSpinner(
     acceptIf: (E) -> Boolean,
     navAction: DatasetViewer.(E) -> Unit,
 
-    ) = run {
+) = run {
     var theValueProp: ObsVal<E>? = null
     h {
 
@@ -301,7 +301,7 @@ fun EventTargetWrapper.deephyButton(
     theOp()
 }
 
-const private val DEEPHY_ICON_BUTTON_SIZE = 25
+private const val DEEPHY_ICON_BUTTON_SIZE = 25
 
 fun EventTargetWrapper.deephyIconButton(
     icon: String,

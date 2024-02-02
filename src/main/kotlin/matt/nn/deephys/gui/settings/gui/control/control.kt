@@ -23,68 +23,68 @@ import matt.nn.deephys.gui.settings.gui.createRadioButtons
 
 
 fun createControlFor(
-  sett: Setting<*>,
-  settings: DeephysSettingsController
+    sett: Setting<*>,
+    settings: DeephysSettingsController
 ) = run {
-  VBoxW().apply {
-	when (sett) {
-	  is EnumSetting       -> {
-		h {
-		  deephysText(sett.label)
-		  sett.createRadioButtons(this@h)
-		  veryLazyDeephysTooltip(sett.tooltip, settings)
-		}
-	  }
+    VBoxW().apply {
+        when (sett) {
+            is EnumSetting       -> {
+                h {
+                    deephysText(sett.label)
+                    sett.createRadioButtons(this@h)
+                    veryLazyDeephysTooltip(sett.tooltip, settings)
+                }
+            }
 
-	  is IntSetting        -> {
-		deephysLabel {
-		  veryLazyDeephysTooltip(sett.tooltip, settings)
-		  text = sett.label
-		  contentDisplay = RIGHT
-		  graphic = spinner(
-			min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
-		  ) {
-			prefWidth = 150.0
-			this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)
-		  }
-		}
-	  }
+            is IntSetting        -> {
+                deephysLabel {
+                    veryLazyDeephysTooltip(sett.tooltip, settings)
+                    text = sett.label
+                    contentDisplay = RIGHT
+                    graphic = spinner(
+                        min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
+                    ) {
+                        prefWidth = 150.0
+                        this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)
+                    }
+                }
+            }
 
-	  is DoubleSetting     -> {
-		if (sett.showControl) deephysLabel {
-		  veryLazyDeephysTooltip(sett.tooltip, settings)
-		  text = sett.label
-		  contentDisplay = RIGHT
-		  graphic = slider(
-			min = sett.min,
-			max = sett.max,
-			value = sett.prop.value,
-		  ) {
-			prefWidth = 150.0
-			valueProperty.bindBidirectional(sett.prop)
-		  }
-		}
-	  }
+            is DoubleSetting     -> {
+                if (sett.showControl) deephysLabel {
+                    veryLazyDeephysTooltip(sett.tooltip, settings)
+                    text = sett.label
+                    contentDisplay = RIGHT
+                    graphic = slider(
+                        min = sett.min,
+                        max = sett.max,
+                        value = sett.prop.value,
+                    ) {
+                        prefWidth = 150.0
+                        valueProperty.bindBidirectional(sett.prop)
+                    }
+                }
+            }
 
-	  is BoolSetting       -> {
-		deephyCheckbox(
-		  sett.label
-		) {
-		  veryLazyDeephysTooltip(sett.tooltip, settings)
-		  selectedProperty.bindBidirectional(sett.prop)
-		}
-	  }
+            is BoolSetting       -> {
+                deephyCheckbox(
+                    sett.label
+                ) {
+                    veryLazyDeephysTooltip(sett.tooltip, settings)
+                    selectedProperty.bindBidirectional(sett.prop)
+                }
+            }
 
-	  is ActionNotASetting -> {
-		deephyButton(sett.label) {
-		  veryLazyDeephysTooltip(sett.tooltip, settings)
-		  setOnAction {
-			sett.op()
-		  }
-		}
-	  }
-	}
+            is ActionNotASetting -> {
+                deephyButton(sett.label) {
+                    veryLazyDeephysTooltip(sett.tooltip, settings)
+                    setOnAction {
+                        sett.op()
+                    }
+                }
+            }
+        }
 
 
-  }.children.first()
+    }.children.first()
 }

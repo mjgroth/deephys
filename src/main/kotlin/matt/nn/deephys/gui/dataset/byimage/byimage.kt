@@ -27,78 +27,78 @@ import matt.obs.prop.ObsVal
 
 
 class ByImageView<A: Number>(
-  testLoader: PreppedTestLoader<A>,
-  viewer: DatasetViewer,
-  override val settings: DeephysSettingsController
+    testLoader: PreppedTestLoader<A>,
+    viewer: DatasetViewer,
+    override val settings: DeephysSettingsController
 ): VBoxWrapperImpl<RegionWrapper<*>>(), MainDeephysView {
 
 
-  override var control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
-	private set
+    override var control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
+        private set
 
-  init {
-	val memSafeSettings = settings
-	val weakViewer = MyWeakRef(viewer)
-	val weakTest = MyWeakRef(testLoader)
+    init {
+        val memSafeSettings = settings
+        val weakViewer = MyWeakRef(viewer)
+        val weakTest = MyWeakRef(testLoader)
 
-	val images = testLoader.test.images
+        val images = testLoader.test.images
 
-	deephysSpinner(
-	  label = "Image",
-	  choices = images,
-	  defaultChoice = { images[0] },
-	  converter = DeephyImage.stringConverterThatFallsBackToFirst(images = images),
-	  viewer = viewer,
-	  getCurrent = viewer.imageSelection,
-	  acceptIf = { true },
-	  navAction = { navigateTo(it) }
-	).apply {
-	  (this@ByImageView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this.first)
-	}
+        deephysSpinner(
+            label = "Image",
+            choices = images,
+            defaultChoice = { images[0] },
+            converter = DeephyImage.stringConverterThatFallsBackToFirst(images = images),
+            viewer = viewer,
+            getCurrent = viewer.imageSelection,
+            acceptIf = { true },
+            navAction = { navigateTo(it) }
+        ).apply {
+            (this@ByImageView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this.first)
+        }
 
-	swapperR(
-	  viewer.imageSelection,
-	  "no image selected",
-	  fadeOutDur = DEEPHYS_FADE_DUR,
-	  fadeInDur = DEEPHYS_FADE_DUR
-	) { img ->
+        swapperR(
+            viewer.imageSelection,
+            "no image selected",
+            fadeOutDur = DEEPHYS_FADE_DUR,
+            fadeInDur = DEEPHYS_FADE_DUR
+        ) { img ->
 
-	  weakViewer.deref()?.let { deRefedViewer ->
-
-
-		h {
-		  v {
-			+DeephyImView(img, deRefedViewer, big = true, settings = memSafeSettings)
-		  }
-		  spacer(10.0)
-		  @Suppress("UNCHECKED_CAST")
-		  img as DeephyImage<A>
-		  +PredictionsView(
-			img.category,
-			ImageTopPredictions(img, weakTest.deref()!!),
-			weakViewer,
-			memSafeSettings
-		  )
-		  spacer()
-		  img.features?.takeIf { it.isNotEmpty() }?.go {
-			+FeaturesView(it)
-		  }
-		}
+            weakViewer.deref()?.let { deRefedViewer ->
 
 
-	  } ?: TextWrapper("if you see this, then there must be a problem")
+                h {
+                    v {
+                        +DeephyImView(img, deRefedViewer, big = true, settings = memSafeSettings)
+                    }
+                    spacer(10.0)
+                    @Suppress("UNCHECKED_CAST")
+                    img as DeephyImage<A>
+                    +PredictionsView(
+                        img.category,
+                        ImageTopPredictions(img, weakTest.deref()!!),
+                        weakViewer,
+                        memSafeSettings
+                    )
+                    spacer()
+                    img.features?.takeIf { it.isNotEmpty() }?.go {
+                        +FeaturesView(it)
+                    }
+                }
 
-	}.apply {
-	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
-	}
-	spacer(10.0)
-	neuronListViewSwapper(
-	  viewer = viewer,
-	  top = viewer.topNeurons,
-	  bindScrolling = true,
-	  settings = memSafeSettings
-	)
-  }
+
+            } ?: TextWrapper("if you see this, then there must be a problem")
+
+        }.apply {
+            visibleAndManagedProp.bind(viewer.isUnboundToDSet)
+        }
+        spacer(10.0)
+        neuronListViewSwapper(
+            viewer = viewer,
+            top = viewer.topNeurons,
+            bindScrolling = true,
+            settings = memSafeSettings
+        )
+    }
 
 
 }

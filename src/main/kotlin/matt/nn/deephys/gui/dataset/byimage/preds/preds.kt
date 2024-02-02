@@ -87,7 +87,7 @@ class CategoryTable(
                 visibleAndManagedProp.bindWeakly(b.not())
                 deephysText(title_unfolded)
                 data.forEach { (cat, num) ->
-                    val fullString = "${cat.label} (${num})"
+                    val fullString = "${cat.label} ($num)"
                     cat.actionText(
                         r = this,
                         tooltip = fullString,
@@ -128,7 +128,7 @@ class CategoryTable(
                         val category = it.first
                         val num = it.second
 
-                        val fullString = "${category.label} (${num})"
+                        val fullString = "${category.label} ($num)"
                         category.actionText(
                             r = predNamesBox,
                             tooltip = fullString,

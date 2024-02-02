@@ -213,7 +213,7 @@ class DeephysTestSession {
         DEEPHYS_TEST_RESULT_JSON.saveJson(sessionList, pretty = true)
         assertTrueLazyMessage(
             !TestPerformance.get()
-                    || totalTime < maxTime
+                || totalTime < maxTime
         ) {
             "took to long to load: took=$totalTime expected=$maxTime"
         }

@@ -12,35 +12,35 @@ import matt.nn.deephys.gui.global.deephyToggleButton
 
 class DeephysTabPane: VBoxW() {
 
-  init {
-	isFillWidth = false
-  }
+    init {
+        isFillWidth = false
+    }
 
-  val toggleGroup = ToggleMechanism<Lazy<NodeWrapper>>()
+    val toggleGroup = ToggleMechanism<Lazy<NodeWrapper>>()
 
-  val tabBar = h {
+    val tabBar = h {
 
 
-  }
+    }
 
-  val contentBox = v {
+    val contentBox = v {
 
-  }
+    }
 
-  fun deephysLazyTab(label: String, op: ()->NodeWrapper): ToggleButtonWrapper {
-	val lazyContent = lazy { op() }
-	return tabBar.deephyToggleButton(label, group = toggleGroup, value = lazyContent) {
-	  setupSelectionColor(DeephysPalette.deephysSelectGradient)
-	  selectedProperty.onChange {
-		if (it) {
-		  this@DeephysTabPane.contentBox.apply {
-			clear()
-			+lazyContent.value
-		  }
-		}
-	  }
-	}
-  }
+    fun deephysLazyTab(label: String, op: ()->NodeWrapper): ToggleButtonWrapper {
+        val lazyContent = lazy { op() }
+        return tabBar.deephyToggleButton(label, group = toggleGroup, value = lazyContent) {
+            setupSelectionColor(DeephysPalette.deephysSelectGradient)
+            selectedProperty.onChange {
+                if (it) {
+                    this@DeephysTabPane.contentBox.apply {
+                        clear()
+                        +lazyContent.value
+                    }
+                }
+            }
+        }
+    }
 
 }
 

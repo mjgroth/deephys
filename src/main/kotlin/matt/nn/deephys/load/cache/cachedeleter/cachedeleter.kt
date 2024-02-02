@@ -3,12 +3,12 @@ package matt.nn.deephys.load.cache.cachedeleter
 import matt.async.pri.MyThreadPriorities.DELETING_OLD_CACHE
 import matt.async.thread.namedThread
 import matt.file.toJioFile
-import matt.lang.model.file.FsFile
 import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.function.Produce
-import matt.prim.int.ceilInt
+import matt.lang.model.file.FsFile
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import matt.prim.int.ceilInt
 
 class CacheDeleter(
     files: Produce<List<FsFile>>

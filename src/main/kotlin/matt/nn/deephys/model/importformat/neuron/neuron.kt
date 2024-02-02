@@ -16,16 +16,9 @@ class TestNeuron<A : Number>(
     dType: DType<A>
 ) : RAFCaches() {
 
-    override fun toString(): String {
-        return "TestNeuron $index of layer $layerIndex"
-    }
+    override fun toString(): String = "TestNeuron $index of layer $layerIndex"
 
     val activations = object : CachedRAFProp<List<A>>(activationsRAF) {
-        override fun decode(bytes: ByteArray): List<A> {
-
-            return dType.bytesToArray(bytes, numIms)
-
-
-        }
+        override fun decode(bytes: ByteArray): List<A> = dType.bytesToArray(bytes, numIms)
     }
 }

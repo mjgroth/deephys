@@ -34,10 +34,10 @@ class DeephyImView(
     loadAsync: Boolean = false,
     settings: DeephysSettingsController
 ) : ScaledCanvas(
-    initializeInLoadingMode = true,
-    progressIndicatorWidthAndHeight = (if (big) viewer.bigImageScale.value else viewer.smallImageScale.value),
-    delayLoadingIndicatorBy = 1000.milliseconds
-) {
+        initializeInLoadingMode = true,
+        progressIndicatorWidthAndHeight = (if (big) viewer.bigImageScale.value else viewer.smallImageScale.value),
+        delayLoadingIndicatorBy = 1000.milliseconds
+    ) {
 
     companion object {
         val realPool = QueueWorkerPool(NUM_LOGICAL_CORES, "DeephyImView Worker")

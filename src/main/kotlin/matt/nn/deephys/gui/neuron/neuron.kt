@@ -192,7 +192,7 @@ class NeuronView<A : Number>(
                     } else {
                         showing.value -= 1
                         worker.schedule {
-                           with(localTestLoader.testRAMCache){ TopImages(localNeuron, localTestLoader, realNumImages.toInt())()}
+                            with(localTestLoader.testRAMCache){ TopImages(localNeuron, localTestLoader, realNumImages.toInt())()}
                         }
                     }
                 }

@@ -27,148 +27,148 @@ import matt.obs.prop.ObsVal
 import java.lang.ref.WeakReference
 
 enum class DatasetNodeView {
-  ByNeuron, ByImage, ByCategory
+    ByNeuron, ByImage, ByCategory
 }
 
 class DatasetNode(
-  dataset: TestLoader,
-  viewer: DatasetViewer,
-  override val settings: DeephysSettingsController
+    dataset: TestLoader,
+    viewer: DatasetViewer,
+    override val settings: DeephysSettingsController
 ): VBoxW(), DeephysNode {
 
-  val weakViewer = WeakReference(viewer)
+    val weakViewer = WeakReference(viewer)
 
-  private val weakSettings = WeakReference(settings)
+    private val weakSettings = WeakReference(settings)
 
-  private val byNeuronView by lazy {
-	ByNeuronView(
-	  dataset,
-	  viewer,
-	  settings = weakSettings.get()!!
-	)
-  }
-  private val byImageView by lazy {
-	ByImageView(
-	  dataset.preppedTest.awaitRequireSuccessful(),
-	  viewer,
-	  settings = weakSettings.get()!!
-	)
-  }
-  private val byCategoryView by lazy {
-	ByCategoryView(
-	  dataset.preppedTest.awaitRequireSuccessful(),
-	  viewer,
-	  settings = weakSettings.get()!!
-	)
-  }
+    private val byNeuronView by lazy {
+        ByNeuronView(
+            dataset,
+            viewer,
+            settings = weakSettings.get()!!
+        )
+    }
+    private val byImageView by lazy {
+        ByImageView(
+            dataset.preppedTest.awaitRequireSuccessful(),
+            viewer,
+            settings = weakSettings.get()!!
+        )
+    }
+    private val byCategoryView by lazy {
+        ByCategoryView(
+            dataset.preppedTest.awaitRequireSuccessful(),
+            viewer,
+            settings = weakSettings.get()!!
+        )
+    }
 
-  init {
+    init {
 
-	spacing = DEEPHYS_SYMBOL_SPACING
-	isFillWidth = false
-
-
-	val layerCB = choicebox(
-	  nullableProp = viewer.layerSelection,
-	  values = viewer.model.resolvedLayers.map { it.interTest }
-	) {
-	  configForDeephys()
-	  valueProperty.onChange {
-		println("layerCB value changed to $it")
-	  }
+        spacing = DEEPHYS_SYMBOL_SPACING
+        isFillWidth = false
 
 
-
-	}
-
-	val layerController = deephysLabeledControl2(
-	  "Layer",
-	  layerCB
-	) {
-	  visibleAndManagedProp.bind(viewer.isUnboundToDSet)
-	}
-
-	val topHBox = h {
-	  spacing = DEEPHYS_SYMBOL_SPACING*2
-	  +layerController
-	}
-	val mainControl = BindableProperty<RegionWrapper<*>?>(null)
-	val mainControlSwapper = swapper(mainControl) {
-	  this
-	}
-
-	val tabPane = DeephysTabPane().apply {
-	  layerController.prefWidthProperty.bind(this.tabBar.widthProperty)
-	  val neuronTab = deephysLazyTab("Neuron") {
-		this@DatasetNode.byNeuronView
-	  }.apply {
-		addEventFilter(MouseEvent.MOUSE_PRESSED) {
-		  it.consume()
-		  if (!this.isSelected) {
-			this@DatasetNode.weakViewer.get()!!.navigateTo(
-			  ByNeuron
-			)
-		  }
-		}
-	  }
-	  val imageTab = deephysLazyTab("Image") {
-		this@DatasetNode.byImageView
-	  }.apply {
-		addEventFilter(MouseEvent.MOUSE_PRESSED) {
-		  it.consume()
-		  if (!this.isSelected) {
-			this@DatasetNode.weakViewer.get()!!.navigateTo(
-			  ByImage
-			)
-		  }
-		}
-	  }
-	  val categoryTab = deephysLazyTab("Category") {
-		this@DatasetNode.byCategoryView
-	  }.apply {
-		addEventFilter(MouseEvent.MOUSE_PRESSED) {
-		  it.consume()
-		  if (!this.isSelected) {
-			this@DatasetNode.weakViewer.get()!!.navigateTo(
-			  ByCategory
-			)
-		  }
-		}
-	  }
+        val layerCB = choicebox(
+            nullableProp = viewer.layerSelection,
+            values = viewer.model.resolvedLayers.map { it.interTest }
+        ) {
+            configForDeephys()
+            valueProperty.onChange {
+                println("layerCB value changed to $it")
+            }
 
 
-	  fun update(view: DatasetNodeView) {
-		when (view) {
-		  ByNeuron -> {
-			neuronTab.fire()
-			mainControl.unbind()
-			mainControl.bindWeakly(this@DatasetNode.byNeuronView.control.binding { it?.deref() })
-		  }
 
-		  ByImage -> {
-			imageTab.fire()
-			mainControl.unbind()
-			mainControl.bindWeakly(this@DatasetNode.byImageView.control.binding { it?.deref() })
-		  }
+        }
 
-		  ByCategory -> {
-			categoryTab.fire()
-			mainControl.unbind()
-			mainControl.bindWeakly(this@DatasetNode.byCategoryView.control.binding { it?.deref() })
-		  }
-		}
-	  }
-	  update(viewer.view.value)
-	  viewer.view.onChange {
-		update(it)
-	  }
-	}
-	+tabPane
-	topHBox += tabPane.tabBar
-	topHBox += mainControlSwapper
-  }
+        val layerController = deephysLabeledControl2(
+            "Layer",
+            layerCB
+        ) {
+            visibleAndManagedProp.bind(viewer.isUnboundToDSet)
+        }
+
+        val topHBox = h {
+            spacing = DEEPHYS_SYMBOL_SPACING*2
+            +layerController
+        }
+        val mainControl = BindableProperty<RegionWrapper<*>?>(null)
+        val mainControlSwapper = swapper(mainControl) {
+            this
+        }
+
+        val tabPane = DeephysTabPane().apply {
+            layerController.prefWidthProperty.bind(this.tabBar.widthProperty)
+            val neuronTab = deephysLazyTab("Neuron") {
+                this@DatasetNode.byNeuronView
+            }.apply {
+                addEventFilter(MouseEvent.MOUSE_PRESSED) {
+                    it.consume()
+                    if (!this.isSelected) {
+                        this@DatasetNode.weakViewer.get()!!.navigateTo(
+                            ByNeuron
+                        )
+                    }
+                }
+            }
+            val imageTab = deephysLazyTab("Image") {
+                this@DatasetNode.byImageView
+            }.apply {
+                addEventFilter(MouseEvent.MOUSE_PRESSED) {
+                    it.consume()
+                    if (!this.isSelected) {
+                        this@DatasetNode.weakViewer.get()!!.navigateTo(
+                            ByImage
+                        )
+                    }
+                }
+            }
+            val categoryTab = deephysLazyTab("Category") {
+                this@DatasetNode.byCategoryView
+            }.apply {
+                addEventFilter(MouseEvent.MOUSE_PRESSED) {
+                    it.consume()
+                    if (!this.isSelected) {
+                        this@DatasetNode.weakViewer.get()!!.navigateTo(
+                            ByCategory
+                        )
+                    }
+                }
+            }
+
+
+            fun update(view: DatasetNodeView) {
+                when (view) {
+                    ByNeuron -> {
+                        neuronTab.fire()
+                        mainControl.unbind()
+                        mainControl.bindWeakly(this@DatasetNode.byNeuronView.control.binding { it?.deref() })
+                    }
+
+                    ByImage -> {
+                        imageTab.fire()
+                        mainControl.unbind()
+                        mainControl.bindWeakly(this@DatasetNode.byImageView.control.binding { it?.deref() })
+                    }
+
+                    ByCategory -> {
+                        categoryTab.fire()
+                        mainControl.unbind()
+                        mainControl.bindWeakly(this@DatasetNode.byCategoryView.control.binding { it?.deref() })
+                    }
+                }
+            }
+            update(viewer.view.value)
+            viewer.view.onChange {
+                update(it)
+            }
+        }
+        +tabPane
+        topHBox += tabPane.tabBar
+        topHBox += mainControlSwapper
+    }
 }
 
 interface MainDeephysView: DeephysNode {
-  val control: ObsVal<WeakRefInter<RegionWrapper<*>>?>
+    val control: ObsVal<WeakRefInter<RegionWrapper<*>>?>
 }

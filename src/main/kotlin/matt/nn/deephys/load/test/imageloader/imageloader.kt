@@ -68,7 +68,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
         requireNot(didRead)
         didRead = true
 
-        nextValueManualDontReadKey<ArrayReader, Unit>() {
+        nextValueManualDontReadKey<ArrayReader, Unit> {
             val numberOfIms = count
             val numImsDouble = numberOfIms.toDouble()
             val numImsInt = numberOfIms.toInt()

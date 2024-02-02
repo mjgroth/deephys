@@ -61,18 +61,16 @@ class DeephysPieRenderer(
     private val showAsList: BindableProperty<Boolean>,
     private val settings: DeephysSettingsController
 ) : PieChartRenderer<CategoryPie> {
-    override fun render(figData: PieChartIrPlaceholder): CategoryPie {
-        return CategoryPie(
-            title = figData.title,
-            cats = cats,
-            nums = nums,
-            viewer = viewer,
-            colorMap = colorMap,
-            selected = selected,
-            showAsList = showAsList,
-            settings = settings
-        )
-    }
+    override fun render(figData: PieChartIrPlaceholder): CategoryPie = CategoryPie(
+        title = figData.title,
+        cats = cats,
+        nums = nums,
+        viewer = viewer,
+        colorMap = colorMap,
+        selected = selected,
+        showAsList = showAsList,
+        settings = settings
+    )
 
 }
 
@@ -301,11 +299,11 @@ class CategoryPie(
         width: Double,
         settings: DeephysSettingsController
     ) : RectangleWrapper(
-        x = x,
-        y = y,
-        width = width,
-        height = 25.0
-    ), CategoryShape {
+            x = x,
+            y = y,
+            width = width,
+            height = 25.0
+        ), CategoryShape {
 
 
         fun click() {
@@ -352,14 +350,14 @@ class CategoryPie(
         startAngle: Double,
         settings: DeephysSettingsController
     ) : ArcWrapper(
-        centerX = CENTER_X,
-        centerY = CENTER_Y,
-        radiusX = 100.0,
-        radiusY = 100.0,
-        startAngle = startAngle,
-        length = arcLength,
-        type = ROUND
-    ), CategoryShape {
+            centerX = CENTER_X,
+            centerY = CENTER_Y,
+            radiusX = 100.0,
+            radiusY = 100.0,
+            startAngle = startAngle,
+            length = arcLength,
+            type = ROUND
+        ), CategoryShape {
 
 
         fun click() {

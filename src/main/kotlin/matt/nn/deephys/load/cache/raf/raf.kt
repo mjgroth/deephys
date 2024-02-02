@@ -2,12 +2,12 @@ package matt.nn.deephys.load.cache.raf
 
 import matt.async.thread.daemon
 import matt.async.thread.executors.ThreadPool
-import matt.lang.model.file.FsFile
 import matt.lang.NOT_IMPLEMENTED
 import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.anno.SeeURL
 import matt.lang.atomic.AtomicInt
 import matt.lang.file.toJFile
+import matt.lang.model.file.FsFile
 import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
 import matt.nn.deephys.load.cache.raf.deed.DeedImpl
@@ -133,25 +133,25 @@ sealed class SeekableRAFLike : RAFLike {
     abstract override val channel: WritableByteChannel
     abstract fun seek(pos: Long)
 
-    final @Synchronized
+    @Synchronized final
     override fun write(pos: Long, byte: Int) {
         seek(pos)
         write(byte)
     }
 
-    final @Synchronized
+    @Synchronized final
     override fun readFully(pos: Long, buff: ByteArray) {
         seek(pos)
         readFully(buff)
     }
 
-    final @Synchronized
+    @Synchronized final
     override fun write(pos: Long, bytes: ByteArray) {
         seek(pos)
         write(bytes)
     }
 
-    final @Synchronized
+    @Synchronized final
     override fun write(pos: Long, bytes: ByteArray, srcOffset: Int, srcLen: Int) {
         seek(pos)
         write(bytes, srcOffset, srcLen)
@@ -299,9 +299,7 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: FsFile) : RAFLike {
                 finishedWrites.incrementAndGet()
             }
 
-            override fun failed(exc: Throwable, attachment: Unit?) {
-                throw exc
-            }
+            override fun failed(exc: Throwable, attachment: Unit?): Unit = throw exc
         }
     }
 

@@ -57,9 +57,7 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor,*>) {
     @JvmInline
     value class Loaded<T>(val value: T) : LoadedOrFailed<T>
     class Failed<T>(val message: String) : LoadedOrFailed<T> {
-        override fun toString(): String {
-            return "Failed: $message"
-        }
+        override fun toString(): String = "Failed: $message"
     }
 
 

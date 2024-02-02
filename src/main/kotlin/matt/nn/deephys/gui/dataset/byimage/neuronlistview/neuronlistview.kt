@@ -14,7 +14,6 @@ import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.text.textlike.highlightOnHover
 import matt.lang.go
 import matt.lang.weak.MyWeakRef
-import matt.prim.int.ceilInt
 import matt.math.numalg.format.sigfig.toScientificNotation
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
@@ -38,6 +37,7 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.bind.MyBinding
 import matt.obs.prop.ObsVal
+import matt.prim.int.ceilInt
 
 fun <A : Number> NW.neuronListViewSwapper(
     viewer: DatasetViewer,
@@ -55,7 +55,7 @@ fun <A : Number> NW.neuronListViewSwapper(
         top = MyBinding(
             viewer.layerSelection,
             /*viewer.normalizeTopNeuronActivations,
-            * */viewer.testData,
+             * */viewer.testData,
             viewer.normalizer
         ) {
             weakViewer.deref()?.let { deRefedViewer ->

@@ -1,6 +1,7 @@
 package matt.nn.deephys
 
 import javafx.application.Platform
+import kotlinx.coroutines.launch
 import matt.async.thread.daemon
 import matt.caching.compcache.ComputeInput
 import matt.collect.itr.list
@@ -8,16 +9,19 @@ import matt.file.commons.DEEPHYS_DATA_FOLDER
 import matt.file.commons.DEEPHYS_RAM_SAMPLES_FOLDER
 import matt.file.commons.RAM_NUMBERED_FILES
 import matt.file.toJioFile
+import matt.http.http
 import matt.json.prim.saveAsJsonTo
 import matt.lang.anno.SeeURL
 import matt.log.profile.data.RamSample
 import matt.log.profile.data.ramSample
 import matt.model.data.rect.DoubleRectSize
+import matt.nn.deephys.gui.navbox.zoo.NeuronalActivityZoo
 import matt.nn.deephys.tester.DeephysTestSession
 import matt.reflect.scan.mattSubClasses
 import matt.reflect.scan.systemScope
 import matt.test.Tests
 import matt.test.assertions.assertTrueLazyMessage
+import matt.test.co.runTestWithTimeoutOnlyIfTestingPerformance
 import matt.test.prop.TestPerformance
 import matt.time.dur.sleep
 import org.junit.jupiter.api.AfterAll
@@ -83,6 +87,9 @@ val MAC_MAYBE_MIN_SCREEN_SIZE = DoubleRectSize(
 
 @TestInstance(PER_CLASS)
 class TestDeephys : Tests() {
+
+
+
 
     val session = DeephysTestSession()
 
@@ -171,5 +178,17 @@ class TestDeephys : Tests() {
             }
         }
     }
+
+    @Test fun downloadZooUrls() {
+        runTestWithTimeoutOnlyIfTestingPerformance {
+            val example = NeuronalActivityZoo.EXAMPLES.first()
+            launch {
+                http(example.modelURL).requireSuccessful()
+            }
+            http(example.testURLs.first()).requireSuccessful()
+        }
+
+    }
+
 }
 

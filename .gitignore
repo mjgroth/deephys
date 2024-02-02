@@ -12,6 +12,7 @@ __pycache__
 .private
 .gradle/
 .kotlin/
+/inspections/
 /gradlew.bat
 /lastversion.txt
 .DS_Store

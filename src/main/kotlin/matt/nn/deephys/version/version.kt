@@ -85,7 +85,7 @@ object VersionChecker {
                     opens(URI(new.downloadURL))
                 }
             } else if (new != null && new.version < myVersion) {
-                deephysText("developing unreleased version (last pushed was ${new})")
+                deephysText("developing unreleased version (last pushed was $new)")
             }
         }
     }

@@ -16,39 +16,39 @@ import matt.obs.bindings.bool.or
 import matt.obs.bindings.comp.gt
 
 class BindTutorial(viewer: DatasetViewer): VBoxW() {
-  init {
-	visibleAndManagedWhen {
-	  viewer.showTutorials and
-		  viewer.numViewers.gt(1) and
-		  viewer.outerBoundDSet.neq(viewer) and
-		  (viewer.isUnboundToDSet or viewer.normalizer.isNull)
-	}
-	spacer()
-	deephysText("In order to visualize this dataset in comparison to other datasets:")
-	h {
-	  spacer()
-	  v {
-		h {
-		  checkbox("$BIND_BUTTON_NAME one dataset") {
-			isDisable = true
-			selectedProperty.bind(viewer.outerBoundDSet.isNotNull)
-		  }
-		  spacer()
-		  deephyActionText("show me how") {
-			viewer.outerBox.flashBindButtons()
-		  }
-		}
-		h {
-		  checkbox("Select one dataset as $NORMALIZER_BUTTON_NAME") {
-			isDisable = true
-			selectedProperty.bind(viewer.normalizer.isNotNull)
-		  }
-		  spacer()
-		  deephyActionText("show me how") {
-			viewer.outerBox.flashOODButtons()
-		  }
-		}
-	  }
-	}
-  }
+    init {
+        visibleAndManagedWhen {
+            viewer.showTutorials and
+                viewer.numViewers.gt(1) and
+                viewer.outerBoundDSet.neq(viewer) and
+                (viewer.isUnboundToDSet or viewer.normalizer.isNull)
+        }
+        spacer()
+        deephysText("In order to visualize this dataset in comparison to other datasets:")
+        h {
+            spacer()
+            v {
+                h {
+                    checkbox("$BIND_BUTTON_NAME one dataset") {
+                        isDisable = true
+                        selectedProperty.bind(viewer.outerBoundDSet.isNotNull)
+                    }
+                    spacer()
+                    deephyActionText("show me how") {
+                        viewer.outerBox.flashBindButtons()
+                    }
+                }
+                h {
+                    checkbox("Select one dataset as $NORMALIZER_BUTTON_NAME") {
+                        isDisable = true
+                        selectedProperty.bind(viewer.normalizer.isNotNull)
+                    }
+                    spacer()
+                    deephyActionText("show me how") {
+                        viewer.outerBox.flashOODButtons()
+                    }
+                }
+            }
+        }
+    }
 }

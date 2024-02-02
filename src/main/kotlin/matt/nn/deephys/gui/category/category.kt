@@ -239,7 +239,7 @@ class CategoryView<A : Number>(
                     /*	v {
                           alignment = Pos.TOP_LEFT
 
-                          *//*  deephysText("") {
+                     *//*  deephysText("") {
 			  textAlignment = CENTER
 			  visibleAndManagedProp.bindWeakly(viewer.showTutorials)
 			}*//*

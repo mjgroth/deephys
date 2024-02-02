@@ -73,7 +73,7 @@ data class TopCategories<N : Number>(
 
     context(TestRAMCache)
     override fun compute(): List<Pair<Category, RawActivation<*, *>>> {
-        val t = tic("TopCategories for ${neuron}")
+        val t = tic("TopCategories for $neuron")
         t.tic("starting to get top categories")
         val theTest = test.test
         val dtype = theTest.dtype

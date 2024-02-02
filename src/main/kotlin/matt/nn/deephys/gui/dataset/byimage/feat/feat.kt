@@ -12,23 +12,23 @@ import matt.nn.deephys.gui.global.subtitleFont
 import matt.prim.str.truncateWithElipsesOrAddSpaces
 
 class FeaturesView(
-  features: Map<String, String>
+    features: Map<String, String>
 ): VBoxW() {
-  init {
-	deephysText("Features:") {
-	  subtitleFont()
-	}
-	spacer()
-	val featureKeysBox: NodeWrapper = vbox<TextWrapper> {}
-	val featureValuesBox: NodeWrapper = vbox<TextWrapper> {}
-	hbox<PaneWrapper<*>> {
-	  +featureKeysBox
-	  spacer()
-	  +featureValuesBox
-	}
-	features.forEach { (k, v) ->
-	  featureKeysBox.deephysText(k.truncateWithElipsesOrAddSpaces(25))
-	  featureValuesBox.deephysText(v)
-	}
-  }
+    init {
+        deephysText("Features:") {
+            subtitleFont()
+        }
+        spacer()
+        val featureKeysBox: NodeWrapper = vbox<TextWrapper> {}
+        val featureValuesBox: NodeWrapper = vbox<TextWrapper> {}
+        hbox<PaneWrapper<*>> {
+            +featureKeysBox
+            spacer()
+            +featureValuesBox
+        }
+        features.forEach { (k, v) ->
+            featureKeysBox.deephysText(k.truncateWithElipsesOrAddSpaces(25))
+            featureValuesBox.deephysText(v)
+        }
+    }
 }

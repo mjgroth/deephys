@@ -80,9 +80,7 @@ value class RawActivationFloat32(override val value: Float) : RawActivation<Floa
 
 
     override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
-    override fun fromFloat(d: Float): RawActivationFloat32 {
-        return RawActivationFloat32(d)
-    }
+    override fun fromFloat(d: Float): RawActivationFloat32 = RawActivationFloat32(d)
 
 
 }
@@ -93,9 +91,7 @@ value class RawActivationFloat64(override val value: Double) : RawActivation<Dou
 
 
     override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
-    override fun fromDouble(d: Double): RawActivationFloat64 {
-        return RawActivationFloat64(d)
-    }
+    override fun fromDouble(d: Double): RawActivationFloat64 = RawActivationFloat64(d)
 
 
 }
@@ -178,17 +174,11 @@ value class ActivationRatioFloat32(override val value: Float) : ActivationRatio<
 
 
     override val formatted get() = "max: ${(value * 100).withPrecision(3)}${ACT_RATIO_SYMBOL}"
-    override fun plus(m: ActivationRatioFloat32): ActivationRatioFloat32 {
-        return ActivationRatioFloat32(value + m.value)
-    }
+    override fun plus(m: ActivationRatioFloat32): ActivationRatioFloat32 = ActivationRatioFloat32(value + m.value)
 
-    override fun fromFloat(d: Float): ActivationRatioFloat32 {
-        return ActivationRatioFloat32(d)
-    }
+    override fun fromFloat(d: Float): ActivationRatioFloat32 = ActivationRatioFloat32(d)
 
-    override fun div(n: Number): ActivationRatioFloat32 {
-        return ActivationRatioFloat32(value / n.toFloat())
-    }
+    override fun div(n: Number): ActivationRatioFloat32 = ActivationRatioFloat32(value / n.toFloat())
 }
 
 
@@ -198,17 +188,11 @@ value class ActivationRatioFloat64(override val value: Double) : ActivationRatio
 
 
     override val formatted get() = "max: ${(value * 100).withPrecision(3)}$ACT_RATIO_SYMBOL"
-    override fun plus(m: ActivationRatioFloat64): ActivationRatioFloat64 {
-        return ActivationRatioFloat64(value + m.value)
-    }
+    override fun plus(m: ActivationRatioFloat64): ActivationRatioFloat64 = ActivationRatioFloat64(value + m.value)
 
-    override fun fromDouble(d: Double): ActivationRatioFloat64 {
-        return ActivationRatioFloat64(d)
-    }
+    override fun fromDouble(d: Double): ActivationRatioFloat64 = ActivationRatioFloat64(d)
 
-    override fun div(n: Number): ActivationRatioFloat64 {
-        return ActivationRatioFloat64(value / n.toDouble())
-    }
+    override fun div(n: Number): ActivationRatioFloat64 = ActivationRatioFloat64(value / n.toDouble())
 }
 
 

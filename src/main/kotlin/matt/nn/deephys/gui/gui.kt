@@ -106,7 +106,7 @@ class DeephysApp {
         )
 
     context(MyShutdownContext<CancellableShutdownTask>)
-            /*invoked directly from test, in case I ever want to return something*/
+    /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: DeephysArgs,
         settingsNode: DeephySettingsNode = DeephySettingsNode(),
@@ -242,7 +242,7 @@ class DeephysApp {
         val testFiles = testURLs.mapIndexed { i, testURL ->
             pool.submit {
                 with(MacFileSystem) {
-                    val f = createTempFile("test_${i}", suffix = "")
+                    val f = createTempFile("test_$i", suffix = "")
                     testURL.openStream().use { downloadStream ->
                         f.outputStream().use { writeStream ->
                             downloadStream.transferTo(writeStream)
@@ -269,10 +269,10 @@ class DeephysApp {
 
             }
 
-            deephysLabel("Loading Files... (0/${total})") {
+            deephysLabel("Loading Files... (0/$total)") {
                 progress.nonBlockingFXWatcher().onChange {
                     prog.progress = it
-                    text = "Loading Files... (${done.get()}/${total})"
+                    text = "Loading Files... (${done.get()}/$total)"
                     if (done.get() == total) {
                         stage!!.close()
                         navBox!!.visibleAndManaged = false

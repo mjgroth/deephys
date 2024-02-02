@@ -7,11 +7,11 @@ import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.major.txtstr.TextStringReader
 import matt.cbor.read.streamman.cborReader
 import matt.file.toJioFile
+import matt.lang.assertions.require.requireEquals
+import matt.lang.assertions.require.requireNot
 import matt.lang.err
 import matt.lang.model.file.types.Cbor
 import matt.lang.model.file.types.TypedFile
-import matt.lang.assertions.require.requireEquals
-import matt.lang.assertions.require.requireNot
 import matt.log.warn.warn
 import matt.model.code.errreport.ThrowReport
 import matt.model.obj.single.SingleCall
@@ -44,9 +44,7 @@ class TestLoader(
 ) : AsyncLoader(file), TestOrLoader {
 
 
-    override fun isDoneLoading(): Boolean {
-        return finishedTest.isDone()
-    }
+    override fun isDoneLoading(): Boolean = finishedTest.isDone()
 
     override val test get() = awaitFinishedTest()
     fun dtypeOrNull() = preppedTest.awaitSuccessfulOrNull()?.dtype

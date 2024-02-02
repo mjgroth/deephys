@@ -149,11 +149,9 @@ data class Category(
         )
     }
 
-    override fun forTest(test: TestOrLoader): Category {
-        return test.test.category(id).also {
-            requireEquals(it.label, label) {
-                "label of category $id of other test doesn't match (${it.label}!=${label})"
-            }
+    override fun forTest(test: TestOrLoader): Category = test.test.category(id).also {
+        requireEquals(it.label, label) {
+            "label of category $id of other test doesn't match (${it.label}!=$label)"
         }
     }
 
@@ -165,7 +163,10 @@ data class CategoryConfusion(
 ) : CategorySelection {
     override val title = "Category Confusion\n\t-${first.label}\n\t-${second.label}"
     override val primaryCategory = first
-    override val allCategories get() = sequence { yield(first); yield(second) }
+    override val allCategories get() = sequence {
+        yield(first);
+        yield(second)
+    }
     override fun forTest(test: TestOrLoader): CategoryConfusion {
         val firstOther = first.forTest(test)
         val secondOther = second.forTest(test)

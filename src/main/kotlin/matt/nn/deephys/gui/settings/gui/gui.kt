@@ -20,8 +20,8 @@ import matt.gui.mstage.ShowMode.DO_NOT_SHOW
 import matt.gui.mstage.WMode.CLOSE
 import matt.gui.option.EnumSetting
 import matt.gui.option.SettingsData
-import matt.lang.go
 import matt.lang.assertions.require.requireNull
+import matt.lang.go
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyRadioButton
 import matt.nn.deephys.gui.global.deephysText

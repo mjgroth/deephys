@@ -46,12 +46,15 @@
       "cfg": "implementation",
       "path": ":k:codegen"
     },
-
-
     {
       "type": "Project",
       "cfg": "testImplementation",
       "path": ":k:test"
+    },
+    {
+      "type": "Project",
+      "cfg": "testImplementation",
+      "path": ":k:test:co"
     },
     {
       "type": "Project",
