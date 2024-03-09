@@ -20,11 +20,12 @@ class ResolvedLayer(
     val model: Model,
     val index: Int
 ) : LayerLike by layer {
-    val neurons: List<ResolvedNeuron> = List(layer.neurons.size) { index ->
-        ResolvedNeuron(
-            index = index, layer = this@ResolvedLayer
-        )
-    }
+    val neurons: List<ResolvedNeuron> =
+        List(layer.neurons.size) { index ->
+            ResolvedNeuron(
+                index = index, layer = this@ResolvedLayer
+            )
+        }
     val interTest by lazy { InterTestLayer(index, layerID = layer.layerID, neuronCount = neurons.size) }
 }
 
@@ -38,7 +39,7 @@ interface ResolvedNeuronLike {
 
 class ResolvedNeuron(
     override val index: Int,
-    override val layer: ResolvedLayer,
+    override val layer: ResolvedLayer
 ) : ResolvedNeuronLike {
     override val interTest by lazy { InterTestNeuron(layer.interTest, index) }
 }

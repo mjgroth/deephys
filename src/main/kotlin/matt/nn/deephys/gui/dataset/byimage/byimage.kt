@@ -7,9 +7,9 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.region.RegionWrapper
 import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.lang.go
-import matt.lang.weak.MyWeakRef
-import matt.lang.weak.WeakRefInter
+import matt.lang.common.go
+import matt.lang.weak.common.WeakRefInter
+import matt.lang.weak.weak
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.dataset.MainDeephysView
 import matt.nn.deephys.gui.dataset.byimage.feat.FeaturesView
@@ -22,8 +22,8 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
+import matt.obs.prop.writable.BindableProperty
 
 
 class ByImageView<A: Number>(
@@ -38,8 +38,8 @@ class ByImageView<A: Number>(
 
     init {
         val memSafeSettings = settings
-        val weakViewer = MyWeakRef(viewer)
-        val weakTest = MyWeakRef(testLoader)
+        val weakViewer = weak(viewer)
+        val weakTest = weak(testLoader)
 
         val images = testLoader.test.images
 
@@ -53,7 +53,7 @@ class ByImageView<A: Number>(
             acceptIf = { true },
             navAction = { navigateTo(it) }
         ).apply {
-            (this@ByImageView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this.first)
+            (this@ByImageView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = weak(first)
         }
 
         swapperR(
@@ -84,10 +84,7 @@ class ByImageView<A: Number>(
                         +FeaturesView(it)
                     }
                 }
-
-
             } ?: TextWrapper("if you see this, then there must be a problem")
-
         }.apply {
             visibleAndManagedProp.bind(viewer.isUnboundToDSet)
         }
@@ -99,7 +96,5 @@ class ByImageView<A: Number>(
             settings = memSafeSettings
         )
     }
-
-
 }
 

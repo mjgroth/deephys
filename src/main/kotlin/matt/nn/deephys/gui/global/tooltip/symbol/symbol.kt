@@ -13,10 +13,11 @@ import matt.obs.bindings.str.ObsS
 
 const val DEEPHYS_SYMBOL_SPACING = 5.0
 
-fun NW.deephysInfoSymbol(text: ObsS, op: Dsl<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text.value).attachTo(this) {
-    textProperty.bind(text)
-    op()
-}
+fun NW.deephysInfoSymbol(text: ObsS, op: Dsl<DeephysInfoSymbol> = {}) =
+    DeephysInfoSymbol(text.value).attachTo(this) {
+        textProperty.bind(text)
+        op()
+    }
 
 fun NW.deephysInfoSymbol(text: String, op: Dsl<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text).attachTo(this, op)
 
@@ -28,10 +29,11 @@ class DeephysInfoSymbol(info: String): InfoSymbol(info) {
 }
 
 
-fun NW.deephysTutorialSymbol(text: ObsS, op: Dsl<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text.value).attachTo(this) {
-    textProperty.bind(text)
-    op()
-}
+fun NW.deephysTutorialSymbol(text: ObsS, op: Dsl<DeephysTutorialSymbol> = {}) =
+    DeephysTutorialSymbol(text.value).attachTo(this) {
+        textProperty.bind(text)
+        op()
+    }
 
 fun NW.deephysTutorialSymbol(text: String, op: Dsl<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text).attachTo(this, op)
 

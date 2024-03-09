@@ -43,8 +43,8 @@ import matt.obs.bind.binding
 import matt.obs.bindings.bool.not
 import matt.obs.bindings.bool.or
 import matt.obs.bindings.str.mybuildobs.obsString
-import matt.obs.prop.BindableProperty
-import matt.obs.prop.VarProp
+import matt.obs.prop.writable.BindableProperty
+import matt.obs.prop.writable.VarProp
 import matt.prim.str.truncateWithElipses
 import java.lang.ref.WeakReference
 import kotlin.math.cos
@@ -61,17 +61,17 @@ class DeephysPieRenderer(
     private val showAsList: BindableProperty<Boolean>,
     private val settings: DeephysSettingsController
 ) : PieChartRenderer<CategoryPie> {
-    override fun render(figData: PieChartIrPlaceholder): CategoryPie = CategoryPie(
-        title = figData.title,
-        cats = cats,
-        nums = nums,
-        viewer = viewer,
-        colorMap = colorMap,
-        selected = selected,
-        showAsList = showAsList,
-        settings = settings
-    )
-
+    override fun render(figData: PieChartIrPlaceholder): CategoryPie =
+        CategoryPie(
+            title = figData.title,
+            cats = cats,
+            nums = nums,
+            viewer = viewer,
+            colorMap = colorMap,
+            selected = selected,
+            showAsList = showAsList,
+            settings = settings
+        )
 }
 
 class CategoryPie(
@@ -112,180 +112,181 @@ class CategoryPie(
             hbarPolicy = NEVER
             isFitToWidth = true
 
-            vbarPolicyProperty.bindWeakly(showAsList.binding {
-                if (it) ALWAYS else NEVER
-            })
+            vbarPolicyProperty.bindWeakly(
+                showAsList.binding {
+                    if (it) ALWAYS else NEVER
+                }
+            )
 
             isFitToHeight = true
             exactHeight = HEIGHT + 10.0
 
-            //	  fitToHeightProperty.bind(
-            //		this@CategoryPie.showAsList
-            //	  )
 
 
-            content = PaneWrapperImpl<Pane, NodeWrapper>(Pane()).apply {
-                exactWidth = WIDTH
-                val nonZeroCats = cats.filter { nums[it]!! > 0 }
-                exactHeightProperty.bindWeakly(
-                    showAsList.binding {
-                        if (it) BAR_Y_INCR * nonZeroCats.size else HEIGHT
-                    }
-                )
-                var nextStart = 0.0
-                nonZeroCats.sortedBy { nums[it] }.reversed().mapIndexed { catIndex, cat ->
-                    val ratio = nums[cat]!! / total
-                    val percent = Percent(ratio * 100)
-                    val color = colorMap[cat]!!
+            content =
+                PaneWrapperImpl<Pane, NodeWrapper>(Pane()).apply {
+                    exactWidth = WIDTH
+                    val nonZeroCats = cats.filter { nums[it]!! > 0 }
+                    exactHeightProperty.bindWeakly(
+                        showAsList.binding {
+                            if (it) BAR_Y_INCR * nonZeroCats.size else HEIGHT
+                        }
+                    )
+                    var nextStart = 0.0
+                    nonZeroCats.sortedBy { nums[it] }.reversed().mapIndexed { catIndex, cat ->
+                        val ratio = nums[cat]!! / total
+                        val percent = Percent(ratio * 100)
+                        val color = colorMap[cat]!!
 
-                    val arcLength = ratio * 360.0
-                    val rads = -Math.toRadians(nextStart + arcLength / 2.0)
-                    val thetaX = cos(rads)
-                    val thetaY = sin(rads)
+                        val arcLength = ratio * 360.0
+                        val rads = -Math.toRadians(nextStart + arcLength / 2.0)
+                        val thetaX = cos(rads)
+                        val thetaY = sin(rads)
 
-                    val maxBarWidth = WIDTH - 50.0
-
-
-                    val textXAddition = SimpleDoubleProperty(0.0)
-                    val textYAddition = SimpleDoubleProperty(0.0)
-
-                    val textXAdditionList = SimpleDoubleProperty(0.0)
-                    val textYAdditionList = SimpleDoubleProperty(0.0)
+                        val maxBarWidth = WIDTH - 50.0
 
 
-                    val barY = BAR_Y_INCR * catIndex
-                    val barWidth = ratio * maxBarWidth
+                        val textXAddition = SimpleDoubleProperty(0.0)
+                        val textYAddition = SimpleDoubleProperty(0.0)
+
+                        val textXAdditionList = SimpleDoubleProperty(0.0)
+                        val textYAdditionList = SimpleDoubleProperty(0.0)
 
 
-                    textflow<NodeWrapper> {
-
-                        visibleAndManagedProp.bindWeakly(
-                            showAsList.or(catIndex < MAX_SLICES)
-                        )
-
-                        node.viewOrder = -1.0
-                        val t = deephysLabel(cat.label.truncateWithElipses(20)) {
+                        val barY = BAR_Y_INCR * catIndex
+                        val barWidth = ratio * maxBarWidth
 
 
-                            textProperty.bindWeakly(
+                        textflow<NodeWrapper> {
 
-
-                                obsString {
-                                    append(showAsList.binding {
-                                        if (it) "(${percent.percent.withPrecision(2)}%) " else ""
-                                    })
-                                    appendStatic(cat.label)
-                                }.binding(showAsList) {
-                                    if (showAsList.value) it.truncateWithElipses(30)
-                                    else it.truncateWithElipses(20)
-                                }
-
+                            visibleAndManagedProp.bindWeakly(
+                                showAsList.or(catIndex < MAX_SLICES)
                             )
-                        }
-                        val weakText = WeakReference(t)
 
-                        layoutXProperty.bindWeakly(
-                            showAsList.binding(
-                                textXAddition.toNonNullableProp(),
-                                textXAdditionList.toNonNullableProp()
-                            ) {
-                                (if (it) barWidth + 5.0 + textXAdditionList.value else CENTER_X + 130 * thetaX + textXAddition.value)
-                            }
-                        )
+                            node.viewOrder = -1.0
+                            val t =
+                                deephysLabel(cat.label.truncateWithElipses(20)) {
 
 
-
-                        layoutYProperty.bindWeakly(
-                            showAsList.binding(
-                                textYAddition.toNonNullableProp(),
-                                textYAdditionList.toNonNullableProp()
-                            ) { sal ->
-                                weakText.get()?.let {
-                                    (if (sal) barY + textYAdditionList.value else CENTER_Y + 130 * thetaY - it.font.size + textXAdditionList.value)
-                                } ?: -1.0
-                            }
-                        )
+                                    textProperty.bindWeakly(
 
 
+                                        obsString {
+                                            append(
+                                                showAsList.binding {
+                                                    if (it) "(${percent.percent.withPrecision(2)}%) " else ""
+                                                }
+                                            )
+                                            appendStatic(cat.label)
+                                        }.binding(showAsList) {
+                                            if (showAsList.value) it.truncateWithElipses(30)
+                                            else it.truncateWithElipses(20)
+                                        }
 
-                        fun updateColor(
-                            textFlow: TextFlowWrapper<*>,
-                            isDarkMode: Boolean
-                        ) {
-                            textFlow.background = backgroundFromColor(if (isDarkMode) Color.BLACK else Color.WHITE)
-                        }
-                        updateColor(this, DarkModeController.darkModeProp.value)
-                        DarkModeController.darkModeProp.onChangeWithWeak(this) { tf, it ->
-                            updateColor(tf, it)
-                        }
-
-
-                    }
-
-
-                    +CategoryBar(
-                        cat = cat,
-                        viewer = viewer,
-                        color = color,
-                        x = 0.0,
-                        y = barY,
-                        width = barWidth,
-                        settings = memSafeSettings
-                    ).apply {
-                        visibleAndManagedProp.bindWeakly(
-                            showAsList
-                        )
-                        highlighted.bind(hoverProperty)
-                        if (cat == selected) {
-                            if (ANIMATE) timeline {
-                                keyframe(Duration.millis(500.0)) {
-                                    keyvalue(textXAdditionList, 25.0, MyInterpolator.EASE_OUT)
-                                    keyvalue(node.layoutXProperty(), layoutX + 25, MyInterpolator.EASE_OUT)
+                                    )
                                 }
-                            } else {
-                                node.layoutX = layoutX + 25
+                            val weakText = WeakReference(t)
+
+                            layoutXProperty.bindWeakly(
+                                showAsList.binding(
+                                    textXAddition.toNonNullableProp(),
+                                    textXAdditionList.toNonNullableProp()
+                                ) {
+                                    (if (it) barWidth + 5.0 + textXAdditionList.value else CENTER_X + 130 * thetaX + textXAddition.value)
+                                }
+                            )
+
+
+
+                            layoutYProperty.bindWeakly(
+                                showAsList.binding(
+                                    textYAddition.toNonNullableProp(),
+                                    textYAdditionList.toNonNullableProp()
+                                ) { sal ->
+                                    weakText.get()?.let {
+                                        (
+                                            if (sal) barY + textYAdditionList.value
+                                            else CENTER_Y + 130 * thetaY - it.font.size + textXAdditionList.value
+                                        )
+                                    } ?: -1.0
+                                }
+                            )
+
+
+
+                            fun updateColor(
+                                textFlow: TextFlowWrapper<*>,
+                                isDarkMode: Boolean
+                            ) {
+                                textFlow.background = backgroundFromColor(if (isDarkMode) Color.BLACK else Color.WHITE)
+                            }
+                            updateColor(this, DarkModeController.darkModeProp.value)
+                            DarkModeController.darkModeProp.onChangeWithWeak(this) { tf, it ->
+                                updateColor(tf, it)
                             }
                         }
-                    }
 
-                    if (catIndex < MAX_SLICES) {
 
-                        +CategorySlice(
+                        +CategoryBar(
                             cat = cat,
                             viewer = viewer,
                             color = color,
-                            arcLength = arcLength,
-                            startAngle = nextStart,
+                            x = 0.0,
+                            y = barY,
+                            width = barWidth,
                             settings = memSafeSettings
                         ).apply {
                             visibleAndManagedProp.bindWeakly(
-                                showAsList.not()
+                                showAsList
                             )
                             highlighted.bind(hoverProperty)
                             if (cat == selected) {
                                 if (ANIMATE) timeline {
                                     keyframe(Duration.millis(500.0)) {
-                                        keyvalue(textXAddition, 25 * thetaX, MyInterpolator.EASE_OUT)
-                                        keyvalue(textYAddition, 25 * thetaY, MyInterpolator.EASE_OUT)
-                                        keyvalue(node.layoutXProperty(), layoutX + 25 * thetaX, MyInterpolator.EASE_OUT)
-                                        keyvalue(node.layoutYProperty(), layoutY + 25 * thetaY, MyInterpolator.EASE_OUT)
+                                        keyvalue(textXAdditionList, 25.0, MyInterpolator.EASE_OUT)
+                                        keyvalue(node.layoutXProperty(), layoutX + 25, MyInterpolator.EASE_OUT)
                                     }
                                 } else {
-                                    node.layoutX = layoutX + 25 * thetaX
-                                    node.layoutY = layoutY + 25 * thetaY
+                                    node.layoutX = layoutX + 25
                                 }
                             }
                         }
+
+                        if (catIndex < MAX_SLICES) {
+
+                            +CategorySlice(
+                                cat = cat,
+                                viewer = viewer,
+                                color = color,
+                                arcLength = arcLength,
+                                startAngle = nextStart,
+                                settings = memSafeSettings
+                            ).apply {
+                                visibleAndManagedProp.bindWeakly(
+                                    showAsList.not()
+                                )
+                                highlighted.bind(hoverProperty)
+                                if (cat == selected) {
+                                    if (ANIMATE) timeline {
+                                        keyframe(Duration.millis(500.0)) {
+                                            keyvalue(textXAddition, 25 * thetaX, MyInterpolator.EASE_OUT)
+                                            keyvalue(textYAddition, 25 * thetaY, MyInterpolator.EASE_OUT)
+                                            keyvalue(node.layoutXProperty(), layoutX + 25 * thetaX, MyInterpolator.EASE_OUT)
+                                            keyvalue(node.layoutYProperty(), layoutY + 25 * thetaY, MyInterpolator.EASE_OUT)
+                                        }
+                                    } else {
+                                        node.layoutX = layoutX + 25 * thetaX
+                                        node.layoutY = layoutY + 25 * thetaY
+                                    }
+                                }
+                            }
+                        }
+
+
+                        nextStart += arcLength
                     }
-
-
-                    nextStart += arcLength
-
                 }
-            }
         }
-
-
     }
 
     interface CategoryShape
@@ -303,7 +304,8 @@ class CategoryPie(
             y = y,
             width = width,
             height = 25.0
-        ), CategoryShape {
+        ),
+        CategoryShape {
 
 
         fun click() {
@@ -325,20 +327,20 @@ class CategoryPie(
                 if (it.isShiftDown) shiftClick()
                 else click()
             }
-
         }
 
-        val highlighted = VarProp(false).apply {
-            onChange {
-                effect = if (it) Glow()
-                else null
+        val highlighted =
+            VarProp(false).apply {
+                onChange {
+                    effect =
+                        if (it) Glow()
+                        else null
 
-                strokeWidth = if (it) 2.0
-                else 0.0
+                    strokeWidth =
+                        if (it) 2.0
+                        else 0.0
+                }
             }
-        }
-
-
     }
 
     @Duplicated(234234)
@@ -357,7 +359,8 @@ class CategoryPie(
             startAngle = startAngle,
             length = arcLength,
             type = ROUND
-        ), CategoryShape {
+        ),
+        CategoryShape {
 
 
         fun click() {
@@ -379,22 +382,21 @@ class CategoryPie(
                 if (it.isShiftDown) shiftClick()
                 else click()
             }
-
         }
 
-        val highlighted = VarProp(false).apply {
-            onChange {
-                effect = if (it) Glow()
-                else null
+        val highlighted =
+            VarProp(false).apply {
+                onChange {
+                    effect =
+                        if (it) Glow()
+                        else null
 
-                strokeWidth = if (it) 2.0
-                else 0.0
+                    strokeWidth =
+                        if (it) 2.0
+                        else 0.0
+                }
             }
-        }
-
-
     }
-
 }
 
 

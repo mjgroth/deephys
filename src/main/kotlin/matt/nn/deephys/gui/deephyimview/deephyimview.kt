@@ -10,10 +10,9 @@ import matt.fx.graphics.wrapper.node.onLeftClick
 import matt.fx.graphics.wrapper.style.toAwtColor
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
 import matt.gui.menu.context.mcontextmenu
-import matt.image.save
-import matt.lang.NUM_LOGICAL_CORES
-import matt.lang.file.toJFile
-import matt.log.warn.warn
+import matt.image.desktop.save
+import matt.lang.j.NUM_LOGICAL_CORES
+import matt.log.warn.common.warn
 import matt.nn.deephys.gui.draw.draw
 import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -82,15 +81,16 @@ class DeephyImView(
             mcontextmenu {
                 onRequest {
                     "download image" does {
-                        val pngFile = saveFile(stage = weakThis.get()!!.stage) {
-                            title = "choose where to save png"
-                            extensionFilter(
-                                description = "png",
-                                FileExtension.PNG,
-                            )
-                            initialSaveFileName =
-                                localWeakIm.deref()!!.category.label + "_" + localWeakIm.deref()!!.index.toString() + ".png"
-                        }
+                        val pngFile =
+                            saveFile(stage = weakThis.get()!!.stage) {
+                                title = "choose where to save png"
+                                extensionFilter(
+                                    description = "png",
+                                    FileExtension.PNG
+                                )
+                                initialSaveFileName =
+                                    localWeakIm.deref()!!.category.label + "_" + localWeakIm.deref()!!.index.toString() + ".png"
+                            }
                         if (pngFile != null) {
 
                             val mat2 = localWeakIm.deref()!!.matrix
@@ -105,22 +105,22 @@ class DeephyImView(
                             mat2.forEach {
                                 it.forEach {
                                     val awt = it.toAwtColor()
-                                    pixelData[i++] = ByteBuffer.wrap(
-                                        byteArrayOf(
-                                            awt.alpha.toByte(),
-                                            awt.red.toByte(),
-                                            awt.green.toByte(),
-                                            awt.blue.toByte()
-                                        )
-                                    ).asIntBuffer().get()
+                                    pixelData[i++] =
+                                        ByteBuffer.wrap(
+                                            byteArrayOf(
+                                                awt.alpha.toByte(),
+                                                awt.red.toByte(),
+                                                awt.green.toByte(),
+                                                awt.blue.toByte()
+                                            )
+                                        ).asIntBuffer().get()
                                 }
                             }
 
 
                             require(pngFile.path.endsWith(".png"))
-                            bi.save(pngFile.toJFile())
+                            bi.save(pngFile)
                         }
-
                     }
                 }
             }
@@ -141,12 +141,9 @@ class DeephyImView(
                 }
             }
         }
-
-
     }
 
     fun click() {
         weakViewer.deref()!!.navigateTo(weakIm.deref()!!)
     }
-
 }

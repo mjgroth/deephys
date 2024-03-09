@@ -14,12 +14,12 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.stage.StageWrapper
 import matt.fx.graphics.wrapper.window.WindowWrapper
 import matt.gui.mscene.MScene
+import matt.lang.common.go
 import matt.lang.function.Convert
 import matt.lang.function.Produce
-import matt.lang.go
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.ProgressPopUp.Companion.worker
 import matt.obs.math.double.op.times
-import matt.obs.prop.SynchronizedProperty
+import matt.obs.prop.writable.SynchronizedProperty
 import matt.time.dur.sleep
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -36,11 +36,12 @@ fun <R : Any> withProgressPopUp(op: Convert<ProgressTracker, R>): R {
         sleep(10.milliseconds)
         r?.go { return it }
     }
-    val popup = tracker.with {
-        if (tracker.progress < 1.0) {
-            ProgressPopUp(tracker, owner = WindowWrapper.guessMainStage()!!)
-        } else null
-    }
+    val popup =
+        tracker.with {
+            if (tracker.progress < 1.0) {
+                ProgressPopUp(tracker, owner = WindowWrapper.guessMainStage()!!)
+            } else null
+        }
     popup?.showAndWait()
     return r!!
 }
@@ -51,15 +52,17 @@ class ProgressTracker {
     var progress by progressProp
     val messageProp = SynchronizedProperty("")
     var message by messageProp
-    inline fun <R> with(crossinline op: Produce<R>) = progressProp.with<R> {
-        messageProp.with {
-            op()
+    inline fun <R> with(crossinline op: Produce<R>) =
+        progressProp.with<R> {
+            messageProp.with {
+                op()
+            }
         }
-    }
 }
 
 private class ProgressPopUp(
-    tracker: ProgressTracker = ProgressTracker(), owner: StageWrapper
+    tracker: ProgressTracker = ProgressTracker(),
+    owner: StageWrapper
 ) : StageWrapper(UNDECORATED) {
 
     companion object {
@@ -68,9 +71,10 @@ private class ProgressPopUp(
         }
     }
 
-    private val bar = ProgressBarWrapper().apply {
-        progress = tracker.progress
-    }
+    private val bar =
+        ProgressBarWrapper().apply {
+            progress = tracker.progress
+        }
     private val label = LabelWrapper(tracker.message)
 
 
@@ -81,17 +85,18 @@ private class ProgressPopUp(
         height = 200.0
 
 
-        val root = VBoxW().apply {
-            border = FXBorder.solid(Color.BLUE)
-            this.isFillWidth = true
-            this.alignment = CENTER
-            spacing = 20.0
-            +this@ProgressPopUp.label
-            +this@ProgressPopUp.bar.apply {
-                vgrow = ALWAYS
-                widthProperty
+        val root =
+            VBoxW().apply {
+                border = FXBorder.solid(Color.BLUE)
+                isFillWidth = true
+                alignment = CENTER
+                spacing = 20.0
+                +this@ProgressPopUp.label
+                +this@ProgressPopUp.bar.apply {
+                    vgrow = ALWAYS
+                    widthProperty
+                }
             }
-        }
         scene = MScene<VBoxWrapper<*>>(root)
 
         bar.prefWidthProperty.bind(root.widthProperty * 0.8)
@@ -109,9 +114,5 @@ private class ProgressPopUp(
                 dia.close()
             }
         }
-
-
     }
-
-
 }

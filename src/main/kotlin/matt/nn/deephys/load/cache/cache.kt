@@ -1,6 +1,6 @@
 package matt.nn.deephys.load.cache
 
-import matt.file.ext.mkFold
+import matt.file.ext.j.mkFold
 import matt.file.toJioFile
 import matt.lang.function.Produce
 import matt.lang.model.file.FsFile
@@ -11,6 +11,8 @@ import matt.nn.deephys.load.cache.cachedeleter.CacheDeleter
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.cache.raf.RAFCacheImpl
 import matt.sys.idgen.IDGenerator
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeBytes
 
 
 object DeephysCacheManager {
@@ -21,14 +23,16 @@ object DeephysCacheManager {
 
     private val oldDatasetCaches = DATA_SETS_CACHE_DIR.listFiles()!!
 
-    val cacheDeleter = CacheDeleter {
-        val weirdCaches = DEEPHY_CACHE_DIR.listFiles()!!.filter { it !in listOf(DATA_SETS_CACHE_DIR) }
-        weirdCaches + oldDatasetCaches
-    }
+    val cacheDeleter =
+        CacheDeleter {
+            val weirdCaches = DEEPHY_CACHE_DIR.listFiles()!!.filter { it !in listOf(DATA_SETS_CACHE_DIR) }
+            weirdCaches + oldDatasetCaches
+        }
 
-    private val oldDatasetIDs = oldDatasetCaches.mapNotNull {
-        it.name.toIntOrNull()
-    }
+    private val oldDatasetIDs =
+        oldDatasetCaches.mapNotNull {
+            it.name.toIntOrNull()
+        }
 
     private val idGenerator = IDGenerator(taken = oldDatasetIDs)
 
@@ -39,12 +43,11 @@ object DeephysCacheManager {
 
 
     class DatasetCache(
-        folder: FsFile,
+        folder: FsFile
     ) {
         val neuronsRAF = RAFCacheImpl(folder["neurons.raf"])
         val activationsRAF = RAFCacheImpl(folder["activations.raf"])
         val pixelsRAF = RAFCacheImpl(folder["pixels.raf"])
-
     }
 }
 
@@ -74,13 +77,11 @@ abstract class FileCaches(
             }
         }
     }
-
-
 }
 
 abstract class RAFCaches : Caches() {
     abstract inner class CachedRAFProp<R : Any> protected constructor(
-        rafCache: EvenlySizedRAFCache,
+        rafCache: EvenlySizedRAFCache
     ) : CachedProp<R>() {
         val deed by lazy { rafCache.rent() }
         final override fun cache(bytes: ByteArray) {

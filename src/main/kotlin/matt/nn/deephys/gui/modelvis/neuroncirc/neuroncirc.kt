@@ -4,12 +4,12 @@ import javafx.scene.Cursor
 import javafx.scene.paint.Color
 import matt.fx.graphics.wrapper.node.onHover
 import matt.fx.graphics.wrapper.node.shape.circle.CircleWrapper
-import matt.lang.D
+import matt.lang.common.D
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
 import matt.obs.bind.binding
-import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
+import matt.obs.prop.writable.BindableProperty
 
 class NeuronCircle(
     val layer: ResolvedLayer,
@@ -30,17 +30,18 @@ class NeuronCircle(
         node.viewOrder = -1.0
         cursor = Cursor.HAND
         onHover {
-            fill = if (it) Color.AQUA
-            else color
+            fill =
+                if (it) Color.AQUA
+                else color
         }
-        fillProperty.bind(isHighlighted.binding(hoverProperty) {
-            when {
-                hoverProperty.value -> Color.AQUA
-                isHighlighted.value -> Color.RED
-                else                -> color
+        fillProperty.bind(
+            isHighlighted.binding(hoverProperty) {
+                when {
+                    hoverProperty.value -> Color.AQUA
+                    isHighlighted.value -> Color.RED
+                    else                -> color
+                }
             }
-        })
+        )
     }
-
-
 }

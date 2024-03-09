@@ -5,14 +5,16 @@ import matt.pref.obs.ObsPrefNode
 
 object DeephyState: ObsPrefNode(
     "sinhalab.deephys.state",
-    oldNames = listOf(
-        "sinhalab.deephy.state"
-    ),
-    oldKeys = listOf(
-        "dataFolder",
-        "pref",
-        "datasets"
-    )
+    oldNames =
+        listOf(
+            "sinhalab.deephy.state"
+        ),
+    oldKeys =
+        listOf(
+            "dataFolder",
+            "pref",
+            "datasets"
+        )
 ) {
     val model by obj<AbsLinuxFile>()
     val tests by obj<List<AbsLinuxFile>>()

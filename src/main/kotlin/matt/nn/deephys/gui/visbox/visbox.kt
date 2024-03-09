@@ -3,9 +3,9 @@ package matt.nn.deephys.gui.visbox
 import javafx.application.Platform
 import javafx.geometry.Pos.CENTER
 import javafx.geometry.Pos.TOP_CENTER
+import matt.file.common.toAbsLinuxFile
 import matt.file.construct.mFile
 import matt.file.ext.FileExtension
-import matt.file.toAbsLinuxFile
 import matt.file.types.checkType
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.fxthread.runLater
@@ -18,8 +18,8 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.lang.disabledCode
-import matt.lang.go
+import matt.lang.common.disabledCode
+import matt.lang.common.go
 import matt.lang.model.file.FsFile
 import matt.lang.model.file.MacFileSystem
 import matt.nn.deephys.gui.DeephysApp
@@ -40,14 +40,14 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.init.modelBinding
 import matt.nn.deephys.load.loadSwapper
 import matt.nn.deephys.state.DeephyState
-import matt.obs.prop.BindableProperty
+import matt.obs.prop.writable.BindableProperty
 import matt.prim.str.mybuild.api.string
 import matt.prim.str.truncateWithElipsesOrAddSpaces
 
 
 class VisBox(
     private val app: DeephysApp,
-    settings: DeephysSettingsController,
+    settings: DeephysSettingsController
 ) : VBoxW() {
 
 
@@ -67,15 +67,14 @@ class VisBox(
                 }
             }
         }
-
     }
 
 
     init {
 
-        /*val settingsButton = settButton*/
+        /*val settingsButton = settButton
 
-        /*val prefButtonHeight = settingsButton.heightProperty*/
+        val prefButtonHeight = settingsButton.heightProperty*/
         val prefButtonHeight = BindableProperty(25.0)
 
         spacing = 10.0
@@ -94,9 +93,10 @@ class VisBox(
                 setOnAction {
 
 
-                    val f = openFile {
-                        extensionFilter("model files", FileExtension.MODEL)
-                    }?.toAbsLinuxFile()
+                    val f =
+                        openFile {
+                            extensionFilter("model files", FileExtension.MODEL)
+                        }?.toAbsLinuxFile()
 
                     if (f != null) {
                         DeephyState.tests.value = null
@@ -114,14 +114,17 @@ class VisBox(
                     setOnAction {
                         this@VisBox.app.showDemos()
                     }
-
                 }.apply {
 
-                    /*font = font.fixed().copy("Arial", size = 18.0, weight = BOLD).fx()*/
+                    /*font = font.fixed().copy("Arial", size = 18.0, weight = BOLD).fx()
 
-                    /*this.fill = FXColor.ORANGE*/
-                    /*cursor = Cursor.HAND*/
 
+
+                this.fill = FXColor.ORANGE
+
+
+
+                cursor = Cursor.HAND*/
                 }
             }
 
@@ -149,8 +152,6 @@ class VisBox(
                         showVisualizer.bind(selectedProperty)
                     }
                 }
-
-
             }
 
             /*	  h {
@@ -158,7 +159,6 @@ class VisBox(
                     alignment = Pos.CENTER_RIGHT
                     +settingsButton
                   }*/
-
         }
 
 
@@ -207,7 +207,6 @@ class VisBox(
                             deephysWarningSymbol(SUFFIX_WARNING)
                         }
                     }
-
                 }
 
 
@@ -216,13 +215,14 @@ class VisBox(
                 val maxNeurons = 50
 
 
-                val vis = if (model.layers.all { it.neurons.size <= maxNeurons }) {
-                    visualizerToolTipText v "Show an interactive diagram of the model"
-                    ModelVisualizer(model, settings)
-                } else {
-                    visualizerToolTipText v "model is too large to visualize (>$maxNeurons in a layer)"
-                    null
-                }
+                val vis =
+                    if (model.layers.all { it.neurons.size <= maxNeurons }) {
+                        visualizerToolTipText v "Show an interactive diagram of the model"
+                        ModelVisualizer(model, settings)
+                    } else {
+                        visualizerToolTipText v "model is too large to visualize (>$maxNeurons in a layer)"
+                        null
+                    }
                 visualizer v vis
 
                 val dSetViewsBox = DSetViewsVBox(model, settings)
@@ -238,13 +238,11 @@ class VisBox(
                     setOnAction {
                         dSetViewsBox.addTest()
                     }
-
                 }
                 Platform.runLater {
                     this@VisBox.app.testReadyDSetViewsBbox.page(dSetViewsBox)
                 }
             }
         }
-
     }
 }

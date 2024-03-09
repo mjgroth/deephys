@@ -17,8 +17,8 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.style.FXColor
-import matt.http.commons.GH_ORG_NAME
-import matt.lang.unsafeErr
+import matt.lang.common.unsafeErr
+import matt.lang.matt.GH_ORG_NAME
 import matt.lang.url.toURL
 import matt.model.data.rect.IntSquareSize
 import matt.nn.deephys.gui.DeephysApp
@@ -26,7 +26,7 @@ import matt.nn.deephys.gui.dataset.dtab.DeephysTabPane
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.navbox.zoo.NeuronalActivityZoo
-import matt.rstruct.loader.systemResourceLoader
+import matt.rstruct.loader.desktop.systemResourceLoader
 import java.awt.Desktop
 import java.net.URI
 
@@ -49,14 +49,19 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
         isFillWidth = true
         spacing = 10.0
 
-        border = Border(
-            BorderStroke(FXColor(0.5, 0.5, 0.5, 0.1), BorderStrokeStyle.SOLID, null, BorderWidths(1.0, 1.0, 0.0, 0.0))
-        )
+        border =
+            Border(
+                BorderStroke(FXColor(0.5, 0.5, 0.5, 0.1), BorderStrokeStyle.SOLID, null, BorderWidths(1.0, 1.0, 0.0, 0.0))
+            )
 
-        /*border = Border()*/    /*borderProperty.bind(DarkModeController.darkModeProp.binding {
+        /*border = Border()
+
+        borderProperty.bind(DarkModeController.darkModeProp.binding {
 	  val c = if (it) FXColor(0.1f,0.1f,0.1f,1.0) else FXColor(0.9f,0.9f,0.9f,1.0)
 	  Border(BorderStroke(c, BorderStrokeStyle.SOLID, null, BorderWidths.DEFAULT))
-	})*/
+	})
+
+         */
 
 
 
@@ -66,24 +71,25 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
 
 
 
-            this@NavBox.showDemosTab = deephysLazyTab("Neuronal Activity Zoo") {
+            this@NavBox.showDemosTab =
+                deephysLazyTab("Neuronal Activity Zoo") {
 
 
-                VBoxW().apply {
-                    spacer()
-                    NeuronalActivityZoo.EXAMPLES.forEach { demo ->
-                        deephyButton(demo.name) {
-                            setOnAction {
-                                this@NavBox.app.openZooDemo(demo)
+                    VBoxW().apply {
+                        spacer()
+                        NeuronalActivityZoo.EXAMPLES.forEach { demo ->
+                            deephyButton(demo.name) {
+                                setOnAction {
+                                    this@NavBox.app.openZooDemo(demo)
+                                }
                             }
                         }
                     }
+                }.apply {
+                    runLater {
+                        isSelected = true
+                    }
                 }
-            }.apply {
-                runLater {
-                    this.isSelected = true
-                }
-            }
             deephysLazyTab("Links") {
                 VBoxW().apply {
                     spacer()
@@ -105,10 +111,11 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
                             unsafeErr("Is the backupImage below still the correct dimensions? I think I used to specify only the width OR the height. But since moving to a size-based approach I now specify both. I am just unsure if web.svg is in fact supposed to be shown with a square shape or if that is a distortion of its aspect ratio")
                             +FaviconLoader.loadAsynchronously(
                                 url = url.toURL(),
-                                backupImage = svgToFXImage(
-                                    systemResourceLoader().resourceStream("web.svg")!!,
-                                    IntSquareSize(favSize)
-                                ),
+                                backupImage =
+                                    svgToFXImage(
+                                        systemResourceLoader().resourceStream("web.svg")!!,
+                                        IntSquareSize(favSize)
+                                    ),
                                 fitSize = IntSquareSize(favSize).toDoubleSize()
                             )
 
@@ -123,7 +130,5 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
                 }
             }
         }
-
-
     }
 }

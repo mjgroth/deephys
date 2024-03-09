@@ -62,9 +62,10 @@ class CategoryView<A : Number>(
 
                 when (selection) {
                     is Category          -> {
-                        val acc = CategoryAccuracy(
-                            selection, testLoader
-                        )
+                        val acc =
+                            CategoryAccuracy(
+                                selection, testLoader
+                            )
                         with(testLoader.testRAMCache) {
                             deephysLabel(
                                 "Accuracy: ${
@@ -117,8 +118,6 @@ class CategoryView<A : Number>(
                         }
                     ) {
                         subtitleFont()
-                        //font = font.fixed().copy(weight = BOLD).fx()
-                        //pointlesslyTryToSetTextFillWithoutAFlicker(Color.)
                     }
                 }
 
@@ -130,27 +129,31 @@ class CategoryView<A : Number>(
                 )
 
 
-                val allFalsePositives = with(testLoader.testRAMCache) {
-                    CategoryFalsePositivesSorted(
-                        selection.primaryCategory,
-                        testLoader
-                    )()
-                }
+                val allFalsePositives =
+                    with(testLoader.testRAMCache) {
+                        CategoryFalsePositivesSorted(
+                            selection.primaryCategory,
+                            testLoader
+                        )()
+                    }
 
 
-                val shownFalsePositives = when (selection) {
-                    is Category          -> allFalsePositives
-                    is CategoryConfusion -> allFalsePositives.filter { it.category == selection.second }
-                }
+                val shownFalsePositives =
+                    when (selection) {
+                        is Category          -> allFalsePositives
+                        is CategoryConfusion -> allFalsePositives.filter { it.category == selection.second }
+                    }
 
 
-                val allFalseNegatives = with(testLoader.testRAMCache) {
-                    CategoryFalseNegativesSorted(selection.primaryCategory, testLoader)()
-                }
-                val shownFalseNegatives = when (selection) {
-                    is Category          -> allFalseNegatives
-                    is CategoryConfusion -> allFalseNegatives.filter { it.prediction == selection.second }
-                }
+                val allFalseNegatives =
+                    with(testLoader.testRAMCache) {
+                        CategoryFalseNegativesSorted(selection.primaryCategory, testLoader)()
+                    }
+                val shownFalseNegatives =
+                    when (selection) {
+                        is Category          -> allFalseNegatives
+                        is CategoryConfusion -> allFalseNegatives.filter { it.prediction == selection.second }
+                    }
                 deephysInfoSymbol("Tip: Click the colored areas to navigate to the respective class. Shift-click it to analyze confusions with the currently selected class.") {
                     visibleAndManagedProp.bindWeakly(viewer.showTutorials)
                 }
@@ -166,9 +169,10 @@ class CategoryView<A : Number>(
                         /*maxWidthProperty.bindWeakly(viewer.widthProperty*0.45)*/
                         +DeephysPieRenderer(
                             cats,
-                            nums = cats.associateWith { cat ->
-                                allFalsePositives.filter { it.category == cat }.size
-                            },
+                            nums =
+                                cats.associateWith { cat ->
+                                    allFalsePositives.filter { it.category == cat }.size
+                                },
                             viewer,
                             colorMap = colorMap,
                             selected = (selection as? CategoryConfusion)?.second,
@@ -189,13 +193,10 @@ class CategoryView<A : Number>(
                     pane<NW> {
                         val thePane = this
                         exactWidth = 10.0
-                        /*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)*/
-                        //		  backgroundFill = FXColor.BLUE
-                        //		  Platform.runLater {
-                        /*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)*/
-                        //			backgroundFill = FXColor.BLUE
-                        //		  }
-                        //		  style = "-fx-background: blue"
+                        /*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)
+
+
+                        backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)*/
                         line {
                             startY = 5.0
                             endYProperty.bind(thePane.heightProperty.minus(10.0))
@@ -216,11 +217,12 @@ class CategoryView<A : Number>(
                         alignment = TOP_CENTER
                         +DeephysPieRenderer(
                             cats,
-                            nums = cats.associateWith { cat ->
-                                allFalseNegatives.filter {
-                                    it.prediction == cat
-                                }.size
-                            },
+                            nums =
+                                cats.associateWith { cat ->
+                                    allFalseNegatives.filter {
+                                        it.prediction == cat
+                                    }.size
+                                },
                             viewer,
                             colorMap = colorMap,
                             selected = (selection as? CategoryConfusion)?.second,
@@ -239,14 +241,19 @@ class CategoryView<A : Number>(
                     /*	v {
                           alignment = Pos.TOP_LEFT
 
-                     *//*  deephysText("") {
+
+
+
+
+                      deephysText("") {
 			  textAlignment = CENTER
 			  visibleAndManagedProp.bindWeakly(viewer.showTutorials)
-			}*//*
+			}
+
+
+
 		}*/
                 }
-
-
             }
         }
     }

@@ -9,6 +9,6 @@ class ImageFlowPane(viewer: DatasetViewer): FlowPaneWrapper<DeephyImView>() {
     init {
 
         /*for reasons I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
-        prefWrapLengthProperty.bind(viewer.widthProperty*0.8)
+        prefWrapLengthProperty.bind(viewer.widthProperty * 0.8)
     }
 }

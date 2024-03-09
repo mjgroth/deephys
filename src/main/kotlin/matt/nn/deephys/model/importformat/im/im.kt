@@ -6,8 +6,8 @@ import matt.cbor.read.streamman.cborReader
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.Open
 import matt.lang.anno.PhaseOut
-import matt.lang.weak.MyWeakRef
-import matt.lang.weak.lazyWeak
+import matt.lang.weak.common.lazyWeak
+import matt.lang.weak.weak
 import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
@@ -51,7 +51,7 @@ class DeephyImage<A : Number>(
 
     override fun toString(): String = "[Deephy Image with ID=$imageID]"
 
-    val weak by lazy { MyWeakRef(this) }
+    val weak by lazy { weak(this) }
 
 
     val category = Category(id = categoryID, label = category)
@@ -74,12 +74,13 @@ class DeephyImage<A : Number>(
     }
 
 
-    val activations = object : CachedRAFProp<List<List<A>>>(activationsRAF) {
-        override fun decode(bytes: ByteArray): List<List<A>> {
-            val byteThing = dtype.bytesThing(bytes)
-            return byteThing.parse2DArray()
+    val activations =
+        object : CachedRAFProp<List<List<A>>>(activationsRAF) {
+            override fun decode(bytes: ByteArray): List<List<A>> {
+                val byteThing = dtype.bytesThing(bytes)
+                return byteThing.parse2DArray()
+            }
         }
-    }
 
     internal val weakActivations by lazyWeak {
         activations.await()
@@ -88,9 +89,10 @@ class DeephyImage<A : Number>(
     fun activationsFor(rLayer: InterTestLayer): List<A> = weakActivations[rLayer.index]
     fun activationFor(neuron: InterTestNeuron) = dtype.rawActivation(weakActivations[neuron.layer.index][neuron.index])
 
-    val data = object : CachedRAFProp<PixelData3>(pixelsRAF) {
-        override fun decode(bytes: ByteArray): PixelData3 = readPixels(bytes)
-    }
+    val data =
+        object : CachedRAFProp<PixelData3>(pixelsRAF) {
+            override fun decode(bytes: ByteArray): PixelData3 = readPixels(bytes)
+        }
 
     @Suppress("UNCHECKED_CAST")
     @PhaseOut
@@ -101,23 +103,22 @@ class DeephyImage<A : Number>(
     }
 
     val dtype get() = weakTest.get()!!.awaitRequireSuccessful().dtype
-
-
 }
 
 
 typealias PixelData2 = List<IntArray>
 typealias PixelData3 = List<PixelData2>
 
-fun ArrayReader.readPixels(): PixelData3 = readEachManually<ArrayReader, PixelData2> {
-    readEachManually<ByteStringReader, IntArray> {
-        val r = IntArray(count.toInt())
-        for ((i, b) in read().raw.withIndex()) {
-            r[i] = b.toInt() and 0xff
+fun ArrayReader.readPixels(): PixelData3 =
+    readEachManually<ArrayReader, PixelData2> {
+        readEachManually<ByteStringReader, IntArray> {
+            val r = IntArray(count.toInt())
+            for ((i, b) in read().raw.withIndex()) {
+                r[i] = b.toInt() and 0xff
+            }
+            r
         }
-        r
     }
-}
 
 fun readPixels(cborPixelBytes3d: ByteArray): PixelData3 {
     cborPixelBytes3d.cborReader().readManually<ArrayReader, Unit> {
@@ -126,31 +127,33 @@ fun readPixels(cborPixelBytes3d: ByteArray): PixelData3 {
 }
 
 
-fun ArrayReader.readFloatActivations() = readEachManually<ByteStringReader, List<Float>> {
-    val r = FloatArray(count.toInt() / FLOAT_BYTE_LEN)
-    ByteBuffer.wrap(read().raw).asFloatBuffer().get(r)
-    r.asList()
-}
+fun ArrayReader.readFloatActivations() =
+    readEachManually<ByteStringReader, List<Float>> {
+        val r = FloatArray(count.toInt() / FLOAT_BYTE_LEN)
+        ByteBuffer.wrap(read().raw).asFloatBuffer().get(r)
+        r.asList()
+    }
 
-fun ArrayReader.readDoubleActivations() = readEachManually<ByteStringReader, List<Double>> {
-    val r = DoubleArray(count.toInt() / DOUBLE_BYTE_LEN)
-    ByteBuffer.wrap(read().raw).asDoubleBuffer().get(r)
-    r.asList()
-}
+fun ArrayReader.readDoubleActivations() =
+    readEachManually<ByteStringReader, List<Double>> {
+        val r = DoubleArray(count.toInt() / DOUBLE_BYTE_LEN)
+        ByteBuffer.wrap(read().raw).asDoubleBuffer().get(r)
+        r.asList()
+    }
 
 
 sealed interface ImageActivationCborBytes<A : Number> {
     val bytes: ByteArray
     fun parse2DArray(): List<List<A>>
     @Open
-    fun rawBytes() = bytes.cborReader().readManually<ArrayReader, ByteArray> {
-        readEachManually<ByteStringReader, ByteArray> {
-            read().raw
-        }.reduce { acc, bytes -> acc + bytes }
-    }
+    fun rawBytes() =
+        bytes.cborReader().readManually<ArrayReader, ByteArray> {
+            readEachManually<ByteStringReader, ByteArray> {
+                read().raw
+            }.reduce { acc, bytes -> acc + bytes }
+        }
 
     fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer>
-
 }
 
 @JvmInline
@@ -163,19 +166,18 @@ value class ImageActivationCborBytesFloat32(override val bytes: ByteArray) : Ima
     }
 
 
-    override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> = sequence {
-        bytes.cborReader().readManually<ArrayReader, Unit> {
-            readEachManually<ByteStringReader, Unit> {
-                val buffer = ByteBuffer.wrap(read().raw)
-                (FLOAT_BYTE_LEN until buffer.capacity() step FLOAT_BYTE_LEN).forEach {
-                    buffer.limit(it)
-                    yield(buffer)
+    override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> =
+        sequence {
+            bytes.cborReader().readManually<ArrayReader, Unit> {
+                readEachManually<ByteStringReader, Unit> {
+                    val buffer = ByteBuffer.wrap(read().raw)
+                    (FLOAT_BYTE_LEN until buffer.capacity() step FLOAT_BYTE_LEN).forEach {
+                        buffer.limit(it)
+                        yield(buffer)
+                    }
                 }
             }
         }
-    }
-
-
 }
 
 @JvmInline
@@ -186,16 +188,16 @@ value class ImageActivationCborBytesFloat64(override val bytes: ByteArray) : Ima
         }
     }
 
-    override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> = sequence {
-        bytes.cborReader().readManually<ArrayReader, Unit> {
-            readEachManually<ByteStringReader, Unit> {
-                val buffer = ByteBuffer.wrap(read().raw)
-                (DOUBLE_BYTE_LEN until buffer.capacity() step DOUBLE_BYTE_LEN).forEach {
-                    buffer.limit(it)
-                    yield(buffer)
+    override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> =
+        sequence {
+            bytes.cborReader().readManually<ArrayReader, Unit> {
+                readEachManually<ByteStringReader, Unit> {
+                    val buffer = ByteBuffer.wrap(read().raw)
+                    (DOUBLE_BYTE_LEN until buffer.capacity() step DOUBLE_BYTE_LEN).forEach {
+                        buffer.limit(it)
+                        yield(buffer)
+                    }
                 }
             }
         }
-    }
-
 }

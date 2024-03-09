@@ -10,8 +10,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.node.proto.infosymbol.plusMinusSymbol
-import matt.lang.weak.MyWeakRef
-import matt.lang.weak.WeakRefInter
+import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.global.color.DeephysPalette
 import matt.nn.deephys.gui.global.deephyActionLabel
@@ -27,12 +26,12 @@ import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.model.data.Category
 import matt.obs.bindings.bool.not
 import matt.obs.math.int.ObsI
-import matt.obs.prop.BindableProperty
+import matt.obs.prop.writable.BindableProperty
 
 class PredictionsView(
     groundTruth: Category,
     topPreds: ImageTopPredictions<*>,
-    weakViewer: MyWeakRef<DatasetViewer>,
+    weakViewer: WeakRefInter<DatasetViewer>,
     override val settings: DeephysSettingsController
 ) : VBoxW(), DeephysNode {
     init {
@@ -56,7 +55,6 @@ class PredictionsView(
                 tooltip = "Top classification layer output values. Numbers displayed have been run through a softmax."
             )
         }
-
     }
 }
 
@@ -79,7 +77,6 @@ class CategoryTable(
         plusMinusSymbol(b, radius = 6.5) {
             fill = DeephysPalette.deephysBlue2
             cursor = Cursor.HAND
-
         }
         hSpacer(5.0)
         v {

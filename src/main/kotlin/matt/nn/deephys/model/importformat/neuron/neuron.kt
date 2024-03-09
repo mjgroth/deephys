@@ -18,7 +18,8 @@ class TestNeuron<A : Number>(
 
     override fun toString(): String = "TestNeuron $index of layer $layerIndex"
 
-    val activations = object : CachedRAFProp<List<A>>(activationsRAF) {
-        override fun decode(bytes: ByteArray): List<A> = dType.bytesToArray(bytes, numIms)
-    }
+    val activations =
+        object : CachedRAFProp<List<A>>(activationsRAF) {
+            override fun decode(bytes: ByteArray): List<A> = dType.bytesToArray(bytes, numIms)
+        }
 }

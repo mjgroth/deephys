@@ -21,7 +21,6 @@ sealed interface ActivationFloat32<T : ActivationFloat32<T>> : Activation<Float,
     @Open
     override val asFloat: Float
         get() = value
-
 }
 
 sealed interface ActivationFloat64<T : ActivationFloat64<T>> : Activation<Double, T>, DoubleWrapper<T> {
@@ -29,7 +28,6 @@ sealed interface ActivationFloat64<T : ActivationFloat64<T>> : Activation<Double
     @Open
     override val asDouble: Double
         get() = value
-
 }
 
 
@@ -37,7 +35,8 @@ sealed interface AlwaysOneActivation<N : Number, T : AlwaysOneActivation<N, T>> 
     @Open override val extraInfo get() = null /*"In this case, the activation is always exactly 1"*/
 }
 
-object AlwaysOneActivationFloat32 : AlwaysOneActivation<Float, AlwaysOneActivationFloat32>,
+object AlwaysOneActivationFloat32 :
+    AlwaysOneActivation<Float, AlwaysOneActivationFloat32>,
     ActivationFloat32<AlwaysOneActivationFloat32> {
     override fun fromFloat(d: Float): AlwaysOneActivationFloat32 {
         requireOne(d)
@@ -46,10 +45,10 @@ object AlwaysOneActivationFloat32 : AlwaysOneActivation<Float, AlwaysOneActivati
 
     override val value = 1f
     override val formatted: String get() = "max: 100%"
-
 }
 
-object AlwaysOneActivationFloat64 : AlwaysOneActivation<Double, AlwaysOneActivationFloat64>,
+object AlwaysOneActivationFloat64 :
+    AlwaysOneActivation<Double, AlwaysOneActivationFloat64>,
     ActivationFloat64<AlwaysOneActivationFloat64> {
     override fun fromDouble(d: Double): AlwaysOneActivationFloat64 {
         requireOne(d)
@@ -58,7 +57,6 @@ object AlwaysOneActivationFloat64 : AlwaysOneActivation<Double, AlwaysOneActivat
 
     override val value = 1.0
     override val formatted: String get() = ""
-
 }
 
 
@@ -71,29 +69,26 @@ sealed interface RawActivation<A : Number, T : RawActivation<A, T>> : Activation
 
     @Open override val extraInfo: String?
         get() = null
-
 }
 
 @JvmInline
-value class RawActivationFloat32(override val value: Float) : RawActivation<Float, RawActivationFloat32>,
+value class RawActivationFloat32(override val value: Float) :
+    RawActivation<Float, RawActivationFloat32>,
     ActivationFloat32<RawActivationFloat32> {
 
 
     override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
     override fun fromFloat(d: Float): RawActivationFloat32 = RawActivationFloat32(d)
-
-
 }
 
 @JvmInline
-value class RawActivationFloat64(override val value: Double) : RawActivation<Double, RawActivationFloat64>,
+value class RawActivationFloat64(override val value: Double) :
+    RawActivation<Double, RawActivationFloat64>,
     ActivationFloat64<RawActivationFloat64> {
 
 
     override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
     override fun fromDouble(d: Double): RawActivationFloat64 = RawActivationFloat64(d)
-
-
 }
 
 /*
@@ -107,9 +102,12 @@ sealed interface NormalActivation<A: Number, T: NormalActivation<A, T>>: Activat
   override val extraInfo: String?
 	get() = null
 
-}*/
+}
 
-/*
+
+
+
+
 @JvmInline
 value class NormalActivationFloat32(override val value: Float): NormalActivation<Float, NormalActivationFloat32>,
 																ActivationFloat32<NormalActivationFloat32> {
@@ -130,9 +128,11 @@ value class NormalActivationFloat32(override val value: Float): NormalActivation
 
 
 }
-*/
 
-/*
+
+
+
+
 
 @JvmInline
 value class NormalActivationFloat64(override val value: Double): NormalActivation<Double, NormalActivationFloat64>,
@@ -164,12 +164,16 @@ sealed interface ActivationRatio<A : Number, T : ActivationRatio<A, T>> : Activa
     }
 
     @Open override val extraInfo: String?
-        get() = if (isNaN || isInfinite) "The activation percentage will be infinite or NaN if the corresponding activation in the InD network is absolute 0. If the activation was extremely small but non-zero in python and the current test is float32, it may have become zero when the precision was lost. You may try recreating the .test file with float64 precision to see if that fixes it." else null
-
+        get() =
+            if (
+                isNaN || isInfinite
+            ) "The activation percentage will be infinite or NaN if the corresponding activation in the InD network is absolute 0. If the activation was extremely small but non-zero in python and the current test is float32, it may have become zero when the precision was lost. You may try recreating the .test file with float64 precision to see if that fixes it."
+            else null
 }
 
 @JvmInline
-value class ActivationRatioFloat32(override val value: Float) : ActivationRatio<Float, ActivationRatioFloat32>,
+value class ActivationRatioFloat32(override val value: Float) :
+    ActivationRatio<Float, ActivationRatioFloat32>,
     ActivationFloat32<ActivationRatioFloat32> {
 
 
@@ -183,7 +187,8 @@ value class ActivationRatioFloat32(override val value: Float) : ActivationRatio<
 
 
 @JvmInline
-value class ActivationRatioFloat64(override val value: Double) : ActivationRatio<Double, ActivationRatioFloat64>,
+value class ActivationRatioFloat64(override val value: Double) :
+    ActivationRatio<Double, ActivationRatioFloat64>,
     ActivationFloat64<ActivationRatioFloat64> {
 
 

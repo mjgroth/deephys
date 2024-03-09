@@ -3,7 +3,7 @@ package matt.nn.deephys.load.test.dtype
 import kotlinx.serialization.Serializable
 import matt.collect.set.contents.Contents
 import matt.collect.set.contents.contentsOf
-import matt.lang.List2D
+import matt.lang.common.List2D
 import matt.math.arithmetic.sumOf
 import matt.math.numalg.matalg.multiarray.DoubleMultiArrayWrapper
 import matt.math.numalg.matalg.multiarray.FloatMultiArrayWrapper
@@ -33,6 +33,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 import java.nio.ByteBuffer
+import kotlin.math.exp as kotlinExp
 
 
 @Serializable
@@ -41,12 +42,13 @@ sealed interface DType<N : Number> {
         fun leastPrecise(
             type: DType<*>,
             vararg types: DType<*>
-        ): DType<*> = if (types.isEmpty()) type
-        else {
-            val all = setOf(type, *types)
-            if (Float32 in all) Float32
-            else Float64
-        }
+        ): DType<*> =
+            if (types.isEmpty()) type
+            else {
+                val all = setOf(type, *types)
+                if (Float32 in all) Float32
+                else Float64
+            }
     }
 
     val byteLen: Int
@@ -58,7 +60,6 @@ sealed interface DType<N : Number> {
 
     fun rawActivation(act: N): RawActivation<N, *>
 
-    //  fun normalActivation(act: N): NormalActivation<N, *>
     fun activationRatio(act: N): ActivationRatio<N, *>
     fun alwaysOneActivation(): AlwaysOneActivation<N, *>
     fun wrap(multiArray: MultiArray<N, D1>): MultiArrayWrapper<N>
@@ -76,8 +77,6 @@ sealed interface DType<N : Number> {
     val label: String
     val one: N
     val zero: N
-
-
 }
 
 
@@ -109,14 +108,14 @@ object Float32 : DtypeBase<Float>() {
     override fun bytesToArray(
         bytes: ByteArray,
         numIms: Int
-    ): List<Float> = FloatArray(numIms).also {
-        ByteBuffer.wrap(bytes).asFloatBuffer().get(it)
-    }.asList()
+    ): List<Float> =
+        FloatArray(numIms).also {
+            ByteBuffer.wrap(bytes).asFloatBuffer().get(it)
+        }.asList()
 
     override fun rawActivation(act: Float) = RawActivationFloat32(act)
     override fun activationRatio(act: Float) = ActivationRatioFloat32(act)
 
-    //  override fun normalActivation(act: Float) = NormalActivationFloat32(act)
     override fun alwaysOneActivation() = AlwaysOneActivationFloat32
     override fun wrap(multiArray: MultiArray<Float, D1>) = FloatMultiArrayWrapper(multiArray)
     override fun mean(list: List<Float>) = list.mean()
@@ -127,7 +126,7 @@ object Float32 : DtypeBase<Float>() {
 
     override fun d1array(list: List<Float>) = list.toNDArray()
     override fun d2array(list: List2D<Float>) = list.toNDArray()
-    override fun exp(v: Float) = kotlin.math.exp(v)
+    override fun exp(v: Float) = kotlinExp(v)
     override fun sum(list: List<Float>) = list.sumOf { it }
     override val one = 1f
     override val zero = 0f
@@ -141,14 +140,14 @@ object Float64 : DtypeBase<Double>() {
     override fun bytesToArray(
         bytes: ByteArray,
         numIms: Int
-    ): List<Double> = DoubleArray(numIms).also {
-        ByteBuffer.wrap(bytes).asDoubleBuffer().get(it)
-    }.asList()
+    ): List<Double> =
+        DoubleArray(numIms).also {
+            ByteBuffer.wrap(bytes).asDoubleBuffer().get(it)
+        }.asList()
 
     override fun rawActivation(act: Double) = RawActivationFloat64(act)
     override fun activationRatio(act: Double) = ActivationRatioFloat64(act)
 
-    //  override fun normalActivation(act: Double) = NormalActivationFloat64(act)
     override fun alwaysOneActivation() = AlwaysOneActivationFloat64
     override fun wrap(multiArray: MultiArray<Double, D1>) = DoubleMultiArrayWrapper(multiArray)
     override fun mean(list: List<Double>) = list.mean()
@@ -159,7 +158,7 @@ object Float64 : DtypeBase<Double>() {
 
     override fun d1array(list: List<Double>) = list.toNDArray()
     override fun d2array(list: List2D<Double>) = list.toNDArray()
-    override fun exp(v: Double) = kotlin.math.exp(v)
+    override fun exp(v: Double) = kotlinExp(v)
     override fun sum(list: List<Double>) = list.sum()
     override val one = 1.0
     override val zero = 0.0

@@ -5,7 +5,7 @@ import javafx.scene.control.ContentDisplay
 import matt.caching.compcache.ComputeCacheContext
 import matt.collect.itr.filterNotNull
 import matt.collect.set.contents.contentsOf
-import matt.collect.weak.lazyWeakMap
+import matt.collect.weak.lazy.lazyWeakMap
 import matt.file.construct.mFile
 import matt.file.ext.FileExtension
 import matt.file.types.checkType
@@ -23,15 +23,15 @@ import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.v
 import matt.lang.assertions.require.requireNot
-import matt.lang.disabledCode
+import matt.lang.common.disabledCode
 import matt.lang.model.file.MacFileSystem
 import matt.lang.model.file.fName
 import matt.lang.model.file.types.Cbor
 import matt.lang.model.file.types.TypedFile
-import matt.lang.weak.MyWeakRef
+import matt.lang.weak.weak
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
-import matt.log.warn.warn
+import matt.log.warn.common.warn
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.gui.dataset.DatasetNode
 import matt.nn.deephys.gui.dataset.DatasetNodeView
@@ -77,18 +77,18 @@ import matt.obs.bindings.comp.lt
 import matt.obs.col.olist.basicMutableObservableListOf
 import matt.obs.col.olist.lastIndexProperty
 import matt.obs.col.olist.sizeProperty
-import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
-import matt.obs.prop.VarProp
-import matt.obs.prop.toVarProp
 import matt.obs.prop.withChangeListener
-import matt.obs.prop.withNonNullUpdatesFrom
+import matt.obs.prop.writable.BindableProperty
+import matt.obs.prop.writable.VarProp
+import matt.obs.prop.writable.toVarProp
+import matt.obs.prop.writable.withNonNullUpdatesFrom
 import matt.prim.str.mybuild.api.string
 import java.lang.ref.WeakReference
 import kotlin.reflect.KProperty
 
 class DatasetViewer(
-    initialFile: TypedFile<Cbor,*>? = null,
+    initialFile: TypedFile<Cbor, *>? = null,
     val outerBox: DSetViewsVBox,
     settings: DeephysSettingsController,
     val cacheContext: ComputeCacheContext
@@ -109,65 +109,73 @@ class DatasetViewer(
 
     private val currentFile get() = file.value?.fName
     override fun reflectingToStringProps(): Set<KProperty<*>> = setOf(::currentFile)
-//    override fun toString() = toStringBuilder("current file" to file.value?.fName)
 
-    val file: VarProp<TypedFile<Cbor,*>?> = VarProp(initialFile).withChangeListener {
-        outerBox.save()
-    }
-
-    val smallImageScale = BindableProperty(settings.appearance.smallImageScale.value).apply {
-        bind(settings.appearance.smallImageScale)
-    }
-    val bigImageScale = BindableProperty(settings.appearance.bigImageScale.value).apply {
-        bind(settings.appearance.bigImageScale)
-    }
-
-    //  val normalizeTopNeuronActivations = BindableProperty(DeephySettings.normalizeTopNeuronActivations.value).apply {
-    //	bind(DeephySettings.normalizeTopNeuronActivations)
-    //  }
-    val numImagesPerNeuronInByImage = BindableProperty(settings.appearance.numImagesPerNeuronInByImage.value).apply {
-        bind(settings.appearance.numImagesPerNeuronInByImage)
-    }
-    val averageRawActSigFigs = BindableProperty(settings.appearance.averageRawActSigFigs.value).apply {
-        bind(settings.appearance.averageRawActSigFigs)
-    }
-    val predictionSigFigs = BindableProperty(settings.appearance.predictionSigFigs.value).apply {
-        bind(settings.appearance.predictionSigFigs)
-    }
-    val showCacheBars = BindableProperty(settings.debug.showCacheBars.value).apply {
-        bind(settings.debug.showCacheBars)
-    }
-    val showTutorials = BindableProperty(settings.showTutorials.value).apply {
-        bind(settings.showTutorials)
-    }
-
-    val normalizer = BindableProperty(outerBox.normalizer.value).apply {
-        bind(outerBox.normalizer)
-    }
-
-    val numViewers = BindableProperty(outerBox.children.size).apply {
-        bind(outerBox.children.sizeProperty)
-    }
-
-    val testData = file.binding { f ->
-        val t = tic(prefix = "dataBinding2", enabled = false)
-        t.toc("start")
-        f?.run {
-
-            val loader = TestLoader(f, model, settings)
-            t.toc("got loader")
-            loader.start()
-            t.toc("started loader")
-            loader
+    val file: VarProp<TypedFile<Cbor, *>?> =
+        VarProp(initialFile).withChangeListener {
+            outerBox.save()
         }
-    }.apply {
-        stopwatch = "dataBinding"
-    }
+
+    val smallImageScale =
+        BindableProperty(settings.appearance.smallImageScale.value).apply {
+            bind(settings.appearance.smallImageScale)
+        }
+    val bigImageScale =
+        BindableProperty(settings.appearance.bigImageScale.value).apply {
+            bind(settings.appearance.bigImageScale)
+        }
+
+    val numImagesPerNeuronInByImage =
+        BindableProperty(settings.appearance.numImagesPerNeuronInByImage.value).apply {
+            bind(settings.appearance.numImagesPerNeuronInByImage)
+        }
+    val averageRawActSigFigs =
+        BindableProperty(settings.appearance.averageRawActSigFigs.value).apply {
+            bind(settings.appearance.averageRawActSigFigs)
+        }
+    val predictionSigFigs =
+        BindableProperty(settings.appearance.predictionSigFigs.value).apply {
+            bind(settings.appearance.predictionSigFigs)
+        }
+    val showCacheBars =
+        BindableProperty(settings.debug.showCacheBars.value).apply {
+            bind(settings.debug.showCacheBars)
+        }
+    val showTutorials =
+        BindableProperty(settings.showTutorials.value).apply {
+            bind(settings.showTutorials)
+        }
+
+    val normalizer =
+        BindableProperty(outerBox.normalizer.value).apply {
+            bind(outerBox.normalizer)
+        }
+
+    val numViewers =
+        BindableProperty(outerBox.children.size).apply {
+            bind(outerBox.children.sizeProperty)
+        }
+
+    val testData =
+        file.binding { f ->
+            val t = tic(prefix = "dataBinding2", enabled = false)
+            t.toc("start")
+            f?.run {
+
+                val loader = TestLoader(f, model, settings)
+                t.toc("got loader")
+                loader.start()
+                t.toc("started loader")
+                loader
+            }
+        }.apply {
+            stopwatch = "dataBinding"
+        }
 
 
-    val outerBoundDSet = BindableProperty(outerBox.bound.value).apply {
-        bind(outerBox.bound)
-    }
+    val outerBoundDSet =
+        BindableProperty(outerBox.bound.value).apply {
+            bind(outerBox.bound)
+        }
 
     val boundToDSet by lazy {
         outerBoundDSet.binding {
@@ -179,83 +187,92 @@ class DatasetViewer(
 
 
     private val boundView by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.view } }
-    val view: VarProp<DatasetNodeView> = VarProp(
-        boundView.value ?: ByNeuron
-    ).withNonNullUpdatesFrom(boundView)
+    val view: VarProp<DatasetNodeView> =
+        VarProp(
+            boundView.value ?: ByNeuron
+        ).withNonNullUpdatesFrom(boundView)
 
     private val boundLayer by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.layerSelection } }
 
-    val layerSelection: VarProp<InterTestLayer?> = VarProp(
-        boundLayer.value
-    ).withNonNullUpdatesFrom(boundLayer)
+    val layerSelection: VarProp<InterTestLayer?> =
+        VarProp(
+            boundLayer.value
+        ).withNonNullUpdatesFrom(boundLayer)
 
-    val layerSelectionResolved = layerSelection.binding(
-        testData
-    ) { layer ->
-        println("remove testData dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
-        model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
-    }
+    val layerSelectionResolved =
+        layerSelection.binding(
+            testData
+        ) { layer ->
+            println("remove testData dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
+            model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
+        }
 
-    private val boundNeuron = boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
-        it?.neuronSelection
-    }
+    private val boundNeuron =
+        boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
+            it?.neuronSelection
+        }
 
-    private fun ResolvedLayer.neuronThatMatches(n: ResolvedNeuron?) = neurons.firstOrNull {
-        it.index == n?.index
-    }
+    private fun ResolvedLayer.neuronThatMatches(n: ResolvedNeuron?) =
+        neurons.firstOrNull {
+            it.index == n?.index
+        }
 
 
-    val neuronSelection: VarProp<InterTestNeuron?> = VarProp(
-        boundNeuron.value
-    ).withNonNullUpdatesFrom(boundNeuron)
+    val neuronSelection: VarProp<InterTestNeuron?> =
+        VarProp(
+            boundNeuron.value
+        ).withNonNullUpdatesFrom(boundNeuron)
 
-    val neuronSelectionResolved = neuronSelection.binding(
-        testData,
-        layerSelectionResolved
-    ) { neuron ->
-        println("remove layerSelectionResolved dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
-        layerSelectionResolved.value?.neurons?.firstOrNull { it.index == neuron?.index }
-    }
+    val neuronSelectionResolved =
+        neuronSelection.binding(
+            testData,
+            layerSelectionResolved
+        ) { neuron ->
+            println("remove layerSelectionResolved dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
+            layerSelectionResolved.value?.neurons?.firstOrNull { it.index == neuron?.index }
+        }
 
 
     val imageSelection = VarProp<DeephyImage<*>?>(null)
 
 
-    private val topNeuronsFromMyImage = run {
-        imageSelection.binding(
-            testData, layerSelection, normalizer
-        ) { im ->
-            layerSelection.value?.let { lay ->
-                im?.let { theIm ->
-                    testData.value!!.dtype.topNeurons(
-                        images = contentsOf(theIm),
-                        layer = lay,
-                        test = testData.value!!.preppedTest.awaitRequireSuccessful(),
-                        denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful()
-                    )
+    private val topNeuronsFromMyImage =
+        run {
+            imageSelection.binding(
+                testData, layerSelection, normalizer
+            ) { im ->
+                layerSelection.value?.let { lay ->
+                    im?.let { theIm ->
+                        testData.value!!.dtype.topNeurons(
+                            images = contentsOf(theIm),
+                            layer = lay,
+                            test = testData.value!!.preppedTest.awaitRequireSuccessful(),
+                            denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful()
+                        )
+                    }
                 }
             }
         }
-    }
 
 
-    val boundTopNeurons: MyBinding<TopNeurons<*>?> = boundToDSet.deepBinding(
-        normalizer
-    ) {
-        it?.topNeurons?.binding(
+    val boundTopNeurons: MyBinding<TopNeurons<*>?> =
+        boundToDSet.deepBinding(
             normalizer
         ) {
-            it?.let {
-                testData.value?.dtype?.topNeurons(
-                    images = contentsOf(),
-                    layer = it.layer,
-                    test = testData.value!!.preppedTest.awaitRequireSuccessful(),
-                    denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful(),
-                    forcedNeuronIndices = with(cacheContext) { with(testData.value!!.testRAMCache) { it() }.map { it.neuron.index } }
-                )
-            }
-        } ?: BindableProperty(null)
-    }
+            it?.topNeurons?.binding(
+                normalizer
+            ) {
+                it?.let {
+                    testData.value?.dtype?.topNeurons(
+                        images = contentsOf(),
+                        layer = it.layer,
+                        test = testData.value!!.preppedTest.awaitRequireSuccessful(),
+                        denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful(),
+                        forcedNeuronIndices = with(cacheContext) { with(testData.value!!.testRAMCache) { it() }.map { it.neuron.index } }
+                    )
+                }
+            } ?: BindableProperty(null)
+        }
 
 
     val topNeurons: MyBinding<TopNeurons<*>?> = boundTopNeurons coalesceNull topNeuronsFromMyImage
@@ -265,41 +282,39 @@ class DatasetViewer(
         initStopwatch.toc(4)
     }
 
-    val highlightedNeurons = MyBinding(
-        view, topNeurons, neuronSelection
-    ) {
-        when (view.value) {
-            ByNeuron   -> listOf(neuronSelection.value).filterNotNull()
-            ByImage    -> with(testData.value!!.testRAMCache) { topNeurons.value?.findOrCompute() ?: listOf() }
-            ByCategory -> listOf<InterTestNeuron>().apply {
-                warn("did not make highlighted neurons from category view work yet")
-
+    val highlightedNeurons =
+        MyBinding(
+            view, topNeurons, neuronSelection
+        ) {
+            when (view.value) {
+                ByNeuron   -> listOf(neuronSelection.value).filterNotNull()
+                ByImage    -> with(testData.value!!.testRAMCache) { topNeurons.value?.findOrCompute() ?: listOf() }
+                ByCategory ->
+                    listOf<InterTestNeuron>().apply {
+                        warn("did not make highlighted neurons from category view work yet")
+                    }
             }
         }
-    }
 
-    val weakRef = MyWeakRef(this)
+    val weakRef = weak(this)
 
-    private val boundCategory: ObsVal<CategorySelection?> = boundToDSet
-        .deepBindingIgnoringFutureNullOuterChanges(testData) {
-            it?.catSelectionForViewer?.get(weakRef.deref()!!) ?: BindableProperty(null)
-            //	  it?.categorySelection?.binding { cat ->
-            //		testData.value?.let { tst ->
-            //		  cat?.forTest(tst)
-            //		}
-            //	  } ?: BindableProperty(null)
-        }
+    private val boundCategory: ObsVal<CategorySelection?> =
+        boundToDSet
+            .deepBindingIgnoringFutureNullOuterChanges(testData) {
+                it?.catSelectionForViewer?.get(weakRef.deref()!!) ?: BindableProperty(null)
+            }
 
 
     val categorySelection = VarProp<CategorySelection?>(null).withNonNullUpdatesFrom(boundCategory)
 
-    private val catSelectionForViewer = lazyWeakMap<DatasetViewer, ObsVal<CategorySelection?>> { viewer ->
-        categorySelection.weakBinding(viewer) { v, cat ->
-            v.testData.value?.let { tst ->
-                cat?.forTest(tst)
+    private val catSelectionForViewer =
+        lazyWeakMap<DatasetViewer, ObsVal<CategorySelection?>> { viewer ->
+            categorySelection.weakBinding(viewer) { v, cat ->
+                v.testData.value?.let { tst ->
+                    cat?.forTest(tst)
+                }
             }
         }
-    }
 
 
     var currentByImageHScroll: VarProp<Double>? = null
@@ -392,16 +407,18 @@ class DatasetViewer(
     var oodButton: ControlWrapper? = null
 
 
-    private fun redoHistory() = when (val action = history[historyIndex.value]) {
-        is SelectImage    -> navigateTo(action.image, addHistory = false)
-        is SelectCategory -> navigateTo(action.cat, addHistory = false)
-        is SelectNeuron   -> navigateTo(action.neuron, addHistory = false)
-        is SelectView     -> navigateTo(action.view, addHistory = false)
-    }
+    private fun redoHistory() =
+        when (val action = history[historyIndex.value]) {
+            is SelectImage    -> navigateTo(action.image, addHistory = false)
+            is SelectCategory -> navigateTo(action.cat, addHistory = false)
+            is SelectNeuron   -> navigateTo(action.neuron, addHistory = false)
+            is SelectView     -> navigateTo(action.view, addHistory = false)
+        }
 
-    private val canUseHistory = this@DatasetViewer.history.binding(historyIndex, boundToDSet) {
-        isUnboundToDSet.value && it.isNotEmpty()
-    }
+    private val canUseHistory =
+        this@DatasetViewer.history.binding(historyIndex, boundToDSet) {
+            isUnboundToDSet.value && it.tempDebugCollectionDelegate().isNotEmpty()
+        }
 
 
     init {
@@ -409,193 +426,208 @@ class DatasetViewer(
         contentDisplay = ContentDisplay.LEFT
         isExpanded = true
         /*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
-        graphic = h {
-            alignment = Pos.CENTER
-            isFillHeight = true
-
-            /*spacing = 15.0*/
-
-            fun sectionSpacer() = h {
-                minWidth = 30.0
+        graphic =
+            h {
                 alignment = Pos.CENTER
+                isFillHeight = true
+
+                /*spacing = 15.0*/
+
+                fun sectionSpacer() =
+                    h {
+                        minWidth = 30.0
+                        alignment = Pos.CENTER
                 /*line {
                   strokeProperty.bindWeakly(DarkModeController.darkModeProp.binding { if (it) Color.DARKGRAY else Color.LIGHTGRAY })
                   endY = 25.0
                 }*/
-            }
-
-            sectionSpacer()
-
-            val removeTestButton = deephyIconButton("icon/minus") {
-                veryLazyDeephysTooltip("remove this test viewer", settings)
-                setOnAction {
-                    this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
-                }
-            }
-
-
-            /*"Choose Test"*/
-            val chooseTestButton = deephyIconButton("open-file") {
-
-
-                veryLazyDeephysTooltip("choose test file", settings)
-                setOnAction {
-
-                    val f = openFile(stage = weakViewer.get()!!.stage) {
-                        title = "choose test data"
-                        extensionFilter("tests", FileExtension.TEST)
                     }
 
-                    if (f != null) {
-                        stopwatch("set fileProp") {
-                            this@DatasetViewer.file.value = (mFile(f.path, MacFileSystem)).checkType()
+                sectionSpacer()
+
+                val removeTestButton =
+                    deephyIconButton("icon/minus") {
+                        veryLazyDeephysTooltip("remove this test viewer", settings)
+                        setOnAction {
+                            this@DatasetViewer.outerBox.removeTest(this@DatasetViewer)
                         }
                     }
-                }
-            }
 
 
-            removeTestButton.prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+                /*"Choose Test"*/
+                val chooseTestButton =
+                    deephyIconButton("open-file") {
 
 
+                        veryLazyDeephysTooltip("choose test file", settings)
+                        setOnAction {
 
+                            val f =
+                                openFile(stage = weakViewer.get()!!.stage) {
+                                    title = "choose test data"
+                                    extensionFilter("tests", FileExtension.TEST)
+                                }
 
-            sectionSpacer()
-
-
-            deephyIconButton("icon/arrow") {
-                graphic!!.apply {
-                    scaleX = -1.0
-                }
-
-
-                prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
-
-                enableWhen {
-                    this@DatasetViewer.canUseHistory and this@DatasetViewer.historyIndex.gt(0)
-                }
-                setOnAction {
-                    this@DatasetViewer.historyIndex.value -= 1
-                    this@DatasetViewer.redoHistory()
-                }
-
-            }
-            deephyIconButton("icon/arrow") {
-                prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
-                enableWhen {
-                    this@DatasetViewer.canUseHistory and this@DatasetViewer.historyIndex.lt(this@DatasetViewer.history.lastIndexProperty)
-                }
-                setOnAction {
-                    this@DatasetViewer.historyIndex.value += 1
-                    this@DatasetViewer.redoHistory()
-                }
-            }
-
-            sectionSpacer()
-
-            this@DatasetViewer.bindButton = this@DatasetViewer.outerBox.createBindToggleButton(this, this@DatasetViewer)
-                .apply {
-                    prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
-                }
-            this@DatasetViewer.oodButton =
-                this@DatasetViewer.outerBox.createInDToggleButton(this, this@DatasetViewer).apply {
-                    prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
-                }
-
-            sectionSpacer()
-
-
-            /*.binding { it?.nameWithoutExtension ?: "please select a test" }*/
-
-            deephysText(
-                this@DatasetViewer.testData.binding {
-                    it?.testName?.awaitSuccessfulOrMessage()?.toString() ?: "please select a test"
-                }
-            ) {
-                titleFont()
-            }
-            hSpacer(10.0)
-            h {
-                spacing = DEEPHYS_SYMBOL_SPACING
-                deephysInfoSymbol(
-
-                    this@DatasetViewer.testData.binding {
-                        if (it == null) {
-                            "After loading a test, see more info about it here."
-                        } else {
-                            string {
-                                lineDelimited {
-                                    +"dtype:       ${it.dtypeOrNull()?.label}"
-                                    +"Image Count: ${it.numImages.awaitSuccessfulOrMessage()}"
+                            if (f != null) {
+                                stopwatch("set fileProp") {
+                                    this@DatasetViewer.file.value = (mFile(f.path, MacFileSystem)).checkType()
                                 }
                             }
                         }
                     }
 
+
+                removeTestButton.prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+
+
+
+
+                sectionSpacer()
+
+
+                deephyIconButton("icon/arrow") {
+                    graphic!!.apply {
+                        scaleX = -1.0
+                    }
+
+
+                    prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+
+                    enableWhen {
+                        this@DatasetViewer.canUseHistory and this@DatasetViewer.historyIndex.gt(0)
+                    }
+                    setOnAction {
+                        this@DatasetViewer.historyIndex.value -= 1
+                        this@DatasetViewer.redoHistory()
+                    }
+                }
+                deephyIconButton("icon/arrow") {
+                    prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+                    enableWhen {
+                        (
+                            this@DatasetViewer.canUseHistory and
+                                this@DatasetViewer.historyIndex.lt(
+                                    this@DatasetViewer.history.lastIndexProperty
+                                )
+                        )
+                    }
+                    setOnAction {
+                        this@DatasetViewer.historyIndex.value += 1
+                        this@DatasetViewer.redoHistory()
+                    }
+                }
+
+                sectionSpacer()
+
+                this@DatasetViewer.bindButton =
+                    this@DatasetViewer.outerBox.createBindToggleButton(this, this@DatasetViewer)
+                        .apply {
+                            prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+                        }
+                this@DatasetViewer.oodButton =
+                    this@DatasetViewer.outerBox.createInDToggleButton(this, this@DatasetViewer).apply {
+                        prefHeightProperty.bindWeakly(chooseTestButton.heightProperty)
+                    }
+
+                sectionSpacer()
+
+
+                /*.binding { it?.nameWithoutExtension ?: "please select a test" }*/
+
+                deephysText(
+                    this@DatasetViewer.testData.binding {
+                        it?.testName?.awaitSuccessfulOrMessage()?.toString() ?: "please select a test"
+                    }
                 ) {
-
-
-                    fontProperty v DEEPHYS_FONT_MONO
-                    /*wrapTextProp v true*/
+                    titleFont()
                 }
+                hSpacer(10.0)
+                h {
+                    spacing = DEEPHYS_SYMBOL_SPACING
+                    deephysInfoSymbol(
 
-                val loadWarnings = this@DatasetViewer.testData.binding {
-                    it?.loadWarnings
-                }
+                        this@DatasetViewer.testData.binding {
+                            if (it == null) {
+                                "After loading a test, see more info about it here."
+                            } else {
+                                string {
+                                    lineDelimited {
+                                        +"dtype:       ${it.dtypeOrNull()?.label}"
+                                        +"Image Count: ${it.numImages.awaitSuccessfulOrMessage()}"
+                                    }
+                                }
+                            }
+                        }
 
-                swapperR(loadWarnings) {
-                    h {
-                        spacing = DEEPHYS_SYMBOL_SPACING
-                        children.bindWeakly(it.nonBlockingFXWatcher()) {
-                            DeephysWarningSymbol(it).apply {
+                    ) {
 
+
+                        fontProperty v DEEPHYS_FONT_MONO
+                        /*wrapTextProp v true*/
+                    }
+
+                    val loadWarnings =
+                        this@DatasetViewer.testData.binding {
+                            it?.loadWarnings
+                        }
+
+                    swapperR(loadWarnings) {
+                        h {
+                            spacing = DEEPHYS_SYMBOL_SPACING
+                            children.bindWeakly(it.nonBlockingFXWatcher()) {
+                                DeephysWarningSymbol(it).apply {
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            sectionSpacer()
+                sectionSpacer()
 
-            progressbar {
+                progressbar {
 
-                progressProperty.bind(this@DatasetViewer.testData.deepBinding {
-                    it?.progress ?: 0.0.toVarProp()
-                })
-                visibleAndManagedWhen {
-                    progressProperty.lt(1.0)
+                    progressProperty.bind(
+                        this@DatasetViewer.testData.deepBinding {
+                            it?.progress ?: 0.0.toVarProp()
+                        }
+                    )
+                    visibleAndManagedWhen {
+                        progressProperty.lt(1.0)
+                    }
+                }
+                progressbar {
+                    visibleAndManagedWhen { this@DatasetViewer.showCacheBars }
+                    style = "-fx-accent: green"
+                    progressProperty.bind(
+                        this@DatasetViewer.testData.deepBinding {
+                            it?.cacheProgressPixels ?: 0.0.toVarProp()
+                        }
+                    )
+                }
+                progressbar {
+                    visibleAndManagedWhen { this@DatasetViewer.showCacheBars }
+                    style = "-fx-accent: yellow"
+                    progressProperty.bind(
+                        this@DatasetViewer.testData.deepBinding {
+                            it?.cacheProgressActs ?: 0.0.toVarProp()
+                        }
+                    )
                 }
             }
-            progressbar {
-                visibleAndManagedWhen { this@DatasetViewer.showCacheBars }
-                style = "-fx-accent: green"
-                progressProperty.bind(this@DatasetViewer.testData.deepBinding {
-                    it?.cacheProgressPixels ?: 0.0.toVarProp()
-                })
+        content =
+            v {
+                asyncLoadSwapper(
+                    this@DatasetViewer.testData.binding { it },
+                    nullMessage = "select a test to view it",
+                    fadeOutDur = DEEPHYS_FADE_DUR,
+                    fadeInDur = DEEPHYS_FADE_DUR
+                ) {
+                    DatasetNode(this, this@DatasetViewer, settings)
+                }
+                disabledCode {
+                    +BindTutorial(this@DatasetViewer)
+                }
             }
-            progressbar {
-                visibleAndManagedWhen { this@DatasetViewer.showCacheBars }
-                style = "-fx-accent: yellow"
-                progressProperty.bind(this@DatasetViewer.testData.deepBinding {
-                    it?.cacheProgressActs ?: 0.0.toVarProp()
-                })
-            }
-        }
-        content = v {
-            asyncLoadSwapper(
-                this@DatasetViewer.testData.binding { it },
-                nullMessage = "select a test to view it",
-                fadeOutDur = DEEPHYS_FADE_DUR,
-                fadeInDur = DEEPHYS_FADE_DUR
-            ) {
-                DatasetNode(this, this@DatasetViewer, settings)
-            }
-            disabledCode {
-                +BindTutorial(this@DatasetViewer)
-            }
-        }
     }
-
-
 }
 

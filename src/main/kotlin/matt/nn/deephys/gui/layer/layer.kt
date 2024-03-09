@@ -3,9 +3,9 @@ package matt.nn.deephys.gui.layer
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNeverNull
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.lang.go
-import matt.lang.weak.MyWeakRef
-import matt.lang.weak.WeakRefInter
+import matt.lang.common.go
+import matt.lang.weak.common.WeakRefInter
+import matt.lang.weak.weak
 import matt.nn.deephys.gui.global.deephysSpinner
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.node.DeephysNode
@@ -33,18 +33,19 @@ class LayerView(
         val interLayer = layer.interTest
 
         val neurons = layer.neurons.map { it.interTest }
-        val spinnerAndValue = deephysSpinner(
-            label = "Neuron",
-            choices = neurons,
-            defaultChoice = { neurons[0] },
-            converter = InterTestNeuron.stringConverterThatFallsBackToFirst(neurons = neurons),
-            viewer = viewer,
-            getCurrent = viewer.neuronSelection,
-            acceptIf = { it.layer == interLayer },
-            navAction = { navigateTo(it) }
-        ).apply {
-            this@LayerView.spinnerThing = MyWeakRef(this.first)
-        }
+        val spinnerAndValue =
+            deephysSpinner(
+                label = "Neuron",
+                choices = neurons,
+                defaultChoice = { neurons[0] },
+                converter = InterTestNeuron.stringConverterThatFallsBackToFirst(neurons = neurons),
+                viewer = viewer,
+                getCurrent = viewer.neuronSelection,
+                acceptIf = { it.layer == interLayer },
+                navAction = { navigateTo(it) }
+            ).apply {
+                this@LayerView.spinnerThing = weak(first)
+            }
 
         testLoader.preppedTest.awaitSuccessfulOrNull()?.go { typedTestLoader ->
             swapperNeverNull(spinnerAndValue.second) {
@@ -59,7 +60,5 @@ class LayerView(
                 )
             }
         }
-
     }
-
 }

@@ -6,9 +6,9 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.lang.go
-import matt.lang.weak.MyWeakRef
-import matt.lang.weak.WeakRefInter
+import matt.lang.common.go
+import matt.lang.weak.common.WeakRefInter
+import matt.lang.weak.weak
 import matt.model.flowlogic.recursionblocker.RecursionBlocker
 import matt.model.op.convert.toStringConverter
 import matt.nn.deephys.gui.category.CategoryView
@@ -22,8 +22,8 @@ import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
+import matt.obs.prop.writable.BindableProperty
 import matt.prim.str.elementsToString
 
 class ByCategoryView(
@@ -42,7 +42,7 @@ class ByCategoryView(
 
 
         h {
-            (this@ByCategoryView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = MyWeakRef(this)
+            (this@ByCategoryView.control as BindableProperty<WeakRefInter<RegionWrapper<*>>?>).value = weak(this)
             deephysSpinner(
                 label = "Category",
                 choices = cats,
@@ -60,13 +60,14 @@ class ByCategoryView(
                 values = testLoader.test.categories
             ) {
                 configForDeephys()
-                converter = toStringConverter<CategorySelection?> {
-                    when (it) {
-                        is Category -> it.label
-                        is CategoryConfusion -> it.allCategories.map { it.label }.toList().elementsToString()
-                        else -> "no category selected"
-                    }
-                }.toFXConverter()
+                converter =
+                    toStringConverter<CategorySelection?> {
+                        when (it) {
+                            is Category -> it.label
+                            is CategoryConfusion -> it.allCategories.map { it.label }.toList().elementsToString()
+                            else -> "no category selected"
+                        }
+                    }.toFXConverter()
 
 
                 val rBlocker = RecursionBlocker()
@@ -84,8 +85,6 @@ class ByCategoryView(
                         select(it)
                     }
                 }
-
-
             }
         }
 

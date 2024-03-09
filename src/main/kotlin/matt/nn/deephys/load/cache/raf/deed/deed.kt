@@ -22,8 +22,8 @@ class DeedImpl(
     private val startIndexInclusive: Long,
     val size: Int,
     private val rafCache: RAFCacheImpl,
-    private val raf: ()->RAFLike,
-    private val nextReader: ()->RAFLike,
+    private val raf: () -> RAFLike,
+    private val nextReader: () -> RAFLike,
     @Suppress("UNUSED_PARAMETER") key: DeedKey
 ): Deed {
     val stopIndexExclusive: Long get() = startIndexInclusive + size

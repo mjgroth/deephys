@@ -41,12 +41,13 @@ fun createControlFor(
                     veryLazyDeephysTooltip(sett.tooltip, settings)
                     text = sett.label
                     contentDisplay = RIGHT
-                    graphic = spinner(
-                        min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
-                    ) {
-                        prefWidth = 150.0
-                        this.valueFactory!!.valueProperty.bindBidirectional(sett.prop)
-                    }
+                    graphic =
+                        spinner(
+                            min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
+                        ) {
+                            prefWidth = 150.0
+                            valueFactory!!.valueProperty.bindBidirectional(sett.prop)
+                        }
                 }
             }
 
@@ -55,14 +56,15 @@ fun createControlFor(
                     veryLazyDeephysTooltip(sett.tooltip, settings)
                     text = sett.label
                     contentDisplay = RIGHT
-                    graphic = slider(
-                        min = sett.min,
-                        max = sett.max,
-                        value = sett.prop.value,
-                    ) {
-                        prefWidth = 150.0
-                        valueProperty.bindBidirectional(sett.prop)
-                    }
+                    graphic =
+                        slider(
+                            min = sett.min,
+                            max = sett.max,
+                            value = sett.prop.value
+                        ) {
+                            prefWidth = 150.0
+                            valueProperty.bindBidirectional(sett.prop)
+                        }
                 }
             }
 
@@ -84,7 +86,5 @@ fun createControlFor(
                 }
             }
         }
-
-
     }.children.first()
 }

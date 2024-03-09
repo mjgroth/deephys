@@ -12,26 +12,13 @@ interface TestOrLoader {
     val dtype: DType<*>
     val model: Model
     fun isDoneLoading(): Boolean
-
-
 }
 
 
-//
-//fun <N: Number> Test<N>.argmaxn2OfNeuron(neuron: InterTestNeuron, num: Int) {
-//  val acts = activationsByNeuron[neuron]
-//
-//  test.dtype
-//
-//  acts
-//
-//  val indices = acts.argmaxn2(num)
-//}
 
 interface TypedTestLike<A: Number>: TestOrLoader {
     fun numberOfImages(): ULong
     fun imageAtIndex(i: Int): DeephyImage<A>
     override val test: Test<A>
     override val dtype: DType<A>
-
 }

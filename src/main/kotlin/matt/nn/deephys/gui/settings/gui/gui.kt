@@ -21,7 +21,7 @@ import matt.gui.mstage.WMode.CLOSE
 import matt.gui.option.EnumSetting
 import matt.gui.option.SettingsData
 import matt.lang.assertions.require.requireNull
-import matt.lang.go
+import matt.lang.common.go
 import matt.nn.deephys.gui.global.deephyButton
 import matt.nn.deephys.gui.global.deephyRadioButton
 import matt.nn.deephys.gui.global.deephysText
@@ -50,7 +50,7 @@ class SettingsWindow(settings: DeephysSettingsController) : MStage() {
             wMode = CLOSE,
             EscClosable = true,
             decorated = true,
-            title = "Deephys Options",
+            title = "Deephys Options"
         ).applyTo(this, SettingsPane(settings))
         width = 1000.0
     }
@@ -59,39 +59,40 @@ class SettingsWindow(settings: DeephysSettingsController) : MStage() {
         setupFor(settings)
     }
 
-    fun button(receiver: NodeWrapper) = receiver.deephyButton {
+    fun button(receiver: NodeWrapper) =
+        receiver.deephyButton {
 
-        graphic = ImageViewWrapper(gearImage.await()).apply {
-            isPreserveRatio = true
-            fitWidth = 25.0
-        }
-        setOnAction {
-            this@SettingsWindow.initStyle(StageStyle.DECORATED)
-            if (!this@SettingsWindow.isShowing) {
-                if (this@SettingsWindow.owner == null) {
-                    receiver.stage?.go {
-                        this@SettingsWindow.initOwner(it)
-                    }
-
+            graphic =
+                ImageViewWrapper(gearImage.await()).apply {
+                    isPreserveRatio = true
+                    fitWidth = 25.0
                 }
-                println("waiting...")
-                this@SettingsWindow.showAndWait()
-                println("done waiting")
+            setOnAction {
+                this@SettingsWindow.initStyle(StageStyle.DECORATED)
+                if (!this@SettingsWindow.isShowing) {
+                    if (this@SettingsWindow.owner == null) {
+                        receiver.stage?.go {
+                            this@SettingsWindow.initOwner(it)
+                        }
+                    }
+                    println("waiting...")
+                    this@SettingsWindow.showAndWait()
+                    println("done waiting")
+                }
+            }
+        }
+}
+
+
+fun <E : Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) =
+    rec.apply {
+        val tm = createBoundToggleMechanism()
+        cls.java.enumConstants.forEach {
+            deephyRadioButton((it as Enum<*>).name, tm, it) {
+                isSelected = prop.value == it
             }
         }
     }
-
-}
-
-
-fun <E : Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) = rec.apply {
-    val tm = createBoundToggleMechanism()
-    cls.java.enumConstants.forEach {
-        deephyRadioButton((it as Enum<*>).name, tm, it) {
-            isSelected = prop.value == it
-        }
-    }
-}
 
 class SettingsPane(override val settings: DeephysSettingsController) : VBoxWrapperImpl<NodeWrapper>(), DeephysNode {
     companion object {
@@ -110,14 +111,15 @@ class SettingsPane(override val settings: DeephysSettingsController) : VBoxWrapp
         val memSafeSettings = settings
 
         h {
-            val tv = treeview<SettingsData> {
-                root = TreeItemWrapper(memSafeSettings)
-                populate {
-                    it.value.sections.map { it as SettingsData }
+            val tv =
+                treeview<SettingsData> {
+                    root = TreeItemWrapper(memSafeSettings)
+                    populate {
+                        it.value.sections.map { it as SettingsData }
+                    }
+                    root!!.expandAll()
+                    select(root!!.node)
                 }
-                root!!.expandAll()
-                select(root!!.node)
-            }
             v {
                 fun update(selection: TreeItem<SettingsData>?) {
                     clear()

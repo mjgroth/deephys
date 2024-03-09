@@ -8,7 +8,6 @@ import matt.codegen.tex.tex
 import matt.collect.set.contents.Contents
 import matt.lang.assertions.require.requireEquals
 import matt.lang.function.Dsl
-import matt.log.profile.stopwatch.tic
 import matt.math.numalg.precision.withPrecision
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
@@ -30,23 +29,22 @@ abstract class TestComputeInput<O> : ComputeInput<O, TestRAMCache>()
 
 data class DescendingArgMaxMax<A : Number>(
     private val neuron: InterTestNeuron,
-    private val test: TypedTestLike<A>,
+    private val test: TypedTestLike<A>
 ) : TestComputeInput<List<ImageIndex>>() {
-//    override val cacheManager get() = test.testRAMCache
 
     context(TestRAMCache)
-    override fun compute(): List<ImageIndex> = run {
-        val theTest = test.test
-        val acts = theTest.activationsByNeuron[neuron]
-        val indices = test.dtype.wrap(acts).argmaxn2(
-            MAX_NUM_IMAGES_IN_TOP_IMAGES, skipInfinite = true, skipNaN = true, skipZero = true
-        )
-        indices.sortedByDescending {
-            acts[it].toDouble()
-        }.map { ImageIndex(it) }
-    }
-
-
+    override fun compute(): List<ImageIndex> =
+        run {
+            val theTest = test.test
+            val acts = theTest.activationsByNeuron[neuron]
+            val indices =
+                test.dtype.wrap(acts).argmaxn2(
+                    MAX_NUM_IMAGES_IN_TOP_IMAGES, skipInfinite = true, skipNaN = true, skipZero = true
+                )
+            indices.sortedByDescending {
+                acts[it].toDouble()
+            }.map { ImageIndex(it) }
+        }
 }
 
 data class TopImages<A : Number>(
@@ -55,44 +53,43 @@ data class TopImages<A : Number>(
     private val num: Int
 ) : TestComputeInput<List<ImageIndex>>() {
 
-//    override val cacheManager get() = test.testRAMCache
 
     context(TestRAMCache)
-    override fun compute(): List<ImageIndex> = DescendingArgMaxMax(
-        neuron = neuron, test = test
-    )().take(num)
+    override fun compute(): List<ImageIndex> =
+        DescendingArgMaxMax(
+            neuron = neuron, test = test
+        )().take(num)
 }
 
 
 data class TopCategories<N : Number>(
     val neuron: InterTestNeuron,
-    private val test: TypedTestLike<N>,
+    private val test: TypedTestLike<N>
 ) : TestComputeInput<List<Pair<Category, RawActivation<*, *>>>>() {
 
-//    override val cacheManager get() = test.testRAMCache
 
     context(TestRAMCache)
     override fun compute(): List<Pair<Category, RawActivation<*, *>>> {
-        val t = tic("TopCategories for $neuron")
-        t.tic("starting to get top categories")
         val theTest = test.test
         val dtype = theTest.dtype
         val acts = theTest.activationsByNeuron[neuron]
         val activationsByCategory = mutableMapOf<Category, MutableList<N>>()
         dtype.wrap(acts).forEachIndexed { idx, act ->
             val cat = theTest.imageAtIndex(idx).category
-            val list = activationsByCategory.getOrPut(cat) {
-                mutableListOf()
-            }
+            val list =
+                activationsByCategory.getOrPut(cat) {
+                    mutableListOf()
+                }
             list.add(act)
         }
-        val meanActsByCat = activationsByCategory.mapValues {
-            dtype.mean(it.value)
-        }
-        val result = meanActsByCat.entries.sortedByDescending { it.value.toDouble() }.take(5).map {
-            it.key to test.dtype.rawActivation(it.value)
-        }
-        t.toc("got result")
+        val meanActsByCat =
+            activationsByCategory.mapValues {
+                dtype.mean(it.value)
+            }
+        val result =
+            meanActsByCat.entries.sortedByDescending { it.value.toDouble() }.take(5).map {
+                it.key to test.dtype.rawActivation(it.value)
+            }
         return result
     }
 }
@@ -114,20 +111,20 @@ data class TopNeurons<N : Number>(
     val images: Contents<DeephyImage<N>>,
     val layer: InterTestLayer,
     private val test: TypedTestLike<N>,
-    private val denomTest: TypedTestLike<N>?,/*val normalized: Boolean,*/
+    private val denomTest: TypedTestLike<N>?, /*val normalized: Boolean,*/
     val forcedNeuronIndices: List<Int>? = null
 ) : TestComputeInput<List<NeuronWithActivation<N>>>(), TopNeuronsCalcType {
 
     /*small possibility of memory leaks when images is empty, but this is still way better than before*/
-//    override val cacheManager get() = images.firstOrNull()?.testLoader?.testRAMCache ?: FakeCacheManager
 
     context (TestRAMCache)
     override fun compute(): List<NeuronWithActivation<N>> {
         if (images.isEmpty() && forcedNeuronIndices == null) return listOf()
 
-        val neurons = forcedNeuronIndices?.let {
-            it.map { layer.neurons[it] }
-        } ?: layer.neurons
+        val neurons =
+            forcedNeuronIndices?.let {
+                it.map { layer.neurons[it] }
+            } ?: layer.neurons
 
         val dType = test.dtype
         if (denomTest != null) {
@@ -135,33 +132,34 @@ data class TopNeurons<N : Number>(
         }
 
 
-        val neuronsWithActs = neurons.map { neuron ->
-            val act = if (denomTest != null) with(FakeCacheManager) {
-                ActivationRatioCalc(
-                    numTest = test, denomTest = denomTest, neuron = neuron, images = images
-                )()
+        val neuronsWithActs =
+            neurons.map { neuron ->
+                val act =
+                    if (denomTest != null) with(FakeCacheManager) {
+                        ActivationRatioCalc(
+                            numTest = test, denomTest = denomTest, neuron = neuron, images = images
+                        )()
+                    }
+                    else if (images.isEmpty()) neuron.maxActivationIn(test)
+                    else neuron.averageActivation(images, dType = dType)
+                NeuronWithActivation(neuron, act)
             }
-            else if (images.isEmpty()) neuron.maxActivationIn(test)
-            else neuron.averageActivation(images, dType = dType)
-            NeuronWithActivation(neuron, act)
-        }
 
 
 
         return if (forcedNeuronIndices == null) {
-            val r = neuronsWithActs.filterNot {
-                it.activation.isNaN || it.activation.isInfinite || it.activation.isZero
-            }.sortedByDescending {
-                it.activation.value.toDouble()
-            }.take(NUM_TOP_NEURONS)
+            val r =
+                neuronsWithActs.filterNot {
+                    it.activation.isNaN || it.activation.isInfinite || it.activation.isZero
+                }.sortedByDescending {
+                    it.activation.value.toDouble()
+                }.take(NUM_TOP_NEURONS)
 
             r
         } else {
             val r = neuronsWithActs
             r
         }
-
-
     }
 }
 
@@ -173,13 +171,25 @@ data class ActivationRatioCalc<A : Number>(
     private val neuron: InterTestNeuron
 ) : FakeCacheComputeInput<Activation<A, *>>()  /*because this is taking up way too much memory*/ {
 
-//    override val cacheManager get() = FakeCacheManager
-    /*this ComputeCache was taking up a TON of memory.*//*override val cacheManager get() = numTest.testRAMCache*/ /*could be either one.*/ /*small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
+    /*this ComputeCache was taking up a TON of memory.
+
+
+
+
+
+
+    override val cacheManager get() = numTest.testRAMCache
+
+
+    could be either one.
+
+
+    small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
 
     companion object {
         sealed interface ActivationRatioNumerator
-        class SINGLE_IMAGE(val id: Int) : ActivationRatioNumerator
+        class SingleImage(val id: Int) : ActivationRatioNumerator
         enum class MiscActivationRatioNumerator : ActivationRatioNumerator {
             IMAGE_COLLECTION, MAX
         }
@@ -188,26 +198,29 @@ data class ActivationRatioCalc<A : Number>(
         fun latexTechnique(num: ActivationRatioNumerator): TeXDSL {
             val denom: Dsl<TeXDSL> = { text("max activation of this neuron in $NORMALIZER_BUTTON_NAME") }
             return when (num) {
-                MAX              -> tex {
-                    frac(
-                        num = { text("max activation of this neuron in this test") },
-                        denom = denom
-                    )
-                }
+                MAX              ->
+                    tex {
+                        frac(
+                            num = { text("max activation of this neuron in this test") },
+                            denom = denom
+                        )
+                    }
 
-                is SINGLE_IMAGE  -> tex {
-                    frac(
-                        num = { text("raw activation of this neuron for image ${num.id}") },
-                        denom = denom
-                    )
-                }
+                is SingleImage ->
+                    tex {
+                        frac(
+                            num = { text("raw activation of this neuron for image ${num.id}") },
+                            denom = denom
+                        )
+                    }
 
-                IMAGE_COLLECTION -> tex {
-                    frac(
-                        num = { text("average activation of this neuron for selected images") },
-                        denom = denom
-                    )
-                }
+                IMAGE_COLLECTION ->
+                    tex {
+                        frac(
+                            num = { text("average activation of this neuron for selected images") },
+                            denom = denom
+                        )
+                    }
             } * 100
         }
     }
@@ -216,23 +229,23 @@ data class ActivationRatioCalc<A : Number>(
     override fun compute(): Activation<A, *> {
         println("make this a lazy val so I don't need to make params above vals")
         val dType = numTest.dtype
-        val r = if (images.isEmpty()) {
-            if (numTest == denomTest) dType.alwaysOneActivation()
-            else {
-                val num = numTest.test.maxActivations[neuron]
-                val denom = denomTest.test.maxActivations[neuron]
+        val r =
+            if (images.isEmpty()) {
+                if (numTest == denomTest) dType.alwaysOneActivation()
+                else {
+                    val num = numTest.test.maxActivations[neuron]
+                    val denom = denomTest.test.maxActivations[neuron]
 
-                val n = dType.div(num, denom)
-                dType.activationRatio(n)
+                    val n = dType.div(num, denom)
+                    dType.activationRatio(n)
+                }
+            } else {
+                val num = neuron.averageActivation(images, dType = dType).value
+                val denom = denomTest.test.maxActivations[neuron]
+                dType.activationRatio(dType.div(num, denom))
             }
-        } else {
-            val num = neuron.averageActivation(images, dType = dType).value
-            val denom = denomTest.test.maxActivations[neuron]
-            dType.activationRatio(dType.div(num, denom))
-        }
         return r
     }
-
 }
 
 data class ImageSoftMaxDenom<N : Number>(
@@ -240,7 +253,6 @@ data class ImageSoftMaxDenom<N : Number>(
     private val testLoader: TestOrLoader
 ) : TestComputeInput<N>() {
 
-//    override val cacheManager get() = testLoader.testRAMCache
 
     context(TestRAMCache)
     override fun compute(): N {
@@ -255,7 +267,6 @@ data class ImageSoftMaxDenom<N : Number>(
         val su = dtype.sum(li)
 
         return su
-
     }
 }
 
@@ -264,7 +275,6 @@ data class ImageTopPredictions<N : Number>(
     private val testLoader: TypedTestLike<N>
 ) : TestComputeInput<List<Pair<Category, N>>>() {
 
-//    override val cacheManager get() = testLoader.testRAMCache
 
     context(TestRAMCache)
     override fun compute(): List<Pair<Category, N>> {
@@ -288,7 +298,6 @@ data class CategoryAccuracy(
     private val testLoader: TypedTestLike<*>
 ) : TestComputeInput<Double?>() {
 
-//    override val cacheManager get() = testLoader.testRAMCache
 
     context(TestRAMCache)
     override fun compute(): Double? {
@@ -298,9 +307,10 @@ data class CategoryAccuracy(
             return null
         }
 
-        val r = images.map {
-            if (testLoader.test.preds.await()[it] == category) 1.0 else 0.0
-        }.let { it.sum() / it.size }
+        val r =
+            images.map {
+                if (testLoader.test.preds.await()[it] == category) 1.0 else 0.0
+            }.let { it.sum() / it.size }
 
         return r
     }
@@ -314,7 +324,6 @@ data class CategoryAccuracy(
                 )
             }%"
         }
-
 }
 
 data class CategoryFalsePositivesSorted<N : Number>(
@@ -322,7 +331,6 @@ data class CategoryFalsePositivesSorted<N : Number>(
     private val testLoader: TypedTestLike<N>
 ) : TestComputeInput<List<DeephyImage<N>>>() {
 
-//    override val cacheManager get() = testLoader.testRAMCache
 
     companion object {
         const val blurb =
@@ -330,19 +338,20 @@ data class CategoryFalsePositivesSorted<N : Number>(
     }
 
     context(TestRAMCache)
-    override fun compute(): List<DeephyImage<N>> = run {
-        testLoader.test.imagesWithoutGroundTruth(category).map {
-            it to testLoader.test.preds.await()[it]
-        }.filter {
-            it.second == category
-        }.map {
-            it.first to ImageTopPredictions(it.first, testLoader)().first()
-        }.sortedBy {
-            it.second.second.toDouble()
-        }.reversed().map {
-            it.first
+    override fun compute(): List<DeephyImage<N>> =
+        run {
+            testLoader.test.imagesWithoutGroundTruth(category).map {
+                it to testLoader.test.preds.await()[it]
+            }.filter {
+                it.second == category
+            }.map {
+                it.first to ImageTopPredictions(it.first, testLoader)().first()
+            }.sortedBy {
+                it.second.second.toDouble()
+            }.reversed().map {
+                it.first
+            }
         }
-    }
 }
 
 data class CategoryFalseNegativesSorted<N : Number>(
@@ -350,7 +359,6 @@ data class CategoryFalseNegativesSorted<N : Number>(
     private val testLoader: TypedTestLike<N>
 ) : TestComputeInput<List<DeephyImage<N>>>() {
 
-//    override val cacheManager get() = testLoader.testRAMCache
 
     companion object {
         const val blurb =
@@ -358,19 +366,20 @@ data class CategoryFalseNegativesSorted<N : Number>(
     }
 
     context(TestRAMCache)
-    override fun compute() = run {
-        testLoader.test.imagesWithGroundTruth(category).map {
-            it to testLoader.test.preds.await()[it]
-        }.filter {
-            it.second != category
-        }.map {
-            it.first to ImageTopPredictions(it.first, testLoader)().first()
-        }.sortedBy {
-            it.second.second.toDouble()
-        }.reversed().map {
-            it.first
+    override fun compute() =
+        run {
+            testLoader.test.imagesWithGroundTruth(category).map {
+                it to testLoader.test.preds.await()[it]
+            }.filter {
+                it.second != category
+            }.map {
+                it.first to ImageTopPredictions(it.first, testLoader)().first()
+            }.sortedBy {
+                it.second.second.toDouble()
+            }.reversed().map {
+                it.first
+            }
         }
-    }
 }
 
 

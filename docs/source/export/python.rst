@@ -13,10 +13,10 @@ Before starting, install our Deephys exporter Python library. This library facil
 
   pip install deephys
 
-Now, let's get started exporting your data  🚀
+Now, let's get started exporting your data  ￰ﾟﾚﾀ
 
-☀️ Defining Your Model
-======================
+￢ﾘﾀ￯ﾸﾏ Defining Your Model
+==========================
 
 We first need to define the model to visualize. Any number of layers to be visualized can be included. To define the model indicate its name, the neuron count per layer. The classification (output) layer needs to be also indicated as it needs to be always included in the visualization.
 
@@ -37,15 +37,15 @@ We first need to define the model to visualize. Any number of layers to be visua
 
 This will create a ``my_net.model`` to be imported into Deephys.
 
-🎏 Export each dataset distributions separately 🎏
-==================================================
+￰ﾟﾎﾏ Export each dataset distributions separately ￰ﾟﾎﾏ
+======================================================
 
-Each dataset distribution that you would like to analyze needs to be exported separately. After exporting all dataset distributions, you can visualize them together using Deephys 🪄.
+Each dataset distribution that you would like to analyze needs to be exported separately. After exporting all dataset distributions, you can visualize them together using Deephys ￰ﾟﾪﾄ.
 
-🤔 How to export one dataset distribution? It is just the following 2 steps:
+￰ﾟﾤﾔ How to export one dataset distribution? It is just the following 2 steps:
 
-1. Extract images 🖼️, categories 🐕, and neural activity 🔥🔥🔥
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Extract images ￰ﾟﾖﾼ￯ﾸﾏ, categories ￰ﾟﾐﾕ, and neural activity ￰ﾟﾔﾥ￰ﾟﾔﾥ￰ﾟﾔﾥ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here is all the variables we need to extract for each data distribution:
 
@@ -57,13 +57,13 @@ Here is all the variables we need to extract for each data distribution:
   
 All these variables can be Python lists or numpy arrays.
 
-🤯 IMPORTANT: Make sure that the order of the images is aligned with the order of the groundtruth and the neural activity.
-🤯 If you want to visualize a convolutional layer or a transformer, please see this for options (TBD).
+￰ﾟﾤﾯ IMPORTANT: Make sure that the order of the images is aligned with the order of the groundtruth and the neural activity.
+￰ﾟﾤﾯ If you want to visualize a convolutional layer or a transformer, please see this for options (TBD).
 
 We will also need the ``category_names``, which is a list of strings indicating the name of each category (Dimensions: ``[#categories]``).
 
-2. Convert the data to a Deephys-compatible format ✨
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Convert the data to a Deephys-compatible format ￢ﾜﾨ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We are now ready to convert the data in a Deephys-compatible format. Just plug all the variables obtained in step 1 to our Deephys export function in the following format:
 
@@ -87,4 +87,4 @@ Note that ``dp_model`` is the model that was defined at the beginning of the pro
 
 Finally, ``distribution.save()`` will create a file called ``Data_Distribution_1.test``, which can visualized in Deephys.
 
-🎏 Remember to follow step 1 and 2 for each dataset distribution separately. This will generate a different visualization file for each distribution that can then be visualized in Deephys all together.
+￰ﾟﾎﾏ Remember to follow step 1 and 2 for each dataset distribution separately. This will generate a different visualization file for each distribution that can then be visualized in Deephys all together.

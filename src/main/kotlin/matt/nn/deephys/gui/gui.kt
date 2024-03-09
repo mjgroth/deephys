@@ -6,13 +6,13 @@ import javafx.geometry.Pos.TOP_CENTER
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority.ALWAYS
+import kotlinx.coroutines.runBlocking
 import matt.async.thread.daemon
 import matt.async.thread.pool.DaemonPoolExecutor
 import matt.exec.app.myVersion
-import matt.file.commons.LogContext
-import matt.file.commons.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
-import matt.file.ext.createTempFile
-import matt.file.ext.mkFold
+import matt.file.commons.desktop.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
+import matt.file.commons.logctx.LogContext
+import matt.file.ext.j.mkFold
 import matt.file.toJioFile
 import matt.fx.control.fxapp.DEFAULT_THROW_ON_APP_THREAD_THROWABLE
 import matt.fx.control.inter.graphic
@@ -47,12 +47,11 @@ import matt.image.icon.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.atomic.AtomicInt
-import matt.lang.err
+import matt.lang.common.err
+import matt.lang.j.sync
 import matt.lang.model.file.MacFileSystem
-import matt.lang.shutdown.CancellableShutdownTask
-import matt.lang.shutdown.MyShutdownContext
-import matt.lang.sync
-import matt.lang.sync.SimpleReferenceMonitor
+import matt.lang.shutdown.TypicalShutdownContext
+import matt.lang.sync.common.SimpleReferenceMonitor
 import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.gui.DeephysArg.`erase-settings`
@@ -72,11 +71,12 @@ import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.init.warmupFxComponents
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
-import matt.obs.prop.BindableProperty
+import matt.obs.prop.writable.BindableProperty
 import matt.obs.subscribe.Pager
-import matt.rstruct.loader.systemResourceLoader
-import matt.rstruct.modId
+import matt.rstruct.desktop.modId
+import matt.rstruct.loader.desktop.systemResourceLoader
 import java.net.URI
+import kotlin.io.path.outputStream
 
 val DEEPHY_USER_DATA_DIR by lazy {
     PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.toJioFile().mkFold("Deephys")
@@ -93,11 +93,11 @@ typealias DeephysArgs = List<DeephysArg>
 
 class DeephysApp {
 
-    context(MyShutdownContext<CancellableShutdownTask>)
+    context(TypicalShutdownContext)
     fun boot2(
         settingsNode: DeephySettingsNode,
         args: DeephysArgs,
-        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE,
+        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
     ): Unit =
         boot(
             args = args,
@@ -105,7 +105,7 @@ class DeephysApp {
             throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
         )
 
-    context(MyShutdownContext<CancellableShutdownTask>)
+    context(TypicalShutdownContext)
     /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: DeephysArgs,
@@ -122,27 +122,16 @@ class DeephysApp {
         } else {
             warmupJvmThreading()
 
-//            TEMP_DEBUG_LOG_FILE.appendln("boot1")
             daemon(name = "Stage Title Loader") {
-//                TEMP_DEBUG_LOG_FILE.appendln("boot2")
                 try {
-//                    TEMP_DEBUG_LOG_FILE.appendln("boot3")
                     stageTitle.putLoadedValue("${modId.appName} $myVersion")
-//                    TEMP_DEBUG_LOG_FILE.appendln("boot4")
                 } finally {
-//                    TEMP_DEBUG_LOG_FILE.appendln("boot5")
                     if (!stageTitle.isDoneOrCancelled()) {
-//                        TEMP_DEBUG_LOG_FILE.appendln("boot5.5")
                         stageTitle.cancel("${Thread.currentThread().name} failed")
-//                        TEMP_DEBUG_LOG_FILE.appendln("boot5.6")
                     } else {
-//                        TEMP_DEBUG_LOG_FILE.appendln("boot5.7")
                     }
-//                    TEMP_DEBUG_LOG_FILE.appendln("boot6")
                 }
-//                TEMP_DEBUG_LOG_FILE.appendln("boot7")
             }
-//            TEMP_DEBUG_LOG_FILE.appendln("boot8")
 
             daemon("initializeWhatICan Thread") {
                 initializeWhatICan()
@@ -169,8 +158,6 @@ class DeephysApp {
                     fakeSettingToForceLoading.value = -fakeSettingToForceLoading.value
                     println("saved with new class version")
                 }
-
-
             }
 
             startDeephyApp(
@@ -179,8 +166,6 @@ class DeephysApp {
                 openedNewVersion = openedNewVersion,
                 throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
             )
-
-
         }
     }
 
@@ -206,7 +191,8 @@ class DeephysApp {
 
     fun openZooDemo(demo: ZooExample) {
 
-        if (!TheInternet().isAvailable()) {
+
+        if (runBlocking {  !TheInternet().isAvailable() }) {
             popupWarning("No internet connection")
             return
         }
@@ -223,27 +209,11 @@ class DeephysApp {
 
         val monitor = SimpleReferenceMonitor()
 
-        val modelFile = pool.submit {
-            with(MacFileSystem) {
-                val f = createTempFile("model_${demo.name}", suffix = "")
-                modelURL.openStream().use { downloadStream ->
-                    f.outputStream().use { writeStream ->
-                        downloadStream.transferTo(writeStream)
-                    }
-                }
-                done.incrementAndGet()
-                monitor.sync {
-                    progress v done.get().toDouble() / total
-                }
-                f
-            }
-        }
-
-        val testFiles = testURLs.mapIndexed { i, testURL ->
+        val modelFile =
             pool.submit {
                 with(MacFileSystem) {
-                    val f = createTempFile("test_$i", suffix = "")
-                    testURL.openStream().use { downloadStream ->
+                    val f = matt.file.ext.j.createTempFile("model_${demo.name}", suffix = "")
+                    modelURL.openStream().use { downloadStream ->
                         f.outputStream().use { writeStream ->
                             downloadStream.transferTo(writeStream)
                         }
@@ -255,7 +225,25 @@ class DeephysApp {
                     f
                 }
             }
-        }
+
+        val testFiles =
+            testURLs.mapIndexed { i, testURL ->
+                pool.submit {
+                    with(MacFileSystem) {
+                        val f = matt.file.ext.j.createTempFile("test_$i", suffix = "")
+                        testURL.openStream().use { downloadStream ->
+                            f.outputStream().use { writeStream ->
+                                downloadStream.transferTo(writeStream)
+                            }
+                        }
+                        done.incrementAndGet()
+                        monitor.sync {
+                            progress v done.get().toDouble() / total
+                        }
+                        f
+                    }
+                }
+            }
 
 
 
@@ -265,9 +253,9 @@ class DeephysApp {
 
             deephysLabel("Downloading ${demo.name}...")
 
-            val prog = progressbar {
-
-            }
+            val prog =
+                progressbar {
+                }
 
             deephysLabel("Loading Files... (0/$total)") {
                 progress.nonBlockingFXWatcher().onChange {
@@ -284,14 +272,11 @@ class DeephysApp {
                     }
                 }
             }
-
-
         }.openInNewWindow(
             showMode = SHOW_AND_WAIT,
             wMode = NOTHING,
             alwaysOnTop = true
         ) {
-
         }
 
         modelURL.openStream()
@@ -299,7 +284,7 @@ class DeephysApp {
         /*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
     }
 
-    context(MyShutdownContext<CancellableShutdownTask>)
+    context(TypicalShutdownContext)
     fun startDeephyApp(
         t: Stopwatch? = null,
         settingsNode: DeephySettingsNode,
@@ -312,7 +297,6 @@ class DeephysApp {
 
         println("stage123=$stage")
 
-//        TEMP_DEBUG_LOG_FILE.appendln("startDeephyApp 1")
 
         warmupFxComponents(settingsNode.settings)
 
@@ -340,12 +324,6 @@ class DeephysApp {
         }
 
 
-//        TEMP_DEBUG_LOG_FILE.appendln("startDeephyApp 2: ${Thread.currentThread().name},${Thread.currentThread().id},${Thread.currentThread().uncaughtExceptionHandler}")
-
-
-//        unsafeErr("test error")
-
-//        TEMP_DEBUG_LOG_FILE.appendln("startDeephyApp 3")
 
         stage.icons.addAll(
             ICON_SIZES.map {
@@ -370,15 +348,17 @@ class DeephysApp {
 
             val settButton = SettingsWindow(settingsNode.settings).button(this)
 
-            navBox = NavBox(this@DeephysApp).apply {
-                visibleAndManaged = false
-            }
+            navBox =
+                NavBox(this@DeephysApp).apply {
+                    visibleAndManaged = false
+                }
 
 
-            visBox = VisBox(
-                app = this@DeephysApp,
-                settings = settingsNode.settings
-            )
+            visBox =
+                VisBox(
+                    app = this@DeephysApp,
+                    settings = settingsNode.settings
+                )
 
 
             hotkeys {
@@ -469,19 +449,19 @@ class DeephysApp {
             }
         }
 
-        /*not currently using this, because after making scroll bars transparet I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G */
-        /*  scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/
+        /*not currently using this, because after making scroll bars transparet I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G
+
+
+          scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/
 
         testReadyScene.putLoadedValue(scene!!)
 
         println("put loaded scene")
 
         VersionChecker.checkForUpdatesInBackground()
-
     }.runBlocking(
         logContext = DEEPHYS_LOG_CONTEXT,
         t = t,
         throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
     )
-
 }

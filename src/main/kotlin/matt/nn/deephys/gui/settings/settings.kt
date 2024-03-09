@@ -6,7 +6,7 @@ import matt.async.thread.ThreadReport
 import matt.gui.option.SettingsData
 import matt.lang.assertions.require.requireNull
 import matt.lang.file.toJFile
-import matt.log.report.MemReport
+import matt.log.report.desktop.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
 import matt.nn.deephys.state.DeephyState
 import matt.obs.hold.extra.VersionedTypedObsHolderSerializer
@@ -17,15 +17,18 @@ import java.awt.Desktop
 
 class DeephySettingsNode : ObsPrefNode(
     "sinhalab.deephys.settings",
-    oldNames = listOf(
-        "sinhalab.deephy.settings"
-    ),
-    oldKeys = listOf(
-        "normalizeTopNeuronActivations",
-    ),
-    json = Json {
-        ignoreUnknownKeys = true
-    }
+    oldNames =
+        listOf(
+            "sinhalab.deephy.settings"
+        ),
+    oldKeys =
+        listOf(
+            "normalizeTopNeuronActivations"
+        ),
+    json =
+        Json {
+            ignoreUnknownKeys = true
+        }
 ) {
     companion object {
         private var instance: DeephySettingsNode? = null
@@ -41,7 +44,6 @@ class DeephySettingsNode : ObsPrefNode(
     val settings by obsObj {
         DeephysSettingsController()
     }
-
 }
 
 const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
@@ -83,7 +85,6 @@ class DeephysSettingsController : SettingsData("Main Settings") {
 
 
     val debug by registeredSection(DebugSettings())
-
 }
 
 class AppearanceSettings : SettingsData("Appearance") {
@@ -139,45 +140,49 @@ class DebugSettings : SettingsData("Debug") {
         tooltip = "Extra logging to standard out. May impact performance."
     )
 
-    val resetSettings = actionNotASetting(
-        label = "Reset all settings to default",
-        tooltip = "Reset all settings to default",
-    ) {
-        settings.forEach {
-            it.resetToDefault()
+    val resetSettings =
+        actionNotASetting(
+            label = "Reset all settings to default",
+            tooltip = "Reset all settings to default"
+        ) {
+            settings.forEach {
+                it.resetToDefault()
+            }
         }
-    }
 
-    val deleteState = actionNotASetting(
-        label = "Delete State",
-        tooltip = "Delete State",
-    ) {
-        DeephyState.delete()
-        println("model=${DeephyState.model.value}")
-        println("tests=${DeephyState.tests.value?.elementsToString()}")
-    }
-
-
-    val printRamInfo = actionNotASetting(
-        label = "Print RAM info to console",
-        tooltip = "Print RAM info to console",
-    ) {
-        println(MemReport())
-    }
+    val deleteState =
+        actionNotASetting(
+            label = "Delete State",
+            tooltip = "Delete State"
+        ) {
+            DeephyState.delete()
+            println("model=${DeephyState.model.value}")
+            println("tests=${DeephyState.tests.value?.elementsToString()}")
+        }
 
 
-    val printThreadInfo = actionNotASetting(
-        label = "Print thread info to console",
-        tooltip = "Print thread info to console",
-    ) {
-        println(ThreadReport())
-    }
+    val printRamInfo =
+        actionNotASetting(
+            label = "Print RAM info to console",
+            tooltip = "Print RAM info to console"
+        ) {
+            println(MemReport())
+        }
 
-    val openLogFolder = actionNotASetting(
-        label = "Open Log Folder",
-        tooltip = "Open Log Folder",
-    ) {
-        Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder.toJFile())
-    }
 
+    val printThreadInfo =
+        actionNotASetting(
+            label = "Print thread info to console",
+            tooltip = "Print thread info to console"
+        ) {
+            println(ThreadReport())
+        }
+
+    val openLogFolder =
+        actionNotASetting(
+            label = "Open Log Folder",
+            tooltip = "Open Log Folder"
+        ) {
+            Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder.toJFile())
+        }
 }

@@ -14,6 +14,7 @@ import matt.lang.model.file.FsFile
 import matt.nn.deephys.load.async.AsyncLoader
 import matt.obs.bind.binding
 import matt.obs.prop.ObsVal
+import kotlin.io.path.readBytes
 import kotlin.time.Duration
 
 sealed interface CborSyncLoadResult<T>
@@ -34,12 +35,12 @@ inline fun <reified T: Any> JioFile.loadCbor(): CborSyncLoadResult<T> =
 fun <T> EventTargetWrapper.loadSwapper(
     prop: ObsVal<CborSyncLoadResult<T>?>,
     nullMessage: String = "please select a file",
-    op: T.()->NodeWrapper
+    op: T.() -> NodeWrapper
 ) = swapper(prop, nullMessage) {
     when (this) {
         is FileNotFound -> TextWrapper("$f not found")
         is ParseError   -> TextWrapper("parse error: $message")
-        is Loaded<T>    -> op(this.data)
+        is Loaded<T>    -> op(data)
     }
 }
 
@@ -48,7 +49,7 @@ fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
     nullMessage: String = "please select a file",
     fadeOutDur: Duration? = null,
     fadeInDur: Duration? = null,
-    op: T.()->NodeWrapper
+    op: T.() -> NodeWrapper
 ) = swapper(loader, nullMessage) {
     VBoxWrapperImpl<NodeWrapper>().also {
 

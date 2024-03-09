@@ -18,16 +18,15 @@ class DeephysTabPane: VBoxW() {
 
     val toggleGroup = ToggleMechanism<Lazy<NodeWrapper>>()
 
-    val tabBar = h {
+    val tabBar =
+        h {
+        }
 
+    val contentBox =
+        v {
+        }
 
-    }
-
-    val contentBox = v {
-
-    }
-
-    fun deephysLazyTab(label: String, op: ()->NodeWrapper): ToggleButtonWrapper {
+    fun deephysLazyTab(label: String, op: () -> NodeWrapper): ToggleButtonWrapper {
         val lazyContent = lazy { op() }
         return tabBar.deephyToggleButton(label, group = toggleGroup, value = lazyContent) {
             setupSelectionColor(DeephysPalette.deephysSelectGradient)
@@ -41,6 +40,5 @@ class DeephysTabPane: VBoxW() {
             }
         }
     }
-
 }
 

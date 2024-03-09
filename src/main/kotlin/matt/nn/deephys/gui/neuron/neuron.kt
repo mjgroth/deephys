@@ -11,8 +11,8 @@ import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.lang.common.go
 import matt.lang.function.Consume
-import matt.lang.go
 import matt.math.langg.arithmetic.op.div
 import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
@@ -41,7 +41,7 @@ import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.not
 import matt.obs.col.olist.sizeProperty
 import matt.obs.math.double.op.times
-import matt.obs.prop.BindableProperty
+import matt.obs.prop.writable.BindableProperty
 import matt.reflect.weak.WeakThing
 import kotlin.math.min
 
@@ -66,11 +66,14 @@ class NeuronView<A : Number>(
         val memSafeSettings = settings
         val weakViewer = viewer.weakRef
         val showing = BindableProperty(2)
-        val progIndicator = progressindicator {
-            visibleAndManagedProp.bindWeakly(showing.weakBinding(this@NeuronView) { _, it ->
-                it < 2
-            })
-        }
+        val progIndicator =
+            progressindicator {
+                visibleAndManagedProp.bindWeakly(
+                    showing.weakBinding(this@NeuronView) { _, it ->
+                        it < 2
+                    }
+                )
+            }
 
         if (showActivationRatio) {
             swapperRNullable(viewer.normalizer) { normalizer ->
@@ -82,18 +85,19 @@ class NeuronView<A : Number>(
                         if (!doneLoading) showing.value -= 1
 
                         @Suppress("UNCHECKED_CAST")
-                        val j = worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
-                            denomTest?.let {
-                                with(viewer.cacheContext) {
-                                    neuron.activationRatio(
-                                        numTest = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
-                                        denomTest = denomTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
-                                    )
-                                }
-                            } ?: neuron.maxActivationIn(
-                                test = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
-                            )
-                        }
+                        val j =
+                            worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
+                                denomTest?.let {
+                                    with(viewer.cacheContext) {
+                                        neuron.activationRatio(
+                                            numTest = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
+                                            denomTest = denomTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>
+                                        )
+                                    }
+                                } ?: neuron.maxActivationIn(
+                                    test = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>
+                                )
+                            }
 
                         j.whenDone { activation ->
                             ensureInFXThreadOrRunLater {
@@ -109,10 +113,7 @@ class NeuronView<A : Number>(
                                             is ActivationRatio     -> ActivationRatioCalc.latexTechnique(MAX)
                                             is RawActivation       -> tex { text("max raw activation of this neuron") }
                                             is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
-
                                         }
-
-
                                     }
                                 }
                                 activation.extraInfo?.go { deephysInfoSymbol(it) }
@@ -131,9 +132,10 @@ class NeuronView<A : Number>(
 
             swapperNullable(viewer.normalizer) {
                 val normalizer = this?.testData?.value?.preppedTest?.awaitRequireSuccessful()
-                val denom = normalizer?.let {
-                    neuron.maxActivationIn(normalizer).value / 100
-                } ?: dtype.one
+                val denom =
+                    normalizer?.let {
+                        neuron.maxActivationIn(normalizer).value / 100
+                    } ?: dtype.one
 
                 val normalizedString = if (normalizer == null) "un-normalized" else "normalized"
 
@@ -154,9 +156,10 @@ class NeuronView<A : Number>(
         }
 
 
-        val noneText = deephysInfoSymbol(
-            "There are no top images. This might happen if all activations are zero, NaN, or infinite"
-        )
+        val noneText =
+            deephysInfoSymbol(
+                "There are no top images. This might happen if all activations are zero, NaN, or infinite"
+            )
         +ImageFlowPane(viewer).apply {
             noneText.visibleAndManagedProp.bindWeakly(
                 children.sizeProperty.eq(0) and progIndicator.visibleProperty.not()
@@ -181,27 +184,25 @@ class NeuronView<A : Number>(
 
                 val doneLoading = localTestLoader.isDoneLoading()
 
-                val topImagesJob = with(viewer.cacheContext) {
-                    if (localTestLoader.isDoneLoading()) {
-                        val ti = with(localTestLoader.testRAMCache) {TopImages(localNeuron, localTestLoader, realNumImages.toInt())()}
-                        object : Donable<List<ImageIndex>> {
-                            override fun whenDone(c: Consume<List<ImageIndex>>) {
-                                c(ti)
+                val topImagesJob =
+                    with(viewer.cacheContext) {
+                        if (localTestLoader.isDoneLoading()) {
+                            val ti = with(localTestLoader.testRAMCache) { TopImages(localNeuron, localTestLoader, realNumImages.toInt())() }
+                            object : Donable<List<ImageIndex>> {
+                                override fun whenDone(c: Consume<List<ImageIndex>>) {
+                                    c(ti)
+                                }
+                            }
+                        } else {
+                            showing.value -= 1
+                            worker.schedule {
+                                with(localTestLoader.testRAMCache) { TopImages(localNeuron, localTestLoader, realNumImages.toInt())() }
                             }
                         }
-                    } else {
-                        showing.value -= 1
-                        worker.schedule {
-                            with(localTestLoader.testRAMCache){ TopImages(localNeuron, localTestLoader, realNumImages.toInt())()}
-                        }
                     }
-                }
                 topImagesJob.whenDone { topImages ->
                     ensureInFXThreadOrRunLater {
 
-                        //			if (localNeuron.index == 10) {
-                        //			  taball("neuron 10 images", topImages)
-                        //			}
 
                         if (realOldNumImages == null) {
                             topImages.forEach {
@@ -236,20 +237,17 @@ class NeuronView<A : Number>(
                             showing.value += 1
                         }
                     }
-
-
                 }
-
-
             }
 
 
-            val weakThing = WeakNeuronViewRefs<A>().apply {
-                this.testLoader = testLoader
-                this.viewer = viewer
-                this.neuron = neuron
-                this.imFlowPane = imFlowPane
-            }
+            val weakThing =
+                WeakNeuronViewRefs<A>().apply {
+                    this.testLoader = testLoader
+                    this.viewer = viewer
+                    this.neuron = neuron
+                    this.imFlowPane = imFlowPane
+                }
 
 
             update(weakThing.deref()!!, null, numImages.value)
@@ -265,8 +263,6 @@ class NeuronView<A : Number>(
             vgap = gap
         }
     }
-
-
 }
 
 private class WeakNeuronViewRefs<A : Number> : WeakThing<WeakNeuronViewRefs<A>>() {
@@ -275,7 +271,6 @@ private class WeakNeuronViewRefs<A : Number> : WeakThing<WeakNeuronViewRefs<A>>(
     var viewer by weak<DatasetViewer>()
     var neuron by weak<InterTestNeuron>()
     var imFlowPane by weak<ImageFlowPane>()
-
 }
 
 

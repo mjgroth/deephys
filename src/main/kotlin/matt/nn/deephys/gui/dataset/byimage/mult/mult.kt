@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.dataset.byimage.mult
 import matt.collect.set.contents.Contents
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.lang.go
+import matt.lang.common.go
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.deephysText
@@ -43,7 +43,6 @@ class MultipleImagesView<A: Number>(
             prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.4)
             images.take(MAX_IMS).forEach {
                 +DeephyImView(it, viewer, settings = memSafeSettings).apply {
-                    //		  scale.bind(viewer.smallImageScale / it.widthMaybe)
                 }
             }
             if (images.size > MAX_IMS) {

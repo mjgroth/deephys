@@ -2,13 +2,14 @@ package matt.nn.deephys.load.cache.raf
 
 import matt.async.thread.daemon
 import matt.async.thread.executors.ThreadPool
-import matt.lang.NOT_IMPLEMENTED
-import matt.lang.NUM_LOGICAL_CORES
+import matt.file.toJioFile
 import matt.lang.anno.SeeURL
 import matt.lang.atomic.AtomicInt
+import matt.lang.common.NOT_IMPLEMENTED
 import matt.lang.file.toJFile
+import matt.lang.j.NUM_LOGICAL_CORES
 import matt.lang.model.file.FsFile
-import matt.model.flowlogic.latch.SimpleThreadLatch
+import matt.model.flowlogic.latch.j.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
 import matt.nn.deephys.load.cache.raf.deed.DeedImpl
 import matt.time.dur.sleep
@@ -18,6 +19,7 @@ import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.channels.Channel
 import java.nio.channels.CompletionHandler
+import java.nio.channels.SeekableByteChannel
 import java.nio.channels.WritableByteChannel
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption.CREATE_NEW
@@ -38,16 +40,16 @@ class RAFCacheImpl(
     private val f: FsFile
 ) : RAFCache {
 
-    private var fact: Lazy<RAFLike> = lazy {
-        /*AsyncSparseWriter(f)*/
-        /*SparseWriter(f)*/
-        RealRAF(RandomAccessFile(f.toJFile(), "rw"))
-    }
+    private var fact: Lazy<RAFLike> =
+        lazy {
+            /*AsyncSparseWriter(f)
+            SparseWriter(f)*/
+            RealRAF(RandomAccessFile(f.toJFile(), "rw"))
+        }
 
     private val raf: RAFLike
         get() = fact.value
 
-    //  private val channel: FileChannel get() = raf.channel
 
     private var didCloseWriting = false
 
@@ -59,9 +61,10 @@ class RAFCacheImpl(
             (raf as? AsyncSparseWriter)?.awaitAsyncOps()
             raf.close()
         }
-        fact = lazy {
-            RealRAF(RandomAccessFile(f.toJFile(), "r"))
-        }
+        fact =
+            lazy {
+                RealRAF(RandomAccessFile(f.toJFile(), "r"))
+            }
         didCloseWriting = true
     }
 
@@ -69,16 +72,18 @@ class RAFCacheImpl(
 
 
     private var lastDeed: Deed? = null
-    private fun nextDeed(size: Int): Deed = lastDeed?.let {
-        DeedImpl((it as DeedImpl).stopIndexExclusive, size, this, { raf }, { getNextReaderRAF() }, OnlyDeedKey)
-    } ?: DeedImpl(0, size, this, { raf }, { getNextReaderRAF() }, OnlyDeedKey)
+    private fun nextDeed(size: Int): Deed =
+        lastDeed?.let {
+            DeedImpl((it as DeedImpl).stopIndexExclusive, size, this, { raf }, { getNextReaderRAF() }, OnlyDeedKey)
+        } ?: DeedImpl(0, size, this, { raf }, { getNextReaderRAF() }, OnlyDeedKey)
 
     private val agent = object {}
-    fun rent(size: Int) = synchronized(agent) {
-        nextDeed(size).also {
-            lastDeed = it
+    fun rent(size: Int) =
+        synchronized(agent) {
+            nextDeed(size).also {
+                lastDeed = it
+            }
         }
-    }
 
 
     protected fun finalize() {
@@ -87,7 +92,6 @@ class RAFCacheImpl(
         if (fact.isInitialized()) {
             raf.close()
         }
-
     }
 
     private val readerRAFs by lazy {
@@ -107,7 +111,6 @@ class RAFCacheImpl(
         }
         return readRAF
     }
-
 }
 
 interface RAFCache
@@ -133,26 +136,22 @@ sealed class SeekableRAFLike : RAFLike {
     abstract override val channel: WritableByteChannel
     abstract fun seek(pos: Long)
 
-    @Synchronized final
-    override fun write(pos: Long, byte: Int) {
+    @Synchronized final override fun write(pos: Long, byte: Int) {
         seek(pos)
         write(byte)
     }
 
-    @Synchronized final
-    override fun readFully(pos: Long, buff: ByteArray) {
+    @Synchronized final override fun readFully(pos: Long, buff: ByteArray) {
         seek(pos)
         readFully(buff)
     }
 
-    @Synchronized final
-    override fun write(pos: Long, bytes: ByteArray) {
+    @Synchronized final override fun write(pos: Long, bytes: ByteArray) {
         seek(pos)
         write(bytes)
     }
 
-    @Synchronized final
-    override fun write(pos: Long, bytes: ByteArray, srcOffset: Int, srcLen: Int) {
+    @Synchronized final override fun write(pos: Long, bytes: ByteArray, srcOffset: Int, srcLen: Int) {
         seek(pos)
         write(bytes, srcOffset, srcLen)
     }
@@ -192,8 +191,6 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
     override fun write(bytes: ByteArray, srcOffset: Int, srcLen: Int) {
         raf.write(bytes, srcOffset, srcLen)
     }
-
-
 }
 
 
@@ -201,15 +198,16 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
 class SparseWriter(file: FsFile) : SeekableRAFLike() {
 
     companion object {
-        private val options = arrayOf(
-            WRITE,
-            CREATE_NEW,
-            SPARSE
-        )
+        private val options =
+            arrayOf(
+                WRITE,
+                CREATE_NEW,
+                SPARSE
+            )
     }
 
-    override val channel by lazy {
-        Files.newByteChannel(file.toJFile().toPath(), *options)
+    override val channel: SeekableByteChannel by lazy {
+        Files.newByteChannel(file.toJioFile(), *options)
     }
 
     override fun seek(pos: Long) {
@@ -239,14 +237,17 @@ class SparseWriter(file: FsFile) : SeekableRAFLike() {
 }
 
 @SeeURL("https://stackoverflow.com/questions/50191063/java-using-randomaccessfile-after-seek-is-very-slow-what-is-the-reason")
-class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: FsFile) : RAFLike {
+class AsyncSparseWriter(
+    @Suppress("UNUSED_PARAMETER") file: FsFile
+) : RAFLike {
 
     companion object {
-        private val options = setOf(
-            WRITE,
-            CREATE_NEW,
-            SPARSE
-        )
+        private val options =
+            setOf(
+                WRITE,
+                CREATE_NEW,
+                SPARSE
+            )
         private val pool: ExecutorService by lazy { ThreadPool() }
     }
 
@@ -254,8 +255,8 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: FsFile) : RAFLike {
         error("obvious bug where bytes are being written to wrong pos. But might be supper fast if the async part is done right! Maybe try again another time")
     }
 
-    private var startedWrites = AtomicInt()
-    private var finishedWrites = AtomicInt()
+    private val startedWrites = AtomicInt()
+    private val finishedWrites = AtomicInt()
 
     fun markFinishedWriting() {
         val l = SimpleThreadLatch()
@@ -284,8 +285,8 @@ class AsyncSparseWriter(@Suppress("UNUSED_PARAMETER") file: FsFile) : RAFLike {
 
     private var latch: SimpleThreadLatch? = null
 
-    override val channel by lazy {
-        AsynchronousFileChannel.open(file.toJFile().toPath(), options, pool)
+    override val channel: AsynchronousFileChannel by lazy {
+        AsynchronousFileChannel.open(file.toJioFile(), options, pool)
     }
 
 

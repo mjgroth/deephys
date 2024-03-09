@@ -1,7 +1,7 @@
 package matt.nn.deephys.gui.global.color
 
 import javafx.scene.paint.CycleMethod.NO_CYCLE
-import matt.color.rgb
+import matt.color.common.rgb
 import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.style.gradient.linearGradient
 import matt.fx.graphics.wrapper.style.toFXColor
@@ -41,7 +41,6 @@ object DeephysPalette {
             }
         }
     }
-
 }
 
 

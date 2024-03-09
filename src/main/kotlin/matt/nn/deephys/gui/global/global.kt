@@ -57,14 +57,14 @@ import matt.obs.bindings.bool.and
 import matt.obs.bindings.str.ObsS
 import matt.obs.col.olist.toBasicObservableList
 import matt.obs.math.int.ObsI
-import matt.obs.prop.BindableProperty
 import matt.obs.prop.ObsVal
-import matt.obs.prop.Var
+import matt.obs.prop.writable.BindableProperty
+import matt.obs.prop.writable.Var
 import matt.prim.converters.StringConverter
 import matt.prim.str.isInt
 
-/*null because gets in the way of existing animations for pie slices*/
-/*val DEEPHYS_FADE_DUR = 500.milliseconds*/
+/*null because gets in the way of existing animations for pie slices
+val DEEPHYS_FADE_DUR = 500.milliseconds*/
 val DEEPHYS_FADE_DUR = null
 
 fun <E : Any> ET.deephysSpinner(
@@ -75,7 +75,7 @@ fun <E : Any> ET.deephysSpinner(
     viewer: DatasetViewer,
     getCurrent: ObsVal<E?>,
     acceptIf: (E) -> Boolean,
-    navAction: DatasetViewer.(E) -> Unit,
+    navAction: DatasetViewer.(E) -> Unit
 
 ) = run {
     var theValueProp: ObsVal<E>? = null
@@ -86,20 +86,22 @@ fun <E : Any> ET.deephysSpinner(
 
         var badText: ObsB? = null
 
-        val theSpinner = spinner(
-            items = choices.toBasicObservableList(),
-            editable = true,
-            enableScroll = false,
-            converter = converter
-        ) {
+        val theSpinner =
+            spinner(
+                items = choices.toBasicObservableList(),
+                editable = true,
+                enableScroll = false,
+                converter = converter
+            ) {
 
-            autoCommitOnType()
+                autoCommitOnType()
 
-            valueFactory!!.wrapAround = true
+                valueFactory!!.wrapAround = true
 
-            badText = textProperty.binding {
-                it == null || !it.isInt() || it.toInt() !in choices.indices
-            }
+                badText =
+                    textProperty.binding {
+                        it == null || !it.isInt() || it.toInt() !in choices.indices
+                    }
             /*
                   border = FXBorder.solid(Color.TRANSPARENT, 10.0)
                   badText!!.onChange {
@@ -107,33 +109,32 @@ fun <E : Any> ET.deephysSpinner(
                     else FXBorder.solid(Color.TRANSPARENT, 10.0)
                   }*/
 
-            val current = getCurrent.value?.takeIf { acceptIf(it) } ?: defaultChoice()
-            valueFactory!!.value = current
+                val current = getCurrent.value?.takeIf { acceptIf(it) } ?: defaultChoice()
+                valueFactory!!.value = current
 
 
-            val rBlocker = RecursionBlocker()
+                val rBlocker = RecursionBlocker()
 
-            valueFactory!!.valueProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
-                rBlocker.with {
-                    deRefedViewer.navAction(selection)
-                }
-            }
-
-
-
-            getCurrent.onChangeWithWeak(this) { _, newValue ->
-                rBlocker.with {
-                    if (newValue != null && acceptIf(newValue)) {
-                        valueFactory!!.valueProperty v newValue
-                    } else {
-                        valueFactory!!.valueProperty v defaultChoice()
+                valueFactory!!.valueProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
+                    rBlocker.with {
+                        deRefedViewer.navAction(selection)
                     }
                 }
+
+
+
+                getCurrent.onChangeWithWeak(this) { _, newValue ->
+                    rBlocker.with {
+                        if (newValue != null && acceptIf(newValue)) {
+                            valueFactory!!.valueProperty v newValue
+                        } else {
+                            valueFactory!!.valueProperty v defaultChoice()
+                        }
+                    }
+                }
+
+                theValueProp = valueFactory!!.valueProperty
             }
-
-            theValueProp = valueFactory!!.valueProperty
-
-        }
 
 
         deephysLabeledControl(label, theSpinner) {
@@ -148,8 +149,6 @@ fun <E : Any> ET.deephysSpinner(
         deephysText("please input valid integer index between 0 and ${choices.size}") {
             visibleAndManagedProp.bind(viewer.isUnboundToDSet.and(badText!!))
         }
-
-
     } to theValueProp!!
 }
 
@@ -208,13 +207,15 @@ fun EventTargetWrapper.sigFigText(
     tooltip: String,
     op: DeephyText.() -> Unit = {}
 ) = deephysText {
-    textProperty.bindWeakly(sigFigSett.weakBinding(this) { _, it ->
-        when (num) {
-            is Float -> num.withPrecision(it).toString()
-            is Double -> num.withPrecision(it).toString()
-            else -> error("not ready for different dtype")
-        } + numSuffix
-    })
+    textProperty.bindWeakly(
+        sigFigSett.weakBinding(this) { _, it ->
+            when (num) {
+                is Float -> num.withPrecision(it).toString()
+                is Double -> num.withPrecision(it).toString()
+                else -> error("not ready for different dtype")
+            } + numSuffix
+        }
+    )
     veryLazyDeephysTooltip(tooltip, settings)
     op()
 }
@@ -360,7 +361,6 @@ const val DEEPHYS_LATEX_TOOLTIP_SCALE = 0.70
 
 val DEEPHYS_FONT_DEFAULT: Font by lazy {
     Font.font("Georgia")
-
 }
 val DEEPHYS_FONT_MONO by lazy {
     DEEPHYS_FONT_DEFAULT.fixed().copy(family = MONO_FONT.family).fx()

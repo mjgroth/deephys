@@ -8,9 +8,9 @@ import matt.lang.model.file.types.TypedFile
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.Async
 import matt.obs.bindings.bool.ObsB
-import matt.obs.prop.BindableProperty
+import matt.obs.prop.writable.BindableProperty
 
-abstract class AsyncLoader(private val file: TypedFile<Cbor,*>) {
+abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
     val fileFound: ObsB = BindableProperty(file.toJioFile().exists())
     val streamOk: ObsB = BindableProperty(true)
     val parseError = BindableProperty<Exception?>(null)
@@ -92,9 +92,5 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor,*>) {
         fun awaitRequireSuccessful() = (await() as Loaded).value
         fun awaitSuccessfulOrNull() = (await() as? Loaded)?.value
         fun awaitSuccessfulOrMessage() = await().let { (it as? Loaded)?.value ?: (it as Failed).message }
-
-
     }
-
-
 }

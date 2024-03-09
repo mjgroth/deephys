@@ -1,11 +1,11 @@
-package matt.nn.deephys.tester
+package matt.nn.deephys.test.deephys.tester
 
 import javafx.application.Platform
 import matt.async.thread.namedThread
-import matt.file.commons.DEEPHYS_TEST_RESULT_JSON
+import matt.file.common.toAbsLinuxFile
+import matt.file.commons.desktop.DEEPHYS_TEST_RESULT_JSON
 import matt.file.construct.mFile
-import matt.file.ext.mkparents
-import matt.file.toAbsLinuxFile
+import matt.file.ext.j.mkparents
 import matt.file.types.forceType
 import matt.fx.graphics.fxthread.RunLaterReturnLatchManager
 import matt.fx.graphics.fxthread.runLaterReturn
@@ -17,24 +17,15 @@ import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.model.file.MacFileSystem
 import matt.lang.model.file.types.Cbor
-import matt.lang.profiling.IsProfilingWithJProfiler
-import matt.lang.profiling.IsProfilingWithYourKit
 import matt.lang.shutdown.preaper.ProcessReaper
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
-import matt.log.profile.jp.JProfiler
 import matt.log.profile.real.Profiler
 import matt.log.profile.stopwatch.tic
 import matt.log.profile.yk.YourKit
-import matt.log.report.MemReport
-import matt.model.code.errreport.reportAndReThrowErrorsBetter
+import matt.log.report.desktop.MemReport
+import matt.model.code.errreport.common.reportAndReThrowErrorsBetter
 import matt.model.data.byte.mebibytes
-import matt.nn.deephys.DeephysTestData
-import matt.nn.deephys.MAC_MAYBE_MIN_SCREEN_SIZE
-import matt.nn.deephys.NUM_IM_CLICKS
-import matt.nn.deephys.NUM_SLICE_CLICKS
-import matt.nn.deephys.TestDeephys
-import matt.nn.deephys.WAIT_FOR_GUI_INTERVAL
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.DeephysArg.reset
 import matt.nn.deephys.gui.category.pie.CategoryPie.CategorySlice
@@ -43,12 +34,19 @@ import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.gui.viewer.DatasetViewer
 import matt.nn.deephys.load.cache.DeephysCacheManager
+import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.state.DeephyState
-import matt.obs.subscribe.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
+import matt.nn.deephys.test.deephys.DeephysTestData
+import matt.nn.deephys.test.deephys.MAC_MAYBE_MIN_SCREEN_SIZE
+import matt.nn.deephys.test.deephys.NUM_IM_CLICKS
+import matt.nn.deephys.test.deephys.NUM_SLICE_CLICKS
+import matt.nn.deephys.test.deephys.TestDeephys
+import matt.nn.deephys.test.deephys.WAIT_FOR_GUI_INTERVAL
+import matt.obs.subscribe.j.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.prim.str.elementsToString
 import matt.test.assertions.assertTrueLazyMessage
 import matt.test.prop.ManualTests
-import matt.test.prop.TestPerformance
+import matt.test.prop.j.TestPerformance
 import matt.time.dur.sleep
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -57,22 +55,7 @@ import kotlin.time.Duration.Companion.seconds
 
 context(ProcessReaper)
 @OptIn(ExperimentalMattCode::class)
-class DeephysTestSession {
-
-    private val profiler by lazy {
-        val engine = when {
-            IsProfilingWithYourKit -> YourKit
-            IsProfilingWithJProfiler -> JProfiler(snapshotFolder = JProfiler.defaultSnapshotFolder())
-            else -> null
-        }
-
-        Profiler(
-            engine = engine ?: YourKit,
-            enableAll = engine != null
-        ) {
-            engine!!.openSnapshot(it)
-        }
-    }
+class DeephysTestSession(private val profiler: Profiler) {
 
     private val app by lazy {
         DeephysApp()
@@ -116,9 +99,10 @@ class DeephysTestSession {
         if (force || ManualTests.get()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
 
 
-    fun testHasCorrectTitle() = assertEquals(
-        expected = app.stageTitle.await(), actual = mainStage.title
-    )
+    fun testHasCorrectTitle() =
+        assertEquals(
+            expected = app.stageTitle.await(), actual = mainStage.title
+        )
 
     fun testFitsInSmallestScreen() {
         val w = mainStage.width
@@ -135,11 +119,12 @@ class DeephysTestSession {
     }
 
 
-    val sessionList = if (DEEPHYS_TEST_RESULT_JSON.doesNotExist || DEEPHYS_TEST_RESULT_JSON.text.isBlank()) {
-        mutableListOf<TestSession>()
-    } else {
-        DEEPHYS_TEST_RESULT_JSON.loadJson()
-    }
+    val sessionList =
+        if (DEEPHYS_TEST_RESULT_JSON.doesNotExist || DEEPHYS_TEST_RESULT_JSON.text.isBlank()) {
+            mutableListOf<TestSession>()
+        } else {
+            DEEPHYS_TEST_RESULT_JSON.loadJson()
+        }
 
     val mySession = TestSession().also { sessionList.add(it) }
 
@@ -174,11 +159,12 @@ class DeephysTestSession {
             tocAndSampleRam("found dSetViewsBox")
 
 
-            val testViewersAndFiles = runLaterReturn {
-                testData.tests.map {
-                    dSetViewsBox.addTest() to it
+            val testViewersAndFiles =
+                runLaterReturn {
+                    testData.tests.map {
+                        dSetViewsBox.addTest() to it
+                    }
                 }
-            }
             tocAndSampleRam("added tests")
 
             runLaterReturn {
@@ -231,31 +217,34 @@ class DeephysTestSession {
         val firstViewer = viewers.first()
         val secondViewer = viewers[1]
         runLaterReturn {
-            firstViewer.navigateTo(firstViewer.testData.value!!.awaitImage(0))
+            val im0: DeephyImage<*> = firstViewer.testData.value!!.awaitImage(0)
+            firstViewer.navigateTo(im0)
         }
         sleep(WAIT_FOR_GUI_INTERVAL)
         var clicked = 0
         while (clicked < NUM_IM_CLICKS) {
             val firstViewerSelection = firstViewer.imageSelection.value
-            val dIm = firstViewer.recurseSelfAndChildNodes<DeephyImView>().firstOrNull {
-                val im = it.weakIm.deref()!!
-                im != firstViewerSelection
-            } ?: run {
-                val imViews = firstViewer.recurseSelfAndChildNodes<DeephyImView>().toList()
-                error(
-                    "could not find an image different from $firstViewerSelection, all=${
-                        imViews.map { it.weakIm.deref()?.imageID }
-                            .elementsToString()
-                    }, imViews=${imViews.size}"
-                )
-            }
+            val allImViews = firstViewer.recurseSelfAndChildNodes<DeephyImView>()
+            val dIm =
+                allImViews.firstOrNull {
+                    it.weakIm.deref()!! != firstViewerSelection
+                } ?: run {
+                    val imViews = allImViews.toList()
+                    error(
+                        "could not find an image different from $firstViewerSelection, all=${
+                            imViews.map { it.weakIm.deref()?.imageID }
+                                .elementsToString()
+                        }, imViews=${imViews.size}, clicked=$clicked"
+                    )
+                }
             println("clicking an image...")
 
-            val secondViewerImagesBefore: List<Int> = runLaterReturn {
-                secondViewer.recurseSelfAndChildNodes<DeephyImView>().map {
-                    it.weakIm.deref()!!.imageID
-                }.toList()
-            }
+            val secondViewerImagesBefore: List<Int> =
+                runLaterReturn {
+                    secondViewer.recurseSelfAndChildNodes<DeephyImView>().map {
+                        it.weakIm.deref()!!.imageID
+                    }.toList()
+                }
 
             runLaterReturn {
                 dIm.click()
@@ -263,11 +252,12 @@ class DeephysTestSession {
 
             println("clicked")
 
-            val secondViewerImagesAfter: List<Int> = runLaterReturn {
-                secondViewer.recurseSelfAndChildNodes<DeephyImView>().map {
-                    it.weakIm.deref()!!.imageID
-                }.toList()
-            }
+            val secondViewerImagesAfter: List<Int> =
+                runLaterReturn {
+                    secondViewer.recurseSelfAndChildNodes<DeephyImView>().map {
+                        it.weakIm.deref()!!.imageID
+                    }.toList()
+                }
 
             assertNotEquals(secondViewerImagesBefore, secondViewerImagesAfter)
 
@@ -362,8 +352,6 @@ class DeephysTestSession {
             check(profiler.engine is YourKit) {
                 "Programmatic JProfiler memory snapshots do not seem to work from tests, which I think are a bit weird in how they fork from the gradle jvm. Yourkit on the other hand, works perfectly. It is also more automated, and deserves more of my attention as it does the same essential things as JProfiler and in many ways seems to do it way more conveniently."
             }
-            //	  println("sleeping forever 2")
-            //	  sleep(1.days)
             profiler.captureMemorySnapshot()
             "test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is $u"
         }

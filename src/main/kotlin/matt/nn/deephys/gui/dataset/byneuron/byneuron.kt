@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.dataset.byneuron
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.anchor.swapper.Swapper
 import matt.fx.graphics.wrapper.region.RegionWrapper
-import matt.lang.weak.WeakRefInter
+import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.gui.dataset.MainDeephysView
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.deephysNullMessageFact
@@ -23,7 +23,7 @@ class ByNeuronView(
 
     override val control: ObsVal<WeakRefInter<RegionWrapper<*>>?> by lazy {
         children.binding {
-            if (it.isEmpty()) null else (it.filterIsInstance<LayerView>().firstOrNull()?.spinnerThing)
+            if (it.isEmpty()) null else (it.tempDebugCollectionDelegate().filterIsInstance<LayerView>().firstOrNull()?.spinnerThing)
         }
     }
 

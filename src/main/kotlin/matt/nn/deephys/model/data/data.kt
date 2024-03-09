@@ -4,7 +4,7 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.collect.set.contents.contentsOf
 import matt.fx.graphics.wrapper.node.NW
 import matt.lang.assertions.require.requireEquals
-import matt.lang.weak.WeakRefInter
+import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
@@ -73,20 +73,21 @@ data class InterTestNeuron(
 
 
     fun <N : Number> maxActivationIn(
-        test: TypedTestLike<N>,
+        test: TypedTestLike<N>
     ) = test.dtype.rawActivation(test.test.maxActivations[this])
 
     fun <N : Number> activationRatio(
         numTest: TypedTestLike<N>,
-        denomTest: TypedTestLike<N>,
-    ): Activation<N, *> = with(FakeCacheManager) {
-        ActivationRatioCalc(
-            numTest = numTest,
-            images = contentsOf(),
-            denomTest = denomTest,
-            neuron = this@InterTestNeuron
-        )()
-    }
+        denomTest: TypedTestLike<N>
+    ): Activation<N, *> =
+        with(FakeCacheManager) {
+            ActivationRatioCalc(
+                numTest = numTest,
+                images = contentsOf(),
+                denomTest = denomTest,
+                neuron = this@InterTestNeuron
+            )()
+        }
 }
 
 
@@ -96,11 +97,12 @@ value class ImageIndex(val index: Int)
 sealed interface CategorySelection {
 
     companion object {
-        fun stringConverterThatFallsBackToFirst(cats: List<Category>) = object : StringConverter<CategorySelection> {
-            override fun toString(t: CategorySelection): String = t.allCategories.map { it.id }.joinToString()
-            override fun fromString(s: String): CategorySelection =
-                s.toIntOrNull()?.let { i -> cats.firstOrNull { it.id == i } } ?: cats.first()
-        }
+        fun stringConverterThatFallsBackToFirst(cats: List<Category>) =
+            object : StringConverter<CategorySelection> {
+                override fun toString(t: CategorySelection): String = t.allCategories.map { it.id }.joinToString()
+                override fun fromString(s: String): CategorySelection =
+                    s.toIntOrNull()?.let { i -> cats.firstOrNull { it.id == i } } ?: cats.first()
+            }
     }
 
 
@@ -138,9 +140,10 @@ data class Category(
         neuron: InterTestNeuron,
         testLoader: TypedTestLike<A>
     ): RawActivation<A, *> {
-        val acts = testLoader.test.imagesWithGroundTruth(this).map {
-            it.activationFor(neuron).value
-        }
+        val acts =
+            testLoader.test.imagesWithGroundTruth(this).map {
+                it.activationFor(neuron).value
+            }
 
 
         return testLoader.dtype.rawActivation(
@@ -149,12 +152,12 @@ data class Category(
         )
     }
 
-    override fun forTest(test: TestOrLoader): Category = test.test.category(id).also {
-        requireEquals(it.label, label) {
-            "label of category $id of other test doesn't match (${it.label}!=$label)"
+    override fun forTest(test: TestOrLoader): Category =
+        test.test.category(id).also {
+            requireEquals(it.label, label) {
+                "label of category $id of other test doesn't match (${it.label}!=$label)"
+            }
         }
-    }
-
 }
 
 data class CategoryConfusion(
@@ -163,10 +166,11 @@ data class CategoryConfusion(
 ) : CategorySelection {
     override val title = "Category Confusion\n\t-${first.label}\n\t-${second.label}"
     override val primaryCategory = first
-    override val allCategories get() = sequence {
-        yield(first);
-        yield(second)
-    }
+    override val allCategories get() =
+        sequence {
+            yield(first)
+            yield(second)
+        }
     override fun forTest(test: TestOrLoader): CategoryConfusion {
         val firstOther = first.forTest(test)
         val secondOther = second.forTest(test)
