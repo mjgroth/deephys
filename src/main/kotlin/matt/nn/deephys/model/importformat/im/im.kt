@@ -8,10 +8,9 @@ import matt.lang.anno.Open
 import matt.lang.anno.PhaseOut
 import matt.lang.weak.common.lazyWeak
 import matt.lang.weak.weak
-import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
+import matt.nn.deephys.load.async.AsyncLoader.DirectLoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
-import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.DoubleActivationData
 import matt.nn.deephys.load.test.dtype.FloatActivationData
@@ -20,6 +19,7 @@ import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.converters.StringConverter
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
@@ -30,11 +30,11 @@ class DeephyImage<A : Number>(
     val imageID: Int,
     categoryID: Int,
     category: String,
-    val testLoader: TestLoader,
+    val testLoader: TypedTestLike<A>,
     val index: Int,
     val model: Model,
     val features: Map<String, String>?,
-    test: LoadedOrFailedValueSlot<Test<*>>,
+    test: DirectLoadedOrFailedValueSlot<Test<A>>,
     activationsRAF: EvenlySizedRAFCache,
     pixelsRAF: EvenlySizedRAFCache,
     dtype: DType<A> /*just for generic*/
@@ -94,9 +94,9 @@ class DeephyImage<A : Number>(
             override fun decode(bytes: ByteArray): PixelData3 = readPixels(bytes)
         }
 
-    @Suppress("UNCHECKED_CAST")
+
     @PhaseOut
-    private val weakTest = WeakReference(test) as WeakReference<LoadedOrFailedValueSlot<Test<A>>>
+    private val weakTest = WeakReference(test)
 
     val prediction by lazy {
         weakTest.get()!!.awaitRequireSuccessful().preds.await()[this]!!

@@ -6,6 +6,8 @@ import javafx.util.Duration
 import matt.caching.compcache.ComputeCacheContextImpl
 import matt.file.common.toAbsLinuxFile
 import matt.file.construct.mFile
+import matt.file.model.file.types.Cbor
+import matt.file.model.file.types.TypedFile
 import matt.file.types.checkType
 import matt.fx.control.toggle.mech.ToggleMechanism
 import matt.fx.control.wrapper.control.ControlWrapper
@@ -15,8 +17,6 @@ import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.model.file.MacFileSystem
-import matt.lang.model.file.types.Cbor
-import matt.lang.model.file.types.TypedFile
 import matt.math.ranges.step
 import matt.model.data.message.AbsLinuxFile
 import matt.nn.deephys.gui.global.color.DeephysPalette.deephysSelectGradient
@@ -32,7 +32,7 @@ import matt.obs.prop.writable.BindableProperty
 class DSetViewsVBox(
     val model: Model,
     private val settings: DeephysSettingsController
-) : VBoxWrapperImpl<DatasetViewer>() {
+) : VBoxWrapperImpl<DatasetViewer>(childClass = DatasetViewer::class) {
 
     companion object {
         const val BIND_BUTTON_NAME = "Lead"
@@ -55,7 +55,7 @@ class DSetViewsVBox(
 
     operator fun plusAssign(list: List<AbsLinuxFile>) {
         list.forEach {
-            this += (mFile(it.path, MacFileSystem)).checkType()
+            this += (mFile(it.path, MacFileSystem)).checkType(Cbor)
         }
     }
 

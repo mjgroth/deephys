@@ -94,7 +94,7 @@ fun <E : Enum<E>> EnumSetting<E>.createRadioButtons(rec: NodeWrapper) =
         }
     }
 
-class SettingsPane(override val settings: DeephysSettingsController) : VBoxWrapperImpl<NodeWrapper>(), DeephysNode {
+class SettingsPane(override val settings: DeephysSettingsController) : VBoxWrapperImpl<NodeWrapper>(childClass = NodeWrapper::class), DeephysNode {
     companion object {
         private var instance: SettingsPane? = null
     }

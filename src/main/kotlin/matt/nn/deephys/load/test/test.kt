@@ -6,12 +6,12 @@ import matt.cbor.err.CborParseException
 import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.major.txtstr.TextStringReader
 import matt.cbor.read.streamman.cborReader
+import matt.file.model.file.types.Cbor
+import matt.file.model.file.types.TypedFile
 import matt.file.toJioFile
 import matt.lang.assertions.require.requireEquals
 import matt.lang.assertions.require.requireNot
 import matt.lang.common.err
-import matt.lang.model.file.types.Cbor
-import matt.lang.model.file.types.TypedFile
 import matt.log.warn.common.warn
 import matt.model.code.errreport.j.ThrowReport
 import matt.model.obj.single.SingleCall
@@ -28,8 +28,11 @@ import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
+import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
+import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.col.olist.basicMutableObservableListOf
+import matt.obs.prop.writable.BindableProperty
 import matt.prim.str.elementsToString
 import matt.prim.str.mybuild.api.string
 import java.io.IOException
@@ -44,30 +47,26 @@ class TestLoader(
 ) : AsyncLoader(file), TestOrLoader {
 
 
-    override fun isDoneLoading(): Boolean = finishedTest.isDone()
+    override fun isDoneLoading(): Boolean =
+        postDtypeTestLoader.getOrNullIfLoading()?.run {
+            requireLoaded().isDoneLoading()
+        } ?: false
 
     override val test get() = awaitFinishedTest()
-    fun dtypeOrNull() = preppedTest.awaitSuccessfulOrNull()?.dtype
-    override val dtype get() = preppedTest.awaitRequireSuccessful().dtype
-    val preppedTest = LoadedOrFailedValueSlot<PreppedTestLoader<*>>()
-    private val finishedTest = LoadedOrFailedValueSlot<Test<*>>()
+    fun dtypeOrNull() = postDtypeTestLoader.awaitSuccessfulOrNull()?.dtype
+    override val dtype get() = postDtypeTestLoader.awaitRequireSuccessful().dtype
+    fun awaitFinishedTest() = postDtypeTestLoader.await().requireLoaded().awaitFinishedTest()
 
-    val testName = LoadedOrFailedValueSlot<String>()
+    val testName = DirectLoadedOrFailedValueSlot<String>()
 
-    override val finishedLoadingAwaitable = finishedTest
-    val imageSetLoader = ImageSetLoader(this)
-    private val datasetHDCache = imageSetLoader.datasetHDCache
-    fun awaitNonUniformRandomImage() = imageSetLoader.finishedImages.awaitRequireSuccessful().random()
-    fun awaitImage(index: Int) = imageSetLoader.finishedImages.awaitRequireSuccessful()[index]
-    fun awaitFinishedTest(): Test<*> = finishedTest.awaitRequireSuccessful()
-    val numImages = LoadedOrFailedValueSlot<ULong>()
-    val loadedCategories = LoadedOrFailedValueSlot<List<Category>>()
-    val didLoadCategories = LoadedOrFailedValueSlot<Boolean>()
+    override val finishedLoadingAwaitable by lazy { postDtypeTestLoader.chainedTo { it.finishedTest } }
 
-    val progress by lazy { imageSetLoader.progress }
-    val cacheProgressPixels by lazy { imageSetLoader.cacheProgressPixels }
-    val cacheProgressActs by lazy { imageSetLoader.cacheProgressActs }
+    val numImages = DirectLoadedOrFailedValueSlot<ULong>()
+    val loadedCategories = DirectLoadedOrFailedValueSlot<List<Category>>()
+    val didLoadCategories = DirectLoadedOrFailedValueSlot<Boolean>()
 
+
+    var postDtypeTestLoader = DirectLoadedOrFailedValueSlot<PostDtypeTestLoader<*>>()
 
     fun category(id: Int): Category {
 
@@ -76,7 +75,8 @@ class TestLoader(
             return loadedCategories.awaitRequireSuccessful()[id]
         } else {
             warn(OLD_CAT_LOAD_WARNING)
-            return imageSetLoader.finishedImages.awaitRequireSuccessful().asSequence().map {
+            val finishedIms = postDtypeTestLoader.await().requireLoaded().imageSetLoader.finishedImages
+            return finishedIms.awaitRequireSuccessful().asSequence().map {
                 it.category
             }.first {
                 it.id == id
@@ -87,15 +87,16 @@ class TestLoader(
 
     val infoString by lazy {
         string {
+            val isl = postDtypeTestLoader.await().requireLoaded().imageSetLoader
             lineDelimited {
                 +"Test:"
                 +"\tname=${file.name}"
                 +"\tnumImages=${numImages.awaitSuccessfulOrMessage()}"
                 +"\tpixelsShapePerImage=${
-                    imageSetLoader.pixelsShapePerImage.awaitSuccessfulOrNull()?.elementsToString()
+                    isl.pixelsShapePerImage.awaitSuccessfulOrNull()?.elementsToString()
                 }"
                 +"\tactivationsShapePerImage=${
-                    imageSetLoader.activationsShapePerImage.awaitSuccessfulOrNull()
+                    isl.activationsShapePerImage.awaitSuccessfulOrNull()
                         ?.elementsToString()
                 }"
             }
@@ -142,8 +143,6 @@ class TestLoader(
                         val countInt = count.toInt()
 
                         var name: String? = null
-                        var dtype: DType<*> = Float32
-
 
                         var imagesWereRead = false
                         var catsWereRead = false
@@ -185,7 +184,8 @@ class TestLoader(
                                     requireNot(imagesWereRead) {
                                         "Images must be read after the dtype"
                                     }
-                                    dtype =
+
+                                    val dtype =
                                         nextValueManualDontReadKey<TextStringReader, DType<*>> {
                                             when (val str = read().raw) {
                                                 "float32" -> Float32
@@ -193,9 +193,14 @@ class TestLoader(
                                                 else      -> err("str == $str")
                                             }
                                         }
+                                    check(!postDtypeTestLoader.isDone())
+                                    postDtypeTestLoader.putLoadedValue(
+                                        PostDtypeTestLoader(dtype, this@TestLoader)
+                                    )
                                 }
 
                                 Keys.images  -> {
+
                                     requireEquals(keyIdx, countInt - 1)
                                     if (!catsWereRead) {
 
@@ -204,45 +209,35 @@ class TestLoader(
 
                                         didLoadCategories.putLoadedValue(false)
                                     }
-                                    preppedTest.putLoadedValue(PreppedTestLoader(this@TestLoader, dtype))
-                                    imageSetLoader.readImages(
-                                        reader = this,
-                                        dtype = dtype,
-                                        finishedTest = finishedTest
-                                    )
+                                    if (!postDtypeTestLoader.isDone()) {
+                                        postDtypeTestLoader.putLoadedValue(PostDtypeTestLoader(Float32, this@TestLoader))
+                                    }
+                                    val post = postDtypeTestLoader.getOrNullIfLoading()!!.requireLoaded()
+                                    post.putPrepped()
+                                    post.readImages(this)
                                     imagesWereRead = true
                                 }
                             }
                         }
 
 
+                        val thePost = postDtypeTestLoader.getOrNullIfLoading()!!.requireLoaded()
 
 
-                        imageSetLoader.neuronActCacheTools!!.forEach {
+
+                        thePost.imageSetLoader.neuronActCacheTools!!.forEach {
                             it.finalize()
                         }
-                        datasetHDCache.neuronsRAF.closeWriting()
+                        thePost.datasetHDCache.neuronsRAF.closeWriting()
 
-                        progress.value = 1.0
+                        progress.progress.value = 1.0
 
-
-                        finishedTest.putLoadedValue(
-                            Test(
-                                name = name ?: throw LoadException("Test did not have a name"),
-                                images = imageSetLoader.finishedImages.awaitRequireSuccessful(), /*as List<DeephyImage<Float>>*/
-                                model = this@TestLoader.model,
-                                testRAMCache = testRAMCache,
-                                dtype = dtype,
-                                cats = if (didLoadCategories.awaitRequireSuccessful()) loadedCategories.awaitRequireSuccessful() else null
-                            ).apply {
-                                putTestNeurons(imageSetLoader.localTestNeurons!!)
-                                /*testNeurons = localTestNeurons
-
-                                as Map<InterTestNeuron,TestNeuron<Float>>*/
-                                preds.startLoading()
-                                startPreloadingMaxActivations()
-                            }
+                        thePost.putTest(
+                            name = name,
+                            ramCache = testRAMCache,
+                            cats = if (didLoadCategories.awaitRequireSuccessful()) loadedCategories.awaitRequireSuccessful() else null
                         )
+
                         println("load2")
                         signalFinishedLoading()
                     }
@@ -264,7 +259,81 @@ class TestLoader(
 
 
     override val testRAMCache by lazy { TestRAMCache(settings) }
+
+
+    val progress = TestLoadingProgress()
 }
+
+class TestLoadingProgress {
+    val progress by lazy { BindableProperty(0.0) }
+    val cacheProgressPixels by lazy { BindableProperty(0.0) }
+    val cacheProgressActs by lazy { BindableProperty(0.0) }
+}
+
+class PostDtypeTestLoader<D: Number>(
+    override val dtype: DType<D>,
+    private val testLoader: TestLoader
+): TypedTestLike<D> {
+    override val post = this
+    fun <T> createSlot() = testLoader.DirectLoadedOrFailedValueSlot<T>()
+    override fun numberOfImages(): ULong = testLoader.numImages.awaitRequireSuccessful()
+
+    override fun imageAtIndex(i: Int): DeephyImage<D> = awaitImage(i)
+
+    override val test: Test<D>
+        get() = awaitFinishedTest()
+    override val testRAMCache: TestRAMCache
+        get() = testLoader.testRAMCache
+    override val model: Model
+        get() = testLoader.model
+
+    override fun isDoneLoading(): Boolean = finishedTest.isDone()
+    fun putPrepped() {
+        preppedTest.putLoadedValue(PreppedTestLoader(this, dtype))
+    }
+    val preppedTest = testLoader.DirectLoadedOrFailedValueSlot<PreppedTestLoader<D>>()
+    internal val finishedTest = testLoader.DirectLoadedOrFailedValueSlot<Test<D>>()
+    val imageSetLoader = ImageSetLoader<D>(testLoader, this)
+    internal val datasetHDCache = imageSetLoader.datasetHDCache
+    fun awaitNonUniformRandomImage() = imageSetLoader.finishedImages.awaitRequireSuccessful().random()
+    fun awaitImage(index: Int) = imageSetLoader.finishedImages.awaitRequireSuccessful()[index]
+    fun awaitFinishedTest(): Test<D> = finishedTest.awaitRequireSuccessful()
+
+
+    fun readImages(reader: MapReader) {
+        imageSetLoader.readImages(
+            reader = reader,
+            dtype = dtype,
+            finishedTest = finishedTest
+        )
+    }
+    fun putTest(
+        name: String?,
+        ramCache: TestRAMCache,
+        cats: List<Category>?
+    ) {
+        finishedTest.putLoadedValue(
+            Test(
+                name = name ?: throw LoadException("Test did not have a name"),
+                images = imageSetLoader.finishedImages.awaitRequireSuccessful(), /*as List<DeephyImage<Float>>*/
+                model = testLoader.model,
+                testRAMCache = ramCache,
+                dtype = dtype,
+                cats = cats,
+                post = this
+            ).apply {
+
+                putTestNeurons(imageSetLoader.localTestNeurons!!)
+                /*testNeurons = localTestNeurons
+
+                as Map<InterTestNeuron,TestNeuron<Float>>*/
+                preds.startLoading()
+                startPreloadingMaxActivations()
+            }
+        )
+    }
+}
+
 
 
 class LoadException(message: String) : Exception(message)

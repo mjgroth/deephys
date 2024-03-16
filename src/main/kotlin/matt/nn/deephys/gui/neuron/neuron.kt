@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.neuron
 
 import matt.async.thread.queue.QueueWorker
+import matt.caching.compcache.invoke
 import matt.codegen.tex.tex
 import matt.collect.itr.subList
 import matt.fx.control.wrapper.progressindicator.progressindicator
@@ -55,7 +56,7 @@ class NeuronView<A : Number>(
     loadImagesAsync: Boolean = false,
     showTopCats: Boolean = false,
     override val settings: DeephysSettingsController
-) : VBoxWrapperImpl<NW>(), DeephysNode {
+) : VBoxWrapperImpl<NW>(childClass = NW::class), DeephysNode {
 
     companion object {
         private val worker = QueueWorker("NeuronView Worker")
@@ -84,18 +85,18 @@ class NeuronView<A : Number>(
 
                         if (!doneLoading) showing.value -= 1
 
-                        @Suppress("UNCHECKED_CAST")
+
                         val j =
                             worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
                                 denomTest?.let {
                                     with(viewer.cacheContext) {
                                         neuron.activationRatio(
-                                            numTest = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>,
-                                            denomTest = denomTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>
+                                            numTest = numTest.postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitRequireSuccessful(),
+                                            denomTest = denomTest.postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitRequireSuccessful()
                                         )
                                     }
                                 } ?: neuron.maxActivationIn(
-                                    test = numTest.preppedTest.awaitRequireSuccessful() as TypedTestLike<A>
+                                    test = numTest.postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitRequireSuccessful() as TypedTestLike<*>
                                 )
                             }
 
@@ -131,7 +132,7 @@ class NeuronView<A : Number>(
             val dtype = testLoader.dtype
 
             swapperNullable(viewer.normalizer) {
-                val normalizer = this?.testData?.value?.preppedTest?.awaitRequireSuccessful()
+                val normalizer = this?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest?.awaitRequireSuccessful()
                 val denom =
                     normalizer?.let {
                         neuron.maxActivationIn(normalizer).value / 100
@@ -266,6 +267,8 @@ class NeuronView<A : Number>(
 }
 
 private class WeakNeuronViewRefs<A : Number> : WeakThing<WeakNeuronViewRefs<A>>() {
+
+    override fun constructNew(): WeakNeuronViewRefs<A> = WeakNeuronViewRefs()
 
     var testLoader by weak<TypedTestLike<A>>()
     var viewer by weak<DatasetViewer>()

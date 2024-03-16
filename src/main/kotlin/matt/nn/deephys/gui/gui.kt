@@ -26,6 +26,7 @@ import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.parent.ParentWrapper
 import matt.fx.graphics.wrapper.pane.hbox.h
+import matt.fx.graphics.wrapper.pane.vbox.VBoxSimple
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.pane.vbox.vbox
@@ -248,7 +249,7 @@ class DeephysApp {
 
 
 
-        VBoxW().apply {
+        VBoxW(childClass = NodeWrapper::class).apply {
 
 
             deephysLabel("Downloading ${demo.name}...")
@@ -341,7 +342,7 @@ class DeephysApp {
         readyForConfiguringWindowFromTest.putLoadedValue(stage)
 
 
-        root<VBoxWrapperImpl<NodeWrapper>> {
+        root<VBoxSimple> {
 
 
             alignment = TOP_CENTER

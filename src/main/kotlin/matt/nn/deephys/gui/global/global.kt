@@ -67,15 +67,15 @@ import matt.prim.str.isInt
 val DEEPHYS_FADE_DUR = 500.milliseconds*/
 val DEEPHYS_FADE_DUR = null
 
-fun <E : Any> ET.deephysSpinner(
+inline fun <reified E : Any> ET.deephysSpinner(
     label: String,
     choices: List<E>,
-    defaultChoice: () -> E,
+    crossinline defaultChoice: () -> E,
     converter: StringConverter<E>,
     viewer: DatasetViewer,
     getCurrent: ObsVal<E?>,
-    acceptIf: (E) -> Boolean,
-    navAction: DatasetViewer.(E) -> Unit
+    crossinline acceptIf: (E) -> Boolean,
+    crossinline navAction: DatasetViewer.(E) -> Unit
 
 ) = run {
     var theValueProp: ObsVal<E>? = null
@@ -110,8 +110,7 @@ fun <E : Any> ET.deephysSpinner(
                   }*/
 
                 val current = getCurrent.value?.takeIf { acceptIf(it) } ?: defaultChoice()
-                valueFactory!!.value = current
-
+                valueFactory!!.valueProperty.value = current
 
                 val rBlocker = RecursionBlocker()
 
@@ -197,7 +196,9 @@ fun EventTargetWrapper.deephysText(
     s: String = "",
     op: DeephyText.() -> Unit = {}
 ) =
-    DeephyText(BindableProperty(s)).apply(op).also { +it }
+    DeephyText(BindableProperty(s)).apply(op).also {
+        +it
+    }
 
 fun EventTargetWrapper.sigFigText(
     num: Number,
@@ -371,7 +372,7 @@ val DEEPHY_FONT_TITLE_BOLD by lazy { DEEPHY_FONT_TITLE.fixed().copy(weight = BOL
 
 
 val deephysNullMessageFact: (message: String) -> NW = { message ->
-    VBoxW().apply {
+    VBoxW(childClass = NodeWrapper::class).apply {
         spacer()
         h {
             spacer()

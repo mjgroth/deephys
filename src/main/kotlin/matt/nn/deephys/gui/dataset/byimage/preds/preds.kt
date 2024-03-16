@@ -1,7 +1,9 @@
 package matt.nn.deephys.gui.dataset.byimage.preds
 
 import javafx.scene.Cursor
+import matt.caching.compcache.invoke
 import matt.fx.graphics.wrapper.node.NW
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.HBoxW
 import matt.fx.graphics.wrapper.pane.hbox.h
@@ -33,7 +35,7 @@ class PredictionsView(
     topPreds: ImageTopPredictions<*>,
     weakViewer: WeakRefInter<DatasetViewer>,
     override val settings: DeephysSettingsController
-) : VBoxW(), DeephysNode {
+) : VBoxW(childClass = NodeWrapper::class), DeephysNode {
     init {
         val memSafeSettings = settings
         h {
@@ -67,7 +69,7 @@ class CategoryTable(
     tooltip: String,
     private val sigFigSett: ObsI,
     numSuffix: String = ""
-) : HBoxW(), DeephysNode {
+) : HBoxW(childClass = NodeWrapper::class), DeephysNode {
 
 
 
@@ -80,7 +82,7 @@ class CategoryTable(
         }
         hSpacer(5.0)
         v {
-            +TextFlowWrapper<NW>().apply {
+            +TextFlowWrapper<NW>(childClass=NW::class).apply {
                 visibleAndManagedProp.bindWeakly(b.not())
                 deephysText(title_unfolded)
                 data.forEach { (cat, num) ->

@@ -20,7 +20,7 @@ class LayerView(
     testLoader: TestLoader,
     viewer: DatasetViewer,
     override val settings: DeephysSettingsController
-): VBoxWrapperImpl<RegionWrapper<*>>(), DeephysNode {
+): VBoxWrapperImpl<RegionWrapper<*>>(childClass = RegionWrapper::class), DeephysNode {
 
 
     var spinnerThing: WeakRefInter<RegionWrapper<*>>? = null
@@ -47,7 +47,7 @@ class LayerView(
                 this@LayerView.spinnerThing = weak(first)
             }
 
-        testLoader.preppedTest.awaitSuccessfulOrNull()?.go { typedTestLoader ->
+        testLoader.postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitSuccessfulOrNull()?.go { typedTestLoader ->
             swapperNeverNull(spinnerAndValue.second) {
                 NeuronView(
                     this,

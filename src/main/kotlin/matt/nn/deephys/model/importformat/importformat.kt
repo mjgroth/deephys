@@ -13,6 +13,7 @@ import matt.log.warn.common.warn
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.load.test.OLD_CAT_LOAD_WARNING
+import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.ResolvedLayer
@@ -80,17 +81,18 @@ class Model(
  */
 class Test<N : Number>(
     override val name: String,
-    images: List<DeephyImage<*>>,
+    images: List<DeephyImage<N>>,
     override val model: Model,
     override val testRAMCache: TestRAMCache,
     cats: List<Category>?,
-    override val dtype: DType<N>
+    override val dtype: DType<N>,
+    override val post: PostDtypeTestLoader<N>
 ) : DeephyFileObject, TypedTestLike<N> {
 
     override fun isDoneLoading(): Boolean = true
 
-    @Suppress("UNCHECKED_CAST")
-    val images = images as List<DeephyImage<N>>
+
+    val images = images
 
 
     override fun numberOfImages(): ULong = images.size.toULong()
@@ -100,9 +102,9 @@ class Test<N : Number>(
     override val test = this
 
 
-    fun putTestNeurons(map: Map<InterTestNeuron, TestNeuron<*>>) {
-        @Suppress("UNCHECKED_CAST")
-        testNeurons.putLoadedValue(map as Map<InterTestNeuron, TestNeuron<N>>)
+    fun putTestNeurons(map: Map<InterTestNeuron, TestNeuron<N>>) {
+
+        testNeurons.putLoadedValue(map)
     }
 
     val testNeurons = LoadedValueSlot<Map<InterTestNeuron, TestNeuron<N>>>()

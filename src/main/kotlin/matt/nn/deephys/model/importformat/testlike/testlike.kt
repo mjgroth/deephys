@@ -1,5 +1,6 @@
 package matt.nn.deephys.model.importformat.testlike
 
+import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.importformat.Model
@@ -21,4 +22,5 @@ interface TypedTestLike<A: Number>: TestOrLoader {
     fun imageAtIndex(i: Int): DeephyImage<A>
     override val test: Test<A>
     override val dtype: DType<A>
+    val post: PostDtypeTestLoader<A>
 }

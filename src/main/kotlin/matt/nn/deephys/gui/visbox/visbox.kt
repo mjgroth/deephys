@@ -6,6 +6,7 @@ import javafx.geometry.Pos.TOP_CENTER
 import matt.file.common.toAbsLinuxFile
 import matt.file.construct.mFile
 import matt.file.ext.FileExtension
+import matt.file.model.file.types.Cbor
 import matt.file.types.checkType
 import matt.fx.graphics.dialog.openFile
 import matt.fx.graphics.fxthread.runLater
@@ -48,7 +49,7 @@ import matt.prim.str.truncateWithElipsesOrAddSpaces
 class VisBox(
     private val app: DeephysApp,
     settings: DeephysSettingsController
-) : VBoxW() {
+) : VBoxW(childClass = NodeWrapper::class) {
 
 
     fun load(
@@ -63,7 +64,7 @@ class VisBox(
                 /*findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
                 testFiles.forEach { f ->
                     val viewer = dSetViewsVBox.addTest()
-                    viewer.file.value = (mFile(f.path, MacFileSystem)).checkType()
+                    viewer.file.value = (mFile(f.path, MacFileSystem)).checkType(Cbor)
                 }
             }
         }

@@ -3,11 +3,14 @@ package matt.nn.deephys.gui.viewer
 import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
 import matt.caching.compcache.ComputeCacheContext
+import matt.caching.compcache.findOrCompute
+import matt.caching.compcache.invoke
 import matt.collect.itr.filterNotNull
-import matt.collect.set.contents.contentsOf
 import matt.collect.weak.lazy.lazyWeakMap
 import matt.file.construct.mFile
 import matt.file.ext.FileExtension
+import matt.file.model.file.types.Cbor
+import matt.file.model.file.types.TypedFile
 import matt.file.types.checkType
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
@@ -26,8 +29,6 @@ import matt.lang.assertions.require.requireNot
 import matt.lang.common.disabledCode
 import matt.lang.model.file.MacFileSystem
 import matt.lang.model.file.fName
-import matt.lang.model.file.types.Cbor
-import matt.lang.model.file.types.TypedFile
 import matt.lang.weak.weak
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
@@ -39,6 +40,8 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
+import matt.nn.deephys.gui.fix.withNoImages
+import matt.nn.deephys.gui.fix.withTest
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_MONO
 import matt.nn.deephys.gui.global.deephyIconButton
@@ -56,6 +59,7 @@ import matt.nn.deephys.gui.viewer.action.SelectView
 import matt.nn.deephys.gui.viewer.action.TestViewerAction
 import matt.nn.deephys.gui.viewer.tutorial.bind.BindTutorial
 import matt.nn.deephys.load.asyncLoadSwapper
+import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.load.test.dtype.topNeurons
 import matt.nn.deephys.model.ResolvedLayer
@@ -80,6 +84,7 @@ import matt.obs.col.olist.sizeProperty
 import matt.obs.prop.ObsVal
 import matt.obs.prop.withChangeListener
 import matt.obs.prop.writable.BindableProperty
+import matt.obs.prop.writable.Var
 import matt.obs.prop.writable.VarProp
 import matt.obs.prop.writable.toVarProp
 import matt.obs.prop.writable.withNonNullUpdatesFrom
@@ -233,6 +238,7 @@ class DatasetViewer(
         }
 
 
+
     val imageSelection = VarProp<DeephyImage<*>?>(null)
 
 
@@ -243,11 +249,15 @@ class DatasetViewer(
             ) { im ->
                 layerSelection.value?.let { lay ->
                     im?.let { theIm ->
-                        testData.value!!.dtype.topNeurons(
-                            images = contentsOf(theIm),
+                        val prepped1 = testData.value!!.postDtypeTestLoader.awaitRequireSuccessful().preppedTest
+                        val prepped2 = normalizer.value?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest
+                        val prepped1Got = prepped1.awaitRequireSuccessful()
+                        check(prepped1Got.test == theIm.testLoader.test)
+                        val testWithOneImagesHack = theIm.withTest()
+                        topNeurons(
+                            testAndImages =  testWithOneImagesHack,
                             layer = lay,
-                            test = testData.value!!.preppedTest.awaitRequireSuccessful(),
-                            denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful()
+                            denomTest = prepped2?.awaitRequireSuccessful()
                         )
                     }
                 }
@@ -263,11 +273,14 @@ class DatasetViewer(
                 normalizer
             ) {
                 it?.let {
-                    testData.value?.dtype?.topNeurons(
-                        images = contentsOf(),
+                    val prepped1 = testData.value!!.postDtypeTestLoader.awaitRequireSuccessful().preppedTest
+                    val prepped2 = normalizer.value?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest
+                    val prepped1Got = prepped1.awaitRequireSuccessful()
+                    val testWithNoImages = prepped1Got.withNoImages()
+                    topNeurons(
+                        testAndImages = testWithNoImages,
                         layer = it.layer,
-                        test = testData.value!!.preppedTest.awaitRequireSuccessful(),
-                        denomTest = normalizer.value?.testData?.value?.preppedTest?.awaitRequireSuccessful(),
+                        denomTest = prepped2?.awaitRequireSuccessful(),
                         forcedNeuronIndices = with(cacheContext) { with(testData.value!!.testRAMCache) { it() }.map { it.neuron.index } }
                     )
                 }
@@ -317,7 +330,7 @@ class DatasetViewer(
         }
 
 
-    var currentByImageHScroll: VarProp<Double>? = null
+    var currentByImageHScroll: Var<Double>? = null
 
     val history = basicMutableObservableListOf<TestViewerAction>()
     val historyIndex = VarProp(-1)
@@ -470,7 +483,7 @@ class DatasetViewer(
 
                             if (f != null) {
                                 stopwatch("set fileProp") {
-                                    this@DatasetViewer.file.value = (mFile(f.path, MacFileSystem)).checkType()
+                                    this@DatasetViewer.file.value = (mFile(f.path, MacFileSystem)).checkType(Cbor)
                                 }
                             }
                         }
@@ -588,7 +601,7 @@ class DatasetViewer(
 
                     progressProperty.bind(
                         this@DatasetViewer.testData.deepBinding {
-                            it?.progress ?: 0.0.toVarProp()
+                            it?.progress?.progress ?: 0.0.toVarProp()
                         }
                     )
                     visibleAndManagedWhen {
@@ -600,7 +613,7 @@ class DatasetViewer(
                     style = "-fx-accent: green"
                     progressProperty.bind(
                         this@DatasetViewer.testData.deepBinding {
-                            it?.cacheProgressPixels ?: 0.0.toVarProp()
+                            it?.progress?.cacheProgressPixels ?: 0.0.toVarProp()
                         }
                     )
                 }
@@ -609,7 +622,7 @@ class DatasetViewer(
                     style = "-fx-accent: yellow"
                     progressProperty.bind(
                         this@DatasetViewer.testData.deepBinding {
-                            it?.cacheProgressActs ?: 0.0.toVarProp()
+                            it?.progress?.cacheProgressActs ?: 0.0.toVarProp()
                         }
                     )
                 }
@@ -631,3 +644,7 @@ class DatasetViewer(
     }
 }
 
+
+
+
+class DtypedDatasetViewer<A: Number>(post: PostDtypeTestLoader<A>)

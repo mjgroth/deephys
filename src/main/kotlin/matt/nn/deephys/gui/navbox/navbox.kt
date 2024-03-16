@@ -12,6 +12,7 @@ import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.icon.fav.FaviconLoader
 import matt.fx.graphics.icon.svg.svgToFXImage
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hSpacer
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
@@ -31,7 +32,7 @@ import java.awt.Desktop
 import java.net.URI
 
 
-class NavBox(private val app: DeephysApp) : VBoxW() {
+class NavBox(private val app: DeephysApp) : VBoxW(childClass = NodeWrapper::class) {
 
     var showDemosTab: ToggleButtonWrapper? = null
 
@@ -75,7 +76,7 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
                 deephysLazyTab("Neuronal Activity Zoo") {
 
 
-                    VBoxW().apply {
+                    VBoxW(childClass=NodeWrapper::class).apply {
                         spacer()
                         NeuronalActivityZoo.EXAMPLES.forEach { demo ->
                             deephyButton(demo.name) {
@@ -91,7 +92,7 @@ class NavBox(private val app: DeephysApp) : VBoxW() {
                     }
                 }
             deephysLazyTab("Links") {
-                VBoxW().apply {
+                VBoxW(childClass=NodeWrapper::class).apply {
                     spacer()
                     alignment = CENTER
                     mapOf(

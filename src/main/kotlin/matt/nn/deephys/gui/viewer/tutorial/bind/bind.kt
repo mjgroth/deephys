@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.viewer.tutorial.bind
 
 import matt.fx.control.wrapper.checkbox.checkbox
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
@@ -15,7 +16,7 @@ import matt.obs.bindings.bool.and
 import matt.obs.bindings.bool.or
 import matt.obs.bindings.comp.gt
 
-class BindTutorial(viewer: DatasetViewer): VBoxW() {
+class BindTutorial(viewer: DatasetViewer): VBoxW(childClass = NodeWrapper::class) {
     init {
         visibleAndManagedWhen {
             viewer.showTutorials and

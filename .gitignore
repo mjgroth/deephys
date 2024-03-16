@@ -28,6 +28,7 @@ deps.txt
 /jars/
 /bin/jar/
 local.properties
+.keys.properties
 .auth.json
 .ipynb_checkpoints
 *.comp_mem

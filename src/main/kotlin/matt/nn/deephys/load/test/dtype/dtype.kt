@@ -3,6 +3,7 @@ package matt.nn.deephys.load.test.dtype
 import kotlinx.serialization.Serializable
 import matt.collect.set.contents.Contents
 import matt.collect.set.contents.contentsOf
+import matt.lang.cast.Caster
 import matt.lang.common.List2D
 import matt.math.arithmetic.sumOf
 import matt.math.numalg.matalg.multiarray.DoubleMultiArrayWrapper
@@ -19,6 +20,7 @@ import matt.nn.deephys.calc.act.AlwaysOneActivationFloat64
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.calc.act.RawActivationFloat32
 import matt.nn.deephys.calc.act.RawActivationFloat64
+import matt.nn.deephys.gui.fix.TestAndSomeImages
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytes
@@ -37,7 +39,7 @@ import kotlin.math.exp as kotlinExp
 
 
 @Serializable
-sealed interface DType<N : Number> {
+sealed interface DType<N : Number>: Caster<N> {
     companion object {
         fun leastPrecise(
             type: DType<*>,
@@ -80,17 +82,15 @@ sealed interface DType<N : Number> {
 }
 
 
-@Suppress("UNCHECKED_CAST") fun <N : Number> DType<N>.topNeurons(
-    images: Contents<DeephyImage<*>>,
+fun <N : Number> topNeurons(
+    testAndImages: TestAndSomeImages<N>,
     layer: InterTestLayer,
-    test: TypedTestLike<*>,
     denomTest: TypedTestLike<*>?,
     forcedNeuronIndices: List<Int>? = null
 ) = TopNeurons(
-    images = images as Contents<DeephyImage<N>>,
+    testAndImages = testAndImages,
     layer = layer,
-    test = test as TypedTestLike<N>,
-    denomTest = denomTest as TypedTestLike<N>?,
+    denomTest = denomTest,
     forcedNeuronIndices = forcedNeuronIndices
 )
 
@@ -100,6 +100,8 @@ sealed class DtypeBase<N : Number>() : DType<N> {
 
 @Serializable
 object Float32 : DtypeBase<Float>() {
+
+    override fun cast(a: Any?): Float = a as Float
 
     override val label = "float32"
 
@@ -134,6 +136,8 @@ object Float32 : DtypeBase<Float>() {
 
 @Serializable
 object Float64 : DtypeBase<Double>() {
+
+    override fun cast(a: Any?): Double = a as Double
     override val label = "float64"
     override val byteLen = DOUBLE_BYTE_LEN
     override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat64(bytes)

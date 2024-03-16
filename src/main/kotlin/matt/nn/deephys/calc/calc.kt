@@ -2,7 +2,9 @@ package matt.nn.deephys.calc
 
 import matt.caching.compcache.ComputeInput
 import matt.caching.compcache.FakeCacheComputeInput
+import matt.caching.compcache.findOrCompute
 import matt.caching.compcache.globalman.FakeCacheManager
+import matt.caching.compcache.invoke
 import matt.codegen.tex.TeXDSL
 import matt.codegen.tex.tex
 import matt.collect.set.contents.Contents
@@ -14,6 +16,7 @@ import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNum
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
+import matt.nn.deephys.gui.fix.TestAndSomeImages
 import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
 import matt.nn.deephys.load.test.testcache.TestRAMCache
 import matt.nn.deephys.model.data.Category
@@ -97,10 +100,12 @@ data class TopCategories<N : Number>(
 
 private const val NUM_TOP_NEURONS = 25
 
+/*
 interface TopNeuronsCalcType {
     context(TestRAMCache)
     operator fun invoke(): List<NeuronWithActivation<*>>
 }
+*/
 
 data class NeuronWithActivation<A : Number>(
     val neuron: InterTestNeuron,
@@ -108,17 +113,18 @@ data class NeuronWithActivation<A : Number>(
 )
 
 data class TopNeurons<N : Number>(
-    val images: Contents<DeephyImage<N>>,
+    val testAndImages: TestAndSomeImages<N>,
     val layer: InterTestLayer,
-    private val test: TypedTestLike<N>,
-    private val denomTest: TypedTestLike<N>?, /*val normalized: Boolean,*/
+    private val denomTest: TypedTestLike<*>?, /*val normalized: Boolean,*/
     val forcedNeuronIndices: List<Int>? = null
-) : TestComputeInput<List<NeuronWithActivation<N>>>(), TopNeuronsCalcType {
+) : TestComputeInput<List<NeuronWithActivation<N>>>()/*, TopNeuronsCalcType*/ {
 
     /*small possibility of memory leaks when images is empty, but this is still way better than before*/
 
     context (TestRAMCache)
     override fun compute(): List<NeuronWithActivation<N>> {
+        val images = testAndImages.images
+        val test = testAndImages.test
         if (images.isEmpty() && forcedNeuronIndices == null) return listOf()
 
         val neurons =
@@ -137,7 +143,10 @@ data class TopNeurons<N : Number>(
                 val act =
                     if (denomTest != null) with(FakeCacheManager) {
                         ActivationRatioCalc(
-                            numTest = test, denomTest = denomTest, neuron = neuron, images = images
+                            numTest = test,
+                            denomTest = denomTest,
+                            neuron = neuron,
+                            images = images
                         )()
                     }
                     else if (images.isEmpty()) neuron.maxActivationIn(test)
@@ -167,7 +176,7 @@ data class TopNeurons<N : Number>(
 data class ActivationRatioCalc<A : Number>(
     val numTest: TypedTestLike<A>,
     private val images: Contents<DeephyImage<A>>,
-    val denomTest: TypedTestLike<A>,
+    val denomTest: TypedTestLike<*>,
     private val neuron: InterTestNeuron
 ) : FakeCacheComputeInput<Activation<A, *>>()  /*because this is taking up way too much memory*/ {
 
@@ -236,13 +245,13 @@ data class ActivationRatioCalc<A : Number>(
                     val num = numTest.test.maxActivations[neuron]
                     val denom = denomTest.test.maxActivations[neuron]
 
-                    val n = dType.div(num, denom)
+                    val n = dType.div(num, dType.cast(denom))
                     dType.activationRatio(n)
                 }
             } else {
                 val num = neuron.averageActivation(images, dType = dType).value
                 val denom = denomTest.test.maxActivations[neuron]
-                dType.activationRatio(dType.div(num, denom))
+                dType.activationRatio(dType.div(num, dType.cast(denom)))
             }
         return r
     }
@@ -271,23 +280,26 @@ data class ImageSoftMaxDenom<N : Number>(
 }
 
 data class ImageTopPredictions<N : Number>(
-    private val image: DeephyImage<N>,
-    private val testLoader: TypedTestLike<N>
+    private val image: DeephyImage<N>
 ) : TestComputeInput<List<Pair<Category, N>>>() {
 
 
     context(TestRAMCache)
     override fun compute(): List<Pair<Category, N>> {
-        val dtype = testLoader.dtype
-        val clsLay = testLoader.model.classificationLayer
+        val dtype = image.testLoader.dtype
+        val clsLay = image.testLoader.model.classificationLayer
         val preds = image.activationsFor(clsLay.interTest)
-        val softMaxDenom = ImageSoftMaxDenom(image, testLoader)()
+        val calculation = ImageSoftMaxDenom(image, image.testLoader)
+        /*calculation.compute()
+        val n: N = calculation.compute()*/
+
+        val softMaxDenom = calculation.findOrCompute(dtype)
         preds.withIndex().sortedBy {
             it.value.toDouble()
         }
         return preds.withIndex().sortedBy { it.value.toDouble() }.reversed().take(5).map { thePred ->
             val exactPred = (dtype.div(dtype.exp(thePred.value), softMaxDenom))
-            val theCategory = testLoader.test.category(thePred.index)
+            val theCategory = image.testLoader.test.category(thePred.index)
             theCategory to exactPred
         }
     }
@@ -338,20 +350,23 @@ data class CategoryFalsePositivesSorted<N : Number>(
     }
 
     context(TestRAMCache)
-    override fun compute(): List<DeephyImage<N>> =
-        run {
+    override fun compute(): List<DeephyImage<N>> {
+        val r =
             testLoader.test.imagesWithoutGroundTruth(category).map {
                 it to testLoader.test.preds.await()[it]
             }.filter {
                 it.second == category
             }.map {
-                it.first to ImageTopPredictions(it.first, testLoader)().first()
+                it.first to ImageTopPredictions(it.first)().first()
             }.sortedBy {
                 it.second.second.toDouble()
             }.reversed().map {
                 it.first
             }
-        }
+
+
+        return r
+    }
 }
 
 data class CategoryFalseNegativesSorted<N : Number>(
@@ -373,7 +388,7 @@ data class CategoryFalseNegativesSorted<N : Number>(
             }.filter {
                 it.second != category
             }.map {
-                it.first to ImageTopPredictions(it.first, testLoader)().first()
+                it.first to ImageTopPredictions(it.first)().first()
             }.sortedBy {
                 it.second.second.toDouble()
             }.reversed().map {

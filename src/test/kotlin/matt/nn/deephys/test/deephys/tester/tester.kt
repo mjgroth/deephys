@@ -6,6 +6,7 @@ import matt.file.common.toAbsLinuxFile
 import matt.file.commons.desktop.DEEPHYS_TEST_RESULT_JSON
 import matt.file.construct.mFile
 import matt.file.ext.j.mkparents
+import matt.file.model.file.types.Cbor
 import matt.file.types.forceType
 import matt.fx.graphics.fxthread.RunLaterReturnLatchManager
 import matt.fx.graphics.fxthread.runLaterReturn
@@ -16,7 +17,6 @@ import matt.json.prim.loadJson
 import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.model.file.MacFileSystem
-import matt.lang.model.file.types.Cbor
 import matt.lang.shutdown.preaper.ProcessReaper
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
@@ -217,7 +217,7 @@ class DeephysTestSession(private val profiler: Profiler) {
         val firstViewer = viewers.first()
         val secondViewer = viewers[1]
         runLaterReturn {
-            val im0: DeephyImage<*> = firstViewer.testData.value!!.awaitImage(0)
+            val im0: DeephyImage<*> = firstViewer.testData.value!!.postDtypeTestLoader.awaitRequireSuccessful().awaitImage(0)
             firstViewer.navigateTo(im0)
         }
         sleep(WAIT_FOR_GUI_INTERVAL)

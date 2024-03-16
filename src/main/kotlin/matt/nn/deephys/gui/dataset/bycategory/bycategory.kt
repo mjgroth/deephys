@@ -30,7 +30,7 @@ class ByCategoryView(
     testLoader: TypedTestLike<*>,
     viewer: DatasetViewer,
     override val settings: DeephysSettingsController
-): VBoxWrapperImpl<RegionWrapper<*>>(), MainDeephysView {
+): VBoxWrapperImpl<RegionWrapper<*>>(childClass = RegionWrapper::class), MainDeephysView {
 
     override val control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
 

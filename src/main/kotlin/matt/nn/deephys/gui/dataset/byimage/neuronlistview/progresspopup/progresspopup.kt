@@ -9,6 +9,7 @@ import matt.fx.control.wrapper.label.LabelWrapper
 import matt.fx.control.wrapper.progressbar.ProgressBarWrapper
 import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
 import matt.fx.graphics.style.border.FXBorder
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapper
 import matt.fx.graphics.wrapper.stage.StageWrapper
@@ -86,7 +87,7 @@ private class ProgressPopUp(
 
 
         val root =
-            VBoxW().apply {
+            VBoxW(childClass = NodeWrapper::class).apply {
                 border = FXBorder.solid(Color.BLUE)
                 isFillWidth = true
                 alignment = CENTER
@@ -97,7 +98,7 @@ private class ProgressPopUp(
                     widthProperty
                 }
             }
-        scene = MScene<VBoxWrapper<*>>(root)
+        scene = MScene<VBoxWrapper<*>>(root, rootCls = VBoxWrapper::class)
 
         bar.prefWidthProperty.bind(root.widthProperty * 0.8)
         bar.prefHeight = height / 4.0

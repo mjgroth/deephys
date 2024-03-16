@@ -10,7 +10,7 @@ import matt.nn.deephys.gui.global.color.DeephysPalette
 import matt.nn.deephys.gui.global.deephyToggleButton
 
 
-class DeephysTabPane: VBoxW() {
+class DeephysTabPane: VBoxW(childClass = NodeWrapper::class) {
 
     init {
         isFillWidth = false

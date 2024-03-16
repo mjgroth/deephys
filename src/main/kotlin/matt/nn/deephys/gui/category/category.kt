@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.category
 
 import javafx.geometry.Pos.TOP_CENTER
+import matt.caching.compcache.invoke
 import matt.collect.set.contents.Contents
 import matt.color.colorMap
 import matt.fig.modell.PieChartIrPlaceholder
@@ -43,7 +44,7 @@ class CategoryView<A : Number>(
     testLoader: TypedTestLike<A>,
     viewer: DatasetViewer,
     override val settings: DeephysSettingsController
-) : VBoxWrapperImpl<RegionWrapper<*>>(), DeephysNode {
+) : VBoxWrapperImpl<RegionWrapper<*>>(childClass = RegionWrapper::class), DeephysNode {
 
 
 
@@ -124,6 +125,7 @@ class CategoryView<A : Number>(
                 neuronListViewSwapper(
                     viewer = viewer,
                     contents = Contents(selection.allCategories.flatMap { testLoader.test.imagesWithGroundTruth(it) }),
+                    postDtypeTestLoader = testLoader.post,
                     fade = false /*I think issues are being causes since this child is fading while the parent is too*/,
                     settings = memSafeSettings
                 )
@@ -185,7 +187,8 @@ class CategoryView<A : Number>(
                             title = null,
                             tooltip = CategoryFalsePositivesSorted.blurb,
                             fade = false,
-                            settings = memSafeSettings
+                            settings = memSafeSettings,
+                            post =  testLoader.post
                         )
                     }
 
@@ -235,7 +238,8 @@ class CategoryView<A : Number>(
                             title = null,
                             tooltip = CategoryFalseNegativesSorted.blurb,
                             fade = false,
-                            settings = memSafeSettings
+                            settings = memSafeSettings,
+                            post = testLoader.post
                         )
                     }
                     /*	v {

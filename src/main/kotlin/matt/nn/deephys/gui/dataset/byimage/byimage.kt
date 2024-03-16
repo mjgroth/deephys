@@ -30,7 +30,7 @@ class ByImageView<A: Number>(
     testLoader: PreppedTestLoader<A>,
     viewer: DatasetViewer,
     override val settings: DeephysSettingsController
-): VBoxWrapperImpl<RegionWrapper<*>>(), MainDeephysView {
+): VBoxWrapperImpl<RegionWrapper<*>>(childClass = RegionWrapper::class), MainDeephysView {
 
 
     override var control: ObsVal<WeakRefInter<RegionWrapper<*>>?> = BindableProperty(null)
@@ -63,6 +63,7 @@ class ByImageView<A: Number>(
             fadeInDur = DEEPHYS_FADE_DUR
         ) { img ->
 
+
             weakViewer.deref()?.let { deRefedViewer ->
 
 
@@ -71,11 +72,12 @@ class ByImageView<A: Number>(
                         +DeephyImView(img, deRefedViewer, big = true, settings = memSafeSettings)
                     }
                     spacer(10.0)
-                    @Suppress("UNCHECKED_CAST")
-                    img as DeephyImage<A>
+
+                    img
+                    val theTest = weakTest.deref()!!
                     +PredictionsView(
                         img.category,
-                        ImageTopPredictions(img, weakTest.deref()!!),
+                        ImageTopPredictions(img),
                         weakViewer,
                         memSafeSettings
                     )

@@ -83,7 +83,7 @@ class CategoryPie(
     selected: Category? = DEFAULT_CATEGORY,
     showAsList: BindableProperty<Boolean>,
     settings: DeephysSettingsController
-) : VBoxWrapperImpl<NodeWrapper>() {
+) : VBoxWrapperImpl<NodeWrapper>(childClass = NodeWrapper::class) {
 
     companion object {
         private const val WIDTH = 300.0
@@ -124,7 +124,7 @@ class CategoryPie(
 
 
             content =
-                PaneWrapperImpl<Pane, NodeWrapper>(Pane()).apply {
+                PaneWrapperImpl<Pane, NodeWrapper>(Pane(), childClass = NodeWrapper::class).apply {
                     exactWidth = WIDTH
                     val nonZeroCats = cats.filter { nums[it]!! > 0 }
                     exactHeightProperty.bindWeakly(

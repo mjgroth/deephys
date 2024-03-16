@@ -27,7 +27,7 @@ import matt.obs.prop.writable.BindableProperty
 class ModelVisualizer(
     model: Model,
     override val settings: DeephysSettingsController
-): PaneWrapperImpl<Pane, NodeWrapper>(Pane()), DeephysNode {
+): PaneWrapperImpl<Pane, NodeWrapper>(Pane(), childClass = NodeWrapper::class), DeephysNode {
 
     companion object {
         private val ORIENTATION = VERTICAL
@@ -111,16 +111,18 @@ class ModelVisualizer(
                 val layerCenter = modelStart + spacePerLayer * layIndex.toDouble() + spacePerLayer / 2.0
 
                 deephysText(lay.layerID) {
-                    layoutXProperty bind
+                    layoutXProperty.bind(
                         when (ORIENTATION) {
                             VERTICAL   -> diagramLeftProp / 4.0
                             HORIZONTAL -> layerCenter
                         }
-                    layoutYProperty bind
+                    )
+                    layoutYProperty.bind(
                         when (ORIENTATION) {
                             VERTICAL   -> layerCenter
                             HORIZONTAL -> diagramTopProp / 2.0
                         }
+                    )
                 }
 
                 lay.neurons.mapIndexed { neuronIndex, neuron ->

@@ -58,7 +58,7 @@ val modelBinding =
     }
 
 fun warmupFxComponents(settings: DeephysSettingsController) {
-    HBoxWrapperImpl<NodeWrapper>().apply {
+    HBoxWrapperImpl<NodeWrapper>(childClass = NodeWrapper::class).apply {
         DeephyText("placeholder").apply {
             subtitleFont()
             titleFont()

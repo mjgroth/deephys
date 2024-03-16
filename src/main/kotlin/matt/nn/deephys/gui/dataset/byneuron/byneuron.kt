@@ -19,7 +19,7 @@ class ByNeuronView(
     testLoader: TestLoader,
     viewer: DatasetViewer,
     override val settings: DeephysSettingsController
-): Swapper<ResolvedLayer?, NW>(), MainDeephysView {
+): Swapper<ResolvedLayer?, NW>(childClass = NW::class), MainDeephysView {
 
     override val control: ObsVal<WeakRefInter<RegionWrapper<*>>?> by lazy {
         children.binding {

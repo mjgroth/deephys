@@ -13,17 +13,19 @@ import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.obs.math.op.times
 
 class MultipleImagesView<A: Number>(
     viewer: DatasetViewer,
     images: List<DeephyImage<A>>,
+    post: PostDtypeTestLoader<A>,
     title: String?,
     tooltip: String,
     fade: Boolean = true,
     override val settings: DeephysSettingsController
-): VBoxWrapperImpl<NW>(), DeephysNode {
+): VBoxWrapperImpl<NW>(childClass = NW::class), DeephysNode {
     companion object {
         private const val MAX_IMS = 25
     }
@@ -53,7 +55,8 @@ class MultipleImagesView<A: Number>(
             viewer = viewer,
             contents = Contents(images),
             fade = fade,
-            settings = memSafeSettings
+            settings = memSafeSettings,
+            postDtypeTestLoader = post
         )
     }
 }

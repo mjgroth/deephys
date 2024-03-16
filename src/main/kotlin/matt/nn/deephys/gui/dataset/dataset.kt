@@ -2,6 +2,7 @@ package matt.nn.deephys.gui.dataset
 
 import javafx.scene.input.MouseEvent
 import matt.fx.control.wrapper.control.choice.choicebox
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
@@ -34,7 +35,7 @@ class DatasetNode(
     dataset: TestLoader,
     viewer: DatasetViewer,
     override val settings: DeephysSettingsController
-): VBoxW(), DeephysNode {
+): VBoxW(childClass = NodeWrapper::class), DeephysNode {
 
     val weakViewer = WeakReference(viewer)
 
@@ -49,14 +50,14 @@ class DatasetNode(
     }
     private val byImageView by lazy {
         ByImageView(
-            dataset.preppedTest.awaitRequireSuccessful(),
+            dataset.postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitRequireSuccessful(),
             viewer,
             settings = weakSettings.get()!!
         )
     }
     private val byCategoryView by lazy {
         ByCategoryView(
-            dataset.preppedTest.awaitRequireSuccessful(),
+            dataset.postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitRequireSuccessful(),
             viewer,
             settings = weakSettings.get()!!
         )

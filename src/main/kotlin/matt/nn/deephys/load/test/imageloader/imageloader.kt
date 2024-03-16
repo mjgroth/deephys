@@ -14,11 +14,12 @@ import matt.lang.common.List2D
 import matt.lang.common.disabledCode
 import matt.lang.common.l
 import matt.log.profile.mem.throttle
-import matt.nn.deephys.load.async.AsyncLoader.LoadedOrFailedValueSlot
+import matt.nn.deephys.load.async.AsyncLoader.DirectLoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.Cacher
 import matt.nn.deephys.load.cache.DeephysCacheManager
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.LoadException
+import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.FloatActivationData
@@ -29,19 +30,21 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytes
 import matt.nn.deephys.model.importformat.im.readFloatActivations
 import matt.nn.deephys.model.importformat.im.readPixels
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
-import matt.obs.prop.writable.BindableProperty
 import matt.prim.str.elementsToString
 import java.util.concurrent.ArrayBlockingQueue
 
 
-class ImageSetLoader(private val testLoader: TestLoader) {
+class ImageSetLoader<A: Number>(
+    private val testLoader: TestLoader,
+    private val postDtypeTestLoader: PostDtypeTestLoader<A>
+) {
 
     companion object {
         private val daemonPool = DaemonPoolExecutor()
     }
 
-    val finishedImages = testLoader.LoadedOrFailedValueSlot<BlockList<DeephyImage<*>>>()
-    var localTestNeurons: Map<InterTestNeuron, TestNeuron<*>>? = null
+    val finishedImages = postDtypeTestLoader.createSlot<BlockList<DeephyImage<A>>>()
+    var localTestNeurons: Map<InterTestNeuron, TestNeuron<A>>? = null
     var neuronActCacheTools: List<Cacher>? = null
     val datasetHDCache = DeephysCacheManager.newDatasetCache()
 
@@ -49,20 +52,18 @@ class ImageSetLoader(private val testLoader: TestLoader) {
     private var numDataBytes: Int? = null
     private var numActivationBytes: Int? = null
     private val numRead = AtomicInt(0)
-    val pixelsShapePerImage = testLoader.LoadedOrFailedValueSlot<List<Int>>()
-    val activationsShapePerImage = testLoader.LoadedOrFailedValueSlot<List<Int>>()
+    val pixelsShapePerImage = postDtypeTestLoader.createSlot<List<Int>>()
+    val activationsShapePerImage = postDtypeTestLoader.createSlot<List<Int>>()
     private val numCachedPixels = AtomicInt(0)
     private val numCachedActs = AtomicInt(0)
-    val progress by lazy { BindableProperty(0.0) }
-    val cacheProgressPixels by lazy { BindableProperty(0.0) }
-    val cacheProgressActs by lazy { BindableProperty(0.0) }
+
 
     private var didRead = false
 
     fun readImages(
         reader: MapReader,
-        dtype: DType<*>,
-        finishedTest: LoadedOrFailedValueSlot<Test<*>>
+        dtype: DType<A>,
+        finishedTest: DirectLoadedOrFailedValueSlot<Test<A>>
     ) = reader.apply {
 
         requireNot(didRead)
@@ -75,7 +76,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
             val lastImageIndex = numImsInt - 1
             var nextImageIndex = 0
             testLoader.numImages.putLoadedValue(count)
-            val finishedImagesBuilder = BlockListBuilder<DeephyImage<*>>(numImsInt)
+            val finishedImagesBuilder = BlockListBuilder<DeephyImage<A>>(numImsInt)
             finishedImages.putLoadedValue(finishedImagesBuilder.blockList)
 
             val actsCacheSize = numImsInt * dtype.byteLen
@@ -217,7 +218,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
                         categoryID = categoryID,
                         category = category,
                         index = nextImageIndex++,
-                        testLoader = testLoader,
+                        testLoader = postDtypeTestLoader,
                         model = testLoader.model,
                         test = finishedTest,
                         features = features,
@@ -237,7 +238,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
                         daemonPool.executeLowPriority {
                             activations.cache(activationsBytes.bytes)
                             val n = numCachedActs.incrementAndGet()
-                            cacheProgressActs.value = (n.toDouble()) / numImsDouble
+                            this@ImageSetLoader.testLoader.progress.cacheProgressActs.value = (n.toDouble()) / numImsDouble
                             if (n == numImsInt) datasetHDCache.activationsRAF.closeWriting()
                         }
 
@@ -251,7 +252,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
                         daemonPool.executeLowPriority {
                             data.cache(imageData)
                             val n = numCachedPixels.incrementAndGet()
-                            cacheProgressPixels.value = (n.toDouble()) / numImsDouble
+                            this@ImageSetLoader.testLoader.progress.cacheProgressPixels.value = (n.toDouble()) / numImsDouble
                             if (n == numImsInt) datasetHDCache.pixelsRAF.closeWriting()
                         }
                     }
@@ -260,7 +261,7 @@ class ImageSetLoader(private val testLoader: TestLoader) {
                 finishedImagesBuilder += deephyImage
                 if (nextImageIndex % 100 == 0) {
 
-                    progress.value = nextImageIndex / numberOfIms.toDouble()
+                    testLoader.progress.progress.value = nextImageIndex / numberOfIms.toDouble()
                 }
             }
         }

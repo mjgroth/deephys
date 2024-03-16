@@ -71,7 +71,7 @@ object VersionChecker {
     private val newestRelease by lazy { BindableProperty<VersionInfo?>(null) }
 
     val statusNode by lazy {
-        TextFlowWrapper<NodeWrapper>().apply {
+        TextFlowWrapper<NodeWrapper>(childClass = NodeWrapper::class).apply {
         }
     }
 

@@ -1,10 +1,13 @@
 package matt.nn.deephys.load.async
 
 import javafx.application.Platform.runLater
+import matt.file.model.file.types.Cbor
+import matt.file.model.file.types.TypedFile
 import matt.file.toJioFile
+import matt.lang.anno.Open
 import matt.lang.idea.FailableIdea
-import matt.lang.model.file.types.Cbor
-import matt.lang.model.file.types.TypedFile
+import matt.lang.sync.common.SimpleReferenceMonitor
+import matt.lang.sync.common.withLock
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.Async
 import matt.obs.bindings.bool.ObsB
@@ -52,7 +55,10 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
     }
 
 
-    sealed interface LoadedOrFailed<T> : FailableIdea
+    sealed interface LoadedOrFailed<T> : FailableIdea {
+        @Open
+        fun requireLoaded() = (this as Loaded<T>).value
+    }
 
     @JvmInline
     value class Loaded<T>(val value: T) : LoadedOrFailed<T>
@@ -61,9 +67,12 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
     }
 
 
-    private val failableValueSlots = mutableListOf<LoadedOrFailedValueSlot<*>>()
+    private val failableValueSlots = mutableListOf<DirectLoadedOrFailedValueSlot<*>>()
 
-    inner class LoadedOrFailedValueSlot<T> : Async<LoadedOrFailed<T>>() {
+    interface LoadedOrFailedValueSlot<T>: ThreadAwaitable<T> {
+        fun isDone(): Boolean
+    }
+    inner class DirectLoadedOrFailedValueSlot<T> : Async<LoadedOrFailed<T>>(), LoadedOrFailedValueSlot<LoadedOrFailed<T>> {
 
 
         init {
@@ -87,10 +96,49 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
             }
         }
 
-        fun isDone() = latch?.isOpen ?: true
+        override fun isDone() = latch?.isOpen ?: true
 
         fun awaitRequireSuccessful() = (await() as Loaded).value
         fun awaitSuccessfulOrNull() = (await() as? Loaded)?.value
         fun awaitSuccessfulOrMessage() = await().let { (it as? Loaded)?.value ?: (it as Failed).message }
+
+        fun getOrNullIfLoading() = if (isDone()) value!! else null
+
+        fun <R> chainedTo(op: (T) -> DirectLoadedOrFailedValueSlot<R>): LoadedOrFailedValueSlot<LoadedOrFailed<R>> = ChainedLoadedValueSlot<T, R>(this, op)
+    }
+
+    private inner class ChainedLoadedValueSlot<T, R>(
+        private val first: DirectLoadedOrFailedValueSlot<T>,
+        private val map: (T) -> DirectLoadedOrFailedValueSlot<R>
+    ):  LoadedOrFailedValueSlot<LoadedOrFailed<R>> {
+
+        private var derived: DirectLoadedOrFailedValueSlot<R>? = null
+
+        private val monitor = SimpleReferenceMonitor()
+
+        override fun isDone(): Boolean {
+            monitor.withLock {
+                val der = derived
+                if (der == null) {
+                    if (first.isDone()) {
+                        derived = map(first.getOrNullIfLoading()!!.requireLoaded())
+                    }
+                }
+                return (derived?.isDone() == true)
+            }
+        }
+
+        override fun await(): LoadedOrFailed<R> {
+            first.await()
+            val deriv =
+                monitor.withLock {
+                    val der = derived
+                    if (der == null) {
+                        derived = map(first.getOrNullIfLoading()!!.requireLoaded())
+                    }
+                    derived!!
+                }
+            return deriv.await()
+        }
     }
 }

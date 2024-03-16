@@ -13,7 +13,7 @@ import matt.prim.str.truncateWithElipsesOrAddSpaces
 
 class FeaturesView(
     features: Map<String, String>
-): VBoxW() {
+): VBoxW(childClass = NodeWrapper::class) {
     init {
         deephysText("Features:") {
             subtitleFont()

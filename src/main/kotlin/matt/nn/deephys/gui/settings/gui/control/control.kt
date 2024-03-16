@@ -4,7 +4,8 @@ import javafx.scene.control.ContentDisplay.RIGHT
 import matt.fx.control.inter.contentDisplay
 import matt.fx.control.inter.graphic
 import matt.fx.control.wrapper.control.slider.slider
-import matt.fx.control.wrapper.control.spinner.spinner
+import matt.fx.control.wrapper.control.spinner.intSpinner
+import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.gui.option.ActionNotASetting
@@ -26,7 +27,7 @@ fun createControlFor(
     sett: Setting<*>,
     settings: DeephysSettingsController
 ) = run {
-    VBoxW().apply {
+    VBoxW(childClass = NodeWrapper::class).apply {
         when (sett) {
             is EnumSetting       -> {
                 h {
@@ -42,7 +43,7 @@ fun createControlFor(
                     text = sett.label
                     contentDisplay = RIGHT
                     graphic =
-                        spinner(
+                        intSpinner(
                             min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
                         ) {
                             prefWidth = 150.0
