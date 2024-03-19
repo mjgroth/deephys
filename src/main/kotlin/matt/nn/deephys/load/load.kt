@@ -1,5 +1,6 @@
 package matt.nn.deephys.load
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
@@ -24,6 +25,7 @@ class ParseError<T>(val message: String?): CborSyncLoadResult<T>
 class Loaded<T>(val data: T): CborSyncLoadResult<T>
 
 
+@OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T: Any> JioFile.loadCbor(): CborSyncLoadResult<T> =
     if (doesNotExist) FileNotFound(this) else try {
         val bytes = readBytes()
