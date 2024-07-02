@@ -1,5 +1,10 @@
+@file:OptIn(UnsafeByteStringApi::class)
+
 package matt.nn.deephys.load.cache.raf.deed
 
+import kotlinx.io.bytestring.ByteString
+import kotlinx.io.bytestring.unsafe.UnsafeByteStringApi
+import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
 import matt.nn.deephys.load.cache.raf.AsyncSparseWriter
 import matt.nn.deephys.load.cache.raf.DeedKey
 import matt.nn.deephys.load.cache.raf.RAFCacheImpl
@@ -9,15 +14,24 @@ import java.io.OutputStream
 import java.nio.ByteBuffer
 
 sealed interface Deed {
-    fun write(bytes: ByteArray)
-    fun write(bytes: ByteArray, destOffset: Int)
+    fun write(bytes: ByteString)
+    fun write(
+        bytes: ByteString,
+        destOffset: Int
+    )
+
     fun write(bytes: ByteBuffer)
-    fun write(bytes: ByteBuffer, destOffset: Int)
+    fun write(
+        bytes: ByteBuffer,
+        destOffset: Int
+    )
+
     fun outputStream(offset: Int = 0): OutputStream
-    fun read(): ByteArray
+    fun read(): ByteString
 }
 
 
+@OptIn(UnsafeByteStringApi::class)
 class DeedImpl(
     private val startIndexInclusive: Long,
     val size: Int,
@@ -25,10 +39,11 @@ class DeedImpl(
     private val raf: () -> RAFLike,
     private val nextReader: () -> RAFLike,
     @Suppress("UNUSED_PARAMETER") key: DeedKey
-): Deed {
+) : Deed {
     val stopIndexExclusive: Long get() = startIndexInclusive + size
 
-    override fun read(): ByteArray {
+    @OptIn(UnsafeByteStringApi::class)
+    override fun read(): ByteString {
         if (rafCache.closedWriting()) {
             val readerRAF = nextReader()
             val buff = ByteArray(size)
@@ -37,7 +52,7 @@ class DeedImpl(
                     readFully(startIndexInclusive, buff)
                 }
             }
-            return buff
+            return UnsafeByteStringOperations.wrapUnsafe(buff)
         } else {
             val buff = ByteArray(size)
             synchronized(rafCache) {
@@ -45,17 +60,25 @@ class DeedImpl(
                     readFully(startIndexInclusive, buff)
                 }
             }
-            return buff
+            return UnsafeByteStringOperations.wrapUnsafe(buff)
         }
     }
 
-    private inner class DeedOutputStream(private var offset: Int): OutputStream() {
-        @Synchronized override fun write(b: Int) {
+    private inner class DeedOutputStream(private var offset: Int) : OutputStream() {
+        @Synchronized
+        override fun write(b: Int) {
             this@DeedImpl.write(b, offset++)
         }
 
-        @Synchronized override fun write(b: ByteArray, off: Int, len: Int) {
-            this@DeedImpl.write(b, off, len, offset)
+        @OptIn(UnsafeByteStringApi::class)
+        @Synchronized
+        override fun write(
+            b: ByteArray,
+            off: Int,
+            len: Int
+        ) {
+            /*The most unsafe ByteString wrap I have ever made*/
+            this@DeedImpl.write(UnsafeByteStringOperations.wrapUnsafe(b), off, len, offset)
             offset += len
         }
     }
@@ -66,7 +89,10 @@ class DeedImpl(
         raf().write(startIndexInclusive, byte.toInt())
     }
 
-    fun write(byte: Byte, destOffset: Int) {
+    fun write(
+        byte: Byte,
+        destOffset: Int
+    ) {
         raf().write(startIndexInclusive + destOffset, byte.toInt())
     }
 
@@ -74,20 +100,33 @@ class DeedImpl(
         raf().write(startIndexInclusive, byte)
     }
 
-    fun write(byte: Int, destOffset: Int) {
+    fun write(
+        byte: Int,
+        destOffset: Int
+    ) {
         raf().write(startIndexInclusive + destOffset, byte)
     }
 
-    override fun write(bytes: ByteArray) {
+    override fun write(bytes: ByteString) {
         raf().write(startIndexInclusive, bytes)
     }
 
-    override fun write(bytes: ByteArray, destOffset: Int) {
+    override fun write(
+        bytes: ByteString,
+        destOffset: Int
+    ) {
         raf().write(startIndexInclusive + destOffset, bytes)
     }
 
-    fun write(bytes: ByteArray, srcOffset: Int, srcLen: Int, destOffset: Int) {
-        raf().write(startIndexInclusive + destOffset, bytes, srcOffset, srcLen)
+    fun write(
+        bytes: ByteString,
+        srcOffset: Int,
+        srcLen: Int,
+        destOffset: Int
+    ) {
+        UnsafeByteStringOperations.withByteArrayUnsafe(bytes) {
+            raf().write(startIndexInclusive + destOffset, it, srcOffset, srcLen)
+        }
     }
 
     override fun write(bytes: ByteBuffer) {
@@ -101,12 +140,15 @@ class DeedImpl(
             }
 
             is AsyncSparseWriter -> {
-                r.write(startIndexInclusive, bytes.array().copyOf())
+                r.write(startIndexInclusive, UnsafeByteStringOperations.wrapUnsafe(bytes.array().copyOf()))
             }
         }
     }
 
-    override fun write(bytes: ByteBuffer, destOffset: Int) {
+    override fun write(
+        bytes: ByteBuffer,
+        destOffset: Int
+    ) {
         val r = raf()
         when (r) {
             is SeekableRAFLike   -> {
@@ -117,7 +159,7 @@ class DeedImpl(
             }
 
             is AsyncSparseWriter -> {
-                r.write(startIndexInclusive + destOffset, bytes.array().copyOf())
+                r.write(startIndexInclusive + destOffset, UnsafeByteStringOperations.wrapUnsafe(bytes.array().copyOf()))
             }
         }
     }

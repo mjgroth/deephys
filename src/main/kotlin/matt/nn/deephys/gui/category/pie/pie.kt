@@ -17,7 +17,6 @@ import matt.fx.control.wrapper.scroll.scrollpane
 import matt.fx.graphics.anim.animation.keyframe
 import matt.fx.graphics.anim.animation.timeline
 import matt.fx.graphics.anim.interp.MyInterpolator
-import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.style.background.backgroundFromColor
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -28,6 +27,7 @@ import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.fx.graphics.wrapper.textflow.textflow
 import matt.lang.anno.Duplicated
+import matt.lang.common.unsafeErr
 import matt.math.numalg.precision.withPrecision
 import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.deephyCheckbox
@@ -220,10 +220,14 @@ class CategoryPie(
                             ) {
                                 textFlow.background = backgroundFromColor(if (isDarkMode) Color.BLACK else Color.WHITE)
                             }
-                            updateColor(this, DarkModeController.darkModeProp.value)
-                            DarkModeController.darkModeProp.onChangeWithWeak(this) { tf, it ->
-                                updateColor(tf, it)
-                            }
+                            unsafeErr(
+                                """
+                                updateColor(this, DarkModeController.darkModeProp.value)
+                                DarkModeController.darkModeProp.onChangeWithWeak(this) { tf, it ->
+                                    updateColor(tf, it)
+                                }        
+                                """.trimIndent()
+                            )
                         }
 
 

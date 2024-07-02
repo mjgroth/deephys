@@ -430,7 +430,7 @@ class DatasetViewer(
 
     private val canUseHistory =
         this@DatasetViewer.history.binding(historyIndex, boundToDSet) {
-            isUnboundToDSet.value && it.tempDebugCollectionDelegate().isNotEmpty()
+            isUnboundToDSet.value && it.isNotEmpty()
         }
 
 

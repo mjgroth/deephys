@@ -12,6 +12,8 @@ import matt.file.toJioFile
 import matt.http.http
 import matt.json.prim.saveAsJsonTo
 import matt.lang.anno.SeeURL
+import matt.lang.sysprop.common.value
+import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.RamSample
 import matt.log.profile.data.ramSample
 import matt.log.profile.real.Profiler
@@ -34,13 +36,14 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.TestMethodOrder
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val NUM_IM_CLICKS = if (TestPerformance.get()) 10 else 2
-val NUM_SLICE_CLICKS = if (TestPerformance.get()) 10 else 2
+val NUM_IM_CLICKS get() = with(RuntimePropertyProvider) { if (TestPerformance.value()) 10 else 2 }
+val NUM_SLICE_CLICKS get() = with(RuntimePropertyProvider) { if (TestPerformance.value()) 10 else 2 }
 val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
 
 
@@ -71,7 +74,7 @@ val tests =
                 expectedLoadTime = 5.seconds
             )
         )
-        if (TestPerformance.get()) {
+        if (with(RuntimePropertyProvider) { TestPerformance.value() }) {
             add(
                 DeephysTestData(
                     name = "INX3",
@@ -93,6 +96,7 @@ val MAC_MAYBE_MIN_SCREEN_SIZE =
         width = 1366.0, height = 768.0
     )
 
+@Ignore("FX IS DEAD")
 @TestInstance(PER_CLASS)
 class TestDeephys(
     profiler: Profiler
@@ -185,7 +189,8 @@ class TestDeephys(
         }
     }
 
-    @Test fun downloadZooUrls() {
+    @Test
+    fun downloadZooUrls() {
         runTestWithTimeoutOnlyIfTestingPerformance {
             val example = NeuronalActivityZoo.EXAMPLES.first()
             launch {

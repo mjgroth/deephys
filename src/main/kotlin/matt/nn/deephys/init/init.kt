@@ -6,10 +6,10 @@ import matt.async.thread.daemon
 import matt.file.thismachine.thisMachine
 import matt.file.toJioFile
 import matt.fx.control.toggle.mech.ToggleMechanism
-import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
 import matt.lang.anno.optin.ExperimentalMattCode
+import matt.lang.common.unsafeErr
 import matt.log.profile.stopwatch.tic
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
 import matt.nn.deephys.gui.global.DeephyText
@@ -34,7 +34,11 @@ fun initializeWhatICan() {
     modelBinding.startLoading()
 
     daemon("initializeWhatICan inner Thread") {
-        DarkModeController.darkModeProp.value
+        unsafeErr(
+            """
+            DarkModeController.darkModeProp.value    
+            """.trimIndent()
+        )
         t.toc("END DarkModeController DAEMON")
     }
 

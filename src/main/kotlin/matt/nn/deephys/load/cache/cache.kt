@@ -1,7 +1,11 @@
 package matt.nn.deephys.load.cache
 
+import kotlinx.io.bytestring.ByteString
 import matt.file.ext.j.mkFold
+import matt.file.ext.j.readByteString
+import matt.file.ext.j.writeBytes
 import matt.file.toJioFile
+import matt.lang.bs.write
 import matt.lang.function.Produce
 import matt.lang.model.file.FsFile
 import matt.model.flowlogic.await.ThreadAwaitable
@@ -11,7 +15,6 @@ import matt.nn.deephys.load.cache.cachedeleter.CacheDeleter
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.cache.raf.RAFCacheImpl
 import matt.sys.idgen.IDGenerator
-import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
 
 
@@ -70,10 +73,10 @@ abstract class FileCaches(
         protected abstract val propFileName: String
 
         private val propFile get() = cacheFold[propFileName].toJioFile()
-        final override fun cache(bytes: ByteArray) {
+        final override fun cache(bytes: ByteString) {
             propFile.writeBytes(bytes)
             lazyWeak {
-                decode(propFile.readBytes())
+                decode(propFile.readByteString())
             }
         }
     }
@@ -84,7 +87,7 @@ abstract class RAFCaches : Caches() {
         rafCache: EvenlySizedRAFCache
     ) : CachedProp<R>() {
         val deed by lazy { rafCache.rent() }
-        final override fun cache(bytes: ByteArray) {
+        final override fun cache(bytes: ByteString) {
             deed.write(bytes)
             lazyWeak {
                 decode(deed.read())
@@ -100,7 +103,7 @@ abstract class RAFCaches : Caches() {
                 }
             }
 
-            override fun write(bytes: ByteArray) {
+            override fun write(bytes: ByteString) {
                 stream.write(bytes)
             }
         }
@@ -112,7 +115,7 @@ abstract class RAFCaches : Caches() {
 }
 
 interface Cacher {
-    fun write(bytes: ByteArray)
+    fun write(bytes: ByteString)
     fun finalize()
 }
 
@@ -132,8 +135,8 @@ abstract class Caches {
             slot.putLazyWeakGetter { r() }
         }
 
-        abstract fun cache(bytes: ByteArray)
-        protected abstract fun decode(bytes: ByteArray): R
+        abstract fun cache(bytes: ByteString)
+        protected abstract fun decode(bytes: ByteString): R
     }
 }
 

@@ -23,7 +23,7 @@ class ByNeuronView(
 
     override val control: ObsVal<WeakRefInter<RegionWrapper<*>>?> by lazy {
         children.binding {
-            if (it.isEmpty()) null else (it.tempDebugCollectionDelegate().filterIsInstance<LayerView>().firstOrNull()?.spinnerThing)
+            if (it.isEmpty()) null else (it.filterIsInstance<LayerView>().firstOrNull()?.spinnerThing)
         }
     }
 

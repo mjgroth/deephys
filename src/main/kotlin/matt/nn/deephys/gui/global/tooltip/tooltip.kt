@@ -21,7 +21,6 @@ import matt.fx.graphics.wrapper.node.shape.rect.rectangle
 import matt.fx.graphics.wrapper.pane.stack.StackPaneW
 import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.fx.node.proto.scaledcanvas.ScaledCanvas
-import matt.fx.node.tex.TexNodeFactory
 import matt.lang.function.Produce
 import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.gui.draw.draw
@@ -175,8 +174,11 @@ fun NodeWrapper.veryLazyDeephysTooltipWithNode(
     addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
 }
 
+
+/*suppressing deprecations until I migrate to compose*/
+@Suppress("DEPRECATION")
 val deephysTexNodeFactory by lazy {
-    TexNodeFactory(scale = DEEPHYS_LATEX_TOOLTIP_SCALE)
+    matt.fx.node.tex.TexNodeFactory(scale = DEEPHYS_LATEX_TOOLTIP_SCALE)
 }
 
 

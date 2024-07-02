@@ -18,6 +18,8 @@ import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.model.file.MacFileSystem
 import matt.lang.shutdown.preaper.ProcessReaper
+import matt.lang.sysprop.common.value
+import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
 import matt.log.profile.real.Profiler
@@ -96,8 +98,9 @@ class DeephysTestSession(private val profiler: Profiler) {
         prompt: String,
         force: Boolean = false
     ) =
-        if (force || ManualTests.get()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
-
+        with(RuntimePropertyProvider) {
+            if (force || ManualTests.value()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
+        }
 
     fun testHasCorrectTitle() =
         assertEquals(
@@ -145,7 +148,7 @@ class DeephysTestSession(private val profiler: Profiler) {
         tocAndSampleRam("got scene")
         val root = scene.root
         val sub = app.testReadyDSetViewsBbox.subscribe()
-        profiler.recordCPU {
+        profiler.record {
             Platform.runLater {
                 root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
                 DeephyState.model.value = testData.model.toAbsLinuxFile()
@@ -197,12 +200,15 @@ class DeephysTestSession(private val profiler: Profiler) {
             )
         )
         DEEPHYS_TEST_RESULT_JSON.saveJson(sessionList, pretty = true)
-        assertTrueLazyMessage(
-            !TestPerformance.get()
-                || totalTime < maxTime
-        ) {
-            "took to long to load: took=$totalTime expected=$maxTime"
+        with(RuntimePropertyProvider) {
+            assertTrueLazyMessage(
+                !TestPerformance.value()
+                    || totalTime < maxTime
+            ) {
+                "took to long to load: took=$totalTime expected=$maxTime"
+            }
         }
+
         TestDeephys.sampleRam()
     }
 

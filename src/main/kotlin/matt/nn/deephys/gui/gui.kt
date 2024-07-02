@@ -293,7 +293,7 @@ class DeephysApp {
         @Suppress("UNUSED_PARAMETER")
         openedNewVersion: Boolean,
         throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
-    ) = GuiApp(decorated = true) {
+    ) = GuiApp(ctx = this@TypicalShutdownContext, decorated = true) {
 
 
         println("stage123=$stage")

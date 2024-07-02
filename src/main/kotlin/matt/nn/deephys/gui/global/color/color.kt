@@ -2,10 +2,10 @@ package matt.nn.deephys.gui.global.color
 
 import javafx.scene.paint.CycleMethod.NO_CYCLE
 import matt.color.common.rgb
-import matt.fx.graphics.style.DarkModeController
 import matt.fx.graphics.wrapper.style.gradient.linearGradient
 import matt.fx.graphics.wrapper.style.toFXColor
-import matt.obs.bind.binding
+import matt.lang.common.unsafeErr
+import matt.obs.prop.writable.BindableProperty
 
 object DeephysPalette {
     val deephysBlue1 = rgb(0x00bbe2).toFXColor()
@@ -33,13 +33,18 @@ object DeephysPalette {
     }
 
     val tooltipBackground by lazy {
-        DarkModeController.darkModeProp.binding {
-            if (it) {
-                rgb(0x11_11_11).toFXColor()
-            } else {
-                rgb(0xEE_EE_EE).toFXColor()
+        unsafeErr(
+            """
+                      DarkModeController.darkModeProp.binding {
+                if (it) {
+                    rgb(0x11_11_11).toFXColor()
+                } else {
+                    rgb(0xEE_EE_EE).toFXColor()
+                }
             }
-        }
+            """.trimIndent()
+        )
+        BindableProperty(rgb(0x11_11_11).toFXColor())
     }
 }
 

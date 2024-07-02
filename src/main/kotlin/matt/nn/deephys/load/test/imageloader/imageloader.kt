@@ -1,5 +1,8 @@
 package matt.nn.deephys.load.test.imageloader
 
+import kotlinx.io.bytestring.ByteString
+import kotlinx.io.bytestring.unsafe.UnsafeByteStringApi
+import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
 import matt.async.thread.pool.DaemonPoolExecutor
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.map.MapReader
@@ -60,6 +63,7 @@ class ImageSetLoader<A: Number>(
 
     private var didRead = false
 
+    @OptIn(UnsafeByteStringApi::class)
     fun readImages(
         reader: MapReader,
         dtype: DType<A>,
@@ -113,7 +117,7 @@ class ImageSetLoader<A: Number>(
 
 
                 nextKeyOrValueOnly(requireIs = "data")
-                val imageData: ByteArray =
+                val imageData: ByteString =
                     if (numDataBytes == null) {
                         withByteStoring {
                             val r =
@@ -140,7 +144,7 @@ class ImageSetLoader<A: Number>(
 
 
                 val bytes =
-                    nextValueManual<MapReader, ByteArray>(
+                    nextValueManual<MapReader, ByteString>(
                         requireKeyIs = "activations"
                     ) {
                         nextKeyOrValueOnly(requireIs = "activations")
@@ -208,7 +212,7 @@ class ImageSetLoader<A: Number>(
                         imageActBytes.forEachIndexed { idx, it ->
                             System.arraycopy(it, n, buff, idx * dtype.byteLen, dtype.byteLen)
                         }
-                        tool.write(buff)
+                        tool.write(UnsafeByteStringOperations.wrapUnsafe(buff))
                     }
                 }
 

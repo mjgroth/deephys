@@ -1,8 +1,11 @@
 package matt.nn.deephys.load.test.dtype
 
+import kotlinx.io.bytestring.ByteString
 import kotlinx.serialization.Serializable
 import matt.collect.set.contents.Contents
 import matt.collect.set.contents.contentsOf
+import matt.lang.bs.readAndCopyDoubles
+import matt.lang.bs.readAndCopyFloats
 import matt.lang.cast.Caster
 import matt.lang.common.List2D
 import matt.math.arithmetic.sumOf
@@ -34,7 +37,6 @@ import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
-import java.nio.ByteBuffer
 import kotlin.math.exp as kotlinExp
 
 
@@ -54,9 +56,9 @@ sealed interface DType<N : Number>: Caster<N> {
     }
 
     val byteLen: Int
-    fun bytesThing(bytes: ByteArray): ImageActivationCborBytes<N>
+    fun bytesThing(bytes: ByteString): ImageActivationCborBytes<N>
     fun bytesToArray(
-        bytes: ByteArray,
+        bytes: ByteString,
         numIms: Int
     ): List<N>
 
@@ -94,7 +96,7 @@ fun <N : Number> topNeurons(
     forcedNeuronIndices = forcedNeuronIndices
 )
 
-sealed class DtypeBase<N : Number>() : DType<N> {
+sealed class DtypeBase<N : Number> : DType<N> {
     final override val emptyImageContents by lazy { contentsOf<DeephyImage<N>>() }
 }
 
@@ -106,14 +108,14 @@ object Float32 : DtypeBase<Float>() {
     override val label = "float32"
 
     override val byteLen = FLOAT_BYTE_LEN
-    override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat32(bytes)
+    override fun bytesThing(bytes: ByteString) = ImageActivationCborBytesFloat32(bytes)
     override fun bytesToArray(
-        bytes: ByteArray,
+        bytes: ByteString,
         numIms: Int
     ): List<Float> =
-        FloatArray(numIms).also {
-            ByteBuffer.wrap(bytes).asFloatBuffer().get(it)
-        }.asList()
+        bytes.readAndCopyFloats().asList().also {
+            check(it.size == numIms)
+        }
 
     override fun rawActivation(act: Float) = RawActivationFloat32(act)
     override fun activationRatio(act: Float) = ActivationRatioFloat32(act)
@@ -140,14 +142,14 @@ object Float64 : DtypeBase<Double>() {
     override fun cast(a: Any?): Double = a as Double
     override val label = "float64"
     override val byteLen = DOUBLE_BYTE_LEN
-    override fun bytesThing(bytes: ByteArray) = ImageActivationCborBytesFloat64(bytes)
+    override fun bytesThing(bytes: ByteString) = ImageActivationCborBytesFloat64(bytes)
     override fun bytesToArray(
-        bytes: ByteArray,
+        bytes: ByteString,
         numIms: Int
     ): List<Double> =
-        DoubleArray(numIms).also {
-            ByteBuffer.wrap(bytes).asDoubleBuffer().get(it)
-        }.asList()
+        bytes.readAndCopyDoubles().asList().also {
+            check(it.size == numIms)
+        }
 
     override fun rawActivation(act: Double) = RawActivationFloat64(act)
     override fun activationRatio(act: Double) = ActivationRatioFloat64(act)

@@ -6,7 +6,7 @@ import kotlinx.coroutines.runBlocking
 import matt.async.pri.MyThreadPriority.CREATING_NEW_CACHE
 import matt.async.thread.daemon
 import matt.async.thread.schedule.AccurateTimer
-import matt.async.thread.schedule.every
+import matt.async.thread.schedule.oldThreadedEvery
 import matt.exec.app.myVersion
 import matt.fx.graphics.wrapper.node.NodeWrapper
 import matt.fx.graphics.wrapper.text.text
@@ -30,7 +30,7 @@ object VersionChecker {
     private var checking = false
     fun checkForUpdatesInBackground() =
         daemon("VersionChecker Thread") {
-            every(
+            oldThreadedEvery(
                 60.sec,
                 timer =
                     AccurateTimer(

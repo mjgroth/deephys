@@ -1,10 +1,12 @@
 package matt.nn.deephys.load.cache.raf
 
+import kotlinx.io.bytestring.ByteString
 import matt.async.thread.daemon
 import matt.async.thread.executors.ThreadPool
 import matt.file.toJioFile
 import matt.lang.anno.SeeURL
 import matt.lang.atomic.AtomicInt
+import matt.lang.bs.write
 import matt.lang.common.NOT_IMPLEMENTED
 import matt.lang.file.toJFile
 import matt.lang.j.NUM_LOGICAL_CORES
@@ -29,8 +31,14 @@ import java.util.concurrent.ExecutorService
 import kotlin.time.Duration.Companion.milliseconds
 
 
-class EvenlySizedRAFCache(private val rafCache: RAFCacheImpl, private val deedSize: Int) : RAFCache {
-    constructor(f: FsFile, deedSize: Int) : this(rafCache = RAFCacheImpl(f), deedSize = deedSize)
+class EvenlySizedRAFCache(
+    private val rafCache: RAFCacheImpl,
+    private val deedSize: Int
+) : RAFCache {
+    constructor(
+        f: FsFile,
+        deedSize: Int
+    ) : this(rafCache = RAFCacheImpl(f), deedSize = deedSize)
 
     fun rent() = rafCache.rent(deedSize)
 }
@@ -122,13 +130,36 @@ private object OnlyDeedKey : DeedKey
 sealed interface RAFLike {
     val channel: Channel
     fun write(byte: Int)
-    fun write(pos: Long, byte: Int)
+    fun write(
+        pos: Long,
+        byte: Int
+    )
+
     fun readFully(buff: ByteArray)
-    fun readFully(pos: Long, buff: ByteArray)
-    fun write(bytes: ByteArray)
-    fun write(pos: Long, bytes: ByteArray)
-    fun write(bytes: ByteArray, srcOffset: Int, srcLen: Int)
-    fun write(pos: Long, bytes: ByteArray, srcOffset: Int, srcLen: Int)
+    fun readFully(
+        pos: Long,
+        buff: ByteArray
+    )
+
+    fun write(bytes: ByteString)
+    fun write(
+        pos: Long,
+        bytes: ByteString
+    )
+
+    fun write(
+        bytes: ByteArray,
+        srcOffset: Int,
+        srcLen: Int
+    )
+
+    fun write(
+        pos: Long,
+        bytes: ByteArray,
+        srcOffset: Int,
+        srcLen: Int
+    )
+
     fun close()
 }
 
@@ -136,22 +167,40 @@ sealed class SeekableRAFLike : RAFLike {
     abstract override val channel: WritableByteChannel
     abstract fun seek(pos: Long)
 
-    @Synchronized final override fun write(pos: Long, byte: Int) {
+    @Synchronized
+    final override fun write(
+        pos: Long,
+        byte: Int
+    ) {
         seek(pos)
         write(byte)
     }
 
-    @Synchronized final override fun readFully(pos: Long, buff: ByteArray) {
+    @Synchronized
+    final override fun readFully(
+        pos: Long,
+        buff: ByteArray
+    ) {
         seek(pos)
         readFully(buff)
     }
 
-    @Synchronized final override fun write(pos: Long, bytes: ByteArray) {
+    @Synchronized
+    final override fun write(
+        pos: Long,
+        bytes: ByteString
+    ) {
         seek(pos)
         write(bytes)
     }
 
-    @Synchronized final override fun write(pos: Long, bytes: ByteArray, srcOffset: Int, srcLen: Int) {
+    @Synchronized
+    final override fun write(
+        pos: Long,
+        bytes: ByteArray,
+        srcOffset: Int,
+        srcLen: Int
+    ) {
         seek(pos)
         write(bytes, srcOffset, srcLen)
     }
@@ -179,7 +228,7 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
     }
 
 
-    override fun write(bytes: ByteArray) {
+    override fun write(bytes: ByteString) {
         raf.write(bytes)
     }
 
@@ -188,7 +237,11 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
         raf.close()
     }
 
-    override fun write(bytes: ByteArray, srcOffset: Int, srcLen: Int) {
+    override fun write(
+        bytes: ByteArray,
+        srcOffset: Int,
+        srcLen: Int
+    ) {
         raf.write(bytes, srcOffset, srcLen)
     }
 }
@@ -222,11 +275,15 @@ class SparseWriter(file: FsFile) : SeekableRAFLike() {
         TODO()
     }
 
-    override fun write(bytes: ByteArray) {
-        channel.write(ByteBuffer.wrap(bytes))
+    override fun write(bytes: ByteString) {
+        channel.write(bytes)
     }
 
-    override fun write(bytes: ByteArray, srcOffset: Int, srcLen: Int) {
+    override fun write(
+        bytes: ByteArray,
+        srcOffset: Int,
+        srcLen: Int
+    ) {
         channel.write(ByteBuffer.wrap(bytes, srcOffset, srcLen))
     }
 
@@ -296,20 +353,29 @@ class AsyncSparseWriter(
 
     private val handler by lazy {
         object : CompletionHandler<Int, Unit> {
-            override fun completed(result: Int, attachment: Unit?) {
+            override fun completed(
+                result: Int,
+                attachment: Unit?
+            ) {
                 finishedWrites.incrementAndGet()
             }
 
-            override fun failed(exc: Throwable, attachment: Unit?): Unit = throw exc
+            override fun failed(
+                exc: Throwable,
+                attachment: Unit?
+            ): Unit = throw exc
         }
     }
 
-    override fun write(pos: Long, byte: Int) {
+    override fun write(
+        pos: Long,
+        byte: Int
+    ) {
         startedWrites.incrementAndGet()
         channel.write(ByteBuffer.wrap(byteArrayOf(byte.toByte())), pos, Unit, handler)
     }
 
-    override fun write(bytes: ByteArray) {
+    override fun write(bytes: ByteString) {
         TODO()
     }
 
@@ -317,20 +383,35 @@ class AsyncSparseWriter(
         TODO()
     }
 
-    override fun readFully(pos: Long, buff: ByteArray) {
+    override fun readFully(
+        pos: Long,
+        buff: ByteArray
+    ) {
         TODO()
     }
 
-    override fun write(pos: Long, bytes: ByteArray) {
+    override fun write(
+        pos: Long,
+        bytes: ByteString
+    ) {
         startedWrites.incrementAndGet()
-        channel.write(ByteBuffer.wrap(bytes), pos, Unit, handler)
+        channel.write(bytes, pos, handler)
     }
 
-    override fun write(bytes: ByteArray, srcOffset: Int, srcLen: Int) {
+    override fun write(
+        bytes: ByteArray,
+        srcOffset: Int,
+        srcLen: Int
+    ) {
         NOT_IMPLEMENTED
     }
 
-    override fun write(pos: Long, bytes: ByteArray, srcOffset: Int, srcLen: Int) {
+    override fun write(
+        pos: Long,
+        bytes: ByteArray,
+        srcOffset: Int,
+        srcLen: Int
+    ) {
         startedWrites.incrementAndGet()
         channel.write(ByteBuffer.wrap(bytes, srcOffset, srcLen), pos, Unit, handler)
     }

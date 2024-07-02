@@ -1,5 +1,6 @@
 package matt.nn.deephys.model.importformat.neuron
 
+import kotlinx.io.bytestring.ByteString
 import kotlinx.serialization.Serializable
 import matt.nn.deephys.load.cache.RAFCaches
 import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
@@ -20,6 +21,6 @@ class TestNeuron<A : Number>(
 
     val activations =
         object : CachedRAFProp<List<A>>(activationsRAF) {
-            override fun decode(bytes: ByteArray): List<A> = dType.bytesToArray(bytes, numIms)
+            override fun decode(bytes: ByteString): List<A> = dType.bytesToArray(bytes, numIms)
         }
 }

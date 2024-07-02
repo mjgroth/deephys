@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.category
 import javafx.geometry.Pos.TOP_CENTER
 import matt.caching.compcache.invoke
 import matt.collect.set.contents.Contents
-import matt.color.colorMap
+import matt.color.colormap.Automatic
 import matt.fig.modell.PieChartIrPlaceholder
 import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NW
@@ -163,7 +163,7 @@ class CategoryView<A : Number>(
                     isFillHeight = true
                     spacing = 10.0
                     val cats = (testLoader.test.categories - selection.primaryCategory)
-                    val cMap = colorMap(cats.size)
+                    val cMap = Automatic().colorMap(cats.size)
                     val colorMap = cats.withIndex().associate { it.value to cMap[it.index]!!.toFXColor() }
                     /*maxWidthProperty.bindWeakly(viewer.widthProperty*0.45)*/
                     v {
