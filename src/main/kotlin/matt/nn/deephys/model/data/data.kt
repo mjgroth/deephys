@@ -2,7 +2,6 @@ package matt.nn.deephys.model.data
 
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.invoke
-import matt.collect.set.contents.contentsOf
 import matt.fx.graphics.wrapper.node.NW
 import matt.lang.assertions.require.requireEquals
 import matt.lang.weak.common.WeakRefInter
@@ -84,7 +83,7 @@ data class InterTestNeuron(
         with(FakeCacheManager) {
             ActivationRatioCalc(
                 numTest = numTest,
-                images = contentsOf(),
+                images = setOf(),
                 denomTest = denomTest,
                 neuron = this@InterTestNeuron
             )()

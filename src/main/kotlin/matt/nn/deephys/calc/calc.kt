@@ -7,7 +7,6 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.invoke
 import matt.codegen.tex.TeXDSL
 import matt.codegen.tex.tex
-import matt.collect.set.contents.Contents
 import matt.lang.assertions.require.requireEquals
 import matt.lang.function.Dsl
 import matt.math.numalg.precision.withPrecision
@@ -175,7 +174,7 @@ data class TopNeurons<N : Number>(
 
 data class ActivationRatioCalc<A : Number>(
     val numTest: TypedTestLike<A>,
-    private val images: Contents<DeephyImage<A>>,
+    private val images: Set<DeephyImage<A>>,
     val denomTest: TypedTestLike<*>,
     private val neuron: InterTestNeuron
 ) : FakeCacheComputeInput<Activation<A, *>>()  /*because this is taking up way too much memory*/ {

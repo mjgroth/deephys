@@ -2,8 +2,6 @@ package matt.nn.deephys.load.test.dtype
 
 import kotlinx.io.bytestring.ByteString
 import kotlinx.serialization.Serializable
-import matt.collect.set.contents.Contents
-import matt.collect.set.contents.contentsOf
 import matt.lang.bs.readAndCopyDoubles
 import matt.lang.bs.readAndCopyFloats
 import matt.lang.cast.Caster
@@ -77,7 +75,7 @@ sealed interface DType<N : Number>: Caster<N> {
     fun d2array(list: List2D<N>): NDArray<N, D2>
     fun exp(v: N): N
     fun sum(list: List<N>): N
-    val emptyImageContents: Contents<DeephyImage<N>>
+    val emptyImageContents: Set<DeephyImage<N>>
     val label: String
     val one: N
     val zero: N
@@ -97,7 +95,7 @@ fun <N : Number> topNeurons(
 )
 
 sealed class DtypeBase<N : Number> : DType<N> {
-    final override val emptyImageContents by lazy { contentsOf<DeephyImage<N>>() }
+    final override val emptyImageContents by lazy { setOf<DeephyImage<N>>() }
 }
 
 @Serializable

@@ -1,6 +1,5 @@
 package matt.nn.deephys.gui.dataset.byimage.mult
 
-import matt.collect.set.contents.Contents
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
 import matt.lang.common.go
@@ -53,7 +52,7 @@ class MultipleImagesView<A: Number>(
         }
         neuronListViewSwapper(
             viewer = viewer,
-            contents = Contents(images),
+            contents = images.toSet(),
             fade = fade,
             settings = memSafeSettings,
             postDtypeTestLoader = post

@@ -2,7 +2,6 @@ package matt.nn.deephys.gui.category
 
 import javafx.geometry.Pos.TOP_CENTER
 import matt.caching.compcache.invoke
-import matt.collect.set.contents.Contents
 import matt.color.colormap.Automatic
 import matt.fig.modell.PieChartIrPlaceholder
 import matt.fx.graphics.fxthread.runLater
@@ -124,7 +123,7 @@ class CategoryView<A : Number>(
 
                 neuronListViewSwapper(
                     viewer = viewer,
-                    contents = Contents(selection.allCategories.flatMap { testLoader.test.imagesWithGroundTruth(it) }),
+                    contents = selection.allCategories.flatMapTo(mutableSetOf()) { testLoader.test.imagesWithGroundTruth(it) },
                     postDtypeTestLoader = testLoader.post,
                     fade = false /*I think issues are being causes since this child is fading while the parent is too*/,
                     settings = memSafeSettings

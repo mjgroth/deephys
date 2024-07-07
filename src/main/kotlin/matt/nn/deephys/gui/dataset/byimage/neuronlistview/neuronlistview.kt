@@ -3,7 +3,6 @@ package matt.nn.deephys.gui.dataset.byimage.neuronlistview
 import javafx.scene.control.ScrollPane
 import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
 import matt.caching.compcache.invoke
-import matt.collect.set.contents.Contents
 import matt.fx.control.wrapper.scroll.ScrollPaneWrapper
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -44,7 +43,7 @@ import matt.prim.int.ceilInt
 
 fun <A : Number> NW.neuronListViewSwapper(
     viewer: DatasetViewer,
-    contents: Contents<DeephyImage<A>>,
+    contents: Set<DeephyImage<A>>,
     postDtypeTestLoader: PostDtypeTestLoader<A>,
     bindScrolling: Boolean = false,
     fade: Boolean = true,
