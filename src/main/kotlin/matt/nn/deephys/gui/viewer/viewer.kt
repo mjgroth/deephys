@@ -90,7 +90,6 @@ import matt.obs.prop.writable.toVarProp
 import matt.obs.prop.writable.withNonNullUpdatesFrom
 import matt.prim.str.mybuild.api.string
 import java.lang.ref.WeakReference
-import kotlin.reflect.KProperty
 
 class DatasetViewer(
     initialFile: TypedFile<Cbor, *>? = null,
@@ -113,7 +112,7 @@ class DatasetViewer(
     val siblings by lazy { outerBox.children.filtered { it != this } }
 
     private val currentFile get() = file.value?.fName
-    override fun reflectingToStringProps(): Set<KProperty<*>> = setOf(::currentFile)
+    override fun toStringProps(): Map<String, Any?> = mapOf(::currentFile.name to currentFile)
 
     val file: VarProp<TypedFile<Cbor, *>?> =
         VarProp(initialFile).withChangeListener {

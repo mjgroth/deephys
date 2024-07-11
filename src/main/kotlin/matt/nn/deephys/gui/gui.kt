@@ -342,7 +342,7 @@ class DeephysApp {
         readyForConfiguringWindowFromTest.putLoadedValue(stage)
 
 
-        root<VBoxSimple> {
+        root(VBoxSimple()) {
 
 
             alignment = TOP_CENTER

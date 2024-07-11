@@ -34,7 +34,8 @@
                 ":k:math",
                 ":k:math:numalg:matalg",
                 ":k:fx:node:proto",
-                ":k:codegen"
+                ":k:codegen",
+                ":k:reflect"
             ]
         },
         {
