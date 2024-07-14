@@ -1,3 +1,4 @@
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 package matt.nn.deephys.gui
 
 import javafx.geometry.Pos

@@ -1,3 +1,4 @@
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 package matt.nn.deephys.test.deephys.tester
 
 import javafx.application.Platform

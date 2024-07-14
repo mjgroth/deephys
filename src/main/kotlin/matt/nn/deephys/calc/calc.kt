@@ -1,3 +1,4 @@
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 package matt.nn.deephys.calc
 
 import matt.caching.compcache.ComputeInput
