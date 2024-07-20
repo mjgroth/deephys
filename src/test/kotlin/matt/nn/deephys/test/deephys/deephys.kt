@@ -11,6 +11,7 @@ import matt.file.commons.reg.DEEPHYS_DATA_FOLDER
 import matt.file.toJioFile
 import matt.http.http
 import matt.json.prim.saveAsJsonTo
+import matt.kstruct.ctx.toProcessReaper
 import matt.lang.anno.SeeURL
 import matt.lang.sysprop.common.value
 import matt.lang.sysprop.expects.RuntimePropertyProvider
@@ -23,6 +24,7 @@ import matt.nn.deephys.test.deephys.tester.DeephysTestSession
 import matt.reflect.scan.jcommon.systemScope
 import matt.reflect.scan.jcommon.usingClassGraph
 import matt.reflect.scan.mattSubClasses
+import matt.shell.commonj.context.withMacShellExecutionContext
 import matt.test.Tests
 import matt.test.assertions.assertTrueLazyMessage
 import matt.test.co.runTestWithTimeoutOnlyIfTestingPerformance
@@ -102,7 +104,7 @@ class TestDeephys(
     profiler: Profiler
 ) : Tests() {
 
-    val session = DeephysTestSession(profiler)
+    val session = with(toProcessReaper().withMacShellExecutionContext()) { DeephysTestSession(profiler) }
 
 
     companion object {

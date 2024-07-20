@@ -171,8 +171,6 @@ class DatasetViewer(
                 t.toc("started loader")
                 loader
             }
-        }.apply {
-            stopwatch = "dataBinding"
         }
 
 

@@ -9,11 +9,7 @@ import matt.cbor.read.streamman.cborReader
 import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.anno.Open
 import matt.lang.anno.PhaseOut
-import matt.lang.bs.readAndCopyDoubles
-import matt.lang.bs.readAndCopyFloats
 import matt.lang.common.NEVER
-import matt.lang.common.bs.plus
-import matt.lang.common.bs.withIndex
 import matt.lang.weak.common.lazyWeak
 import matt.lang.weak.weak
 import matt.nn.deephys.load.async.AsyncLoader.DirectLoadedOrFailedValueSlot
@@ -28,9 +24,13 @@ import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.Test
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.prim.bytestr.bs.plus
+import matt.prim.bytestr.bs.withIndex
 import matt.prim.converters.StringConverter
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
+import matt.prim.j.bs.readAndCopyDoubles
+import matt.prim.j.bs.readAndCopyFloats
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 

@@ -2,8 +2,6 @@ package matt.nn.deephys.load.test.dtype
 
 import kotlinx.io.bytestring.ByteString
 import kotlinx.serialization.Serializable
-import matt.lang.bs.readAndCopyDoubles
-import matt.lang.bs.readAndCopyFloats
 import matt.lang.cast.Caster
 import matt.lang.common.List2D
 import matt.math.arithmetic.sumOf
@@ -30,6 +28,8 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat64
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.double.DOUBLE_BYTE_LEN
 import matt.prim.float.FLOAT_BYTE_LEN
+import matt.prim.j.bs.readAndCopyDoubles
+import matt.prim.j.bs.readAndCopyFloats
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2

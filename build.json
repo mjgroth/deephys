@@ -1,5 +1,7 @@
 {
     "type": "BasicJvmOnlyMod",
+    "note": "kover null because FX IS DEAD",
+    "kover": null,
     "jvm": {
         "exec": {
             "type": "Typical"
@@ -13,17 +15,6 @@
     },
     "publicApp": true,
     "dependencies": [
-        {
-            "type": "Projects",
-            "cfg": "testImplementation",
-            "paths": [
-                ":k:gui",
-                ":k:log:profile:yk",
-                ":k:mbuild:mtest:compose",
-                ":k:test",
-                ":k:test:co"
-            ]
-        },
         {
             "type": "Projects",
             "cfg": "implementation",
@@ -42,6 +33,17 @@
             "type": "Lib",
             "cfg": "implementation",
             "key": "guava-desktop"
+        },
+        {
+            "type": "Projects",
+            "cfg": "testImplementation",
+            "paths": [
+                ":k:gui",
+                ":k:log:profile:yk",
+                ":k:mbuild:mtest:compose",
+                ":k:test",
+                ":k:test:co"
+            ]
         }
     ],
     "python": {
@@ -79,7 +81,5 @@
     "aio": {
         "checkSubmodulesArePublic": false
     },
-    "release": {},
-    "kover": null,
-    "note": "kover null because FX IS DEAD"
+    "release": {}
 }
