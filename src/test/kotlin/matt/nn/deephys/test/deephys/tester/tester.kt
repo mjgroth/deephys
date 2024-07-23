@@ -2,6 +2,7 @@
 package matt.nn.deephys.test.deephys.tester
 
 import javafx.application.Platform
+import kotlinx.coroutines.runBlocking
 import matt.async.thread.namedThread
 import matt.file.common.toAbsLinuxFile
 import matt.file.commons.desktop.DEEPHYS_TEST_RESULT_JSON
@@ -13,7 +14,6 @@ import matt.fx.graphics.fxthread.RunLaterReturnLatchManager
 import matt.fx.graphics.fxthread.runLaterReturn
 import matt.fx.graphics.wrapper.node.findRecursivelyFirstOrNull
 import matt.fx.graphics.wrapper.node.recurseSelfAndChildNodes
-import matt.gui.service.AsyncFXActionAbilitiesService
 import matt.json.prim.loadJson
 import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
@@ -47,6 +47,7 @@ import matt.nn.deephys.test.deephys.TestDeephys
 import matt.nn.deephys.test.deephys.WAIT_FOR_GUI_INTERVAL
 import matt.obs.subscribe.j.waitForThereToBeAtLeastOneNotificationThenUnsubscribe
 import matt.prim.str.elementsToString
+import matt.service.action.NoActionAbilities
 import matt.test.assertions.assertTrueLazyMessage
 import matt.test.prop.ManualTests
 import matt.test.prop.j.TestPerformance
@@ -92,15 +93,18 @@ class DeephysTestSession(private val profiler: Profiler) {
     }
 
     private val confirmService by lazy {
-        AsyncFXActionAbilitiesService(mainStage)
+        /*replace with the Compose implementation, the shell implementation, or isn't there an alternative suspending interface now? or something once I migrate*/
+        NoActionAbilities
     }
 
     fun testConfirmation(
         prompt: String,
         force: Boolean = false
     ) =
-        with(RuntimePropertyProvider) {
-            if (force || ManualTests.value()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
+        runBlocking {
+            with(RuntimePropertyProvider) {
+                if (force || ManualTests.value()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
+            }
         }
 
     fun testHasCorrectTitle() =
