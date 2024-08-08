@@ -14,6 +14,7 @@ import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
 import matt.gui.exception.deephysSite
 import matt.http.json.requireIs
 import matt.http.url.MURL
+import matt.lang.cfnf.getOrThrow
 import matt.log.warn.common.warn
 import matt.model.data.release.Version
 import matt.model.data.release.VersionInfo
@@ -43,7 +44,7 @@ object VersionChecker {
                 try {
                     val latestVersionFromServer =
                         runBlocking {
-                            val resp = matt.http.http(MURL(deephysSite)/*.productionHost*/ + "latest-version")
+                            val resp = matt.http.tryHttp(MURL(deephysSite)/*.productionHost*/ + "latest-version").getOrThrow() /*because FX IS DEAD*/
                             if (resp.statusCode() != HttpStatusCode.OK) {
                                 null
                             } else {

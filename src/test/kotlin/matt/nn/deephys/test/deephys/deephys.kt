@@ -9,10 +9,11 @@ import matt.file.commons.desktop.DEEPHYS_RAM_SAMPLES_FOLDER
 import matt.file.commons.desktop.RAM_NUMBERED_FILES
 import matt.file.commons.reg.DEEPHYS_DATA_FOLDER
 import matt.file.toJioFile
-import matt.http.http
+import matt.http.tryHttp
 import matt.json.prim.saveAsJsonTo
 import matt.kstruct.ctx.toProcessReaper
 import matt.lang.anno.SeeURL
+import matt.lang.cfnf.getOrThrow
 import matt.lang.sysprop.common.value
 import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.RamSample
@@ -196,9 +197,9 @@ class TestDeephys(
         runTestWithTimeoutOnlyIfTestingPerformance {
             val example = NeuronalActivityZoo.EXAMPLES.first()
             launch {
-                http(example.modelURL).requireSuccessful()
+                tryHttp(example.modelURL).getOrThrow() /*because is test*/.requireSuccessful()
             }
-            http(example.testURLs.first()).requireSuccessful()
+            tryHttp(example.testURLs.first()).getOrThrow() /*because is test*/.requireSuccessful()
         }
     }
 }
