@@ -33,3 +33,4 @@ local.properties
 .ipynb_checkpoints
 *.comp_mem
 coverage-error.log
+.intellijPlatform

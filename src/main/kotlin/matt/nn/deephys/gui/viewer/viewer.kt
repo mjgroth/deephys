@@ -298,7 +298,9 @@ class DatasetViewer(
         ) {
             when (view.value) {
                 ByNeuron   -> listOf(neuronSelection.value).filterNotNull()
+
                 ByImage    -> with(testData.value!!.testRAMCache) { topNeurons.value?.findOrCompute() ?: listOf() }
+
                 ByCategory ->
                     listOf<InterTestNeuron>().apply {
                         warn("did not make highlighted neurons from category view work yet")

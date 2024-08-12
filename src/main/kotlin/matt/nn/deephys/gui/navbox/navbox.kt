@@ -76,7 +76,7 @@ class NavBox(private val app: DeephysApp) : VBoxW(childClass = NodeWrapper::clas
                 deephysLazyTab("Neuronal Activity Zoo") {
 
 
-                    VBoxW(childClass=NodeWrapper::class).apply {
+                    VBoxW(childClass = NodeWrapper::class).apply {
                         spacer()
                         NeuronalActivityZoo.EXAMPLES.forEach { demo ->
                             deephyButton(demo.name) {

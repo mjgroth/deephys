@@ -41,7 +41,7 @@ class MultipleImagesView<A: Number>(
             settings = memSafeSettings
         )
         +ImageFlowPane(viewer).apply {
-            prefWrapLengthProperty.bindWeakly(viewer.widthProperty*0.4)
+            prefWrapLengthProperty.bindWeakly(viewer.widthProperty * 0.4)
             images.take(MAX_IMS).forEach {
                 +DeephyImView(it, viewer, settings = memSafeSettings).apply {
                 }

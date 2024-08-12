@@ -245,6 +245,7 @@ class NeuronListView(
                                                     veryLazyDeephysTooltip(memSafeSettings) {
                                                         "activation is always 1 in this case, so it is not shown"
                                                     }
+
                                                 is RawActivation<*, *>       -> {
                                                     val numImages = (cfg.tops).testAndImages.images.size
                                                     veryLazyDeephysTooltip(memSafeSettings) {

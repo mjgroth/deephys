@@ -137,9 +137,9 @@ class TestLoader(
                         val keys = Keys.entries
 
                         val list = listOf(true)
-                        println(list.count { it } ..1)
+                        println(list.count { it }..1)
 
-                        expectCount(keys.count { it.required } ..keys.size)
+                        expectCount(keys.count { it.required }..keys.size)
                         val countInt = count.toInt()
 
                         var name: String? = null
