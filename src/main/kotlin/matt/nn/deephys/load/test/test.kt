@@ -13,7 +13,7 @@ import matt.lang.assertions.require.requireEquals
 import matt.lang.assertions.require.requireNot
 import matt.lang.common.err
 import matt.log.warn.common.warn
-import matt.model.code.errreport.j.ThrowReport
+import matt.model.code.errreport.createThrowReport
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -243,14 +243,14 @@ class TestLoader(
                     }
                     stream.close()
                 } catch (e: IOException) {
-                    ThrowReport(Thread.currentThread(), e).print()
+                    createThrowReport(e, allowCapturingCurrentThread = true).print()
                     signalStreamNotOk()
                 } catch (e: CborParseException) {
-                    ThrowReport(Thread.currentThread(), e).print()
+                    createThrowReport(e, allowCapturingCurrentThread = true).print()
                     signalParseError(e)
                     return@daemon
                 } catch (e: LoadException) {
-                    ThrowReport(Thread.currentThread(), e).print()
+                    createThrowReport(e, allowCapturingCurrentThread = true).print()
                     signalParseError(e)
                     return@daemon
                 }
