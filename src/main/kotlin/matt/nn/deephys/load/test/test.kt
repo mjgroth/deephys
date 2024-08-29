@@ -226,7 +226,7 @@ class TestLoader(
 
 
                         thePost.imageSetLoader.neuronActCacheTools!!.forEach {
-                            it.finalize()
+                            it.myFinalize()
                         }
                         thePost.datasetHDCache.neuronsRAF.closeWriting()
 

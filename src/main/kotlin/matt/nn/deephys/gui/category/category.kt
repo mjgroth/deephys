@@ -1,10 +1,13 @@
 package matt.nn.deephys.gui.category
 
 import javafx.geometry.Pos.TOP_CENTER
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import matt.caching.compcache.invoke
 import matt.color.colormap.Automatic
 import matt.fig.modell.PieChartIrPlaceholder
-import matt.fx.graphics.fxthread.runLater
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.line.line
 import matt.fx.graphics.wrapper.pane.hbox.h
@@ -64,7 +67,8 @@ class CategoryView<A : Number>(
                     is Category          -> {
                         val acc =
                             CategoryAccuracy(
-                                selection, testLoader
+                                selection,
+                                testLoader
                             )
                         with(testLoader.testRAMCache) {
                             deephysLabel(
@@ -155,7 +159,9 @@ class CategoryView<A : Number>(
                         is Category          -> allFalseNegatives
                         is CategoryConfusion -> allFalseNegatives.filter { it.prediction == selection.second }
                     }
-                deephysInfoSymbol("Tip: Click the colored areas to navigate to the respective class. Shift-click it to analyze confusions with the currently selected class.") {
+                deephysInfoSymbol(
+                    "Tip: Click the colored areas to navigate to the respective class. Shift-click it to analyze confusions with the currently selected class."
+                ) {
                     visibleAndManagedProp.bindWeakly(viewer.showTutorials)
                 }
                 h {
@@ -205,10 +211,15 @@ class CategoryView<A : Number>(
                             /*fill = FXColor(0.5, 0.5, 0.5, 0.2)*/
                             fill = FXColor(0.5, 0.5, 0.5, 0.2)
                             stroke = FXColor(0.5, 0.5, 0.5, 0.2)
-                            runLater {
+                            @Suppress("OPT_IN_USAGE")
+                            GlobalScope.launch(Dispatchers.JavaFx) {
                                 fill = FXColor(0.5, 0.5, 0.5, 0.2)
                                 stroke = FXColor(0.5, 0.5, 0.5, 0.2)
                             }
+                            /*runLater {
+                                fill = FXColor(0.5, 0.5, 0.5, 0.2)
+                                stroke = FXColor(0.5, 0.5, 0.5, 0.2)
+                            }*/
                             startXProperty.bind(thePane.widthProperty / 2)
                             endXProperty.bind(thePane.widthProperty / 2)
                             strokeWidth = 5.0

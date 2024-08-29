@@ -11,7 +11,11 @@ fun <A: Number> TypedTestLike<A>.withNoImages() = withImages(setOf())
 fun <A: Number> TypedTestLike<A>.withImage(image: DeephyImage<A>) = withImages(setOf(image))
 
 
-fun <A: Number> TypedTestLike<A>.withImages(images: Set<DeephyImage<A>>): TestAndSomeImages<A> = TestAndSomeImages(test = this, images = images)
+fun <A: Number> TypedTestLike<A>.withImages(images: Set<DeephyImage<A>>): TestAndSomeImages<A> =
+    TestAndSomeImages(
+        test = this,
+        images = images
+    )
 
 
 

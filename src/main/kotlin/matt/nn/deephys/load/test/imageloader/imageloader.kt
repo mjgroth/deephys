@@ -127,7 +127,9 @@ class ImageSetLoader<A: Number>(
                             val imDims = l(r.size, r[0].size, r[0][0].size)
                             pixelsShapePerImage.putLoadedValue(imDims)
                             if (r.size != 3) {
-                                throw LoadException("Images should have 3 color channels. The first dimension should be a length of 3, but the encountered dimensions were ${imDims.elementsToString()} ")
+                                throw LoadException(
+                                    "Images should have 3 color channels. The first dimension should be a length of 3, but the encountered dimensions were ${imDims.elementsToString()} "
+                                )
                             }
                             r
                         }.let {
@@ -163,7 +165,9 @@ class ImageSetLoader<A: Number>(
                                     actsShapePerIm.size != testLoader.model.layers.size
                                     || modelShape.zip(actsShapePerIm).any { it.first != it.second }
                                 ) {
-                                    throw LoadException("Activations shape from .test file (${actsShapePerIm.elementsToString()}) does not match shape from .model file (${modelShape.elementsToString()})")
+                                    throw LoadException(
+                                        "Activations shape from .test file (${actsShapePerIm.elementsToString()}) does not match shape from .model file (${modelShape.elementsToString()})"
+                                    )
                                 }
 
 

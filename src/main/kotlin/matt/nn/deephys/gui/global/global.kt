@@ -211,9 +211,9 @@ fun EventTargetWrapper.sigFigText(
     textProperty.bindWeakly(
         sigFigSett.weakBinding(this) { _, it ->
             when (num) {
-                is Float -> num.withPrecision(it).toString()
+                is Float  -> num.withPrecision(it).toString()
                 is Double -> num.withPrecision(it).toString()
-                else -> error("not ready for different dtype")
+                else      -> error("not ready for different dtype")
             } + numSuffix
         }
     )

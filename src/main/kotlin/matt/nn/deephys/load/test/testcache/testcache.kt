@@ -18,7 +18,9 @@ class TestRAMCache(settings: DeephysSettingsController) : RAMComputeCacheManager
                 val weakIm = weak(im) /*prevents the tooltip map from leaking DeephyImages into memory*/
                 lazyMap { str ->
                     DeephyTooltip(
-                        str, weakIm.deref()!!, settings = settings
+                        str,
+                        weakIm.deref()!!,
+                        settings = settings
                     ) /*this reference should always return non-null as long as the image is still being used.*/
                 }
             }

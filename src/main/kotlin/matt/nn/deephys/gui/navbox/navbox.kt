@@ -109,7 +109,9 @@ class NavBox(private val app: DeephysApp) : VBoxW(childClass = NodeWrapper::clas
 
 
                             val favSize = 18
-                            unsafeErr("Is the backupImage below still the correct dimensions? I think I used to specify only the width OR the height. But since moving to a size-based approach I now specify both. I am just unsure if web.svg is in fact supposed to be shown with a square shape or if that is a distortion of its aspect ratio")
+                            unsafeErr(
+                                "Is the backupImage below still the correct dimensions? I think I used to specify only the width OR the height. But since moving to a size-based approach I now specify both. I am just unsure if web.svg is in fact supposed to be shown with a square shape or if that is a distortion of its aspect ratio"
+                            )
                             +FaviconLoader.loadAsynchronously(
                                 url = url.toURL(),
                                 backupImage =

@@ -10,6 +10,7 @@ import matt.lang.common.NOT_IMPLEMENTED
 import matt.lang.file.toJFile
 import matt.lang.j.NUM_LOGICAL_CORES
 import matt.lang.model.file.FsFile
+import matt.lang.model.value.letIfInitialized
 import matt.model.flowlogic.latch.j.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
 import matt.nn.deephys.load.cache.raf.deed.DeedImpl
@@ -17,6 +18,7 @@ import matt.prim.j.bs.write
 import matt.time.dur.sleep
 import java.io.EOFException
 import java.io.RandomAccessFile
+import java.lang.ref.Cleaner
 import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.channels.Channel
@@ -94,11 +96,12 @@ class RAFCacheImpl(
         }
 
 
-    protected fun finalize() {
-
-
-        if (fact.isInitialized()) {
-            raf.close()
+    init {
+        val safeLocalRef = fact
+        Cleaner.create().register(this) {
+            safeLocalRef.letIfInitialized {
+                it.close()
+            }
         }
     }
 
@@ -309,7 +312,9 @@ class AsyncSparseWriter(
     }
 
     init {
-        error("obvious bug where bytes are being written to wrong pos. But might be supper fast if the async part is done right! Maybe try again another time")
+        error(
+            "obvious bug where bytes are being written to wrong pos. But might be supper fast if the async part is done right! Maybe try again another time"
+        )
     }
 
     private val startedWrites = AtomicInt()

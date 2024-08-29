@@ -109,7 +109,8 @@ class DeephysTestSession(private val profiler: Profiler) {
 
     fun testHasCorrectTitle() =
         assertEquals(
-            expected = app.stageTitle.await(), actual = mainStage.title
+            expected = app.stageTitle.await(),
+            actual = mainStage.title
         )
 
     fun testFitsInSmallestScreen() {
@@ -201,7 +202,8 @@ class DeephysTestSession(private val profiler: Profiler) {
         val totalTime = tocAndSampleRam("set binding")!!
         mySession.tests.add(
             TestResults(
-                name = key, loadMillis = totalTime.inWholeMilliseconds
+                name = key,
+                loadMillis = totalTime.inWholeMilliseconds
             )
         )
         DEEPHYS_TEST_RESULT_JSON.saveJson(sessionList, pretty = true)

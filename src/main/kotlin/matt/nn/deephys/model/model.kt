@@ -23,7 +23,8 @@ class ResolvedLayer(
     val neurons: List<ResolvedNeuron> =
         List(layer.neurons.size) { index ->
             ResolvedNeuron(
-                index = index, layer = this@ResolvedLayer
+                index = index,
+                layer = this@ResolvedLayer
             )
         }
     val interTest by lazy { InterTestLayer(index, layerID = layer.layerID, neuronCount = neurons.size) }

@@ -129,7 +129,11 @@ class NeuronListView(
     cfg: NeuronListViewConfig,
     bindScrolling: Boolean = false,
     override val settings: DeephysSettingsController
-) : ScrollPaneWrapper<HBoxWrapperImpl<*>>(ScrollPane(HBoxWrapperImpl(childClass = NodeWrapper::class).node), contentCls = HBoxWrapperImpl::class), DeephysNode {
+) : ScrollPaneWrapper<HBoxWrapperImpl<*>>(
+        ScrollPane(HBoxWrapperImpl(childClass = NodeWrapper::class).node),
+        contentCls = HBoxWrapperImpl::class
+    ),
+    DeephysNode {
 
 
     companion object {
@@ -255,12 +259,12 @@ class NeuronListView(
                                                     }
                                                 }
 
-                                                is ActivationRatio<*, *> -> {
+                                                is ActivationRatio<*, *>     -> {
                                                     val numImages = (cfg.tops).testAndImages.images.size
                                                     val num =
                                                         when (numImages) {
-                                                            0 -> MiscActivationRatioNumerator.MAX
-                                                            1 -> SingleImage(cfg.tops.testAndImages.images.first().imageID)
+                                                            0    -> MiscActivationRatioNumerator.MAX
+                                                            1    -> SingleImage(cfg.tops.testAndImages.images.first().imageID)
                                                             else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
                                                         }
                                                     veryLazyDeephysTexTooltip(memSafeSettings) {

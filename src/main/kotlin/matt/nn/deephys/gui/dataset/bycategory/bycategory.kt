@@ -63,9 +63,9 @@ class ByCategoryView(
                 converter =
                     toStringConverter<CategorySelection?> {
                         when (it) {
-                            is Category -> it.label
+                            is Category          -> it.label
                             is CategoryConfusion -> it.allCategories.map { it.label }.toList().elementsToString()
-                            else -> "no category selected"
+                            else                 -> "no category selected"
                         }
                     }.toFXConverter()
 

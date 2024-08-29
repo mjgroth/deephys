@@ -15,7 +15,6 @@ import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.cache.raf.RAFCacheImpl
 import matt.prim.j.bs.write
 import matt.sys.idgen.IDGenerator
-import kotlin.io.path.writeBytes
 
 
 object DeephysCacheManager {
@@ -96,7 +95,7 @@ abstract class RAFCaches : Caches() {
 
         private inner class CacherImpl : Cacher {
             private val stream by lazy { deed.outputStream().buffered(2000) }
-            override fun finalize() {
+            override fun myFinalize() {
                 stream.flush()
                 lazyWeak {
                     decode(deed.read())
@@ -116,7 +115,7 @@ abstract class RAFCaches : Caches() {
 
 interface Cacher {
     fun write(bytes: ByteString)
-    fun finalize()
+    fun myFinalize()
 }
 
 abstract class Caches {

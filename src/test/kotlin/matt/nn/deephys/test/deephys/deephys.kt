@@ -72,7 +72,8 @@ val tests =
                 model = "resnet18_cifar.model",
                 tests =
                     listOf(
-                        "CIFARV1.test", "CIFARV2.test"
+                        "CIFARV1.test",
+                        "CIFARV2.test"
                     ),
                 expectedLoadTime = 5.seconds
             )
@@ -84,7 +85,9 @@ val tests =
                     model = "resnet50_imagenet.model",
                     tests =
                         listOf(
-                            "ImageNetV1_resnet50.test", "ImageNet_style_resnet50.test", "ImageNet_sketch_resnet50.test"
+                            "ImageNetV1_resnet50.test",
+                            "ImageNet_style_resnet50.test",
+                            "ImageNet_sketch_resnet50.test"
                         ),
                     expectedLoadTime = 30.seconds
                 )
@@ -96,7 +99,8 @@ val tests =
 @SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
 val MAC_MAYBE_MIN_SCREEN_SIZE =
     DoubleRectSize(
-        width = 1366.0, height = 768.0
+        width = 1366.0,
+        height = 768.0
     )
 
 @Ignore("FX IS DEAD")
@@ -183,7 +187,9 @@ class TestDeephys(
 
             tests.forEach {
                 session.loadDataAndCheckItWasFastEnough(
-                    key = it.name, testData = it, maxTime = it.expectedLoadTime
+                    key = it.name,
+                    testData = it,
+                    maxTime = it.expectedLoadTime
                 )
                 session.runThroughByImageView()
                 session.runThroughCategoryView()

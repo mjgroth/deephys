@@ -104,7 +104,11 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
 
         fun getOrNullIfLoading() = if (isDone()) value!! else null
 
-        fun <R> chainedTo(op: (T) -> DirectLoadedOrFailedValueSlot<R>): LoadedOrFailedValueSlot<LoadedOrFailed<R>> = ChainedLoadedValueSlot<T, R>(this, op)
+        fun <R> chainedTo(op: (T) -> DirectLoadedOrFailedValueSlot<R>): LoadedOrFailedValueSlot<LoadedOrFailed<R>> =
+            ChainedLoadedValueSlot<T, R>(
+                this,
+                op
+            )
     }
 
     private inner class ChainedLoadedValueSlot<T, R>(

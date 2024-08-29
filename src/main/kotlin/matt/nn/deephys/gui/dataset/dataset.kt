@@ -145,13 +145,13 @@ class DatasetNode(
 
                 fun update(view: DatasetNodeView) {
                     when (view) {
-                        ByNeuron -> {
+                        ByNeuron   -> {
                             neuronTab.fire()
                             mainControl.unbind()
                             mainControl.bindWeakly(this@DatasetNode.byNeuronView.control.binding { it?.deref() })
                         }
 
-                        ByImage -> {
+                        ByImage    -> {
                             imageTab.fire()
                             mainControl.unbind()
                             mainControl.bindWeakly(this@DatasetNode.byImageView.control.binding { it?.deref() })

@@ -44,7 +44,10 @@ fun createControlFor(
                     contentDisplay = RIGHT
                     graphic =
                         intSpinner(
-                            min = sett.min, max = sett.max, initialValue = sett.prop.value, editable = true
+                            min = sett.min,
+                            max = sett.max,
+                            initialValue = sett.prop.value,
+                            editable = true
                         ) {
                             prefWidth = 150.0
                             valueFactory!!.valueProperty.bindBidirectional(sett.prop)

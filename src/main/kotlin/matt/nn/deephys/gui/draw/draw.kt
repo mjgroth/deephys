@@ -20,7 +20,9 @@ fun Canv.draw(mat: List<List<FXColor>>) {
 	   val b = pix[2]*/
             pw.setColor(
                 /*x, y, FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())*/
-                x, y, pix /*FXColor.rgb(pix[0], pix[1], pix[2])*/
+                x,
+                y,
+                pix /*FXColor.rgb(pix[0], pix[1], pix[2])*/
             )
         }
     }

@@ -42,7 +42,10 @@ data class DescendingArgMaxMax<A : Number>(
             val acts = theTest.activationsByNeuron[neuron]
             val indices =
                 test.dtype.wrap(acts).argmaxn2(
-                    MAX_NUM_IMAGES_IN_TOP_IMAGES, skipInfinite = true, skipNaN = true, skipZero = true
+                    MAX_NUM_IMAGES_IN_TOP_IMAGES,
+                    skipInfinite = true,
+                    skipNaN = true,
+                    skipZero = true
                 )
             indices.sortedByDescending {
                 acts[it].toDouble()
@@ -60,7 +63,8 @@ data class TopImages<A : Number>(
     context(TestRAMCache)
     override fun compute(): List<ImageIndex> =
         DescendingArgMaxMax(
-            neuron = neuron, test = test
+            neuron = neuron,
+            test = test
         )().take(num)
 }
 
@@ -215,7 +219,7 @@ data class ActivationRatioCalc<A : Number>(
                         )
                     }
 
-                is SingleImage ->
+                is SingleImage   ->
                     tex {
                         frac(
                             num = { text("raw activation of this neuron for image ${num.id}") },

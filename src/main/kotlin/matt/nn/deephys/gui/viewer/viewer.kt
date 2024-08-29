@@ -205,7 +205,9 @@ class DatasetViewer(
         layerSelection.binding(
             testData
         ) { layer ->
-            println("remove testData dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
+            println(
+                "remove testData dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data"
+            )
             model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }
         }
 
@@ -230,7 +232,9 @@ class DatasetViewer(
             testData,
             layerSelectionResolved
         ) { neuron ->
-            println("remove layerSelectionResolved dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data")
+            println(
+                "remove layerSelectionResolved dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data"
+            )
             layerSelectionResolved.value?.neurons?.firstOrNull { it.index == neuron?.index }
         }
 
@@ -242,7 +246,9 @@ class DatasetViewer(
     private val topNeuronsFromMyImage =
         run {
             imageSelection.binding(
-                testData, layerSelection, normalizer
+                testData,
+                layerSelection,
+                normalizer
             ) { im ->
                 layerSelection.value?.let { lay ->
                     im?.let { theIm ->
@@ -294,7 +300,9 @@ class DatasetViewer(
 
     val highlightedNeurons =
         MyBinding(
-            view, topNeurons, neuronSelection
+            view,
+            topNeurons,
+            neuronSelection
         ) {
             when (view.value) {
                 ByNeuron   -> listOf(neuronSelection.value).filterNotNull()

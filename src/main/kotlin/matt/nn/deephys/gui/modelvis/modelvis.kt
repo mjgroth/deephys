@@ -143,7 +143,12 @@ class ModelVisualizer(
                         }
 
                     NeuronCircle(
-                        layer = lay, neuron = neuron, x = xProp, y = yProp, radius = radius, color = COLOR
+                        layer = lay,
+                        neuron = neuron,
+                        x = xProp,
+                        y = yProp,
+                        radius = radius,
+                        color = COLOR
                     ).apply {
                         veryLazyDeephysTooltip("neuron $neuronIndex", settings = memSafeSettings)
                         setOnMouseClicked {

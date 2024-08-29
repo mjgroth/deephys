@@ -44,7 +44,10 @@ object VersionChecker {
                 try {
                     val latestVersionFromServer =
                         runBlocking {
-                            val resp = matt.http.tryHttp(MURL(deephysSite)/*.productionHost*/ + "latest-version").getOrThrow() /*because FX IS DEAD*/
+                            val resp =
+                                matt.http.tryHttp(
+                                    MURL(deephysSite)/*.productionHost*/ + "latest-version"
+                                ).getOrThrow() /*because FX IS DEAD*/
                             if (resp.statusCode() != HttpStatusCode.OK) {
                                 null
                             } else {

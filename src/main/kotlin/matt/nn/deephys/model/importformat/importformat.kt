@@ -44,7 +44,7 @@ private const val SUFFIX_NOT_PRESENT = "SUFFIX_NOT_PRESENT"
 @Serializable
 class Model(
     override val name: String,
-    val suffix: String? = SUFFIX_NOT_PRESENT,
+    private val suffix: String? = SUFFIX_NOT_PRESENT,
     val layers: List<Layer>,
     val classification_layer: String = "classification"
 ) : DeephyFileObject {
