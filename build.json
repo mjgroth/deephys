@@ -35,6 +35,12 @@
             "key": "guava-desktop"
         },
         {
+            "type": "Lib",
+            "cfg": "implementation",
+            "key": "kotlinx-coroutines-javafx",
+            "note": "this library is cool for FX but seems to cause error if in the classpath of a compose app as of August 2024"
+        },
+        {
             "type": "Projects",
             "cfg": "testImplementation",
             "paths": [
@@ -44,11 +50,6 @@
                 ":k:test",
                 ":k:test:co"
             ]
-        },   {
-            "type": "Lib",
-            "cfg": "implementation",
-            "key": "kotlinx-coroutines-javafx",
-            "note": "this library is cool for FX but seems to cause error if in the classpath of a compose app as of August 2024"
         }
     ],
     "python": {
