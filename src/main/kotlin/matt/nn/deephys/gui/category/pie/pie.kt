@@ -10,7 +10,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.ArcType.ROUND
 import javafx.util.Duration
-import matt.fig.modell.PieChartIrPlaceholder
+import matt.fig.model.PieChartIrPlaceholder
 import matt.fig.render.PieChartRenderer
 import matt.fx.base.wrapper.obs.obsval.prop.toNonNullableProp
 import matt.fx.control.wrapper.scroll.scrollpane

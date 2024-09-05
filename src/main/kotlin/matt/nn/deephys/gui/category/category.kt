@@ -7,7 +7,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import matt.caching.compcache.invoke
 import matt.color.colormap.Automatic
-import matt.fig.modell.PieChartIrPlaceholder
+import matt.fig.model.PieChartIrPlaceholder
 import matt.fx.graphics.wrapper.node.NW
 import matt.fx.graphics.wrapper.node.line.line
 import matt.fx.graphics.wrapper.pane.hbox.h
