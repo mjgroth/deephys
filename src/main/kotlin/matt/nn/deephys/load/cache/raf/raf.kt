@@ -6,11 +6,13 @@ import matt.async.thread.executors.ThreadPool
 import matt.file.toJioFile
 import matt.lang.anno.SeeURL
 import matt.lang.atomic.AtomicInt
+import matt.lang.common.DoNothing
 import matt.lang.common.NOT_IMPLEMENTED
 import matt.lang.file.toJFile
 import matt.lang.j.NUM_LOGICAL_CORES
 import matt.lang.model.file.FsFile
 import matt.lang.model.value.letIfInitialized
+import matt.log.warn.common.warn
 import matt.model.flowlogic.latch.j.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
 import matt.nn.deephys.load.cache.raf.deed.DeedImpl
@@ -335,8 +337,14 @@ class AsyncSparseWriter(
                     sleep(sleepTime)
                     i++
                     when (i) {
-                        10 -> sleepTime *= 10
-                        20 -> sleepTime *= 10
+                        10   -> sleepTime *= 10
+
+                        20   -> sleepTime *= 10
+
+                        else -> {
+                            DoNothing
+                            warn("unsure if I mean to do nothing here. Just fixing my ExhaustiveWhen rule 121")
+                        }
                     }
                 }
             }
