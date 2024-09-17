@@ -44,7 +44,6 @@
             "type": "Projects",
             "cfg": "testImplementation",
             "paths": [
-                ":k:gui",
                 ":k:log:profile:yk",
                 ":k:mbuild:mtest:compose",
                 ":k:test",
