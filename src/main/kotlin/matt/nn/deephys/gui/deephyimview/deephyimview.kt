@@ -1,6 +1,8 @@
 package matt.nn.deephys.gui.deephyimview
 
 import javafx.scene.Cursor
+import kotlinx.io.bytestring.ByteString
+import kotlinx.io.bytestring.asReadOnlyByteBuffer
 import matt.async.thread.queue.pool.FakeWorkerPool
 import matt.async.thread.queue.pool.QueueWorkerPool
 import matt.file.ext.FileExtension
@@ -23,7 +25,6 @@ import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
 import java.lang.ref.WeakReference
-import java.nio.ByteBuffer
 import kotlin.time.Duration.Companion.milliseconds
 
 class DeephyImView(
@@ -106,14 +107,15 @@ class DeephyImView(
                                 it.forEach {
                                     val awt = it.toAwtColor()
                                     pixelData[i++] =
-                                        ByteBuffer.wrap(
-                                            byteArrayOf(
-                                                awt.alpha.toByte(),
-                                                awt.red.toByte(),
-                                                awt.green.toByte(),
-                                                awt.blue.toByte()
-                                            )
-                                        ).asIntBuffer().get()
+                                        ByteString(
+                                            awt.alpha.toByte(),
+                                            awt.red.toByte(),
+                                            awt.green.toByte(),
+                                            awt.blue.toByte()
+                                        )
+                                            .asReadOnlyByteBuffer()
+                                            .asIntBuffer()
+                                            .get()
                                 }
                             }
 

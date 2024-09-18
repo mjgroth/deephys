@@ -1,6 +1,7 @@
 package matt.nn.deephys.model.importformat.im
 
 import kotlinx.io.bytestring.ByteString
+import kotlinx.io.bytestring.asReadOnlyByteBuffer
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringApi
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
 import matt.cbor.read.major.array.ArrayReader
@@ -175,17 +176,14 @@ value class ImageActivationCborBytesFloat32(override val bytes: ByteString) : Im
     }
 
 
-    @OptIn(UnsafeByteStringApi::class)
     override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> =
         sequence {
             bytes.cborReader().readManually<ArrayReader, Unit> {
                 readEachManually<ByteStringReader, Unit> {
-                    UnsafeByteStringOperations.withByteArrayUnsafe(read().raw) {
-                        val buffer = ByteBuffer.wrap(it)
-                        (FLOAT_BYTE_LEN until buffer.capacity() step FLOAT_BYTE_LEN).forEach {
-                            buffer.limit(it)
-                            yield(buffer)
-                        }
+                    val buffer =   read().raw.asReadOnlyByteBuffer()
+                    (FLOAT_BYTE_LEN until buffer.capacity() step FLOAT_BYTE_LEN).forEach {
+                        buffer.limit(it)
+                        yield(buffer)
                     }
                 }
             }

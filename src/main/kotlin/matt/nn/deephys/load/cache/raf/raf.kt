@@ -1,6 +1,7 @@
 package matt.nn.deephys.load.cache.raf
 
 import kotlinx.io.bytestring.ByteString
+import kotlinx.io.bytestring.asReadOnlyByteBuffer
 import matt.async.thread.daemon
 import matt.async.thread.executors.ThreadPool
 import matt.file.toJioFile
@@ -273,7 +274,8 @@ class SparseWriter(file: FsFile) : SeekableRAFLike() {
     }
 
     override fun write(byte: Int) {
-        channel.write(ByteBuffer.wrap(byteArrayOf(byte.toByte())))
+
+        channel.write(ByteString(byte.toByte()).asReadOnlyByteBuffer())
     }
 
     override fun readFully(buff: ByteArray) {

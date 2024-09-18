@@ -3,6 +3,7 @@
 package matt.nn.deephys.load.cache.raf.deed
 
 import kotlinx.io.bytestring.ByteString
+import kotlinx.io.bytestring.getByteString
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringApi
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
 import matt.nn.deephys.load.cache.raf.AsyncSparseWriter
@@ -140,7 +141,7 @@ class DeedImpl(
             }
 
             is AsyncSparseWriter -> {
-                r.write(startIndexInclusive, UnsafeByteStringOperations.wrapUnsafe(bytes.array().copyOf()))
+                r.write(startIndexInclusive, bytes.getByteString())
             }
         }
     }
@@ -159,7 +160,7 @@ class DeedImpl(
             }
 
             is AsyncSparseWriter -> {
-                r.write(startIndexInclusive + destOffset, UnsafeByteStringOperations.wrapUnsafe(bytes.array().copyOf()))
+                r.write(startIndexInclusive + destOffset, bytes.getByteString())
             }
         }
     }
