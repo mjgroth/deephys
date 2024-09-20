@@ -2,8 +2,8 @@ package matt.nn.deephys.load
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
+import matt.cbor.my.MyCbor
 import matt.file.JioFile
 import matt.fx.graphics.wrapper.EventTargetWrapper
 import matt.fx.graphics.wrapper.node.NodeWrapper
@@ -29,7 +29,7 @@ class Loaded<T>(val data: T): CborSyncLoadResult<T>
 inline fun <reified T: Any> JioFile.loadCbor(): CborSyncLoadResult<T> =
     if (doesNotExist) FileNotFound(this) else try {
         val bytes = readBytes()
-        Loaded(Cbor.decodeFromByteArray(bytes))
+        Loaded(MyCbor.decodeFromByteArray(bytes))
     } catch (e: SerializationException) {
         ParseError(e.message)
     }
