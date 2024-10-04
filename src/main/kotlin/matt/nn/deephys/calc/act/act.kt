@@ -6,8 +6,6 @@ import matt.math.numalg.precision.withPrecision
 import matt.model.data.mathable.DoubleWrapper
 import matt.model.data.mathable.FloatWrapper
 import matt.model.data.mathable.NumberWrapper
-import matt.nn.deephys.calc.act.ActivationRatio.Companion.ACT_RATIO_SYMBOL
-import matt.nn.deephys.calc.act.RawActivation.Companion.RAW_ACT_SYMBOL
 
 sealed interface Activation<N : Number, T : Activation<N, T>> : NumberWrapper<T>, Comparable<T> {
     val value: N
@@ -77,7 +75,7 @@ value class RawActivationFloat32(override val value: Float) :
     ActivationFloat32<RawActivationFloat32> {
 
 
-    override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
+    override val formatted get() = "${RawActivation.RAW_ACT_SYMBOL}: ${value.withPrecision(3)}"
     override fun fromFloat(d: Float): RawActivationFloat32 = RawActivationFloat32(d)
 }
 
@@ -87,7 +85,7 @@ value class RawActivationFloat64(override val value: Double) :
     ActivationFloat64<RawActivationFloat64> {
 
 
-    override val formatted get() = "$RAW_ACT_SYMBOL: ${value.withPrecision(3)}"
+    override val formatted get() = "${RawActivation.RAW_ACT_SYMBOL}: ${value.withPrecision(3)}"
     override fun fromDouble(d: Double): RawActivationFloat64 = RawActivationFloat64(d)
 }
 
@@ -177,7 +175,7 @@ value class ActivationRatioFloat32(override val value: Float) :
     ActivationFloat32<ActivationRatioFloat32> {
 
 
-    override val formatted get() = "max: ${(value * 100).withPrecision(3)}${ACT_RATIO_SYMBOL}"
+    override val formatted get() = "max: ${(value * 100).withPrecision(3)}${ActivationRatio.ACT_RATIO_SYMBOL}"
     override fun plus(m: ActivationRatioFloat32): ActivationRatioFloat32 = ActivationRatioFloat32(value + m.value)
 
     override fun fromFloat(d: Float): ActivationRatioFloat32 = ActivationRatioFloat32(d)
@@ -192,7 +190,7 @@ value class ActivationRatioFloat64(override val value: Double) :
     ActivationFloat64<ActivationRatioFloat64> {
 
 
-    override val formatted get() = "max: ${(value * 100).withPrecision(3)}$ACT_RATIO_SYMBOL"
+    override val formatted get() = "max: ${(value * 100).withPrecision(3)}${ActivationRatio.ACT_RATIO_SYMBOL}"
     override fun plus(m: ActivationRatioFloat64): ActivationRatioFloat64 = ActivationRatioFloat64(value + m.value)
 
     override fun fromDouble(d: Double): ActivationRatioFloat64 = ActivationRatioFloat64(d)

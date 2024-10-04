@@ -15,7 +15,7 @@ import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNum
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
-import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
+import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.fix.TestAndSomeImages
 import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
 import matt.nn.deephys.load.test.testcache.TestRAMCache
@@ -209,7 +209,7 @@ data class ActivationRatioCalc<A : Number>(
 
 
         fun latexTechnique(num: ActivationRatioNumerator): TeXDSL {
-            val denom: Dsl<TeXDSL> = { text("max activation of this neuron in $NORMALIZER_BUTTON_NAME") }
+            val denom: Dsl<TeXDSL> = { text("max activation of this neuron in ${DSetViewsVBox.NORMALIZER_BUTTON_NAME}") }
             return when (num) {
                 MAX              ->
                     tex {

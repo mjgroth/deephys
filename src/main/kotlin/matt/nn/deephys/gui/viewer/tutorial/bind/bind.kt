@@ -7,8 +7,7 @@ import matt.fx.graphics.wrapper.pane.hbox.h
 import matt.fx.graphics.wrapper.pane.spacer
 import matt.fx.graphics.wrapper.pane.vbox.VBoxW
 import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.BIND_BUTTON_NAME
-import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox.Companion.NORMALIZER_BUTTON_NAME
+import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
 import matt.nn.deephys.gui.global.deephyActionText
 import matt.nn.deephys.gui.global.deephysText
 import matt.nn.deephys.gui.viewer.DatasetViewer
@@ -30,7 +29,7 @@ class BindTutorial(viewer: DatasetViewer): VBoxW(childClass = NodeWrapper::class
             spacer()
             v {
                 h {
-                    checkbox("$BIND_BUTTON_NAME one dataset") {
+                    checkbox("${DSetViewsVBox.BIND_BUTTON_NAME} one dataset") {
                         isDisable = true
                         selectedProperty.bind(viewer.outerBoundDSet.isNotNull)
                     }
@@ -40,7 +39,7 @@ class BindTutorial(viewer: DatasetViewer): VBoxW(childClass = NodeWrapper::class
                     }
                 }
                 h {
-                    checkbox("Select one dataset as $NORMALIZER_BUTTON_NAME") {
+                    checkbox("Select one dataset as ${DSetViewsVBox.NORMALIZER_BUTTON_NAME}") {
                         isDisable = true
                         selectedProperty.bind(viewer.normalizer.isNotNull)
                     }

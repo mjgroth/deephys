@@ -18,7 +18,6 @@ import matt.gui.mscene.MScene
 import matt.lang.common.go
 import matt.lang.function.Convert
 import matt.lang.function.Produce
-import matt.nn.deephys.gui.dataset.byimage.neuronlistview.progresspopup.ProgressPopUp.Companion.worker
 import matt.obs.math.double.op.times
 import matt.obs.prop.writable.SynchronizedProperty
 import matt.time.dur.sleep
@@ -27,7 +26,7 @@ import kotlin.time.Duration.Companion.milliseconds
 fun <R : Any> withProgressPopUp(op: Convert<ProgressTracker, R>): R {
     val tracker by lazy { ProgressTracker() }
     var r: R? = null
-    worker.schedule {
+    ProgressPopUp.worker.schedule {
         r = op(tracker)
         tracker.message = "done"
         tracker.progress = 1.0

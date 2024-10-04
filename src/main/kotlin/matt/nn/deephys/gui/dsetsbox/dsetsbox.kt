@@ -19,7 +19,7 @@ import matt.fx.graphics.wrapper.style.FXColor
 import matt.lang.model.file.MacFileSystem
 import matt.math.ranges.step
 import matt.model.data.message.AbsLinuxFile
-import matt.nn.deephys.gui.global.color.DeephysPalette.deephysSelectGradient
+import matt.nn.deephys.gui.global.color.DeephysPalette
 import matt.nn.deephys.gui.global.deephyToggleButton
 import matt.nn.deephys.gui.modelvis.ModelVisualizer
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -86,7 +86,7 @@ class DSetViewsVBox(
         group = bindToggleGroup,
         value = viewer
     ) {
-        setupSelectionColor(deephysSelectGradient)
+        setupSelectionColor(DeephysPalette.deephysSelectGradient)
     }
 
     private val inDToggleGroup = ToggleMechanism<DatasetViewer>()
@@ -100,7 +100,7 @@ class DSetViewsVBox(
         group = inDToggleGroup,
         value = viewer
     ) {
-        setupSelectionColor(deephysSelectGradient)
+        setupSelectionColor(DeephysPalette.deephysSelectGradient)
 
 
         /*setupSelectionColor(Color.rgb(255, 255, 0, 0.1))
