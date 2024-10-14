@@ -1,6 +1,7 @@
 package matt.nn.deephys.gui.category
 
 import javafx.geometry.Pos.TOP_CENTER
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
@@ -41,6 +42,7 @@ import matt.obs.math.op.minus
 import matt.prim.str.addNewLinesUntilNumLinesIs
 import matt.prim.str.elementsToString
 
+@OptIn(DelicateCoroutinesApi::class)
 class CategoryView<A : Number>(
     selection: CategorySelection,
     testLoader: TypedTestLike<A>,
@@ -211,7 +213,7 @@ class CategoryView<A : Number>(
                             /*fill = FXColor(0.5, 0.5, 0.5, 0.2)*/
                             fill = FXColor(0.5, 0.5, 0.5, 0.2)
                             stroke = FXColor(0.5, 0.5, 0.5, 0.2)
-                            @Suppress("OPT_IN_USAGE")
+                            @Suppress("GlobalCoroutineUsage")
                             GlobalScope.launch(Dispatchers.JavaFx) {
                                 fill = FXColor(0.5, 0.5, 0.5, 0.2)
                                 stroke = FXColor(0.5, 0.5, 0.5, 0.2)

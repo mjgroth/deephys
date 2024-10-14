@@ -130,7 +130,6 @@ class DeephysApp {
                 } finally {
                     if (!stageTitle.isDoneOrCancelled()) {
                         stageTitle.cancel("${Thread.currentThread().name} failed")
-                    } else {
                     }
                 }
             }
