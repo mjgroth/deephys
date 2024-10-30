@@ -96,7 +96,6 @@ class CategoryPie(
     }
 
     init {
-        val memSafeSettings = settings
         alignment = Pos.TOP_CENTER
         exactWidth = 350.0
         deephyCheckbox("show as list", showAsList, weakBothWays = true)
@@ -104,7 +103,7 @@ class CategoryPie(
             subtitleFont()
             veryLazyDeephysTooltip(
                 "only shows at most $MAX_SLICES slices (unless shown as list)",
-                memSafeSettings
+                settings
             )
         }
         val total = nums.values.sum().toDouble()
@@ -238,7 +237,7 @@ class CategoryPie(
                             x = 0.0,
                             y = barY,
                             width = barWidth,
-                            settings = memSafeSettings
+                            settings = settings
                         ).apply {
                             visibleAndManagedProp.bindWeakly(
                                 showAsList
@@ -264,7 +263,7 @@ class CategoryPie(
                                 color = color,
                                 arcLength = arcLength,
                                 startAngle = nextStart,
-                                settings = memSafeSettings
+                                settings = settings
                             ).apply {
                                 visibleAndManagedProp.bindWeakly(
                                     showAsList.not()

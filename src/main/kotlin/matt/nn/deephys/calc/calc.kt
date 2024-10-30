@@ -170,8 +170,7 @@ data class TopNeurons<N : Number>(
 
             r
         } else {
-            val r = neuronsWithActs
-            r
+            neuronsWithActs
         }
     }
 }

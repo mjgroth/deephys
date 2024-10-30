@@ -50,8 +50,6 @@ class DeephyImView(
 
     init {
 
-        val memSafeSettings = settings
-
 
         val localWeakIm = weakIm
         val localWeakViewer = weakViewer
@@ -133,7 +131,7 @@ class DeephyImView(
                 veryLazyDeephysTooltip(
                     localWeakIm.deref()!!.category.label,
                     localWeakIm,
-                    settings = memSafeSettings
+                    settings = settings
                 )
                 val widthMaybe = mat[0].size.toDouble()
                 if (big) {

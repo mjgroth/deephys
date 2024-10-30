@@ -107,7 +107,6 @@ class CategoryTable(
             }
             v {
                 visibleAndManagedProp.bindWeakly(b)
-                val memSafeWeakViewer = weakViewer
                 val memSafeSettings = this@CategoryTable.settings
                 deephysText(title) {
                     subtitleFont()
@@ -132,7 +131,7 @@ class CategoryTable(
                             r = predNamesBox,
                             tooltip = fullString,
                             settings = memSafeSettings,
-                            weakViewer = memSafeWeakViewer
+                            weakViewer = weakViewer
                         )
 
                         predValuesBox.sigFigText(
