@@ -1,87 +1,67 @@
 package matt.nn.deephys.gui.deephyimview
 
-import javafx.scene.Cursor
+import androidx.compose.foundation.ContextMenuArea
+import androidx.compose.foundation.ContextMenuItem
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.onClick
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color.Companion.Yellow
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.unit.dp
 import kotlinx.io.bytestring.ByteString
 import kotlinx.io.bytestring.asReadOnlyByteBuffer
-import matt.async.thread.queue.pool.FakeWorkerPool
-import matt.async.thread.queue.pool.QueueWorkerPool
-import matt.file.ext.FileExtension
-import matt.fx.graphics.dialog.saveFile
-import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
-import matt.fx.graphics.wrapper.node.onLeftClick
-import matt.fx.graphics.wrapper.style.toAwtColor
-import matt.fx.node.proto.scaledcanvas.ScaledCanvas
-import matt.gui.menu.context.mcontextmenu
+import matt.compose.controls.mouse.attachHoverState
+import matt.compose.graphics.color.toMcolor
+import matt.compose.state.rememberMutableStateOf
+import matt.file.commons.reg.TEMP_DIR
 import matt.image.desktop.save
-import matt.lang.j.NUM_LOGICAL_CORES
 import matt.log.warn.common.warn
-import matt.nn.deephys.gui.draw.draw
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.draw.toSkiaImage
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
-import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.obs.math.double.op.div
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
-import java.lang.ref.WeakReference
-import kotlin.time.Duration.Companion.milliseconds
 
-class DeephyImView(
+
+private var didWarnAboutCombiningMethods = false
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun DeephyImView(
     im: DeephyImage<*>,
-    viewer: DatasetViewer,
+    viewer: DatasetViewerState,
     big: Boolean = false,
     loadAsync: Boolean = false,
     settings: DeephysSettingsController
-) : ScaledCanvas(
-        initializeInLoadingMode = true,
-        progressIndicatorWidthAndHeight = (if (big) viewer.bigImageScale.value else viewer.smallImageScale.value),
-        delayLoadingIndicatorBy = 1000.milliseconds
-    ) {
+) {
 
-    companion object {
-        val realPool = QueueWorkerPool(NUM_LOGICAL_CORES, "DeephyImView Worker")
-        val fakePool = FakeWorkerPool() /*because of the flickering*/
-        private var didWarnAboutCombiningMethods = false
-    }
-
-    private val weakViewer = viewer.weakRef
+    val weakViewer = viewer.weakRef
     val weakIm = im.weak
-
-    init {
-
-
-        val localWeakIm = weakIm
-        val localWeakViewer = weakViewer
-        val weakThis = WeakReference(this)
-        if (!didWarnAboutCombiningMethods) {
-            warn("combine draw methods for V1 and deephy")
-            didWarnAboutCombiningMethods = true
-        }
-
-
-        cursor = Cursor.HAND
-
-        val pool = if (loadAsync) realPool else fakePool
-        pool.schedule {
-            val mat = im.matrix
-            draw(mat)
-            if (hoverProperty.value) {
-                drawBorder()
-            }
-            hoverProperty.onChangeWithAlreadyWeak(localWeakIm) { deRefedIm, h ->
-                if (h) weakThis.get()!!.drawBorder()
-                else weakThis.get()!!.draw(deRefedIm)
-            }
-
-            onLeftClick {
-                weakThis.get()!!.click()
-            }
-            mcontextmenu {
-                onRequest {
-                    "download image" does {
-                        val pngFile =
-                            saveFile(stage = weakThis.get()!!.stage) {
+    val localWeakIm = weakIm
+    val localWeakViewer = weakViewer
+    if (!didWarnAboutCombiningMethods) {
+        warn("combine draw methods for V1 and deephy")
+        didWarnAboutCombiningMethods = true
+    }
+    val hovered = rememberMutableStateOf(false)
+    ContextMenuArea(
+        items = {
+            buildList {
+                add(
+                    ContextMenuItem(
+                        "download image"
+                    ) {
+                        warn(
+                            """
+                                  saveFile(stage = weakThis.get()!!.stage) {
                                 title = "choose where to save png"
                                 extensionFilter(
                                     description = "png",
@@ -90,6 +70,11 @@ class DeephyImView(
                                 initialSaveFileName =
                                     localWeakIm.deref()!!.category.label + "_" + localWeakIm.deref()!!.index.toString() + ".png"
                             }
+                            """.trimIndent()
+                        )
+                        val pngFile = TEMP_DIR["TEMP_PNG"]
+
+                        @Suppress("SENSELESS_COMPARISON")
                         if (pngFile != null) {
 
                             val mat2 = localWeakIm.deref()!!.matrix
@@ -103,7 +88,7 @@ class DeephyImView(
                             var i = 0
                             mat2.forEach {
                                 it.forEach {
-                                    val awt = it.toAwtColor()
+                                    val awt = it.toMcolor().toIntColor()
                                     pixelData[i++] =
                                         ByteString(
                                             awt.alpha.toByte(),
@@ -122,28 +107,47 @@ class DeephyImView(
                             bi.save(pngFile)
                         }
                     }
-                }
-            }
-            mat
-        }.whenDone { mat ->
-            ensureInFXThreadOrRunLater {
-                showCanvas()
-                veryLazyDeephysTooltip(
-                    localWeakIm.deref()!!.category.label,
-                    localWeakIm,
-                    settings = settings
                 )
-                val widthMaybe = mat[0].size.toDouble()
-                if (big) {
-                    scale.bindWeakly(localWeakViewer.deref()!!.bigImageScale / widthMaybe)
-                } else {
-                    scale.bindWeakly(localWeakViewer.deref()!!.smallImageScale / widthMaybe)
-                }
             }
         }
-    }
-
-    fun click() {
-        weakViewer.deref()!!.navigateTo(weakIm.deref()!!)
+    ) {
+        DeephysTooltipArea(
+            settings,
+            localWeakIm.deref()!!.category.label,
+            localWeakIm.deref()
+        ) {
+            Box(
+                Modifier.then(
+                    if (hovered.value) {
+                        Modifier.border(
+                            width = 1.dp,
+                            color = Yellow
+                        )
+                    } else Modifier
+                )
+            ) {
+                matt.compose.graphics.image.desktop.MyImage(
+                    im.toSkiaImage(),
+                    loadingIndicatorSize = 10.dp /*idk*/,
+                    modifier =
+                        Modifier
+                            .onClick {
+                                weakViewer.deref()!!.navigateTo(weakIm.deref()!!)
+                            }
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            .scale(
+                                run {
+                                    val widthMaybe = im.toSkiaImage().width
+                                    if (big) {
+                                        (localWeakViewer.deref()!!.bigImageScale.value / widthMaybe).toFloat()
+                                    } else {
+                                        (localWeakViewer.deref()!!.smallImageScale.value / widthMaybe).toFloat()
+                                    }
+                                }
+                            )
+                            .attachHoverState(hovered)
+                )
+            }
+        }
     }
 }

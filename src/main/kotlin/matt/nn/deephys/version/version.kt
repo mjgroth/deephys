@@ -1,33 +1,32 @@
 package matt.nn.deephys.version
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import io.ktor.http.HttpStatusCode
-import javafx.application.Platform.runLater
 import kotlinx.coroutines.runBlocking
 import matt.async.pri.MyThreadPriority.CREATING_NEW_CACHE
 import matt.async.thread.daemon
 import matt.async.thread.schedule.AccurateTimer
 import matt.async.thread.schedule.oldThreadedEvery
+import matt.compose.graphics.text.MyText
+import matt.exec.app.deephysSite
 import matt.exec.app.myVersion
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.text.text
-import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
-import matt.gui.exception.deephysSite
 import matt.http.json.requireIs
 import matt.http.url.MURL
 import matt.lang.cfnf.getOrThrow
 import matt.log.warn.common.warn
 import matt.model.data.release.Version
 import matt.model.data.release.VersionInfo
-import matt.nn.deephys.gui.global.deephyHyperlink
-import matt.nn.deephys.gui.global.deephysText
-import matt.obs.prop.writable.BindableProperty
+import matt.nn.deephys.gui.global.DeephyHyperlink
+import matt.nn.deephys.gui.global.DeephysText
 import matt.time.dur.common.sec
+import java.awt.Desktop
 import java.net.ConnectException
 import java.net.URI
 
 object VersionChecker {
 
-    private var error = false
+    private val error = mutableStateOf(false)
     private var checking = false
     fun checkForUpdatesInBackground() =
         daemon("VersionChecker Thread") {
@@ -56,13 +55,10 @@ object VersionChecker {
                         }
                     if (latestVersionFromServer == null) {
                         warn("latestVersionFromServer == null")
-                        error = true
-                        runLater { update(null) }
+                        error.value = true
                         cancel()
                     } else {
-                        runLater {
-                            newestRelease.setIfDifferent(latestVersionFromServer)
-                        }
+                        newestRelease.value = latestVersionFromServer
                     }
                 } catch (e: ConnectException) {
                     println("no internet to check version")
@@ -72,32 +68,23 @@ object VersionChecker {
             }
         }
 
-    private val newestRelease by lazy { BindableProperty<VersionInfo?>(null) }
+    private val newestRelease = mutableStateOf<VersionInfo?>(null)
 
-    val statusNode by lazy {
-        TextFlowWrapper<NodeWrapper>(childClass = NodeWrapper::class).apply {
-        }
-    }
+    @Composable
+    fun statusNode() {
 
-    private fun update(new: VersionInfo?) =
-        statusNode.apply {
-            clear()
-            if (!error) {
-                if (new == null && checking) text("checking for updates...")
-                else if (new != null && new.version > myVersion) {
-                    deephysText("Version ${new.version} Available: ")
-                    deephyHyperlink("Click here to update") {
-                        opens(URI(new.downloadURL))
-                    }
-                } else if (new != null && new.version < myVersion) {
-                    deephysText("developing unreleased version (last pushed was $new)")
+        if (!error.value) {
+            val new = newestRelease.value
+            if (new == null && checking) MyText("checking for updates...")
+            else if (new != null && new.version > myVersion) {
+                DeephysText("Version ${new.version} Available: ")
+                DeephyHyperlink("Click here to update") {
+                    Desktop.getDesktop().browse(URI(new.downloadURL))
                 }
+            } else if (new != null && new.version < myVersion) {
+                DeephysText("developing unreleased version (last pushed was $new)")
             }
         }
-
-    init {
-        update(newestRelease.value)
-        newestRelease.onChange { update(it) }
     }
 }
 

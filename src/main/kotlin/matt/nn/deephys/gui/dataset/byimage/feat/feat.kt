@@ -1,34 +1,32 @@
 package matt.nn.deephys.gui.dataset.byimage.feat
 
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.PaneWrapper
-import matt.fx.graphics.wrapper.pane.hbox.hbox
-import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.VBoxW
-import matt.fx.graphics.wrapper.pane.vbox.vbox
-import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.nn.deephys.gui.global.deephysText
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.Composable
+import matt.nn.deephys.gui.global.DeephysText
+import matt.nn.deephys.gui.global.SpacerWithOldFxSize
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.prim.str.truncateWithElipsesOrAddSpaces
 
-class FeaturesView(
+@Composable
+fun FeaturesView(
     features: Map<String, String>
-): VBoxW(childClass = NodeWrapper::class) {
-    init {
-        deephysText("Features:") {
-            subtitleFont()
-        }
-        spacer()
-        val featureKeysBox: NodeWrapper = vbox<TextWrapper> {}
-        val featureValuesBox: NodeWrapper = vbox<TextWrapper> {}
-        hbox<PaneWrapper<*>> {
-            +featureKeysBox
-            spacer()
-            +featureValuesBox
-        }
-        features.forEach { (k, v) ->
-            featureKeysBox.deephysText(k.truncateWithElipsesOrAddSpaces(25))
-            featureValuesBox.deephysText(v)
+) {
+    Column {
+        DeephysText("Features:", font = subtitleFont())
+        SpacerWithOldFxSize()
+        Row {
+            Column {
+                features.forEach { (k, v) ->
+                    DeephysText(k.truncateWithElipsesOrAddSpaces(25))
+                }
+            }
+            SpacerWithOldFxSize()
+            Column {
+                features.forEach { (k, v) ->
+                    DeephysText(v)
+                }
+            }
         }
     }
 }

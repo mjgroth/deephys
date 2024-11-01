@@ -1,399 +1,140 @@
 package matt.nn.deephys.gui.global.tooltip
 
-import javafx.event.EventHandler
-import javafx.geometry.Insets
-import javafx.scene.Node
-import javafx.scene.control.ContentDisplay.BOTTOM
-import javafx.scene.input.MouseEvent
-import javafx.scene.paint.Color
-import javafx.util.Duration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import matt.codegen.tex.TeXDSL
-import matt.fx.control.inter.contentDisplay
-import matt.fx.control.inter.graphic
-import matt.fx.control.popup.tooltip.Owner
-import matt.fx.control.popup.tooltip.fixed.FixedTooltipWrapper
-import matt.fx.control.popup.tooltip.fixed.install
-import matt.fx.control.wrapper.label.LabelWrapper
-import matt.fx.control.wrapper.wrapped.wrapped
-import matt.fx.graphics.fxthread.runLater
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.node.shape.rect.rectangle
-import matt.fx.graphics.wrapper.pane.stack.StackPaneW
-import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.fx.node.proto.scaledcanvas.ScaledCanvas
+import matt.compose.components.tex.TeXView
+import matt.compose.graphics.Compose
+import matt.compose.graphics.border.defaultBorder
+import matt.compose.graphics.image.desktop.MyImage
+import matt.compose.graphics.text.MyText
+import matt.compose.graphics.tooltip.AreaWithTooltipInSupportedPlatforms
+import matt.compose.state.prop.rememberBoundComposeState
+import matt.image.heavy.mutate.skiamutate.SkiaResize
+import matt.lang.assertions.require.implementedFor
 import matt.lang.function.Produce
-import matt.lang.weak.common.WeakRefInter
-import matt.nn.deephys.gui.draw.draw
+import matt.nn.deephys.gui.draw.toSkiaImage
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_DEFAULT
 import matt.nn.deephys.gui.global.DEEPHYS_LATEX_TOOLTIP_SCALE
 import matt.nn.deephys.gui.global.color.DeephysPalette
-import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DEFAULT_BIG_IMAGE_SCALE
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.obs.bindings.str.ObsS
-import java.lang.ref.WeakReference
-
-fun NodeWrapper.veryLazyDeephysTooltip(
-    text: String,
-    im: WeakRefInter<out DeephyImage<out Number>>,
-    settings: DeephysSettingsController
-) {
+import matt.prim.double.verifyWholeToInt
 
 
-    val handler =
-        object: EventHandler<MouseEvent> {
-            override fun handle(event: MouseEvent) {
-                /*kinda works like a weak ref*/
-                val target = (event.target as Node)
-                (target.wrapped()).also {
-                    it.deephyTooltip(text, im.deref()!!, settings)
-                    it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
-                }
-            }
-        }
-
-    addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
-}
-
-fun NodeWrapper.veryLazyDeephysTooltip(text: String, settings: DeephysSettingsController) {
-
-    val handler =
-        object: EventHandler<MouseEvent> {
-            override fun handle(event: MouseEvent) {
-                /*kinda works like a weak ref*/
-                val target = (event.target as Node)
-                (target.wrapped()).also {
-                    it.deephyTooltip(text, settings = settings)
-                    it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
-                }
-            }
-        }
-
-    addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
-}
-
-fun DeephysNode.veryLazyDeephysTooltip(op: Produce<String>) =
-    run {
-        val memSafeSettings = settings
-        veryLazyDeephysTooltip(memSafeSettings, op)
-    }
-
-fun NodeWrapper.veryLazyDeephysTooltip(settings: DeephysSettingsController, op: Produce<String>) {
-    val handler =
-        object: EventHandler<MouseEvent> {
-            override fun handle(event: MouseEvent) {
-                /*kinda works like a weak ref*/
-                val target = (event.target as Node)
-                target.wrapped().also {
-                    it.deephyTooltip(op(), settings = settings)
-                    it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
-                }
-            }
-        }
-    addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
-}
-
-fun DeephysNode.veryLazyDeephysTexTooltip(getCode: Produce<TeXDSL>) =
-    run {
-        val memSafeNode = settings
-        veryLazyDeephysTexTooltip(memSafeNode, getCode)
-    }
-
-fun NodeWrapper.veryLazyDeephysTexTooltip(settings: DeephysSettingsController, getCode: Produce<TeXDSL>) =
-    run {
-        veryLazyDeephysTooltipWithNode(/*darkBG = true*/settings) {
-            deephysTexNodeFactory.toCanvas(
-                getCode().generate()
-            ) ?: TextWrapper("error")
-        }
-    }
-
-fun DeephysNode.veryLazyDeephysTooltipWithNode(op: Produce<NodeWrapper>) =
-    run {
-        val memSafeNode = settings
-        veryLazyDeephysTooltipWithNode(memSafeNode, op)
-    }
-
-fun NodeWrapper.veryLazyDeephysTooltipWithNode(
-    /*darkBG: Boolean = false, */
+@Composable
+fun DeephysTooltipArea(
     settings: DeephysSettingsController,
-    op: Produce<NodeWrapper>
+    getCode: Produce<TeXDSL>,
+    dark: Boolean,
+    content: Compose
 ) {
-    val handler =
-        object: EventHandler<MouseEvent> {
-            override fun handle(event: MouseEvent) {
-                /*kinda works like a weak ref*/
-                val target = (event.target as Node)
-                target.wrapped().also {
-                /*if (darkBG) {
-		  //		  node.style =
-		  //			"""-fx-background: black; -fx-background-color: black"""
+    DeephysTooltipArea(
+        settings = settings,
+        tooltip = {
+            TeXView(
+                scale = DEEPHYS_LATEX_TOOLTIP_SCALE,
+                code = getCode().generate(),
+                dark = dark
+            )
+        },
+        content = content
+    )
+}
 
-
-                    node.scene.root.style = "-fx-background: black; -fx-background-color: black"
-
-
-		}*/
-                    it.deephyTooltip("", settings = settings).apply {
-                        contentNode.theLabel.graphic = op()        /*  if (darkBG) {
-			  thread {
-				sleep(1.seconds)
-				runLater {
-				  runLater {
-					val scn = node.scene
-					scn.fill = Color.BLACK
-					val reg = (scn.root as Region)
-					reg.background = backgroundFromColor(Color.BLACK)
-					val pan = (reg.childrenUnmodifiable[0] as Pane)
-					pan.background = backgroundFromColor(Color.BLACK)
-					reg.style = """-fx-background: black; -fx-background-color: black"""
-					pan.style = """-fx-background: black; -fx-background-color: black"""
-					val borderAmount = 10.0
-					val vbx = (theLabel.graphic as VBoxWrapperImpl<*>)
-					vbx.background = backgroundFromColor(Color.BLACK)
-					vbx.padding = Insets(borderAmount)
-					vbx.border = Border(
-					  BorderStroke(
-						DeephysPalette.deephysBlue1,
-						BorderStrokeStyle.SOLID,
-						CornerRadii(10.0),
-						BorderWidths(borderAmount)
-					  )
-					)
-				  }
-				}
-			  }
-
-			}*/
-                    }
-                    it.removeEventHandler(MouseEvent.MOUSE_ENTERED, this)
-                }
-            }
-        }
-    addEventHandler(MouseEvent.MOUSE_ENTERED, handler)
+@Composable
+private fun DeephysTeXView(
+    getCode: Produce<TeXDSL>,
+    dark: Boolean
+) {
+    TeXView(
+        scale = DEEPHYS_LATEX_TOOLTIP_SCALE,
+        code = getCode().generate(),
+        dark = dark
+    )
 }
 
 
-/*suppressing deprecations until I migrate to compose*/
-@Suppress("DEPRECATION")
-val deephysTexNodeFactory by lazy {
-    matt.fx.node.tex.TexNodeFactory(scale = DEEPHYS_LATEX_TOOLTIP_SCALE)
-}
 
 
-/*cant have op here since it will operate on the tooltip for other nodes*/
-fun NodeWrapper.deephyTooltip(
+@Composable
+fun DeephysTooltipArea(
+    settings: DeephysSettingsController,
     s: String,
-    im: DeephyImage<*>? = null/*, op: Tooltip.()->Unit = {}*/,
-    settings: DeephysSettingsController
-): DeephyTooltip {
-
-    if (im == null) {
-        return DeephyTooltip(s, null, settings).also {
-            install(it)
-        }
-    }
-
-    return im.testLoader.testRAMCache.tooltips[im][s]!!.also {
-        install(it)
-    }
-}
-
-
-fun NodeWrapper.deephyTooltip(
-    s: ObsS,
-    settings: DeephysSettingsController
-): FixedTooltipWrapper =
-    DeephyTooltip(s.value, null, settings).also {
-        install(it)
-        it.contentNode.theLabel.textProperty.bindWeakly(s)
-    }
-
-
-class DeephysTooltipContent(s: String): StackPaneW() {
-    val theLabel =
-        LabelWrapper(s).apply {
-            contentDisplay = BOTTOM
-            font = DEEPHYS_FONT_DEFAULT
-            padding = Insets(10.0)
-        }
-
-    init {
-        /*thread{
-	  sleep(1.seconds)*/
-        runLater {
-            backgroundFill = Color.WHITE        /*backgroundProperty.bindWeakly(DeephysPalette.tooltipBackground)*/
-        }    /*}*/
-
-        rectangle {
-            stroke = DeephysPalette.deephysBlue2
-            fillProperty.bindWeakly(DeephysPalette.tooltipBackground)
-            heightProperty.bind(this@DeephysTooltipContent.theLabel.heightProperty)
-            widthProperty.bind(this@DeephysTooltipContent.theLabel.widthProperty)
-        }
-
-        +theLabel
-    }
-}
-
-class DeephyTooltip(s: String, im: DeephyImage<*>?, settings: DeephysSettingsController): FixedTooltipWrapper() {
-    companion object {    /*private val drawQueue = QueueWorker()
-	private val runLaterBunch = mutableSetOf<()->Unit>()
-
-
-
-
-        	init {
-
-
-		  DaemonLoop(1.seconds, op = {
-			runLaterBunch.sync {
-			  if (runLaterBunch.isNotEmpty()) {
-				runLaterReturn {
-				  runLaterBunch.forEach {
-					it()
-				  }
-				  runLaterBunch.clear()
-				}
-			  }
-			}
-			CONTINUE
-		  }).sendStartSignal()
-		}*/
-    }
-
-
-    val contentNode = DeephysTooltipContent(s)
-
-    init {
-
-        /*text = if (DeephySettings.showTutorials.value) "$s\t(press escape to close)" else s*/
-
-
-        content = contentNode
-
-
-        var didFirstShow = false
-
-        comfortablyShowForeverUntilEscaped()
-        val ms1 = settings.millisecondsBeforeTooltipsVanish.value
-        if (ms1 != 0) {
-            hideDelay = Duration.millis(ms1.toDouble())
-        }
-
-        val weakIm = im?.let { WeakReference(it) }
-
-
-
-        node.setOnShowing {
-
-            /*putting this stuff in setOnShown to reduce the amount of CPU and memory resources used by tooltips that never show*/
-            if (!didFirstShow) {
-                val ms2 = settings.millisecondsBeforeTooltipsVanish.value
-                if (ms2 != 0) {
-                    hideDelay = Duration.millis(ms2.toDouble())
+    im: DeephyImage<*>? = null,
+    enableTooltip: Boolean = true,
+    content: Compose
+) {
+    DeephysTooltipArea(
+        settings = settings,
+        enableTooltip = enableTooltip,
+        tooltip =  {
+            Column {
+                MyText(s, font = DEEPHYS_FONT_DEFAULT, modifier = Modifier.padding(10.dp))
+                if (im != null) {
+                    MyImage(
+                        remember(im) {
+                            val sIm = im.toSkiaImage()
+                            SkiaResize(
+                                h = (sIm.height * DEFAULT_BIG_IMAGE_SCALE).verifyWholeToInt(),
+                                w = (sIm.width * DEFAULT_BIG_IMAGE_SCALE).verifyWholeToInt()
+                            ).transform(sIm)
+                        },
+                        loadingIndicatorSize = 10.dp /*idk*/
+                    )
                 }
-                settings.millisecondsBeforeTooltipsVanish.onChangeWithWeak(this) { tt, newMS ->
-                    if (newMS == 0) {
-                        tt.hideDelay = Duration.INDEFINITE
-                    } else {
-                        tt.hideDelay = Duration.millis(newMS.toDouble())
-                    }
-                }
-                val derefedIm = weakIm?.get()
-                if (derefedIm != null) {
-
-
-                    contentNode.theLabel.graphic =
-                        ScaledCanvas().apply {
-                            draw(derefedIm)
-                            scale.value = DEFAULT_BIG_IMAGE_SCALE / derefedIm.widthMaybe
-                        }
-
-                    /*  drawQueue.schedule {
-                        ScaledCanvas().apply {
-                          draw(derefedIm)
-                          scale.value = DEFAULT_BIG_IMAGE_SCALE/derefedIm.widthMaybe
-                        }.also {
-                          synchronized(runLaterBunch) {
-                            runLaterBunch += {
-                              graphic = it
-
-
-
-                              v {
-                          deephyText("(press escape to close this)") {
-                            visibleAndManaged = DeephySettings.showTutorials.value
-                            runLater {
-                              fill = Color.GREEN
-
-
-
-
-
-
-                cant be seen otherwise on dark mode
-
-
-
-
-
-
-
-
-				  }
-				}
-				+it
-			  }
-
-
-
-
-				}
-				if (runLaterBunch.size >= 100) {
-				  runLaterReturn {
-					runLaterBunch.forEach {
-					  it()
-					}
-					runLaterBunch.clear()
-				  }
-				}
-			  }
-			}
-		  }*/
-                }        /*label.contentDisplay = BOTTOM*/
-                sendMouseEventsTo = Owner
             }
-
-            didFirstShow = true
+        },
+        content = {
+            content()
         }
-        node.setOnShown {
-
-            val screenMaxX = screen!!.bounds.maxX
-            val screenMaxY = screen!!.bounds.maxY
-
-            x =
-                when {
-                    screenMaxX > x + width + 50.0 -> x + 50.0
-                    screenMaxX > x + width + 10.0 -> screenMaxX - width
-                    else                          -> screenMaxX - width * 2
-                }
-
-
-            y =
-                when {
-                    screenMaxY > y + height + 50.0 -> y + 50.0
-                    screenMaxY > y + height + 10.0 -> screenMaxY - height
-                    else                           -> screenMaxY - height * 2
-                }
-        }
-    }
+    )
 }
 
+@Composable
+private fun DeephysTooltipArea(
+    tooltip: Compose,
+    settings: DeephysSettingsController,
+    enableTooltip: Boolean = true,
+    content: Compose
+) {
+    implementedFor(settings.millisecondsBeforeTooltipsVanish.value == 0)
+    AreaWithTooltipInSupportedPlatforms(
+        tooltip =  {
+            DeephysTooltipContent(tooltip)
+        },
+        content = {
+            content()
+        },
+        enableTooltip = enableTooltip
+    )
+}
 
+@Composable
+fun DeephysTooltipContent(
+    content: Compose
+) {
+    /*there was something with a white background here too in FX, but couldn't figure out what. An inner or outer box, maybe? Something for seeing the image or text correctly? I don't know. Could have been a mistake.*/
+    Box(
+        Modifier
+            .background(
+                DeephysPalette.tooltipBackground.rememberBoundComposeState().value
+            )
+            .defaultBorder(
+                color = DeephysPalette.deephysBlue2
+            )
+    ) {
+        content()
+    }
+}
 
 const val SUFFIX_WARNING = "The `suffix` key is no longer supported (this can just be appended to the `name`). Please update to a newer version of the pip deephys package"
-
 
 

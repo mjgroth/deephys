@@ -1,234 +1,257 @@
 package matt.nn.deephys.gui.dsetsbox
 
-import javafx.application.Platform.runLater
-import javafx.scene.layout.Border
-import javafx.util.Duration
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateListOf
 import matt.caching.compcache.ComputeCacheContextImpl
+import matt.compose.state.readOnly
+import matt.compose.state.toggle.NewToggleMechanism
 import matt.file.common.toAbsLinuxFile
 import matt.file.construct.mFile
 import matt.file.model.file.types.Cbor
 import matt.file.model.file.types.TypedFile
 import matt.file.types.checkType
-import matt.fx.control.toggle.mech.ToggleMechanism
-import matt.fx.control.wrapper.control.ControlWrapper
-import matt.fx.graphics.anim.animation.keyframe
-import matt.fx.graphics.anim.animation.timeline
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.fx.graphics.wrapper.style.FXColor
+import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeReturningErr
 import matt.lang.model.file.MacFileSystem
-import matt.math.ranges.step
 import matt.model.data.message.AbsLinuxFile
-import matt.nn.deephys.gui.global.color.DeephysPalette
-import matt.nn.deephys.gui.global.deephyToggleButton
-import matt.nn.deephys.gui.modelvis.ModelVisualizer
+import matt.nn.deephys.gui.modelvis.ModelVisualizerState
 import matt.nn.deephys.gui.settings.DeephysSettingsController
+import matt.nn.deephys.gui.unsafemigration.ControlWrapper
+import matt.nn.deephys.gui.unsafemigration.NodeWrapper
 import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
-import matt.obs.prop.writable.BindableProperty
 
-class DSetViewsVBox(
-    val model: Model,
-    private val settings: DeephysSettingsController
-) : VBoxWrapperImpl<DatasetViewer>(childClass = DatasetViewer::class) {
+val BIND_BUTTON_NAME = "Lead"
+val NORMALIZER_BUTTON_NAME = "Normalizer"
 
-    companion object {
-        const val BIND_BUTTON_NAME = "Lead"
-        const val NORMALIZER_BUTTON_NAME = "Normalizer"
-    }
+
+class DSetViewsState {
 
     private val cacheContext = ComputeCacheContextImpl()
-
-    init {
-        runLater {
-            println("created $this")
+    var modelVisualizer: ModelVisualizerState? = null
+    private val bindToggleGroup = NewToggleMechanism<DatasetViewerState>(unsafeReturningErr())
+    private val boundM =
+        derivedStateOf {
+            bindToggleGroup.selected.value
         }
-    }
+    val bound = boundM.readOnly()
 
-    var modelVisualizer: ModelVisualizer? = null
+    private val inDToggleGroup = NewToggleMechanism<DatasetViewerState>(unsafeReturningErr())
+    val normalizer = inDToggleGroup.selected.readOnly()
+
+    val datasets = mutableStateListOf<DatasetViewerState>()
 
     operator fun plusAssign(file: TypedFile<Cbor, *>) {
-        this += DatasetViewer(file, this, settings, cacheContext)
+        unsafeErr(
+            """
+            this += DatasetViewer(file, this, settings, cacheContext)        
+            """.trimIndent()
+        )
     }
-
     operator fun plusAssign(list: List<AbsLinuxFile>) {
         list.forEach {
             this += (mFile(it.path, MacFileSystem)).checkType(Cbor)
         }
     }
 
+
+
     fun save() {
-        DeephyState.tests.value = children.mapNotNull { it.file.value?.toAbsLinuxFile() }
+        DeephyState.tests.value = datasets.mapNotNull { it.file.value?.toAbsLinuxFile() }
     }
 
 
-    private val bindToggleGroup = ToggleMechanism<DatasetViewer>()
-    private val boundM = BindableProperty<DatasetViewer?>(null)
-    val bound = boundM.readOnly()
-
-    init {
-
-
-        bindToggleGroup.selectedValue.onChange {
-            boundM.value =
-                null /*necessary to remove all binding and reset everything before adding new binding or risk weird infinite recursions while changing binding and DatasetViewers are looking at each other infinitely looking for topNeurons*/
-            boundM.value = it
-        }
-    }
 
     fun createBindToggleButton(
         parent: NodeWrapper,
-        viewer: DatasetViewer
-    ) = parent.deephyToggleButton(
-        BIND_BUTTON_NAME,
-        group = bindToggleGroup,
-        value = viewer
-    ) {
-        setupSelectionColor(DeephysPalette.deephysSelectGradient)
-    }
-
-    private val inDToggleGroup = ToggleMechanism<DatasetViewer>()
-    val normalizer = inDToggleGroup.selectedValue.readOnly()
+        viewer: DatasetViewerState
+    ): Any =
+        unsafeReturningErr(
+            """
+                     = parent.deephyToggleButton(
+                BIND_BUTTON_NAME,
+                group = bindToggleGroup,
+                value = viewer
+            ) {
+                unsafeReturningErr(
+                    ""${'"'}
+                    setupSelectionColor(DeephysPalette.deephysSelectGradient)    
+                    ""${'"'}.trimIndent()
+                )
+            }
+            """.trimIndent()
+        )
 
     fun createInDToggleButton(
         parent: NodeWrapper,
-        viewer: DatasetViewer
-    ) = parent.deephyToggleButton(
-        NORMALIZER_BUTTON_NAME,
-        group = inDToggleGroup,
-        value = viewer
-    ) {
-        setupSelectionColor(DeephysPalette.deephysSelectGradient)
+        viewer: DatasetViewerState
+    ): Any =
+        unsafeReturningErr(
+            """
+                parent.deephyToggleButton(
+                NORMALIZER_BUTTON_NAME,
+                group = inDToggleGroup,
+                value = viewer
+            ) {
+                unsafeErr(
+                    ""${'"'}
+                    setupSelectionColor(DeephysPalette.deephysSelectGradient)    
+                    ""${'"'}.trimIndent()
+                )
 
 
-        /*setupSelectionColor(Color.rgb(255, 255, 0, 0.1))
+
+                /*setupSelectionColor(Color.rgb(255, 255, 0, 0.1))
 
 
-                textProperty.bind(selectedProperty.binding {
-              if (it) "InD" else "OOD"
-            })
+                    textProperty.bind(selectedProperty.binding {
+                  if (it) "InD" else "OOD"
+                })
 
 
-        font = DEEPHY_FONT_MONO*/
-    }
+            font = DEEPHY_FONT_MONO*/
+            }
+            """.trimIndent()
+        )
 
 
     fun selectViewerToBind(
-        viewer: DatasetViewer?,
+        viewer: DatasetViewerState?,
         makeInDToo: Boolean = false
     ) {
-        bindToggleGroup.selectedValue v viewer
-        if (makeInDToo) {
-            inDToggleGroup.selectedValue v viewer
-        }
+        unsafeErr(
+            """
+            bindToggleGroup.selectedValue v viewer
+            if (makeInDToo) {
+                inDToggleGroup.selectedValue v viewer
+            }    
+            """.trimIndent()
+        )
     }
 
 
-    fun addTest() =
-        DatasetViewer(null, this, settings, cacheContext).also {
-            plusAssign(it)
-        }
+    fun addTest(): DatasetViewerState =
+        unsafeReturningErr(
+            """
+            DatasetViewerState(null, this, settings, cacheContext).also {
+                plusAssign(it)
+            } 
+            """.trimIndent()
+        )
 
 
-    fun removeTest(t: DatasetViewer) {
-        println("removing test: ${t.file.value}")
-        if (bound.value == t) bindToggleGroup.selectedValue.value = null
-        if (normalizer.value == t) inDToggleGroup.selectedValue.value = null
-        t.removeFromParent()
-        /* t.normalizeTopNeuronActivations.unbind() */
-        t.normalizer.unbind()
-        t.outerBoundDSet.unbind()
-        t.numViewers.unbind()
-        t.smallImageScale.unbind()
-        t.bigImageScale.unbind()
-        t.numImagesPerNeuronInByImage.unbind()
-        t.predictionSigFigs.unbind()
-        t.showCacheBars.unbind()
-        t.showTutorials.unbind()
-        t.topNeurons.removeAllDependencies()
-        t.boundTopNeurons.removeAllDependencies()
-        t.boundToDSet.removeAllDependencies()
-        t.outerBox.save()
-        requestFocus() /*make this into scene.oldFocusOwner to remove possibility of that causing memory leak*/
+
+    fun removeTest(t: DatasetViewerState) {
+        unsafeErr(
+            """
+            println("removing test: ${t.file.value}")
+            if (bound.value == t) bindToggleGroup.selectedValue.value = null
+            if (normalizer.value == t) inDToggleGroup.selectedValue.value = null
+            t.removeFromParent()
+            /* t.normalizeTopNeuronActivations.unbind() */
+            t.outerBox.save()
+            requestFocus() /*make this into scene.oldFocusOwner to remove possibility of that causing memory leak*/    
+            """.trimIndent()
+        )
     }
 
     fun removeAllTests() {
         /*need the toList here since concurrent modification exception is NOT being thrown and actually causing bugs*/
-        children.toList().forEach {
+        datasets.toList().forEach {
             removeTest(it)
         }
     }
 
     fun flashBindButtons() {
-        /*might have debug children*/
-        @Suppress("UselessCallOnCollection")
-        val buttons = children.filterIsInstance<DatasetViewer>().mapNotNull { it.bindButton }
+        val buttons = datasets.mapNotNull { it.bindButton }
         flashControls(buttons)
     }
 
     fun flashOODButtons() {
-        /*might have debug children*/
-        @Suppress("UselessCallOnCollection")
-        val buttons = children.filterIsInstance<DatasetViewer>().mapNotNull { it.oodButton }
+        val buttons = datasets.mapNotNull { it.oodButton }
         flashControls(buttons)
     }
 
     fun flashControls(controls: Collection<ControlWrapper>) {
-        val t =
-            timeline {
-                val theStep = 1000
-                (0..2000 step theStep).forEach { millis ->
+        unsafeErr(
+            """
+                       val t =
+                timeline {
+                    val theStep = 1000
+                    (0..2000 step theStep).forEach { millis ->
 
-                    val range = (0.0..1.0 step 0.1)
+                        val range = (0.0..1.0 step 0.1)
 
-                    val base1 = millis.toDouble()
-                    range.forEach { valu ->
-                        keyframe(Duration.millis(base1 + theStep * valu * 0.5)) {
-                            setOnFinished {
-                                val b = Border.stroke(FXColor.rgb(255, 255, 0, valu))
-                                controls.forEach {
-                                    it.border = b
+                        val base1 = millis.toDouble()
+                        range.forEach { valu ->
+                            keyframe(Duration.millis(base1 + theStep * valu * 0.5)) {
+                                setOnFinished {
+                                    val b = Border.stroke(FXColor.rgb(255, 255, 0, valu))
+                                    controls.forEach {
+                                        it.border = b
+                                    }
                                 }
                             }
                         }
-                    }
-                    val base2 = base1 + theStep * 0.5
-                    range.forEach { tim ->
-                        val valu = 1.0 - tim
-                        keyframe(Duration.millis(base2 + theStep * tim * 0.5)) {
-                            setOnFinished {
-                                val b = Border.stroke(FXColor.rgb(255, 255, 0, valu))
-                                controls.forEach {
-                                    it.border = b
+                        val base2 = base1 + theStep * 0.5
+                        range.forEach { tim ->
+                            val valu = 1.0 - tim
+                            keyframe(Duration.millis(base2 + theStep * tim * 0.5)) {
+                                setOnFinished {
+                                    val b = Border.stroke(FXColor.rgb(255, 255, 0, valu))
+                                    controls.forEach {
+                                        it.border = b
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            t.setOnFinished {
+                controls.forEach {
+                    it.border = null
+                }
             }
-        t.setOnFinished {
-            controls.forEach {
-                it.border = null
-            }
-        }
+            """.trimIndent()
+        )
     }
 
-    val highlightedNeurons =
-        MyBinding(children) {
-            children.flatMap { it.highlightedNeurons.value }
-        }.apply {
-            children.onChange {
-                removeAllDependencies()
-                children.forEach {
+    val highlightedNeurons: MyBinding<*> =
+        unsafeReturningErr(
+            """
+            MyBinding(children) {
+                datasets.flatMap { it.highlightedNeurons.value }
+            }.apply {
+                datasets.onChange {
+                    removeAllDependencies()
+                    datasets.forEach {
+                        addDependency(it.highlightedNeurons)
+                    }
+                    markInvalid()
+                }
+                datasets.forEach {
                     addDependency(it.highlightedNeurons)
                 }
-                markInvalid()
-            }
-            children.forEach {
-                addDependency(it.highlightedNeurons)
-            }
-        }
+            }        
+            """.trimIndent()
+        )
 }
 
+
+@Composable
+fun DSetViewsVBox(
+    state: DSetViewsState,
+    model: Model,
+    settings: DeephysSettingsController
+) {
+    Column {
+        state.datasets.forEach {
+            DatasetViewer(it)
+        }
+    }
+}

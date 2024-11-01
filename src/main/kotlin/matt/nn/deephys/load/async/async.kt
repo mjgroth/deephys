@@ -1,6 +1,5 @@
 package matt.nn.deephys.load.async
 
-import javafx.application.Platform.runLater
 import matt.file.model.file.types.Cbor
 import matt.file.model.file.types.TypedFile
 import matt.file.toJioFile
@@ -24,18 +23,14 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
         failableValueSlots.forEach {
             it.admitFailureIfNotDone("File not found: $file")
         }
-        runLater {
-            (fileFound as BindableProperty).value = false
-        }
+        (fileFound as BindableProperty).value = false
     }
 
     protected fun signalStreamNotOk() {
         failableValueSlots.forEach {
             it.admitFailureIfNotDone("Stream Not Ok")
         }
-        runLater {
-            (streamOk as BindableProperty).value = false
-        }
+        (streamOk as BindableProperty).value = false
     }
 
 
@@ -43,15 +38,11 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
         failableValueSlots.forEach {
             it.admitFailureIfNotDone(e.toString())
         }
-        runLater {
-            parseError.value = e
-        }
+        parseError.value = e
     }
 
     protected fun signalFinishedLoading() {
-        runLater {
-            (finishedLoading as BindableProperty).value = true
-        }
+        (finishedLoading as BindableProperty).value = true
     }
 
 

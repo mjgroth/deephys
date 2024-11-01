@@ -1,20 +1,27 @@
 package matt.nn.deephys.gui.neuron
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import matt.async.thread.queue.QueueWorker
 import matt.caching.compcache.invoke
 import matt.codegen.tex.tex
 import matt.collect.itr.subList
-import matt.fx.control.wrapper.progressindicator.progressindicator
-import matt.fx.graphics.fxthread.ensureInFXThreadOrRunLater
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNullable
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import matt.compose.state.produce.produceSimpleResettingIoState
+import matt.compose.state.rememberMutableStateOf
 import matt.lang.common.go
+import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeReturningErr
 import matt.lang.function.Consume
 import matt.math.lang.arithmetic.op.div
+import matt.model.code.successorfail.loadedOrNull
 import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
@@ -23,71 +30,61 @@ import matt.nn.deephys.calc.TopImages
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.RawActivation
-import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NeuronListView
 import matt.nn.deephys.gui.dataset.byimage.preds.CategoryTable
-import matt.nn.deephys.gui.deephyimview.DeephyImView
-import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.global.tooltip.symbol.deephysInfoSymbol
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTexTooltip
+import matt.nn.deephys.gui.global.DeephysText
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
+import matt.nn.deephys.gui.global.tooltip.symbol.DeephysInfoSymbol
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
-import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
-import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.unsafemigration.ImageFlowPane
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.obs.bind.weakBinding
-import matt.obs.bindings.bool.and
-import matt.obs.bindings.bool.not
-import matt.obs.col.olist.sizeProperty
-import matt.obs.math.double.op.times
-import matt.obs.prop.writable.BindableProperty
 import matt.reflect.weak.WeakThing
 import kotlin.math.min
 
-class NeuronView<A : Number>(
+private val worker = QueueWorker("NeuronView Worker")
+
+@Composable
+fun <A : Number> NeuronView(
     neuron: InterTestNeuron,
-    numImages: BindableProperty<Int> = BindableProperty(MAX_NUM_IMAGES_IN_TOP_IMAGES),
+    numImages: State<Int> = rememberMutableStateOf(MAX_NUM_IMAGES_IN_TOP_IMAGES),
     testLoader: TypedTestLike<A>,
-    viewer: DatasetViewer,
+    viewer: DatasetViewerState,
     showActivationRatio: Boolean,
     layoutForList: Boolean,
     loadImagesAsync: Boolean = false,
     showTopCats: Boolean = false,
-    override val settings: DeephysSettingsController
-) : VBoxWrapperImpl<NW>(childClass = NW::class), DeephysNode {
+    settings: DeephysSettingsController,
+    viewerWidth: Dp
+) {
 
-    companion object {
-        private val worker = QueueWorker("NeuronView Worker")
-    }
+    Column {
 
-
-    init {
-        val memSafeSettings = settings
         val weakViewer = viewer.weakRef
-        val showing = BindableProperty(2)
-        val progIndicator =
-            progressindicator {
-                visibleAndManagedProp.bindWeakly(
-                    showing.weakBinding(this@NeuronView) { _, it ->
-                        it < 2
-                    }
-                )
-            }
+        val showing = rememberMutableStateOf(2)
+        val showProgIndicator = showing.value < 2
+        if (showProgIndicator) {
+            CircularProgressIndicator()
+        }
+
 
         if (showActivationRatio) {
-            swapperRNullable(viewer.normalizer) { normalizer ->
+            with(viewer.normalizer.value) {
+
+                val normalizer = this
                 weakViewer.deref()!!.testData.value?.go { numTest ->
                     val denomTest = normalizer?.testData?.value
-                    h {
+                    Row {
                         val doneLoading = numTest.isDoneLoading() && (denomTest?.isDoneLoading() ?: true)
 
                         if (!doneLoading) showing.value -= 1
 
 
-                        val j =
-                            worker.scheduleOrRunSynchroneouslyIf(doneLoading) {
+                        val producedActivation =
+                            produceSimpleResettingIoState {
                                 denomTest?.let {
                                     with(viewer.cacheContext) {
                                         neuron.activationRatio(
@@ -100,25 +97,28 @@ class NeuronView<A : Number>(
                                 )
                             }
 
-                        j.whenDone { activation ->
-                            ensureInFXThreadOrRunLater {
-                                if (!doneLoading) {
-                                    showing.value += 1
-                                }
-                                deephysText(
-                                    activation.formatted
-                                ) {
-                                    veryLazyDeephysTexTooltip(memSafeSettings) {
-
-                                        when (activation) {
-                                            is ActivationRatio     -> ActivationRatioCalc.latexTechnique(MAX)
-                                            is RawActivation       -> tex { text("max raw activation of this neuron") }
-                                            is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
-                                        }
-                                    }
-                                }
-                                activation.extraInfo?.go { deephysInfoSymbol(it) }
+                        producedActivation.value.loadedOrNull()?.go { activation ->
+                            if (!doneLoading) {
+                                showing.value += 1
                             }
+                            DeephysTooltipArea(
+                                settings = settings,
+                                getCode = {
+                                    when (activation) {
+                                        is ActivationRatio     -> ActivationRatioCalc.latexTechnique(MAX)
+                                        is RawActivation       -> tex { text("max raw activation of this neuron") }
+                                        is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
+                                    }
+                                },
+                                dark = unsafeReturningErr("dark?"),
+                                content = {
+                                    DeephysText(
+                                        activation.formatted
+                                    )
+                                }
+                            )
+
+                            activation.extraInfo?.go { DeephysInfoSymbol(it) }
                         }
                     }
                 }
@@ -131,8 +131,9 @@ class NeuronView<A : Number>(
 
             val dtype = testLoader.dtype
 
-            swapperNullable(viewer.normalizer) {
-                val normalizer = this?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest?.awaitRequireSuccessful()
+            with(viewer.normalizer.value) {
+                val normalizer =
+                    this?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest?.awaitRequireSuccessful()
                 val denom =
                     normalizer?.let {
                         neuron.maxActivationIn(normalizer).value / 100
@@ -144,7 +145,7 @@ class NeuronView<A : Number>(
                     title = "Average activity for top categories: ",
                     title_unfolded = "ave: ",
                     data = topCats.map { it.first to (it.second.value / denom) },
-                    settings = memSafeSettings,
+                    settings = settings,
                     weakViewer = weakViewer,
                     sigFigSett = weakViewer.deref()!!.averageRawActSigFigs,
                     tooltip = "Top categories for this neuron. Calculated by the average, $normalizedString activation of this neuron for images grouped by their groundtruth",
@@ -153,22 +154,28 @@ class NeuronView<A : Number>(
             }
 
 
-            spacer(1.0)
+            Spacer(Modifier.size(1.0.dp))
         }
 
 
         val noneText =
-            deephysInfoSymbol(
+            DeephysInfoSymbol(
                 "There are no top images. This might happen if all activations are zero, NaN, or infinite"
             )
-        +ImageFlowPane(viewer).apply {
-            noneText.visibleAndManagedProp.bindWeakly(
-                children.sizeProperty.eq(0) and progIndicator.visibleProperty.not()
-            )
-            val imFlowPane = this
+        ImageFlowPane(
+            viewer,
             /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
-            prefWrapLengthProperty.bindWeakly(viewer.widthProperty * 0.95)
+            prefWrapLengthProperty = (viewerWidth.value * 0.95).dp
+        ) {
+            unsafeErr(
+                """
+                noneText.visibleAndManagedProp.bindWeakly(
+                    children.sizeProperty.eq(0) and !showProgIndicator
+                )    
+                """.trimIndent()
+            )
 
+            val imFlowPane = this
             fun update(
                 weakThing: WeakNeuronViewRefs<A>,
                 oldNumImages: Int?,
@@ -188,7 +195,14 @@ class NeuronView<A : Number>(
                 val topImagesJob =
                     with(viewer.cacheContext) {
                         if (localTestLoader.isDoneLoading()) {
-                            val ti = with(localTestLoader.testRAMCache) { TopImages(localNeuron, localTestLoader, realNumImages.toInt())() }
+                            val ti =
+                                with(localTestLoader.testRAMCache) {
+                                    TopImages(
+                                        localNeuron,
+                                        localTestLoader,
+                                        realNumImages.toInt()
+                                    )()
+                                }
                             object : Donable<List<ImageIndex>> {
                                 override fun whenDone(c: Consume<List<ImageIndex>>) {
                                     c(ti)
@@ -197,17 +211,22 @@ class NeuronView<A : Number>(
                         } else {
                             showing.value -= 1
                             worker.schedule {
-                                with(localTestLoader.testRAMCache) { TopImages(localNeuron, localTestLoader, realNumImages.toInt())() }
+                                with(localTestLoader.testRAMCache) {
+                                    TopImages(
+                                        localNeuron,
+                                        localTestLoader,
+                                        realNumImages.toInt()
+                                    )()
+                                }
                             }
                         }
                     }
                 topImagesJob.whenDone { topImages ->
-                    ensureInFXThreadOrRunLater {
-
-
-                        if (realOldNumImages == null) {
-                            topImages.forEach {
-                                val im = localTestLoader.imageAtIndex(it.index)
+                    if (realOldNumImages == null) {
+                        topImages.forEach {
+                            val im = localTestLoader.imageAtIndex(it.index)
+                            unsafeErr(
+                                """
                                 localImFlowPane.add(
                                     DeephyImView(
                                         im,
@@ -215,11 +234,15 @@ class NeuronView<A : Number>(
                                         loadAsync = loadImagesAsync,
                                         settings = memSafeSettings
                                     )
-                                )
-                            }
-                        } else if (realNumImages > realOldNumImages) {
-                            topImages.subList(realOldNumImages.toInt()).toList().forEach {
-                                val im = localTestLoader.imageAtIndex(it.index)
+                                )       
+                                """.trimIndent()
+                            )
+                        }
+                    } else if (realNumImages > realOldNumImages) {
+                        topImages.subList(realOldNumImages.toInt()).toList().forEach {
+                            val im = localTestLoader.imageAtIndex(it.index)
+                            unsafeErr(
+                                """
                                 localImFlowPane.add(
                                     DeephyImView(
                                         im,
@@ -227,16 +250,21 @@ class NeuronView<A : Number>(
                                         loadAsync = loadImagesAsync,
                                         settings = memSafeSettings
                                     )
-                                )
-                            }
-                        } else if (realNumImages < realOldNumImages) {
+                                )             
+                                """.trimIndent()
+                            )
+                        }
+                    } else if (realNumImages < realOldNumImages) {
+                        unsafeErr(
+                            """
                             localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
                                 it.removeFromParent()
-                            }
-                        }
-                        if (!doneLoading) {
-                            showing.value += 1
-                        }
+                            }         
+                            """.trimIndent()
+                        )
+                    }
+                    if (!doneLoading) {
+                        showing.value += 1
                     }
                 }
             }
@@ -253,15 +281,19 @@ class NeuronView<A : Number>(
 
             update(weakThing.deref()!!, null, numImages.value)
 
-            numImages.onChangeWithAlreadyWeakAndOld(weakThing) { tl, o, n ->
-                update(tl, o, n)
-            }
-            if (layoutForList) {
-                prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH
-            }
-            val gap = 3.0
-            hgap = gap
-            vgap = gap
+            unsafeErr(
+                """
+                numImages.onChangeWithAlreadyWeakAndOld(weakThing) { tl, o, n ->
+                    update(tl, o, n)
+                }
+                if (layoutForList) {
+                    prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH
+                }
+                val gap = 3.0
+                hgap = gap
+                vgap = gap           
+                """.trimIndent()
+            )
         }
     }
 }
@@ -271,7 +303,7 @@ private class WeakNeuronViewRefs<A : Number> : WeakThing<WeakNeuronViewRefs<A>>(
     override fun constructNew(): WeakNeuronViewRefs<A> = WeakNeuronViewRefs()
 
     var testLoader by weak<TypedTestLike<A>>()
-    var viewer by weak<DatasetViewer>()
+    var viewer by weak<DatasetViewerState>()
     var neuron by weak<InterTestNeuron>()
     var imFlowPane by weak<ImageFlowPane>()
 }

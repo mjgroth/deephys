@@ -1,80 +1,86 @@
 package matt.nn.deephys.gui.global.tooltip.symbol
 
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.node.attachTo
-import matt.fx.node.proto.infosymbol.InfoSymbol
-import matt.fx.node.proto.infosymbol.SevereWarningSymbol
-import matt.fx.node.proto.infosymbol.TutorialSymbol
-import matt.fx.node.proto.infosymbol.WarningSymbol
-import matt.lang.function.Dsl
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Emergency
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.runtime.Composable
+import matt.compose.graphics.icon.MyIcon2
+import matt.compose.graphics.text.MyText
+import matt.compose.graphics.tooltip.AreaWithTooltipInSupportedPlatforms
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipContent
 import matt.obs.bindings.str.ObsS
 
 
 const val DEEPHYS_SYMBOL_SPACING = 5.0
 
-fun NW.deephysInfoSymbol(text: ObsS, op: Dsl<DeephysInfoSymbol> = {}) =
-    DeephysInfoSymbol(text.value).attachTo(this) {
-        textProperty.bind(text)
-        op()
-    }
-
-fun NW.deephysInfoSymbol(text: String, op: Dsl<DeephysInfoSymbol> = {}) = DeephysInfoSymbol(text).attachTo(this, op)
+@Composable
+fun DeephysInfoSymbol(text: ObsS) = DeephysInfoSymbol(text.value)
 
 
-class DeephysInfoSymbol(info: String): InfoSymbol(info) {
-    override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
-    val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
-    val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
+@Composable
+fun DeephysInfoSymbol(info: String) {
+    AreaWithTooltipInSupportedPlatforms(
+        tooltip = {
+            DeephysTooltipContent {
+                MyText(info)
+            }
+        },
+        content = {
+            MyIcon2(Icons.Default.Info)
+        }
+    )
 }
 
 
-fun NW.deephysTutorialSymbol(text: ObsS, op: Dsl<DeephysTutorialSymbol> = {}) =
-    DeephysTutorialSymbol(text.value).attachTo(this) {
-        textProperty.bind(text)
-        op()
-    }
+@Composable
+fun DeephysTutorialSymbol(text: ObsS) = DeephysTutorialSymbol(text.value)
 
-fun NW.deephysTutorialSymbol(text: String, op: Dsl<DeephysTutorialSymbol> = {}) = DeephysTutorialSymbol(text).attachTo(this, op)
+@Composable
+fun DeephysTutorialSymbol(info: String) {
+    AreaWithTooltipInSupportedPlatforms(
+        tooltip = {
+            DeephysTooltipContent {
+                MyText(info)
+            }
+        },
+        content = {
+            MyIcon2(Icons.Default.QuestionMark)
+        }
+    )
+}
+@Composable
+fun DeephysWarningSymbol(text: ObsS) = DeephysWarningSymbol(text.value)
 
-
-class DeephysTutorialSymbol(info: String): TutorialSymbol(info) {
-    override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
-    val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
-    val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
+@Composable
+fun DeephysWarningSymbol(info: String) {
+    AreaWithTooltipInSupportedPlatforms(
+        tooltip = {
+            DeephysTooltipContent {
+                MyText(info)
+            }
+        },
+        content = {
+            MyIcon2(Icons.Default.Warning)
+        }
+    )
 }
 
 
-fun NW.deephysWarningSymbol(text: ObsS, op: Dsl<DeephysWarningSymbol> = {}) =
-    DeephysWarningSymbol(text.value).attachTo(this) {
-        textProperty.bind(text)
-        op()
-    }
+@Composable
+fun DeephysSevereWarningSymbol(text: ObsS) = DeephysSevereWarningSymbol(text.value)
 
-fun NW.deephysWarningSymbol(text: String, op: Dsl<DeephysWarningSymbol> = {}) =
-    DeephysWarningSymbol(text).attachTo(this, op)
-
-
-class DeephysWarningSymbol(warning: String): WarningSymbol(warning) {
-    override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
-    val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
-    val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
-}
-
-
-
-fun NW.deephysSevereWarningSymbol(text: ObsS, op: Dsl<DeephysSevereWarningSymbol> = {}) =
-    DeephysSevereWarningSymbol(text.value).attachTo(this) {
-        textProperty.bind(text)
-        op()
-    }
-
-fun NW.deephysSevereWarningSymbol(text: String, op: Dsl<DeephysSevereWarningSymbol> = {}) =
-    DeephysSevereWarningSymbol(text).attachTo(this, op)
-
-
-class DeephysSevereWarningSymbol(warning: String): SevereWarningSymbol(warning) {
-    override fun buildTooltipGraphic(text: String) = DeephysTooltipContent(text)
-    val textProperty get() = (content as DeephysTooltipContent).theLabel.textProperty
-    val fontProperty get() = (content as DeephysTooltipContent).theLabel.fontProperty
+@Composable
+fun DeephysSevereWarningSymbol(info: String) {
+    AreaWithTooltipInSupportedPlatforms(
+        tooltip = {
+            DeephysTooltipContent {
+                MyText(info)
+            }
+        },
+        content = {
+            MyIcon2(Icons.Default.Emergency)
+        }
+    )
 }

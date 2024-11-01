@@ -1,19 +1,16 @@
 package matt.nn.deephys.load
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromByteArray
 import matt.cbor.my.MyCbor
+import matt.compose.graphics.Compose
+import matt.compose.graphics.text.MyText
 import matt.file.JioFile
-import matt.fx.graphics.wrapper.EventTargetWrapper
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperNeverNull
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.fx.graphics.wrapper.text.TextWrapper
 import matt.lang.model.file.FsFile
 import matt.nn.deephys.load.async.AsyncLoader
-import matt.obs.bind.binding
 import matt.obs.prop.ObsVal
 import kotlin.io.path.readBytes
 import kotlin.time.Duration
@@ -34,38 +31,37 @@ inline fun <reified T: Any> JioFile.loadCbor(): CborSyncLoadResult<T> =
         ParseError(e.message)
     }
 
-fun <T> EventTargetWrapper.loadSwapper(
+@Composable
+fun <T> LoadSwapper(
     prop: ObsVal<CborSyncLoadResult<T>?>,
     nullMessage: String = "please select a file",
-    op: T.() -> NodeWrapper
-) = swapper(prop, nullMessage) {
-    when (this) {
-        is FileNotFound -> TextWrapper("$f not found")
-        is ParseError   -> TextWrapper("parse error: $message")
-        is Loaded<T>    -> op(data)
-    }
+    op: @Composable T.() -> Unit
+) {
+    prop.value?.let {
+        when (it) {
+            is FileNotFound -> MyText("${it.f} not found")
+            is ParseError   -> MyText("parse error: ${it.message}")
+            is Loaded<T>    -> op(it.data)
+        }
+    } ?: MyText(nullMessage)
 }
 
-fun <T: AsyncLoader> EventTargetWrapper.asyncLoadSwapper(
+@Composable
+fun <T: AsyncLoader> AsyncLoadSwapper(
     loader: ObsVal<T?>,
     nullMessage: String = "please select a file",
     fadeOutDur: Duration? = null,
     fadeInDur: Duration? = null,
-    op: T.() -> NodeWrapper
-) = swapper(loader, nullMessage) {
-    VBoxWrapperImpl<NodeWrapper>().also {
-
-        it.swapperNeverNull(
-            fileFound.binding(streamOk, parseError) { this },
-            fadeOutDur = fadeOutDur,
-            fadeInDur = fadeInDur
-        ) {
-            when {
-                !fileFound.value         -> TextWrapper("file not found")
-                !streamOk.value          -> TextWrapper("file loading stream broken. Was the file moved?")
-                parseError.value != null -> TextWrapper("Encountered error while loading file: ${parseError.value?.message}")
-                else                     -> op(this)
-            }
+    content: (T) -> Compose
+) {
+    val v = loader.value
+    Column {
+        when {
+            v == null                  -> MyText(nullMessage)
+            !v.fileFound.value         -> MyText("file not found")
+            !v.streamOk.value          -> MyText("file loading stream broken. Was the file moved?")
+            v.parseError.value != null -> MyText("Encountered error while loading file: ${v.parseError.value?.message}")
+            else                       -> content(v)
         }
     }
 }

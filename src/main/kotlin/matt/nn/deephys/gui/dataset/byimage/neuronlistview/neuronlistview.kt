@@ -1,67 +1,55 @@
 package matt.nn.deephys.gui.dataset.byimage.neuronlistview
 
-import javafx.scene.control.ScrollPane
-import javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import matt.caching.compcache.invoke
-import matt.fx.control.wrapper.scroll.ScrollPaneWrapper
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapper
-import matt.fx.graphics.wrapper.pane.anchor.swapper.swapperRNullable
-import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapperImpl
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.fx.graphics.wrapper.text.textlike.highlightOnHover
+import matt.compose.controls.scroll.MyHorizontalScrollPane
+import matt.compose.graphics.text.MyText
 import matt.lang.common.go
+import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeReturningErr
 import matt.lang.weak.weak
 import matt.math.numalg.format.sigfig.toScientificNotation
-import matt.nn.deephys.calc.ActivationRatioCalc
-import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
-import matt.nn.deephys.calc.ActivationRatioCalc.Companion.SingleImage
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.act.ActivationRatio
-import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.fix.withImages
-import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
-import matt.nn.deephys.gui.global.deephyActionText
-import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.global.tooltip.symbol.deephysInfoSymbol
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTexTooltip
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.global.DeephyActionText
+import matt.nn.deephys.gui.global.SpacerWithOldFxSize
+import matt.nn.deephys.gui.global.tooltip.symbol.DeephysInfoSymbol
 import matt.nn.deephys.gui.neuron.NeuronView
-import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
-import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.obs.bind.MyBinding
-import matt.obs.prop.ObsVal
 import matt.prim.int.ceilInt
 
-fun <A : Number> NW.neuronListViewSwapper(
-    viewer: DatasetViewer,
+@Composable
+fun <A : Number> neuronListViewSwapper(
+    viewer: DatasetViewerState,
     contents: Set<DeephyImage<A>>,
     postDtypeTestLoader: PostDtypeTestLoader<A>,
     bindScrolling: Boolean = false,
     fade: Boolean = true,
-    settings: DeephysSettingsController
-) = run {
+    settings: DeephysSettingsController,
+    viewerWidth: Dp
+) {
 
     val weakViewer = weak(viewer)
-    neuronListViewSwapper(
+    NeuronListViewSwapper(
         bindScrolling = bindScrolling,
         viewer = viewer,
         fade = fade,
         top =
-            MyBinding(
-                viewer.layerSelection,
-            /*viewer.normalizeTopNeuronActivations,
-             * */viewer.testData,
-                viewer.normalizer
-            ) {
+            derivedStateOf {
                 weakViewer.deref()?.let { deRefedViewer ->
                     deRefedViewer.layerSelection.value?.let { lay ->
                         val prepped1 = postDtypeTestLoader.preppedTest
@@ -75,30 +63,24 @@ fun <A : Number> NW.neuronListViewSwapper(
                         )
                     }
                 }
-            }.apply {
-
-            /*  viewer.onGarbageCollected {
-                markInvalid()
-                removeAllDependencies()
-              }*/
             },
-        settings = settings
+        settings = settings,
+        viewerWidth = viewerWidth
     )
 }
 
-fun NW.neuronListViewSwapper(
-    viewer: DatasetViewer,
-    top: ObsVal<out TopNeurons<*>?>,
+@Composable
+fun NeuronListViewSwapper(
+    viewer: DatasetViewerState,
+    @Suppress("REDUNDANT_PROJECTION") top: State<out TopNeurons<*>?>,
     bindScrolling: Boolean = false,
     fade: Boolean = true,
-    settings: DeephysSettingsController
-) = run {
+    settings: DeephysSettingsController,
+    viewerWidth: Dp
+) {
     val weakViewer = weak(viewer)
-    swapper(
-        MyBinding(
-            viewer.testData,
-            top
-        ) {
+    val b =
+        derivedStateOf {
             weakViewer.deref()?.let { deRefedViewer ->
                 deRefedViewer.testData.value?.let { tst ->
                     top.value?.let { topCalc ->
@@ -110,69 +92,50 @@ fun NW.neuronListViewSwapper(
                     }
                 }
             }
-        },
-        nullMessage = "no top neurons. Did you select a layer and an image?",
-        fadeOutDur = if (fade) DEEPHYS_FADE_DUR else null,
-        fadeInDur = if (fade) DEEPHYS_FADE_DUR else null
-    ) {
-        NeuronListView(this, bindScrolling = bindScrolling, settings = settings)
-    }
+        }
+    b.value?.let {
+        NeuronListView(it, bindScrolling = bindScrolling, settings = settings, viewerWidth = viewerWidth)
+    } ?: MyText("no top neurons. Did you select a layer and an image?")
 }
 
 data class NeuronListViewConfig(
-    val viewer: DatasetViewer,
+    val viewer: DatasetViewerState,
     val tops: TopNeurons<*>,
     val testLoader: TypedTestLike<*>
 )
 
-class NeuronListView(
+private const val NEURON_LIST_VIEW_WIDTH = 150.0
+
+@Composable
+fun NeuronListView(
     cfg: NeuronListViewConfig,
     bindScrolling: Boolean = false,
-    override val settings: DeephysSettingsController
-) : ScrollPaneWrapper<HBoxWrapperImpl<*>>(
-        ScrollPane(HBoxWrapperImpl(childClass = NodeWrapper::class).node),
-        contentCls = HBoxWrapperImpl::class
-    ),
-    DeephysNode {
+    settings: DeephysSettingsController,
+    viewerWidth: Dp
+) {
 
+    val hValueProp = rememberScrollState()
+    MyHorizontalScrollPane(hValueProp) {
+        Row {
 
-    companion object {
-        const val NEURON_LIST_VIEW_WIDTH = 150.0
-    }
+            @Suppress("UNUSED_VARIABLE") val myHeight = 150.0
+            cfg.apply {
+                val weakViewer = weak(viewer)
 
+                if (bindScrolling) {
 
-    init {
-
-        val memSafeSettings = settings
-
-        val weakThisNLV = weak(this)
-
-        hbarPolicy = AS_NEEDED
-        vbarPolicy = AS_NEEDED
-        isFitToHeight = true
-        vmax = 0.0
-
-
-        @Suppress("UNUSED_VARIABLE") val myHeight = 150.0
-        cfg.apply {
-            val weakViewer = weak(viewer)
-
-            if (bindScrolling) {
-
-                viewer.currentByImageHScroll = hValueProp
-                viewer.boundToDSet.value?.currentByImageHScroll?.value?.go { hvalue = it }
-                hValueProp.onChangeWithAlreadyWeak(weakViewer) { vw, h ->
-                    if (vw.outerBox.bound.value != null) {
-                        vw.siblings.forEach { it.currentByImageHScroll?.value = h }
+                    viewer.currentByImageHScroll.value = hValueProp
+                    val btd = viewer.boundToDSet.value
+                    val btdScroll = btd?.currentByImageHScroll?.value
+                    val btdScrollValue = btdScroll?.value
+                    LaunchedEffect(btdScrollValue) {
+                        btdScrollValue?.let {
+                            hValueProp.scrollTo(it)
+                        }
                     }
                 }
-                viewer.boundToDSet.onChangeWithAlreadyWeak(weakViewer) { vw, _ ->
-                    vw.boundToDSet.value?.currentByImageHScroll?.value?.go { weakThisNLV.deref()?.hvalue = it }
-                }
-            }
 
 
-            content!!.apply {
 
                 val topNeurons =
                     with(viewer.testData.value!!.testRAMCache) {
@@ -180,41 +143,40 @@ class NeuronListView(
                     }
 
 
-                /*val topNeurons = withProgressPopUp {
-                  it.message = "loading tops..."
-                  tops()
-                }*/
+                            /*val topNeurons = withProgressPopUp {
+                              it.message = "loading tops..."
+                              tops()
+                            }*/
 
 
-                val startAsyncAt = (viewer.width / NEURON_LIST_VIEW_WIDTH).ceilInt()
+                val startAsyncAt = (viewerWidth.value / NEURON_LIST_VIEW_WIDTH).ceilInt().dp
 
                 if (topNeurons.isEmpty()) {
-                    deephysInfoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
+                    DeephysInfoSymbol("There are no top neurons. This could happen if all activations are NaN, infinite, or zero.")
                 }
 
                 topNeurons.forEachIndexed { idx, neuronWithAct ->
                     val neuronIndex = neuronWithAct.neuron.index
-                    v {
-                        h {
-                            deephyActionText("neuron $neuronIndex ") {
+                    Column {
+                        Row {
+                            DeephyActionText("neuron $neuronIndex ") {
                                 val deReffedViewer = weakViewer.deref()!!
                                 val viewerToChange = deReffedViewer.boundToDSet.value ?: deReffedViewer
                                 viewerToChange.navigateTo(neuronWithAct.neuron)
                             }
-                            spacer(.0)
-                            swapperRNullable(
+                            with(
                                 viewer.normalizer
                             ) {
 
 
                                 if (
                                     true
-                                /*neuronWithAct.activation !is ActivationRatio
-                                || (cfg.tops as TopNeurons<*>).images.isNotEmpty()*/
+                                            /*neuronWithAct.activation !is ActivationRatio
+                                            || (cfg.tops as TopNeurons<*>).images.isNotEmpty()*/
                                 ) {
                                     val act = neuronWithAct.activation
                                     val case_activ = cfg.tops.testAndImages.images.size
-                                    h {
+                                    Row {
 
                                         var text = "(max:100%)"
 
@@ -238,60 +200,71 @@ class NeuronListView(
                                                     .toString() + "%" + ")"
                                         }
 
-                                        deephysText(
-                                            text
-                                        ) {
+                                        unsafeErr(
+                                            """
+                                            DeephysText(
+                                                text
+                                            ) {
 
-                                            highlightOnHover()
+                                                highlightOnHover()
 
-                                            when (act) {
-                                                is AlwaysOneActivation<*, *> ->
-                                                    veryLazyDeephysTooltip(memSafeSettings) {
-                                                        "activation is always 1 in this case, so it is not shown"
-                                                    }
-
-                                                is RawActivation<*, *>       -> {
-                                                    val numImages = (cfg.tops).testAndImages.images.size
-                                                    veryLazyDeephysTooltip(memSafeSettings) {
-                                                        if (numImages == 0) "maximum raw activation value for this neuron"
-                                                        else if (numImages > 1) "average activation value for the selected images"
-                                                        else "raw activation value for the selected image"
-                                                    }
-                                                }
-
-                                                is ActivationRatio<*, *>     -> {
-                                                    val numImages = (cfg.tops).testAndImages.images.size
-                                                    val num =
-                                                        when (numImages) {
-                                                            0    -> MiscActivationRatioNumerator.MAX
-                                                            1    -> SingleImage(cfg.tops.testAndImages.images.first().imageID)
-                                                            else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
+                                                when (act) {
+                                                    is AlwaysOneActivation<*, *> ->
+                                                        veryLazyDeephysTooltip(memSafeSettings) {
+                                                            "activation is always 1 in this case, so it is not shown"
                                                         }
-                                                    veryLazyDeephysTexTooltip(memSafeSettings) {
-                                                        ActivationRatioCalc.latexTechnique(num)
+
+                                                    is RawActivation<*, *>       -> {
+                                                        val numImages = (cfg.tops).testAndImages.images.size
+                                                        veryLazyDeephysTooltip(memSafeSettings) {
+                                                            if (numImages == 0) "maximum raw activation value for this neuron"
+                                                            else if (numImages > 1) "average activation value for the selected images"
+                                                            else "raw activation value for the selected image"
+                                                        }
+                                                    }
+
+                                                    is ActivationRatio<*, *>     -> {
+                                                        val numImages = (cfg.tops).testAndImages.images.size
+                                                        val num =
+                                                            when (numImages) {
+                                                                0    -> MiscActivationRatioNumerator.MAX
+                                                                1    -> SingleImage(cfg.tops.testAndImages.images.first().imageID)
+                                                                else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
+                                                            }
+                                                        veryLazyDeephysTexTooltip(memSafeSettings) {
+                                                            ActivationRatioCalc.latexTechnique(num)
+                                                        }
                                                     }
                                                 }
-                                            }
-                                        }
-                                        act.extraInfo?.go { deephysInfoSymbol(it) }
+                                            }       
+                                            """.trimIndent()
+                                        )
+
+                                        act.extraInfo?.go { DeephysInfoSymbol(it) }
                                     }
                                 }
                             }
                         }
 
-                        +NeuronView(
+                        NeuronView(
                             neuronWithAct.neuron,
                             numImages = cfg.viewer.numImagesPerNeuronInByImage,
                             testLoader = testLoader,
                             viewer = viewer,
                             showActivationRatio = false,
                             layoutForList = true,
-                            loadImagesAsync = idx > startAsyncAt,
-                            settings = memSafeSettings
+                            loadImagesAsync = idx > startAsyncAt.value,
+                            settings = settings,
+                            showTopCats = unsafeReturningErr("?"),
+                            viewerWidth = viewerWidth
                         )
 
-                        spacer() /*space for the hbar*/
-                        prefWidth = NEURON_LIST_VIEW_WIDTH
+                        SpacerWithOldFxSize() /*space for the hbar*/
+                        unsafeErr(
+                            """
+                            prefWidth = NEURON_LIST_VIEW_WIDTH    
+                            """.trimIndent()
+                        )
                     }
                 }
             }

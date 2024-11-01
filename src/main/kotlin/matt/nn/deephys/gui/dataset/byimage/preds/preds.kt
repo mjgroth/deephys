@@ -1,53 +1,58 @@
 package matt.nn.deephys.gui.dataset.byimage.preds
 
-import javafx.scene.Cursor
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import matt.caching.compcache.invoke
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.hSpacer
-import matt.fx.graphics.wrapper.pane.hbox.HBoxW
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.VBoxW
-import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.fx.graphics.wrapper.textflow.TextFlowWrapper
-import matt.fx.node.proto.infosymbol.plusMinusSymbol
+import matt.compose.controls.toggleicon.ToggleIcon
+import matt.compose.state.lang.not
+import matt.compose.state.rememberMutableStateOf
+import matt.lang.common.unsafeErr
 import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.calc.ImageTopPredictions
+import matt.nn.deephys.gui.global.DeephyActionLabel
+import matt.nn.deephys.gui.global.DeephysText
+import matt.nn.deephys.gui.global.SigFigText
+import matt.nn.deephys.gui.global.SpacerWithOldFxSize
 import matt.nn.deephys.gui.global.color.DeephysPalette
-import matt.nn.deephys.gui.global.deephyActionLabel
-import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.global.sigFigText
 import matt.nn.deephys.gui.global.subtitleFont
 import matt.nn.deephys.gui.global.titleBoldFont
 import matt.nn.deephys.gui.global.titleFont
-import matt.nn.deephys.gui.global.tooltip.deephyTooltip
-import matt.nn.deephys.gui.node.DeephysNode
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
-import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.data.Category
-import matt.obs.bindings.bool.not
-import matt.obs.math.int.ObsI
-import matt.obs.prop.writable.BindableProperty
 
-class PredictionsView(
+@Composable
+fun PredictionsView(
     groundTruth: Category,
     topPreds: ImageTopPredictions<*>,
-    weakViewer: WeakRefInter<DatasetViewer>,
-    override val settings: DeephysSettingsController
-) : VBoxW(childClass = NodeWrapper::class), DeephysNode {
-    init {
+    weakViewer: WeakRefInter<DatasetViewerState>,
+    settings: DeephysSettingsController
+) {
+    Column {
         val memSafeSettings = settings
-        h {
-            deephysText("Ground Truth: ").titleFont()
-            deephyActionLabel(groundTruth.label) {
+        Row {
+            DeephysText("Ground Truth: ", font = titleFont())
+            DeephyActionLabel(groundTruth.label, font = titleBoldFont()) {
                 weakViewer.deref()!!.navigateTo(groundTruth)
-            }.titleBoldFont()
+            }
         }
-        spacer()
-        deephysText("Predictions: ").titleFont()
+        SpacerWithOldFxSize()
+        DeephysText("Predictions: ", font = titleFont())
         with(weakViewer.deref()!!.testData.value!!.testRAMCache) {
-            +CategoryTable(
+            CategoryTable(
                 title = "",
                 title_unfolded = "",
                 data = topPreds().map { it.first to it.second },
@@ -60,86 +65,91 @@ class PredictionsView(
     }
 }
 
-class CategoryTable(
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun CategoryTable(
     title: String,
     title_unfolded: String,
     data: List<Pair<Category, Number>>,
-    weakViewer: WeakRefInter<DatasetViewer>,
-    override val settings: DeephysSettingsController,
+    weakViewer: WeakRefInter<DatasetViewerState>,
+    settings: DeephysSettingsController,
     tooltip: String,
-    private val sigFigSett: ObsI,
+    sigFigSett: State<Int>,
     numSuffix: String = ""
-) : HBoxW(childClass = NodeWrapper::class), DeephysNode {
-
-
-
-
-    init {
-        val b = BindableProperty(false)
-        plusMinusSymbol(b, radius = 6.5) {
-            fill = DeephysPalette.deephysBlue2
-            cursor = Cursor.HAND
-        }
-        hSpacer(5.0)
-        v {
-            +TextFlowWrapper<NW>(childClass=NW::class).apply {
-                visibleAndManagedProp.bindWeakly(b.not())
-                deephysText(title_unfolded)
+) = Row {
+    val b = rememberMutableStateOf(false)
+    ToggleIcon(
+        tooltip = "idk",
+        falseIcon = Icons.Default.Add,
+        trueIcon = Icons.Default.Remove,
+        state = b,
+        tint = DeephysPalette.deephysBlue2,
+        modifier = Modifier.size((6.5 / 2).dp)
+    )
+    Spacer(Modifier.width(5.dp))
+    Column {
+        if (b.not().value) {
+            FlowRow {
+                DeephysText(title_unfolded)
                 data.forEach { (cat, num) ->
                     val fullString = "${cat.label} ($num)"
                     cat.actionText(
-                        r = this,
                         tooltip = fullString,
-                        settings = this@CategoryTable.settings,
+                        settings = settings,
                         weakViewer = weakViewer,
                         allowedLengths = 1..10
                     )
-                    deephysText(" (")
-                    sigFigText(
+                    DeephysText(" (")
+                    SigFigText(
                         num = num,
-                        sigFigSett = this@CategoryTable.sigFigSett,
+                        sigFigSett = sigFigSett,
                         numSuffix = numSuffix,
-                        settings = this@CategoryTable.settings,
+                        settings =  settings,
                         tooltip = fullString
                     )
-                    deephysText(")   ")
+                    DeephysText(")   ")
                 }
             }
-            v {
-                visibleAndManagedProp.bindWeakly(b)
-                val memSafeSettings = this@CategoryTable.settings
-                deephysText(title) {
-                    subtitleFont()
-                    deephyTooltip(tooltip, settings = memSafeSettings)
+        }
+        if (b.value) {
+            Column {
+                DeephysTooltipArea(settings = settings, tooltip) {
+                    DeephysText(title, font = subtitleFont())
                 }
-                spacer(1.0)
-                v {
-                    val predNamesBox = v {}
-                    spacer(2.0)
-                    val predValuesBox = v {}
-                    h {
-                        +predNamesBox
-                        spacer()
-                        +predValuesBox
+
+                Spacer(Modifier.size(1.dp))
+                Column {
+
+                    Spacer(Modifier.size(2.dp))
+
+                    Row {
+                        val predNamesBox = Column {}
+                        SpacerWithOldFxSize()
+                        val predValuesBox = Column {}
                     }
                     data.forEach {
                         val category = it.first
                         val num = it.second
 
                         val fullString = "${category.label} ($num)"
-                        category.actionText(
-                            r = predNamesBox,
-                            tooltip = fullString,
-                            settings = memSafeSettings,
-                            weakViewer = weakViewer
-                        )
+                        unsafeErr(
+                            """
+                            category.actionText(
+                                r = predNamesBox,
+                                tooltip = fullString,
+                                settings = memSafeSettings,
+                                weakViewer = weakViewer
+                            )
 
-                        predValuesBox.sigFigText(
-                            num = num,
-                            sigFigSett = this@CategoryTable.sigFigSett,
-                            numSuffix = numSuffix,
-                            settings = memSafeSettings,
-                            tooltip = fullString
+                            predValuesBox
+                                .sigFigText(
+                                    num = num,
+                                    sigFigSett = this@CategoryTable.sigFigSett,
+                                    numSuffix = numSuffix,
+                                    settings = memSafeSettings,
+                                    tooltip = fullString
+                                )           
+                            """.trimIndent()
                         )
                     }
                 }

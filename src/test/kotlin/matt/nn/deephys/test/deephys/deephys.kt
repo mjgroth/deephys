@@ -1,6 +1,5 @@
 package matt.nn.deephys.test.deephys
 
-import javafx.application.Platform
 import kotlinx.coroutines.launch
 import matt.async.thread.daemon
 import matt.caching.compcache.ComputeInput
@@ -14,6 +13,7 @@ import matt.json.prim.saveAsJsonTo
 import matt.kstruct.ctx.toProcessReaper
 import matt.lang.anno.SeeURL
 import matt.lang.cfnf.getOrThrow
+import matt.lang.common.unsafeErr
 import matt.lang.sysprop.common.value
 import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.RamSample
@@ -154,7 +154,11 @@ class TestDeephys(
         @JvmStatic
         @AfterAll
         fun shutdownJavaFX() {
-            Platform.exit()
+            unsafeErr(
+                """
+                Platform.exit()    
+                """.trimIndent()
+            )
         }
     }
 

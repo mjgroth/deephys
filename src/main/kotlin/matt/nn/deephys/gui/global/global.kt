@@ -1,382 +1,397 @@
 package matt.nn.deephys.gui.global
 
-import javafx.geometry.Pos
-import javafx.geometry.Pos.CENTER_LEFT
-import javafx.scene.Cursor
-import javafx.scene.layout.Border
-import javafx.scene.layout.Priority.ALWAYS
-import javafx.scene.paint.Color
-import javafx.scene.text.Font
-import javafx.scene.text.FontWeight.BOLD
-import matt.fx.control.inter.graphic
-import matt.fx.control.lang.actionbutton
-import matt.fx.control.toggle.mech.ToggleMechanism
-import matt.fx.control.wrapper.button.radio.RadioButtonWrapper
-import matt.fx.control.wrapper.button.radio.radiobutton
-import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
-import matt.fx.control.wrapper.button.toggle.togglebutton
-import matt.fx.control.wrapper.checkbox.CheckBoxWrapper
-import matt.fx.control.wrapper.checkbox.checkbox
-import matt.fx.control.wrapper.control.ControlWrapper
-import matt.fx.control.wrapper.control.button.ButtonWrapper
-import matt.fx.control.wrapper.control.button.base.ButtonBaseWrapper
-import matt.fx.control.wrapper.control.button.button
-import matt.fx.control.wrapper.control.choice.ChoiceBoxWrapper
-import matt.fx.control.wrapper.control.spinner.spinner
-import matt.fx.control.wrapper.label.LabelWrapper
-import matt.fx.control.wrapper.label.label
-import matt.fx.control.wrapper.link.HyperlinkWrapper
-import matt.fx.control.wrapper.link.hyperlink
-import matt.fx.graphics.font.fixed
-import matt.fx.graphics.style.background.backgroundFromColor
-import matt.fx.graphics.wrapper.ET
-import matt.fx.graphics.wrapper.EventTargetWrapper
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.hSpacer
-import matt.fx.graphics.wrapper.pane.hbox.HBoxWrapper
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.VBoxW
-import matt.fx.graphics.wrapper.style.FXColor
-import matt.fx.graphics.wrapper.text.TextWrapper
-import matt.fx.graphics.wrapper.text.textlike.MONO_FONT
-import matt.fx.graphics.wrapper.text.textlike.TextLike
-import matt.fx.node.proto.svgIcon
-import matt.gui.actiontext.actionLabel
-import matt.gui.actiontext.actionText
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import matt.compose.controls.buttons.MyButton
+import matt.compose.controls.check.MyCheckbox
+import matt.compose.controls.composers.action.common.ActionButton
+import matt.compose.controls.desktop.ActionText
+import matt.compose.controls.j.icon.MyClickableIcon
+import matt.compose.controls.text.MyClickableText
+import matt.compose.graphics.Compose
+import matt.compose.graphics.layout.AlignedRow
+import matt.compose.graphics.text.MyText
+import matt.compose.state.lang.ALWAYS_TRUE
+import matt.compose.state.prop.rememberBoundComposeState
+import matt.compose.state.statefulmodel.action.SimpleAction
+import matt.compose.state.toggle.NewToggleMechanism
+import matt.lang.anno.Alert
+import matt.lang.anno.CodeAlertCategory.TechnicalIssue
+import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeReturningErr
+import matt.lang.function.Op
+import matt.log.warn.common.warn
 import matt.math.numalg.precision.withPrecision
-import matt.model.flowlogic.recursionblocker.RecursionBlocker
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.global.color.DeephysPalette
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
-import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.obs.bind.binding
-import matt.obs.bind.weakBinding
-import matt.obs.bindings.bool.ObsB
-import matt.obs.bindings.bool.and
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.obs.bindings.str.ObsS
-import matt.obs.col.olist.toBasicObservableList
-import matt.obs.math.int.ObsI
 import matt.obs.prop.ObsVal
-import matt.obs.prop.writable.BindableProperty
 import matt.obs.prop.writable.Var
 import matt.prim.converters.StringConverter
-import matt.prim.str.isInt
 
 /*null because gets in the way of existing animations for pie slices
 val DEEPHYS_FADE_DUR = 500.milliseconds*/
 val DEEPHYS_FADE_DUR = null
 
-inline fun <reified E : Any> ET.deephysSpinner(
+@Composable
+inline fun <reified E : Any> DeephysSpinner(
+    selected: MutableState<E>,
     label: String,
     choices: List<E>,
     crossinline defaultChoice: () -> E,
     converter: StringConverter<E>,
-    viewer: DatasetViewer,
-    getCurrent: ObsVal<E?>,
+    viewer: DatasetViewerState,
+    getCurrent: State<E?>,
     crossinline acceptIf: (E) -> Boolean,
-    crossinline navAction: DatasetViewer.(E) -> Unit
+    crossinline navAction: DatasetViewerState.(E) -> Unit
 
-) = run {
+) {
     var theValueProp: ObsVal<E>? = null
-    h {
-
-        alignment = CENTER_LEFT
-
-
-        var badText: ObsB? = null
-
-        val theSpinner =
-            spinner(
-                items = choices.toBasicObservableList(),
-                editable = true,
-                enableScroll = false,
-                converter = converter
-            ) {
-
-                autoCommitOnType()
-
-                valueFactory!!.wrapAround = true
-
-                badText =
-                    textProperty.binding {
-                        it == null || !it.isInt() || it.toInt() !in choices.indices
-                    }
-            /*
-                  border = FXBorder.solid(Color.TRANSPARENT, 10.0)
-                  badText!!.onChange {
-                    border = if (it) FXBorder.solid(Color.RED, 10.0)
-                    else FXBorder.solid(Color.TRANSPARENT, 10.0)
-                  }*/
-
-                val current = getCurrent.value?.takeIf { acceptIf(it) } ?: defaultChoice()
-                valueFactory!!.valueProperty.value = current
-
-                val rBlocker = RecursionBlocker()
-
-                valueFactory!!.valueProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
-                    rBlocker.with {
-                        deRefedViewer.navAction(selection)
-                    }
-                }
+    unsafeErr(
+        """
+        AlignedRow {
+            
 
 
+            var badText: ObsB? = null
 
-                getCurrent.onChangeWithWeak(this) { _, newValue ->
-                    rBlocker.with {
-                        if (newValue != null && acceptIf(newValue)) {
-                            valueFactory!!.valueProperty v newValue
-                        } else {
-                            valueFactory!!.valueProperty v defaultChoice()
+            val theSpinner =
+                MySpinner(
+                    items = choices.toBasicObservableList(),
+                    editable = true,
+                    enableScroll = false,
+                    converter = converter
+                ) {
+
+                    autoCommitOnType()
+
+                    valueFactory!!.wrapAround = true
+
+                    badText =
+                        textProperty.binding {
+                            it == null || !it.isInt() || it.toInt() !in choices.indices
+                        }
+                /*
+                      border = FXBorder.solid(Color.TRANSPARENT, 10.0)
+                      badText!!.onChange {
+                        border = if (it) FXBorder.solid(Color.RED, 10.0)
+                        else FXBorder.solid(Color.TRANSPARENT, 10.0)
+                      }*/
+
+                    val current = getCurrent.value?.takeIf { acceptIf(it) } ?: defaultChoice()
+                    valueFactory!!.valueProperty.value = current
+
+                    val rBlocker = RecursionBlocker()
+
+                    valueFactory!!.valueProperty.onChangeWithWeak(viewer) { deRefedViewer, selection ->
+                        rBlocker.with {
+                            deRefedViewer.navAction(selection)
                         }
                     }
+
+
+
+                    getCurrent.onChangeWithWeak(this) { _, newValue ->
+                        rBlocker.with {
+                            if (newValue != null && acceptIf(newValue)) {
+                                valueFactory!!.valueProperty v newValue
+                            } else {
+                                valueFactory!!.valueProperty v defaultChoice()
+                            }
+                        }
+                    }
+
+                    theValueProp = valueFactory!!.valueProperty
                 }
 
-                theValueProp = valueFactory!!.valueProperty
+
+            if (viewer.isUnboundToDSet.value) {
+                DeephysLabeledControl(label, theSpinner) {
+                    backgroundProperty.bindWeakly(
+                        badText!!.binding {
+                            if (it) backgroundFromColor(FXColor.RED)
+                            else null
+                        }
+                    )
+                }
             }
 
-
-        deephysLabeledControl(label, theSpinner) {
-            visibleAndManagedProp.bind(viewer.isUnboundToDSet)
-            backgroundProperty.bindWeakly(
-                badText!!.binding {
-                    if (it) backgroundFromColor(FXColor.RED)
-                    else null
-                }
-            )
-        }
-        deephysText("please input valid integer index between 0 and ${choices.size}") {
-            visibleAndManagedProp.bind(viewer.isUnboundToDSet.and(badText!!))
-        }
-    } to theValueProp!!
+            if (viewer.isUnboundToDSet.and(badText!!).value) {
+                DeephysText("please input valid integer index between 0 and ${choices.size}")
+            }
+        } to theValueProp!!        
+        """.trimIndent()
+    )
 }
 
 
-fun ET.deephysLabeledControl(
+@Composable
+fun DeephysLabeledControl(
     label: String,
-    control: ControlWrapper,
-    op: HBoxWrapper<NW>.() -> Unit = {}
-) = h {
-    alignment = Pos.CENTER_LEFT
-    h {
-        alignment = Pos.CENTER_LEFT
-        deephysText("$label:")
-        prefWidth = 60.0
+    control: Compose
+) = AlignedRow {
+    AlignedRow(
+        Modifier.width(60.dp)
+    ) {
+        DeephysText("$label:")
     }
-    +control.apply {
-        prefWidth = 100.0
+    Box(
+        Modifier.width(100.dp),
+        propagateMinConstraints = true
+    ) {
+        control()
     }
-    op()
 }
 
-fun ET.deephysLabeledControl2(
+@Composable
+fun DeephysLabeledControl2(
     label: String,
-    control: ControlWrapper,
-    op: HBoxWrapper<NW>.() -> Unit = {}
-) = h {
-    alignment = Pos.CENTER_LEFT
-    h {
-        alignment = Pos.CENTER_LEFT
-        deephysText("$label:")
-        prefWidth = 60.0
+    control: Compose
+) = AlignedRow {
+    AlignedRow(Modifier.width(60.dp)) {
+        DeephysText("$label:")
     }
-    hSpacer(5.0)
-    +control.apply {
-        prefWidth = 500.0
-        hgrow = ALWAYS
+    Spacer(Modifier.width(5.dp))
+    Box(Modifier.width(500.dp), propagateMinConstraints = true) {
+        control()
     }
-    op()
 }
 
-fun ChoiceBoxWrapper<*>.configForDeephys() {
-    stupidlySetFont(DEEPHYS_FONT_DEFAULT)
+
+@Composable
+fun DeephysText(
+    s: ObsS
+) {
+    DeephysText(s.rememberBoundComposeState().value)
 }
 
-fun EventTargetWrapper.deephysText(
+@Composable
+fun DeephysText(
     s: String = "",
-    op: DeephyText.() -> Unit = {}
-) =
-    DeephyText(BindableProperty(s)).apply(op).also {
-        +it
-    }
+    font: FontFamily = DEEPHYS_FONT_DEFAULT,
+    modifier: Modifier = Modifier
+) {
+    MyText(s, font = font, modifier = modifier)
+}
 
-fun EventTargetWrapper.sigFigText(
+@Composable
+fun SigFigText(
     num: Number,
-    sigFigSett: ObsI,
+    sigFigSett: State<Int>,
     numSuffix: String,
     settings: DeephysSettingsController,
-    tooltip: String,
-    op: DeephyText.() -> Unit = {}
-) = deephysText {
-    textProperty.bindWeakly(
-        sigFigSett.weakBinding(this) { _, it ->
-            when (num) {
-                is Float  -> num.withPrecision(it).toString()
-                is Double -> num.withPrecision(it).toString()
-                else      -> error("not ready for different dtype")
-            } + numSuffix
-        }
+    tooltip: String
+) = DeephysTooltipArea(settings, tooltip) {
+    val sett = sigFigSett.value
+    DeephysText(
+        when (num) {
+            is Float  -> num.withPrecision(sett).toString()
+            is Double -> num.withPrecision(sett).toString()
+            else      -> error("not ready for different dtype")
+        } + numSuffix
     )
-    veryLazyDeephysTooltip(tooltip, settings)
-    op()
 }
 
 
-fun EventTargetWrapper.deephysText(
-    s: ObsS,
-    op: DeephyText.() -> Unit = {}
-) = DeephyText(s).apply(op).also { +it }
 
-fun DeephyText(s: String) = DeephyText(BindableProperty(s))
-class DeephyText(s: ObsS) : TextWrapper() {
-    init {
-        textProperty.bind(s)
-        font = DEEPHYS_FONT_DEFAULT
-    }
-}
+fun subtitleFont() = DEEPHY_FONT_SUBTITLE
 
-fun TextLike.subtitleFont() {
-    font = DEEPHY_FONT_SUBTITLE
-}
+fun titleFont() = DEEPHY_FONT_TITLE
 
-fun TextLike.titleFont() {
-    font = DEEPHY_FONT_TITLE
-}
+fun titleBoldFont() = DEEPHY_FONT_TITLE_BOLD
 
-fun TextLike.titleBoldFont() {
-    font = DEEPHY_FONT_TITLE_BOLD
-}
-
-fun EventTargetWrapper.deephyActionText(
+@Composable
+fun DeephyActionText(
     s: String = "",
     op: () -> Unit
-) = actionText(s) {
-    op()
-}.apply {
+) = ActionText(
+    s,
     font = DEEPHYS_FONT_DEFAULT
-    cursor = Cursor.HAND
+) {
+    op()
 }
 
-fun EventTargetWrapper.deephyActionLabel(
+@Composable
+fun DeephyActionLabel(
     s: String = "",
+    font: FontFamily = DEEPHYS_FONT_DEFAULT,
     op: () -> Unit
-) = actionLabel(s) {
-    op()
-}.apply {
-    font = DEEPHYS_FONT_DEFAULT
-    cursor = Cursor.HAND
-}
-
-
-fun EventTargetWrapper.deephysLabel(
-    s: String = "",
-    op: LabelWrapper.() -> Unit = {}
-) = label(s) {
-    font = DEEPHYS_FONT_DEFAULT
+) = ActionText(
+    s,
+    font = font
+) {
     op()
 }
 
-fun EventTargetWrapper.deephyHyperlink(
+@Composable
+fun DeephysLabel(
     s: String = "",
-    op: HyperlinkWrapper.() -> Unit = {}
-) = hyperlink(s) {
-    font = DEEPHYS_FONT_DEFAULT
-    op()
+    font: FontFamily = DEEPHYS_FONT_DEFAULT
+) {
+    MyText(s, font = font)
 }
 
-
-fun EventTargetWrapper.deephyCheckbox(
+@Composable
+fun DeephyHyperlink(
     s: String = "",
-    prop: Var<Boolean>? = null,
-    weakBothWays: Boolean? = null,
-    op: CheckBoxWrapper.() -> Unit = {}
-) = checkbox(s, property = prop, weakBothWays = weakBothWays) {
-    font = DEEPHYS_FONT_DEFAULT
-    op()
+    action: Op
+) = MyClickableText(s, font = DEEPHYS_FONT_DEFAULT) {
+    action()
 }
 
-fun EventTargetWrapper.deephyButton(
+@Composable
+fun DeephyCheckbox(
     s: String = "",
-    theOp: ButtonWrapper.() -> Unit = {}
-) = button(s) {
-    deephysButtonStyle()
-    theOp()
+    modifier: Modifier = Modifier,
+    prop: Var<Boolean>? = null
+) = MyCheckbox(
+    label = s,
+    modifier = modifier,
+    checked = prop!!.rememberBoundComposeState() as MutableState
+)
+
+@Composable
+fun DeephyButton(
+    s: String = "",
+    modifier: Modifier = Modifier,
+    action: () -> Unit
+) = MyButton(
+    s,
+    font = DEEPHYS_FONT_DEFAULT,
+    modifier = modifier
+) {
+    action()
+}
+
+@Composable
+fun DeephyButton(
+    icon: ImageVector,
+    action: () -> Unit
+) = MyClickableIcon(
+    icon,
+    tint = DeephysPalette.deephysBlue1
+) {
+    action()
 }
 
 private const val DEEPHY_ICON_BUTTON_SIZE = 25
 
-fun EventTargetWrapper.deephyIconButton(
+@Composable
+fun DeephyIconButton(
     icon: String,
-    theOp: ButtonWrapper.() -> Unit = {}
-) = deephyButton("") {
-    graphic = svgIcon(icon, DEEPHY_ICON_BUTTON_SIZE)
-    doMyOwnBackgroundStuff(
-        hoverColor = FXColor(0.5, 0.5, 0.5, 0.2),
-        clickColor = FXColor(1.0, 1.0, 0.0, 0.5)
+    action: () -> Unit
+) {
+    warn("icon here comes from resource files, and might need to have \".svg \" appended to it")
+    warn("graphic = svgIcon(icon, DEEPHY_ICON_BUTTON_SIZE)")
+    warn(
+        """
+                  hoverColor = FloatColor(0.5f, 0.5f, 0.5f, 0.2f).toComposeColor(),
+        clickColor = FloatColor(1.0f, 1.0f, 0.0f, 0.5f).toComposeColor()
+        """.trimIndent()
     )
-    theOp()
+    DeephyButton(
+        "ICON HERE"
+    ) {
+        action()
+    }
 }
 
-fun ButtonBaseWrapper<*>.deephysButtonStyle() {
-    font = DEEPHYS_FONT_DEFAULT
-    /*so when I highlight the button later, the layout does not change. Also the bit of space is nice.*/
-    border = Border.stroke(Color.TRANSPARENT)
-}
-
-fun <V : Any> EventTargetWrapper.deephyRadioButton(
+@Alert(TechnicalIssue, "I guess this is supposed to look like a radio button? Or should it also behave different from a toggle button?")
+@Composable
+fun <V : Any> DeephyRadioButton(
     s: String,
-    group: ToggleMechanism<V>,
-    value: V,
-    theOp: RadioButtonWrapper.() -> Unit = {}
-) = radiobutton<V>(s, group, value) {
-    deephysButtonStyle()
-    theOp()
-}
+    group: NewToggleMechanism<V>,
+    value: V
+) = DeephyToggleButton<V>(s, value, group)
 
-fun <V : Any> NodeWrapper.deephyToggleButton(
+@Composable
+fun <V : Any> DeephyToggleButton(
     s: String = "",
     value: V,
-    group: ToggleMechanism<V>,
-    op: ToggleButtonWrapper.() -> Unit = {}
-) = togglebutton(s, value = value, group = group) {
-    deephysButtonStyle()
-    op()
+    group: NewToggleMechanism<V>
+) = MyButton(s, enabled = group.selected.value != value) {
+    group.selected.value = value
 }
 
-fun NodeWrapper.deephyActionButton(
+@Composable
+fun DeephyActionButton(
     s: String = "",
-    theOp: ButtonWrapper.() -> Unit = {}
-) = actionbutton(s) {
-    theOp()
-}.apply {
-    deephysButtonStyle()
-}
+    action: () -> Unit
+) = ActionButton(
+    action =
+        SimpleAction(
+            name = s,
+            enabled = ALWAYS_TRUE,
+            op = {
+                action()
+            }
+        ),
+    text = s
+)
 
-fun ButtonWrapper.deephysSingleCharButtonFont() {
-    font = font.fixed().copy(size = DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE).fx()
+fun deephysSingleCharButtonFont() {
+    unsafeErr(
+        """
+        font.fixed().copy(size = DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE).fx()    
+        """.trimIndent()
+    )
 }
 
 val DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE = 18.0
 
 const val DEEPHYS_LATEX_TOOLTIP_SCALE = 0.70
 
-val DEEPHYS_FONT_DEFAULT: Font by lazy {
-    Font.font("Georgia")
+@OptIn(ExperimentalTextApi::class)
+val DEEPHYS_FONT_DEFAULT: FontFamily by lazy {
+    FontFamily("Georgia")
 }
-val DEEPHYS_FONT_MONO by lazy {
-    DEEPHYS_FONT_DEFAULT.fixed().copy(family = MONO_FONT.family).fx()
+val DEEPHY_FONT_SUBTITLE: FontFamily by lazy {
+    unsafeReturningErr(
+        """
+        DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size * 1.2).fx()    
+        """.trimIndent()
+    )
 }
-val DEEPHY_FONT_SUBTITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size * 1.2).fx() }
-val DEEPHY_FONT_TITLE by lazy { DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size * 1.5).fx() }
-val DEEPHY_FONT_TITLE_BOLD by lazy { DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx() }
+val DEEPHY_FONT_TITLE : FontFamily by lazy {
+    unsafeReturningErr(
+        """
+        DEEPHYS_FONT_DEFAULT.fixed().copy(size = DEEPHYS_FONT_DEFAULT.size * 1.5).fx()
+        """
+    )
+}
+val DEEPHY_FONT_TITLE_BOLD: FontFamily by lazy {
+    unsafeReturningErr(
+        """
+        DEEPHY_FONT_TITLE.fixed().copy(weight = BOLD).fx()        
+        """.trimIndent()
+    )
+}
 
 
-val deephysNullMessageFact: (message: String) -> NW = { message ->
-    VBoxW(childClass = NodeWrapper::class).apply {
-        spacer()
-        h {
-            spacer()
-            deephysText(message)
+@Composable
+fun DeephysNullMessageFact(message: String) {
+    Column {
+        SpacerWithOldFxSize()
+        Row {
+            SpacerWithOldFxSize()
+            DeephysText(message)
         }
     }
 }
+
+@Composable
+fun SpacerWithOldFxSize() = Spacer(Modifier.size(20.dp))

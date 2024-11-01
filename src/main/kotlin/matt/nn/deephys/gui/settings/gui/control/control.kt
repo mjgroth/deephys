@@ -1,94 +1,99 @@
 package matt.nn.deephys.gui.settings.gui.control
 
-import javafx.scene.control.ContentDisplay.RIGHT
-import matt.fx.control.inter.contentDisplay
-import matt.fx.control.inter.graphic
-import matt.fx.control.wrapper.control.slider.slider
-import matt.fx.control.wrapper.control.spinner.intSpinner
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.vbox.VBoxW
-import matt.gui.option.ActionNotASetting
-import matt.gui.option.BoolSetting
-import matt.gui.option.DoubleSetting
-import matt.gui.option.EnumSetting
-import matt.gui.option.IntSetting
-import matt.gui.option.Setting
-import matt.nn.deephys.gui.global.deephyButton
-import matt.nn.deephys.gui.global.deephyCheckbox
-import matt.nn.deephys.gui.global.deephysLabel
-import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Slider
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import matt.compose.graphics.layout.AlignedRow
+import matt.exec.option.ActionNotASetting
+import matt.exec.option.BoolSetting
+import matt.exec.option.DoubleSetting
+import matt.exec.option.EnumSetting
+import matt.exec.option.IntSetting
+import matt.exec.option.Setting
+import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeReturningErr
+import matt.nn.deephys.gui.global.DeephyButton
+import matt.nn.deephys.gui.global.DeephyCheckbox
+import matt.nn.deephys.gui.global.DeephysLabel
+import matt.nn.deephys.gui.global.DeephysText
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
-import matt.nn.deephys.gui.settings.gui.createRadioButtons
+import matt.prim.float.verifyWholeToInt
 
-
-fun createControlFor(
+@Composable
+fun CreateControlFor(
     sett: Setting<*>,
     settings: DeephysSettingsController
-) = run {
-    VBoxW(childClass = NodeWrapper::class).apply {
-        when (sett) {
-            is EnumSetting       -> {
-                h {
-                    deephysText(sett.label)
-                    sett.createRadioButtons(this@h)
-                    veryLazyDeephysTooltip(sett.tooltip, settings)
-                }
-            }
+) {
+    Column {
+        DeephysTooltipArea(settings, sett.tooltip, enableTooltip = (sett as? DoubleSetting)?.showControl != false) {
+            when (sett) {
+                is EnumSetting       -> {
 
-            is IntSetting        -> {
-                deephysLabel {
-                    veryLazyDeephysTooltip(sett.tooltip, settings)
-                    text = sett.label
-                    contentDisplay = RIGHT
-                    graphic =
-                        intSpinner(
-                            min = sett.min,
-                            max = sett.max,
-                            initialValue = sett.prop.value,
-                            editable = true
-                        ) {
-                            prefWidth = 150.0
-                            valueFactory!!.valueProperty.bindBidirectional(sett.prop)
+                    Row {
+                        DeephysText(sett.label)
+                        unsafeErr(
+                            """
+                            sett.createRadioButtons(this@h)        
+                            """.trimIndent()
+                        )
+                    }
+                }
+
+                is IntSetting        -> {
+                    AlignedRow {
+                        DeephysLabel(
+                            sett.label
+                        )
+                        Slider(
+                            valueRange = sett.min.toFloat()..sett.max.toFloat(),
+                            value = sett.prop.value.toFloat(),
+                            onValueChange = {
+                                sett.prop.value = it.verifyWholeToInt()
+                            },
+                            modifier = Modifier.width(150.dp)
+                        )
+                    }
+                }
+
+                is DoubleSetting     -> {
+                    if (sett.showControl) {
+                        AlignedRow {
+                            DeephysLabel(
+                                sett.label
+                            )
+                            Slider(
+                                valueRange = sett.min.toFloat()..sett.max.toFloat(),
+                                value = sett.prop.value.toFloat(),
+                                onValueChange = {
+                                    sett.prop.value = it.toDouble()
+                                },
+                                modifier = Modifier.width(150.dp)
+                            )
                         }
+                    }
                 }
-            }
 
-            is DoubleSetting     -> {
-                if (sett.showControl) deephysLabel {
-                    veryLazyDeephysTooltip(sett.tooltip, settings)
-                    text = sett.label
-                    contentDisplay = RIGHT
-                    graphic =
-                        slider(
-                            min = sett.min,
-                            max = sett.max,
-                            value = sett.prop.value
-                        ) {
-                            prefWidth = 150.0
-                            valueProperty.bindBidirectional(sett.prop)
+                is BoolSetting       -> {
+                    DeephyCheckbox(
+                        sett.label,
+                        unsafeReturningErr {
+                            sett.prop
                         }
-                }
-            }
 
-            is BoolSetting       -> {
-                deephyCheckbox(
-                    sett.label
-                ) {
-                    veryLazyDeephysTooltip(sett.tooltip, settings)
-                    selectedProperty.bindBidirectional(sett.prop)
+                    )
                 }
-            }
 
-            is ActionNotASetting -> {
-                deephyButton(sett.label) {
-                    veryLazyDeephysTooltip(sett.tooltip, settings)
-                    setOnAction {
+                is ActionNotASetting -> {
+                    DeephyButton(sett.label) {
                         sett.op()
                     }
                 }
             }
         }
-    }.children.first()
+    }
 }

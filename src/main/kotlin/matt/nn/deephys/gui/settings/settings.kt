@@ -3,7 +3,7 @@ package matt.nn.deephys.gui.settings
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import matt.async.thread.ThreadReport
-import matt.gui.option.SettingsData
+import matt.exec.option.SettingsData
 import matt.lang.assertions.require.requireNull
 import matt.lang.file.toJFile
 import matt.log.report.desktop.MemReport

@@ -7,7 +7,9 @@ import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.bytestr.ByteStringReader
 import matt.cbor.read.streamman.cborReader
-import matt.fx.graphics.wrapper.style.FXColor
+import matt.color.common.rgb
+import matt.compose.graphics.color.ComposeColor
+import matt.compose.graphics.color.toComposeColor
 import matt.lang.anno.Open
 import matt.lang.anno.PhaseOut
 import matt.lang.common.NEVER
@@ -76,8 +78,8 @@ class DeephyImage<A : Number>(
         val numCols = d[0][0].size
 
         (0 until numRows).map { index1 ->
-            MutableList<FXColor>(numCols) { index2 ->
-                FXColor.rgb(d[0][index1][index2], d[1][index1][index2], d[2][index1][index2])
+            MutableList<ComposeColor>(numCols) { index2 ->
+                rgb(d[0][index1][index2], d[1][index1][index2], d[2][index1][index2]).toComposeColor()
             }
         }
     }

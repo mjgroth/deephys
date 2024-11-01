@@ -1,35 +1,32 @@
 package matt.nn.deephys.gui.global.color
 
-import javafx.scene.paint.CycleMethod.NO_CYCLE
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import matt.color.common.rgb
-import matt.fx.graphics.wrapper.style.gradient.linearGradient
-import matt.fx.graphics.wrapper.style.toFXColor
+import matt.compose.graphics.color.toComposeColor
 import matt.lang.common.unsafeErr
 import matt.obs.prop.writable.BindableProperty
 
 object DeephysPalette {
-    val deephysBlue1 = rgb(0x00bbe2).toFXColor()
-    val deephysBlue2 = rgb(0x3360ad).toFXColor()
-    val deephysRed1 = rgb(0xf5c39e).toFXColor()
-    val deephysRed2 = rgb(0xda1d52).toFXColor()
+    val deephysBlue1 = rgb(0x00bbe2).toComposeColor()
+    val deephysBlue2 = rgb(0x3360ad).toComposeColor()
+    val deephysRed1 = rgb(0xf5c39e).toComposeColor()
+    val deephysRed2 = rgb(0xda1d52).toComposeColor()
     val deephysSelectGradient by lazy {
-        linearGradient {
-            startX = 0.0
-            startY = 0.5
-            endX = 1.0
-            endY = 0.5
-            cycleMethod = NO_CYCLE
-            stop(
-                0.0,
-                /*Color.YELLOW.deriveColor(0.0, 1.0, 1.0, 0.5)*/
-                deephysBlue1
-            )
-            stop(
-                1.0,
-                /*Color.TRANSPARENT*/
-                deephysBlue2
-            )
-        }
+        Brush.linearGradient(
+            0f to deephysBlue1,
+            1f to deephysBlue2,
+            start =
+                Offset(
+                    x = 0.0f,
+                    y = 0.5f
+                ),
+            end =
+                Offset(
+                    x = 1.0f,
+                    y = 0.5f
+                )
+        )
     }
 
     val tooltipBackground by lazy {
@@ -44,7 +41,7 @@ object DeephysPalette {
             }
             """.trimIndent()
         )
-        BindableProperty(rgb(0x11_11_11).toFXColor())
+        BindableProperty(rgb(0x11_11_11).toComposeColor())
     }
 }
 

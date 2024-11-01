@@ -1,45 +1,20 @@
 package matt.nn.deephys.gui.modelvis
 
-import javafx.geometry.Orientation.HORIZONTAL
-import javafx.geometry.Orientation.VERTICAL
-import javafx.scene.layout.Pane
-import javafx.scene.paint.Color
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.node.line.LineWrapper
-import matt.fx.graphics.wrapper.pane.PaneWrapperImpl
+import androidx.compose.runtime.Composable
 import matt.lang.assertions.require.requireNotEmpty
 import matt.lang.assertions.require.requireNull
-import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
-import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
-import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.lang.common.unsafeErr
+import matt.nn.deephys.gui.dsetsbox.DSetViewsState
 import matt.nn.deephys.gui.modelvis.neuroncirc.NeuronCircle
-import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
+import matt.nn.deephys.gui.unsafemigration.NeuronCircle
 import matt.nn.deephys.model.importformat.Model
-import matt.obs.bind.binding
-import matt.obs.math.double.min
 import matt.obs.math.double.op.div
 import matt.obs.math.double.op.plus
 import matt.obs.math.double.op.times
-import matt.obs.prop.writable.BindableProperty
 
-class ModelVisualizer(
-    model: Model,
-    override val settings: DeephysSettingsController
-): PaneWrapperImpl<Pane, NodeWrapper>(Pane(), childClass = NodeWrapper::class), DeephysNode {
-
-    companion object {
-        private val ORIENTATION = VERTICAL
-        private const val PREF_HEIGHT = 100.0
-        private const val MARGIN_RATIO = 0.1
-        private const val DIAGRAM_RATIO = 1.0 - MARGIN_RATIO * 2
-        private const val DIAGRAM_HEIGHT = PREF_HEIGHT * DIAGRAM_RATIO
-        private const val DIAGRAM_TOP = PREF_HEIGHT * MARGIN_RATIO
-        private val COLOR: Color = Color.BLUE
-    }
-
-    var dsetViewsBox: DSetViewsVBox? = null
+class ModelVisualizerState {
+    var dsetViewsBox: DSetViewsState? = null
         set(value) {
             requireNull(field)
             requireNotNull(value)
@@ -48,146 +23,190 @@ class ModelVisualizer(
             @Suppress("SENSELESS_COMPARISON")
             if (value == null) {
                 circles!!.forEach { circ ->
-                    circ.isHighlighted.unbind()
-                    circ.isHighlighted v false
+                    unsafeErr(
+                        """
+                        circ.isHighlighted.unbind()
+                        circ.isHighlighted v false    
+                        """.trimIndent()
+                    )
                 }
             }
             circles!!.forEach { circ ->
-                val n = circ.neuron
-                circ.isHighlighted v (n in value.highlightedNeurons.value)
-                circ.isHighlighted.bind(
-                    value.highlightedNeurons.binding {
-                        n in it
-                    }
+                unsafeErr(
+                    """
+                    val n = circ.neuron
+                    circ.isHighlighted v (n in value.highlightedNeurons.value)
+                    circ.isHighlighted.bind(
+                        value.highlightedNeurons.binding {
+                            n in it
+                        }
+                    )          
+                    """.trimIndent()
                 )
             }
         }
 
     private var circles: List<NeuronCircle>? = null
+}
 
-    init {
-        val memSafeSettings = settings
-        prefHeight = PREF_HEIGHT
-        prefWidth = Double.MAX_VALUE
-        val diagramHeightProp = BindableProperty(DIAGRAM_HEIGHT)
-        val diagramTopProp = BindableProperty(DIAGRAM_TOP)
-        val diagramWidthProp = widthProperty * DIAGRAM_RATIO
-        val diagramLeftProp = widthProperty * MARGIN_RATIO
+@Composable
+fun ModelVisualizer(
+    state: ModelVisualizerState,
+    model: Model,
+    settings: DeephysSettingsController
+) {
 
-        val totalSpaceForOneLayer =
-            when (ORIENTATION) {
-                VERTICAL   -> diagramWidthProp
-                HORIZONTAL -> diagramHeightProp
-            }
-        val totalSpaceForAllLayers =
-            when (ORIENTATION) {
-                VERTICAL   -> diagramHeightProp
-                HORIZONTAL -> diagramWidthProp
-            }
+    unsafeErr(
+        """
+            
+        val ORIENTATION = VerticalOrHorizontal.Vertical
+        val PREF_HEIGHT = 100.0
+        val MARGIN_RATIO = 0.1
+        val DIAGRAM_RATIO = 1.0 - MARGIN_RATIO * 2
+        val DIAGRAM_HEIGHT = PREF_HEIGHT * DIAGRAM_RATIO
+        val DIAGRAM_TOP = PREF_HEIGHT * MARGIN_RATIO
+        val COLOR: Color = Color.Blue
 
-        val modelStart =
-            when (ORIENTATION) {
-                VERTICAL   -> diagramTopProp
-                HORIZONTAL -> diagramLeftProp
-            }
-        val layerStart =
-            when (ORIENTATION) {
-                VERTICAL   -> diagramLeftProp
-                HORIZONTAL -> diagramTopProp
-            }
+        Box(
+            Modifier
+                .size(
+                    height = PREF_HEIGHT,
+                    width = Double.MAX_VALUE
+                )
+        ) {
 
 
-        val spacePerLayer = totalSpaceForAllLayers / model.layers.size.toDouble()
-
-        circles =
-            model.resolvedLayers.flatMapIndexed { layIndex, lay ->
 
 
-                val spacePerNeuron = totalSpaceForOneLayer / lay.neurons.size.toDouble()
+            init {
+                val diagramHeightProp = BindableProperty(DIAGRAM_HEIGHT)
+                val diagramTopProp = BindableProperty(DIAGRAM_TOP)
+                val diagramWidthProp = widthProperty * DIAGRAM_RATIO
+                val diagramLeftProp = widthProperty * MARGIN_RATIO
 
-                val radius = min(spacePerNeuron * 0.25, spacePerLayer * 0.25)
+                val totalSpaceForOneLayer =
+                    when (ORIENTATION) {
+                        Vertical   -> diagramWidthProp
+                        Horizontal -> diagramHeightProp
+                    }
+                val totalSpaceForAllLayers =
+                    when (ORIENTATION) {
+                        Vertical   -> diagramHeightProp
+                        Horizontal -> diagramWidthProp
+                    }
+
+                val modelStart =
+                    when (ORIENTATION) {
+                        Vertical   -> diagramTopProp
+                        Horizontal -> diagramLeftProp
+                    }
+                val layerStart =
+                    when (ORIENTATION) {
+                        Vertical   -> diagramLeftProp
+                        Horizontal -> diagramTopProp
+                    }
 
 
-                val layerCenter = modelStart + spacePerLayer * layIndex.toDouble() + spacePerLayer / 2.0
+                val spacePerLayer = totalSpaceForAllLayers / model.layers.size.toDouble()
 
-                deephysText(lay.layerID) {
-                    layoutXProperty.bind(
-                        when (ORIENTATION) {
-                            VERTICAL   -> diagramLeftProp / 4.0
-                            HORIZONTAL -> layerCenter
-                        }
-                    )
-                    layoutYProperty.bind(
-                        when (ORIENTATION) {
-                            VERTICAL   -> layerCenter
-                            HORIZONTAL -> diagramTopProp / 2.0
-                        }
-                    )
-                }
-
-                lay.neurons.mapIndexed { neuronIndex, neuron ->
+                circles =
+                    model.resolvedLayers.flatMapIndexed { layIndex, lay ->
 
 
-                    val neuronCenter = layerStart + spacePerNeuron * neuronIndex.toDouble() + spacePerNeuron / 2.0
+                        val spacePerNeuron = totalSpaceForOneLayer / lay.neurons.size.toDouble()
+
+                        val radius = min(spacePerNeuron * 0.25, spacePerLayer * 0.25)
 
 
-                    val xProp =
-                        when (ORIENTATION) {
-                            VERTICAL   -> neuronCenter
-                            HORIZONTAL -> layerCenter
-                        }
-                    val yProp =
-                        when (ORIENTATION) {
-                            VERTICAL   -> layerCenter
-                            HORIZONTAL -> neuronCenter
-                        }
+                        val layerCenter = modelStart + spacePerLayer * layIndex.toDouble() + spacePerLayer / 2.0
 
-                    NeuronCircle(
-                        layer = lay,
-                        neuron = neuron,
-                        x = xProp,
-                        y = yProp,
-                        radius = radius,
-                        color = COLOR
-                    ).apply {
-                        veryLazyDeephysTooltip("neuron $neuronIndex", settings = memSafeSettings)
-                        setOnMouseClicked {
-                            val dvb = this@ModelVisualizer.dsetViewsBox!!
-                            if (dvb.children.isEmpty()) return@setOnMouseClicked
-                            if (dvb.bound.value == null) {
-                                dvb.selectViewerToBind(dvb.children.first())
+                        DeephysText(
+                            lay.layerID,
+                            modifier =
+                                Modifier.offset(
+                                    x = (
+                                        when (ORIENTATION) {
+                                            Vertical   -> diagramLeftProp / 4.0
+                                            Horizontal -> layerCenter
+                                        }.value.dp
+                                    ),
+                                    y = (
+                                        when (ORIENTATION) {
+                                            Vertical   -> layerCenter
+                                            Horizontal -> diagramTopProp / 2.0
+                                        }.value.dp
+                                    )
+                                )
+                        )
+
+                        lay.neurons.mapIndexed { neuronIndex, neuron ->
+
+
+                            val neuronCenter = layerStart + spacePerNeuron * neuronIndex.toDouble() + spacePerNeuron / 2.0
+
+
+                            val xProp =
+                                when (ORIENTATION) {
+                                    Vertical   -> neuronCenter
+                                    Horizontal -> layerCenter
+                                }
+                            val yProp =
+                                when (ORIENTATION) {
+                                    Vertical   -> layerCenter
+                                    Horizontal -> neuronCenter
+                                }
+
+                            NeuronCircle(
+                                layer = lay,
+                                neuron = neuron,
+                                x = xProp,
+                                y = yProp,
+                                radius = radius,
+                                color = COLOR
+                            ).apply {
+                                veryLazyDeephysTooltip("neuron ${'$'}neuronIndex", settings = memSafeSettings)
+                                setOnMouseClicked {
+                                    val dvb = this@ModelVisualizer.dsetViewsBox!!
+                                    if (dvb.children.isEmpty()) return@setOnMouseClicked
+                                    if (dvb.bound.value == null) {
+                                        dvb.selectViewerToBind(dvb.children.first())
+                                    }
+                                    val b = dvb.bound.value!!
+                                    b.neuronSelection v null
+                                    b.layerSelection v lay.interTest
+                                    b.neuronSelection v neuron.interTest
+                                    b.view v ByNeuron
+                                }
                             }
-                            val b = dvb.bound.value!!
-                            b.neuronSelection v null
-                            b.layerSelection v lay.interTest
-                            b.neuronSelection v neuron.interTest
-                            b.view v ByNeuron
                         }
                     }
-                }
-            }
 
-        addAll(circles!!)
-        val circlesByNeuron = circles!!.associateBy { it.neuron }
-        model.resolvedLayers.dropLast(1).forEachIndexed { index, layer ->
-            val nextLayer = model.resolvedLayers[index + 1]
-            val nextLayerNeurons = nextLayer.neurons
-            layer.neurons.forEach { neuron1 ->
-                val point1 = circlesByNeuron[neuron1]!!.toPoint()
-                nextLayerNeurons.forEach { neuron2 ->
-                    val point2 = circlesByNeuron[neuron2]!!.toPoint()
-                    +LineWrapper().apply {
-                        startXProperty.bind(point1.x)
-                        startYProperty.bind(point1.y)
-                        endXProperty.bind(point2.x)
-                        endYProperty.bind(point2.y)
-                        stroke = Color.YELLOW
-                        node.strokeWidth = 0.1
+                addAll(circles!!)
+                val circlesByNeuron = circles!!.associateBy { it.neuron }
+                model.resolvedLayers.dropLast(1).forEachIndexed { index, layer ->
+                    val nextLayer = model.resolvedLayers[index + 1]
+                    val nextLayerNeurons = nextLayer.neurons
+                    layer.neurons.forEach { neuron1 ->
+                        val point1 = circlesByNeuron[neuron1]!!.toPoint()
+                        nextLayerNeurons.forEach { neuron2 ->
+                            val point2 = circlesByNeuron[neuron2]!!.toPoint()
+                            unsafeErr(
+                                ""${'"'}
+                                          LineWrapper().apply {
+                                    startXProperty.bind(point1.x)
+                                    startYProperty.bind(point1.y)
+                                    endXProperty.bind(point2.x)
+                                    endYProperty.bind(point2.y)
+                                    stroke = Color.YELLOW
+                                    node.strokeWidth = 0.1
+                                }
+                                ""${'"'}.trimIndent()
+                            )
+                        }
                     }
                 }
             }
         }
-    }
+        """.trimIndent()
+    )
 }
-
-

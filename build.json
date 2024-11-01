@@ -20,25 +20,26 @@
             "cfg": "implementation",
             "paths": [
                 ":k:compose:controls",
-                ":k:fx:node:tex",
                 ":k:cbor",
                 ":k:math",
                 ":k:math:numalg:matalg",
-                ":k:fx:node:proto",
                 ":k:codegen",
-                ":k:reflect"
+                ":k:reflect",
+                ":k:auto",
+                ":k:obs:math",
+                ":k:http",
+                ":k:async:thread",
+                ":k:compose:components:tex",
+                ":k:exec",
+                ":k:sys"
             ]
         },
         {
-            "type": "Lib",
+            "type": "Libs",
             "cfg": "implementation",
-            "key": "guava-desktop"
-        },
-        {
-            "type": "Lib",
-            "cfg": "implementation",
-            "key": "kotlinx-coroutines-javafx",
-            "note": "this library is cool for FX but seems to cause error if in the classpath of a compose app as of August 2024"
+            "keys": [
+                "guava-desktop"
+            ]
         },
         {
             "type": "Projects",
@@ -86,5 +87,6 @@
     "aio": {
         "checkSubmodulesArePublic": false
     },
-    "release": {}
+    "release": {},
+    "serialization": true
 }

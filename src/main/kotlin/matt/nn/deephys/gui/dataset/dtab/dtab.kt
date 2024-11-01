@@ -1,44 +1,19 @@
 package matt.nn.deephys.gui.dataset.dtab
 
-import matt.fx.control.toggle.mech.ToggleMechanism
-import matt.fx.control.wrapper.button.toggle.ToggleButtonWrapper
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.vbox.VBoxW
-import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.nn.deephys.gui.global.color.DeephysPalette
-import matt.nn.deephys.gui.global.deephyToggleButton
+import androidx.compose.runtime.Composable
+import matt.compose.controls.tabpane.SimpleTabPane
+import matt.compose.controls.tabpane.SimpleTabPaneScope
+import matt.lang.common.unsafeErr
 
+@Composable
+fun DeephysTabPane(
+    content: SimpleTabPaneScope.() -> Unit
+) {
 
-class DeephysTabPane: VBoxW(childClass = NodeWrapper::class) {
+    unsafeErr("This should migrate as basically just a tap pane but in which the tabs are colored a certain color when selected: `DeephysPalette.deephysSelectGradient`")
 
-    init {
-        isFillWidth = false
-    }
-
-    val toggleGroup = ToggleMechanism<Lazy<NodeWrapper>>()
-
-    val tabBar =
-        h {
-        }
-
-    val contentBox =
-        v {
-        }
-
-    fun deephysLazyTab(label: String, op: () -> NodeWrapper): ToggleButtonWrapper {
-        val lazyContent = lazy { op() }
-        return tabBar.deephyToggleButton(label, group = toggleGroup, value = lazyContent) {
-            setupSelectionColor(DeephysPalette.deephysSelectGradient)
-            selectedProperty.onChange {
-                if (it) {
-                    this@DeephysTabPane.contentBox.apply {
-                        clear()
-                        +lazyContent.value
-                    }
-                }
-            }
-        }
+    SimpleTabPane {
+        content()
     }
 }
 

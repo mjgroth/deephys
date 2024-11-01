@@ -1,17 +1,17 @@
 package matt.nn.deephys.model.data
 
+import androidx.compose.runtime.Composable
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.invoke
-import matt.fx.graphics.wrapper.node.NW
 import matt.lang.assertions.require.requireEquals
 import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
-import matt.nn.deephys.gui.global.deephyActionText
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.global.DeephyActionText
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
-import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.model.LayerLike
 import matt.nn.deephys.model.importformat.Model
@@ -118,16 +118,16 @@ data class Category(
 ) : CategorySelection {
 
 
+    @Composable
     fun actionText(
-        r: NW,
         tooltip: String,
         settings: DeephysSettingsController,
-        weakViewer: WeakRefInter<DatasetViewer>,
+        weakViewer: WeakRefInter<DatasetViewerState>,
         allowedLengths: IntRange = 25..25
-    ) = r.deephyActionText(label.truncateWithElipsesOrAddSpacesAsNeeded(allowedLengths)) {
-        weakViewer.deref()!!.navigateTo(this)
-    }.apply {
-        veryLazyDeephysTooltip(tooltip, settings)
+    ) = DeephysTooltipArea(settings, tooltip) {
+        DeephyActionText(label.truncateWithElipsesOrAddSpacesAsNeeded(allowedLengths)) {
+            weakViewer.deref()!!.navigateTo(this)
+        }
     }
 
 

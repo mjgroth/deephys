@@ -1,61 +1,60 @@
 package matt.nn.deephys.gui.dataset.byimage.mult
 
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.Dp
 import matt.lang.common.go
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.deephyimview.DeephyImView
-import matt.nn.deephys.gui.global.deephysText
+import matt.nn.deephys.gui.global.DeephysText
 import matt.nn.deephys.gui.global.subtitleFont
-import matt.nn.deephys.gui.global.tooltip.veryLazyDeephysTooltip
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
-import matt.nn.deephys.gui.node.DeephysNode
 import matt.nn.deephys.gui.settings.DeephysSettingsController
-import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.obs.math.op.times
 
-class MultipleImagesView<A: Number>(
-    viewer: DatasetViewer,
+private const val MAX_IMS = 25
+@Composable
+fun <A: Number> MultipleImagesView(
+    viewer: DatasetViewerState,
     images: List<DeephyImage<A>>,
     post: PostDtypeTestLoader<A>,
     title: String?,
     tooltip: String,
     fade: Boolean = true,
-    override val settings: DeephysSettingsController
-): VBoxWrapperImpl<NW>(childClass = NW::class), DeephysNode {
-    companion object {
-        private const val MAX_IMS = 25
-    }
+    settings: DeephysSettingsController,
+    viewerWidth: Dp
+) {
+    val memSafeSettings = settings
+    DeephysTooltipArea(memSafeSettings, "$tooltip (first $MAX_IMS)") {
+        Column {
 
-    init {
-        val memSafeSettings = settings
-        title?.go {
-            deephysText("$title (${images.size})").apply {
-                subtitleFont()
-            }
-        }
-        veryLazyDeephysTooltip(
-            "$tooltip (first $MAX_IMS)",
-            settings = memSafeSettings
-        )
-        +ImageFlowPane(viewer).apply {
-            prefWrapLengthProperty.bindWeakly(viewer.widthProperty * 0.4)
-            images.take(MAX_IMS).forEach {
-                +DeephyImView(it, viewer, settings = memSafeSettings).apply {
+            title?.go {
+                DeephysText("$title (${images.size})").apply {
+                    subtitleFont()
                 }
             }
-            if (images.size > MAX_IMS) {
-                deephysText("(+${images.size - MAX_IMS} more)")
+            ImageFlowPane(
+                viewer,
+                prefWrapLengthProperty = viewerWidth * 0.4f
+            ) {
+                images.take(MAX_IMS).forEach {
+                    DeephyImView(it, viewer, settings = memSafeSettings)
+                }
+                if (images.size > MAX_IMS) {
+                    DeephysText("(+${images.size - MAX_IMS} more)")
+                }
             }
+            neuronListViewSwapper(
+                viewer = viewer,
+                contents = images.toSet(),
+                fade = fade,
+                settings = memSafeSettings,
+                postDtypeTestLoader = post,
+                viewerWidth = viewerWidth
+            )
         }
-        neuronListViewSwapper(
-            viewer = viewer,
-            contents = images.toSet(),
-            fade = fade,
-            settings = memSafeSettings,
-            postDtypeTestLoader = post
-        )
     }
 }

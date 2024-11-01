@@ -1,51 +1,54 @@
 package matt.nn.deephys.gui.viewer.tutorial.bind
 
-import matt.fx.control.wrapper.checkbox.checkbox
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.node.visibleAndManagedWhen
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.spacer
-import matt.fx.graphics.wrapper.pane.vbox.VBoxW
-import matt.fx.graphics.wrapper.pane.vbox.v
-import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
-import matt.nn.deephys.gui.global.deephyActionText
-import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.viewer.DatasetViewer
-import matt.obs.bindings.bool.and
-import matt.obs.bindings.bool.or
-import matt.obs.bindings.comp.gt
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.Composable
+import matt.compose.controls.check.MyCheckbox
+import matt.lang.common.NEVER
+import matt.nn.deephys.gui.dsetsbox.BIND_BUTTON_NAME
+import matt.nn.deephys.gui.dsetsbox.NORMALIZER_BUTTON_NAME
+import matt.nn.deephys.gui.global.DeephyActionText
+import matt.nn.deephys.gui.global.DeephysText
+import matt.nn.deephys.gui.global.SpacerWithOldFxSize
+import matt.nn.deephys.gui.viewer.DatasetViewerState
 
-class BindTutorial(viewer: DatasetViewer): VBoxW(childClass = NodeWrapper::class) {
-    init {
-        visibleAndManagedWhen {
-            viewer.showTutorials and
-                viewer.numViewers.gt(1) and
-                viewer.outerBoundDSet.neq(viewer) and
-                (viewer.isUnboundToDSet or viewer.normalizer.isNull)
-        }
-        spacer()
-        deephysText("In order to visualize this dataset in comparison to other datasets:")
-        h {
-            spacer()
-            v {
-                h {
-                    checkbox("${DSetViewsVBox.BIND_BUTTON_NAME} one dataset") {
-                        isDisable = true
-                        selectedProperty.bind(viewer.outerBoundDSet.isNotNull)
+@Composable
+fun BindTutorial(viewer: DatasetViewerState) {
+    Column {
+        if (
+            viewer.showTutorials.value &&
+            viewer.numViewers.value > 1 &&
+            viewer.outerBoundDSet.value != (viewer) &&
+            (viewer.isUnboundToDSet.value || viewer.normalizer.value == null)
+        ) {
+            SpacerWithOldFxSize()
+            DeephysText("In order to visualize this dataset in comparison to other datasets:")
+            Row {
+                SpacerWithOldFxSize()
+                Column {
+                    Row {
+                        MyCheckbox(
+                            "$BIND_BUTTON_NAME one dataset",
+                            enabled = false,
+                            checked = viewer.outerBoundDSet.value != null,
+                            onCheckedChange = { NEVER }
+                        )
+                        SpacerWithOldFxSize()
+                        DeephyActionText("show me how") {
+                            viewer.outerBox.flashBindButtons()
+                        }
                     }
-                    spacer()
-                    deephyActionText("show me how") {
-                        viewer.outerBox.flashBindButtons()
-                    }
-                }
-                h {
-                    checkbox("Select one dataset as ${DSetViewsVBox.NORMALIZER_BUTTON_NAME}") {
-                        isDisable = true
-                        selectedProperty.bind(viewer.normalizer.isNotNull)
-                    }
-                    spacer()
-                    deephyActionText("show me how") {
-                        viewer.outerBox.flashOODButtons()
+                    Row {
+                        MyCheckbox(
+                            "Select one dataset as $NORMALIZER_BUTTON_NAME",
+                            enabled = false,
+                            checked = viewer.normalizer.value != null,
+                            onCheckedChange = { NEVER }
+                        )
+                        SpacerWithOldFxSize()
+                        DeephyActionText("show me how") {
+                            viewer.outerBox.flashOODButtons()
+                        }
                     }
                 }
             }

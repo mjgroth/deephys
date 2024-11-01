@@ -1,55 +1,35 @@
 @file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 package matt.nn.deephys.gui
 
-import javafx.geometry.Pos
-import javafx.geometry.Pos.BOTTOM_LEFT
-import javafx.geometry.Pos.TOP_CENTER
-import javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER
-import javafx.scene.image.Image
-import javafx.scene.layout.Priority.ALWAYS
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.requiredHeightIn
+import androidx.compose.foundation.layout.requiredWidthIn
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.runBlocking
 import matt.async.thread.daemon
 import matt.async.thread.pool.DaemonPoolExecutor
+import matt.compose.controls.window.MyMainWindow
+import matt.compose.controls.window.MyWindow
+import matt.compose.controls.window.MyWindowState
+import matt.compose.graphics.app.myApplication
+import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.win.HardWindowState
 import matt.exec.app.myVersion
 import matt.file.commons.desktop.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.file.commons.logctx.LogContext
 import matt.file.ext.j.mkFold
 import matt.file.toJioFile
-import matt.fx.control.fxapp.DEFAULT_THROW_ON_APP_THREAD_THROWABLE
-import matt.fx.control.inter.graphic
-import matt.fx.control.mail
-import matt.fx.control.wrapper.progressbar.progressbar
-import matt.fx.control.wrapper.scroll.scrollpane
-import matt.fx.graphics.fxthread.runLater
-import matt.fx.graphics.fxthread.ts.nonBlockingFXWatcher
-import matt.fx.graphics.hotkey.hotkeys
-import matt.fx.graphics.wrapper.node.NW
-import matt.fx.graphics.wrapper.node.NodeWrapper
-import matt.fx.graphics.wrapper.node.parent.ParentWrapper
-import matt.fx.graphics.wrapper.pane.hbox.h
-import matt.fx.graphics.wrapper.pane.vbox.VBoxSimple
-import matt.fx.graphics.wrapper.pane.vbox.VBoxW
-import matt.fx.graphics.wrapper.pane.vbox.VBoxWrapperImpl
-import matt.fx.graphics.wrapper.pane.vbox.vbox
-import matt.fx.graphics.wrapper.stage.StageWrapper
-import matt.fx.node.proto.navDrawerButtonGraphic
-import matt.gui.app.GuiApp
-import matt.gui.app.warmup.warmupJvmThreading
-import matt.gui.exception.openNewYouTrackIssue
-import matt.gui.interact.WinOwn
-import matt.gui.interact.openInNewWindow
-import matt.gui.interact.popupWarning
-import matt.gui.mscene.MScene
-import matt.gui.mstage.ShowMode
-import matt.gui.mstage.ShowMode.SHOW_AND_WAIT
-import matt.gui.mstage.WMode.NOTHING
 import matt.http.internet.TheInternet
 import matt.http.internet.isAvailable
-import matt.image.icon.ICON_SIZES
 import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
 import matt.lang.atomic.AtomicInt
-import matt.lang.common.err
+import matt.lang.common.unsafeErr
 import matt.lang.j.sync
 import matt.lang.model.file.MacFileSystem
 import matt.lang.shutdown.TypicalShutdownContext
@@ -59,24 +39,23 @@ import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.gui.DeephysArg.`erase-settings`
 import matt.nn.deephys.gui.DeephysArg.`erase-state`
 import matt.nn.deephys.gui.DeephysArg.reset
-import matt.nn.deephys.gui.dsetsbox.DSetViewsVBox
-import matt.nn.deephys.gui.global.deephyActionButton
-import matt.nn.deephys.gui.global.deephyButton
-import matt.nn.deephys.gui.global.deephysLabel
-import matt.nn.deephys.gui.global.deephysText
-import matt.nn.deephys.gui.navbox.NavBox
+import matt.nn.deephys.gui.dsetsbox.DSetViewsState
+import matt.nn.deephys.gui.global.DEEPHYS_FONT_DEFAULT
+import matt.nn.deephys.gui.global.DeephyActionButton
+import matt.nn.deephys.gui.global.DeephysLabel
+import matt.nn.deephys.gui.global.DeephysText
 import matt.nn.deephys.gui.navbox.zoo.ZooExample
 import matt.nn.deephys.gui.settings.DeephySettingsNode
-import matt.nn.deephys.gui.settings.gui.SettingsWindow
+import matt.nn.deephys.gui.unsafemigration.ToggleButtonWrapper
+import matt.nn.deephys.gui.unsafemigration.VisBox
+import matt.nn.deephys.gui.unsafemigration.unsafeComposable
 import matt.nn.deephys.gui.visbox.VisBox
 import matt.nn.deephys.init.initializeWhatICan
-import matt.nn.deephys.init.warmupFxComponents
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
 import matt.obs.prop.writable.BindableProperty
 import matt.obs.subscribe.Pager
 import matt.rstruct.desktop.modId
-import matt.rstruct.loader.desktop.systemResourceLoader
 import java.net.URI
 import kotlin.io.path.outputStream
 
@@ -93,26 +72,32 @@ enum class DeephysArg {
 typealias DeephysArgs = List<DeephysArg>
 
 
+
+
+
 class DeephysApp {
+
+    var showDemosTab: ToggleButtonWrapper? = null
+
+
+
+
 
     context(TypicalShutdownContext)
     fun boot2(
         settingsNode: DeephySettingsNode,
-        args: DeephysArgs,
-        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
+        args: DeephysArgs
     ): Unit =
         boot(
             args = args,
-            settingsNode = settingsNode,
-            throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
+            settingsNode = settingsNode
         )
 
     context(TypicalShutdownContext)
     /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: DeephysArgs,
-        settingsNode: DeephySettingsNode = DeephySettingsNode(),
-        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
+        settingsNode: DeephySettingsNode = DeephySettingsNode()
     ) {
         if (args.size == 1 && args[0] == `erase-state`) {
             DeephyState.delete()
@@ -122,8 +107,6 @@ class DeephysApp {
             DeephyState.delete()
             settingsNode.delete()
         } else {
-            warmupJvmThreading()
-
             daemon(name = "Stage Title Loader") {
                 try {
                     stageTitle.putLoadedValue("${modId.appName} $myVersion")
@@ -164,8 +147,7 @@ class DeephysApp {
             startDeephyApp(
                 settingsNode = settingsNode,
                 settingsDidReset = didSettingsReset,
-                openedNewVersion = openedNewVersion,
-                throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
+                openedNewVersion = openedNewVersion
             )
         }
     }
@@ -179,22 +161,29 @@ class DeephysApp {
         stageTitle.cancel(cause)
     }
 
-    val testReadyDSetViewsBbox = Pager<DSetViewsVBox>()
-    val readyForConfiguringWindowFromTest = LoadedValueSlot<StageWrapper>()
-    val testReadyScene = LoadedValueSlot<MScene<ParentWrapper<*>>>()
+    val testReadyDSetViewsBbox = Pager<DSetViewsState>()
+    val readyForConfiguringWindowFromTest = LoadedValueSlot<Any>()
+    val testReadyScene = LoadedValueSlot<Unit>()
 
     var visBox: VisBox? = null
-    var navBox: NavBox? = null
+    val showNavBox = mutableStateOf(false)
     fun showDemos() {
-        navBox!!.visibleAndManaged = true
-        navBox!!.showDemos()
+        showNavBox.value = true
+        unsafeErr(
+            """
+            showDemosTab!!.isSelected = true    
+            """.trimIndent()
+        )
     }
+ /*   fun showDemos() {
+
+    }*/
 
     fun openZooDemo(demo: ZooExample) {
 
 
         if (runBlocking {  !TheInternet().isAvailable() }) {
-            popupWarning("No internet connection")
+            unsafeErr("No internet connection")
             return
         }
 
@@ -249,220 +238,266 @@ class DeephysApp {
 
 
 
-        VBoxW(childClass = NodeWrapper::class).apply {
+        unsafeComposable {
+            Column {
 
 
-            deephysLabel("Downloading ${demo.name}...")
+                DeephysLabel("Downloading ${demo.name}...")
 
-            val prog =
-                progressbar {
-                }
+                val prog =
+                    LinearProgressIndicator(
+                        progress = {
+                            progress.value.toFloat()
+                        }
+                    )
 
-            deephysLabel("Loading Files... (0/$total)") {
-                progress.nonBlockingFXWatcher().onChange {
-                    prog.progress = it
-                    text = "Loading Files... (${done.get()}/$total)"
-                    if (done.get() == total) {
-                        stage!!.close()
-                        navBox!!.visibleAndManaged = false
-                        val theVisBox = visBox ?: err("no visBox!")
-                        theVisBox.load(
-                            modelFile = modelFile.get(),
-                            testFiles = testFiles.map { it.get() }
-                        )
-                    }
-                }
+                unsafeErr(
+                    """
+                    DeephysLabel("Loading Files... (${done.get()}/$total)") {
+                        if (done.get() == total) {
+                            stage!!.close()
+                            showNavBox.value = false
+                            val theVisBox = visBox ?: err("no visBox!")
+                            theVisBox.load(
+                                modelFile = modelFile.get(),
+                                testFiles = testFiles.map { it.get() }
+                            )
+                        }
+                    }           
+                    """.trimIndent()
+                )
+            }.apply {
+                unsafeErr(
+                    """
+                    openInNewWindow(
+                        showMode = SHOW_AND_WAIT,
+                        wMode = NOTHING,
+                        alwaysOnTop = true
+                    ) {
+                    }            
+                    """.trimIndent()
+                )
             }
-        }.openInNewWindow(
-            showMode = SHOW_AND_WAIT,
-            wMode = NOTHING,
-            alwaysOnTop = true
-        ) {
         }
+
 
         modelURL.openStream()
 
         /*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
     }
 
-    context(TypicalShutdownContext)
     fun startDeephyApp(
         t: Stopwatch? = null,
         settingsNode: DeephySettingsNode,
         settingsDidReset: Boolean,
         @Suppress("UNUSED_PARAMETER")
-        openedNewVersion: Boolean,
-        throwOnApplicationThreadThrowable: Boolean = DEFAULT_THROW_ON_APP_THREAD_THROWABLE
-    ) = GuiApp(ctx = this@TypicalShutdownContext, decorated = true) {
+        openedNewVersion: Boolean
+    ) {
 
-
-        println("stage123=$stage")
-
-
-        warmupFxComponents(settingsNode.settings)
-
-
-        val myStageTitle = stageTitle.await()
-        stage.title = myStageTitle
-
-
-
-        if (settingsDidReset) {
-            VBoxWrapperImpl<NW>().apply {
-                deephysText("Welcome to Deephys")
-                @Suppress("KotlinConstantConditions")
-                if (settingsDidReset) {
-                    deephysText("Your settings have been reset due to the new update.")
-                }
-                deephyActionButton("OK") {
-                    this@deephyActionButton.stage!!.close()
-                }
-            }.openInNewWindow(
-                showMode = ShowMode.SHOW,
-                own = WinOwn.Owner(stage),
-                alwaysOnTop = true
+        val myWindowState =
+            MyWindowState(
+                state =
+                    HardWindowState(
+                        key = "deephys-main-window",
+                        appInstanceNumber = 0 /*STUPID*/
+                    )
             )
-        }
+
+        myApplication(
+            appName = "Deephys",
+            logFile = null
+        ) {
+
+
+            CompositionLocalProvider(
+                LocalTextStyle provides
+                    LocalTextStyle.current.copy(
+                        fontFamily = DEEPHYS_FONT_DEFAULT
+                    )
+            ) {
 
 
 
-        stage.icons.addAll(
-            ICON_SIZES.map {
-                Image(systemResourceLoader().resourceURL("logo_$it.png").toString())
-            }
-        )
-
-
-        stage.node.minWidth = 1000.0
-        @SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
-        stage.node.minHeight = 750.0
-        /*stage.width = 1500.0
-      stage.height = 1000.0*/
-
-        readyForConfiguringWindowFromTest.putLoadedValue(stage)
-
-
-        root(VBoxSimple()) {
-
-
-            alignment = TOP_CENTER
-
-            val settButton = SettingsWindow(settingsNode.settings).button(this)
-
-            navBox =
-                NavBox(this@DeephysApp).apply {
-                    visibleAndManaged = false
-                }
-
-
-            visBox =
-                VisBox(
-                    app = this@DeephysApp,
-                    settings = settingsNode.settings
-                )
-
-
-            hotkeys {
-                COMMA.meta {
-                    settButton.fire()
-                }
-            }
 
 
 
-            h {
-                deephyButton("") {
-                    graphic = navDrawerButtonGraphic(prefHeight = settButton.heightProperty)
-                    prefHeightProperty.bind(settButton.heightProperty)
-                    setOnAction {
-                        navBox!!.visibleAndManaged = !navBox!!.visibleAndManaged
-                    }
-                }
-                h {
-                    hgrow = ALWAYS
-                    alignment = Pos.CENTER_RIGHT
-                    /*spacing = DEEPHYS_SYMBOL_SPACING*/
-                    deephyButton("Report Bug") {
-                        setOnAction {
-                            isDisable = true
-                            daemon(name = "report bug") {
-                                /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
-                                openNewYouTrackIssue(
-                                    summary = "Bug Report",
-                                    description = ""
-                                )
-                                runLater {
-                                    isDisable = false
+
+
+                val myStageTitle = stageTitle.await()
+
+
+
+
+                MyMainWindow(
+                    windowState = myWindowState,
+                    title = myStageTitle
+                ) {
+
+
+
+                    if (settingsDidReset) {
+                        val openWelcomeWindow = rememberMutableStateOf(true)
+                        MyWindow(
+                            visible = openWelcomeWindow.value,
+                            alwaysOnTop = true,
+                            onCloseRequest = {
+                                openWelcomeWindow.value = false
+                            }
+                        ) {
+                            Column {
+                                DeephysText("Welcome to Deephys")
+                                @Suppress("KotlinConstantConditions")
+                                if (settingsDidReset) {
+                                    DeephysText("Your settings have been reset due to the new update.")
+                                }
+                                DeephyActionButton("OK") {
+                                    openWelcomeWindow.value = false
                                 }
                             }
                         }
-                    }.apply {
-                        prefHeightProperty.bind(settButton.heightProperty)
                     }
-                    deephyButton("Send Feedback") {
-
-                        setOnAction {
-                            isDisable = true
-                            daemon(name = "send feedback") {
-                                /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
-                                mail(
-                                    address = "deephys@mit.edu",
-                                    subject = "This visualizer is so cool!",
-                                    body = "What I like about this tool:\n\n\n\nHow I think it can be improved:\n\n"
-                                )
-                                runLater {
-                                    isDisable = false
+                    Column(
+                        @SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
+                        Modifier
+                            .requiredWidthIn(
+                                min = 1000.0.dp
+                            )
+                            .requiredHeightIn(
+                                min = 750.dp
+                            )
+                    ) {
+                        unsafeErr(
+                            """
+                                            AlignedRow(
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    MyText("This was the \"stage icon\": ")
+                                    MyImage(systemResourceLoader().resourceURL("logo_$it.png").toString().let(::URI))
                                 }
-                            }
-                        }
-                    }.apply {
-                        prefHeightProperty.bind(settButton.heightProperty)
+                                readyForConfiguringWindowFromTest.putLoadedValue(Unit)
+                                val settButton = SettingsWindow(settingsNode.settings).button(this)
+
+
+
+
+                                visBox =
+                                    VisBox(
+                                        app = this@DeephysApp,
+                                        settings = settingsNode.settings
+                                    )
+
+
+                                unsafeErr(
+                                    ""${'"'}
+                                        
+                                                                hotkeys {
+                                                                    COMMA.meta {
+                                                                        settButton.fire()
+                                                                    }
+                                                                }
+
+                                    ""${'"'}.trimIndent()
+                                )
+
+
+
+                                Row {
+
+                                    DeephyButton(
+                                        Icons.Default.Menu
+                                    ) {
+                                        showNavBox.value = !showNavBox.value
+                                    }
+                                    Row {
+                                        hgrow = ALWAYS
+                                        alignment = Pos.CENTER_RIGHT
+                                        /*spacing = DEEPHYS_SYMBOL_SPACING*/
+                                        DeephyButton("Report Bug") {
+                                            setOnAction {
+                                                isDisable = true
+                                                daemon(name = "report bug") {
+                                                    /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
+                                                    openNewYouTrackIssue(
+                                                        summary = "Bug Report",
+                                                        description = ""
+                                                    )
+                                                    isDisable = false
+                                                }
+                                            }
+                                        }.apply {
+                                            prefHeightProperty.bind(settButton.heightProperty)
+                                        }
+                                        DeephyButton("Send Feedback") {
+
+                                            setOnAction {
+                                                isDisable = true
+                                                daemon(name = "send feedback") {
+                                                    /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
+                                                    mail(
+                                                        address = "deephys@mit.edu",
+                                                        subject = "This visualizer is so cool!",
+                                                        body = "What I like about this tool:\n\n\n\nHow I think it can be improved:\n\n"
+                                                    )
+                                                    isDisable = false
+                                                }
+                                            }
+                                        }.apply {
+                                            prefHeightProperty.bind(settButton.heightProperty)
+                                        }
+                                        +settButton
+                                    }
+                                }
+
+                                Row {
+
+                                    vgrow = ALWAYS
+
+                                    fillHeightProperty.value = true
+
+                                    if (showNavBox.value) NavBox(this@DeephysApp)
+
+                                    scrollpane<VBoxWrapperImpl<NW>> {
+                                        hgrow = ALWAYS
+                                        hbarPolicy = NEVER
+                                        isFitToWidth = true
+
+                                        content = visBox!!
+                                    }
+                                }
+
+                            /*
+                                  vbox<NodeWrapper> {
+                                    vgrow = ALWAYS
+                                  }*/
+
+                                Column(
+                                    verticalArrangement = Arrangement.Bottom
+                                ) {
+                                    +VersionChecker.statusNode()
+                                }
+                            """.trimIndent()
+                        )
                     }
-                    +settButton
                 }
-            }
 
-            h {
 
-                vgrow = ALWAYS
-
-                fillHeightProperty.value = true
-
-                +navBox!!
-
-                scrollpane<VBoxWrapperImpl<NW>> {
-                    hgrow = ALWAYS
-                    hbarPolicy = NEVER
-                    isFitToWidth = true
-
-                    content = visBox!!
-                }
-            }
-
-            /*
-                  vbox<NodeWrapper> {
-                    vgrow = ALWAYS
-                  }*/
-
-            vbox<NodeWrapper> {
-                alignment = BOTTOM_LEFT
-                +VersionChecker.statusNode
-            }
-        }
 
         /*not currently using this, because after making scroll bars transparet I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G
 
 
           scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/
 
-        testReadyScene.putLoadedValue(scene!!)
+                testReadyScene.putLoadedValue(Unit)
 
-        println("put loaded scene")
+                println("put loaded scene")
 
-        VersionChecker.checkForUpdatesInBackground()
-    }.runBlocking(
-        logContext = DEEPHYS_LOG_CONTEXT,
-        t = t,
-        throwOnApplicationThreadThrowable = throwOnApplicationThreadThrowable
-    )
+                VersionChecker.checkForUpdatesInBackground()
+                unsafeErr(
+                    """
+                    logContext = DEEPHYS_LOG_CONTEXT
+                    """.trimIndent()
+                )
+            }
+        }
+    }
 }

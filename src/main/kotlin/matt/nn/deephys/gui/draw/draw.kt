@@ -1,29 +1,55 @@
 package matt.nn.deephys.gui.draw
 
-import matt.fx.graphics.wrapper.canvas.Canv
-import matt.fx.graphics.wrapper.style.FXColor
+import matt.compose.graphics.color.toMcolor
+import matt.image.heavy.skikoutil.allocPixelsAndCheck
+import matt.image.heavy.skikoutil.toImage
+import matt.image.heavy.skikoutil.toSkiaColor
 import matt.nn.deephys.model.importformat.im.DeephyImage
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.Canvas
+import org.jetbrains.skia.ColorAlphaType.PREMUL
+import org.jetbrains.skia.ColorInfo
+import org.jetbrains.skia.ColorSpace
+import org.jetbrains.skia.ColorType
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
+import org.jetbrains.skia.Paint
 
-fun Canv.draw(image: DeephyImage<*>) {
-    val mat = image.matrix
-    draw(mat)
-}
+fun DeephyImage<*>.toSkiaImage(): Image {
 
-fun Canv.draw(mat: List<List<FXColor>>) {
-    pixelWidth = mat.size.toDouble()
-    pixelHeight = mat.size.toDouble()
-    val pw = graphicsContext.pixelWriter
-    mat.forEachIndexed { y, row ->
-        row.forEachIndexed { x, pix ->
-	  /* val r = pix[0]
-	   val g = pix[1]
-	   val b = pix[2]*/
-            pw.setColor(
-                /*x, y, FXColor.rgb((r*255.0).roundToInt(), (g*255.0).roundToInt(), (b*255.0).roundToInt())*/
-                x,
-                y,
-                pix /*FXColor.rgb(pix[0], pix[1], pix[2])*/
-            )
+    val mat = matrix
+
+    val imageInfo =
+        ImageInfo(
+            width = mat[0].size,
+            height = mat.size,
+            colorInfo =
+                ColorInfo(
+                    ColorType.RGBA_8888,
+                    PREMUL,
+                    ColorSpace.sRGB
+                )
+        )
+
+    val outputBitmap =
+        Bitmap().apply {
+            setImageInfo(imageInfo)
+            allocPixelsAndCheck()
+        }
+    val canv = Canvas(outputBitmap)
+    Canvas(outputBitmap).apply {
+        mat.forEachIndexed { y, row ->
+            row.forEachIndexed { x, pix ->
+                canv.drawPoint(
+                    x = x.toFloat(),
+                    y = y.toFloat(),
+                    paint =
+                        Paint().apply {
+                            color = pix.toMcolor().toIntColor().toSkiaColor()
+                        }
+                )
+            }
         }
     }
+    return outputBitmap.toImage()
 }
