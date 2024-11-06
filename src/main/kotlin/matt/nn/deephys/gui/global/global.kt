@@ -18,7 +18,7 @@ import matt.compose.controls.buttons.MyButton
 import matt.compose.controls.check.MyCheckbox
 import matt.compose.controls.composers.action.common.ActionButton
 import matt.compose.controls.desktop.ActionText
-import matt.compose.controls.j.icon.MyClickableIcon
+import matt.compose.controls.icon.MyClickableIcon
 import matt.compose.controls.text.MyClickableText
 import matt.compose.graphics.Compose
 import matt.compose.graphics.layout.AlignedRow
@@ -60,6 +60,7 @@ inline fun <reified E : Any> DeephysSpinner(
     crossinline navAction: DatasetViewerState.(E) -> Unit
 
 ) {
+    @Suppress("VarCouldBeVal")
     var theValueProp: ObsVal<E>? = null
     unsafeErr(
         """

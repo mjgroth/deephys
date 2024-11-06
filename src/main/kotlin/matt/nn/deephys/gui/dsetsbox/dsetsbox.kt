@@ -146,7 +146,7 @@ class DSetViewsState {
 
 
 
-    fun removeTest(t: DatasetViewerState) {
+    private fun removeTest(t: DatasetViewerState) {
         unsafeErr(
             """
             println("removing test: ${t.file.value}")
@@ -177,7 +177,7 @@ class DSetViewsState {
         flashControls(buttons)
     }
 
-    fun flashControls(controls: Collection<ControlWrapper>) {
+    private fun flashControls(controls: Collection<ControlWrapper>) {
         unsafeErr(
             """
                        val t =

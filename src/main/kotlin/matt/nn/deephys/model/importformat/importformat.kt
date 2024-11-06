@@ -107,7 +107,7 @@ class Test<N : Number>(
         testNeurons.putLoadedValue(map)
     }
 
-    val testNeurons = LoadedValueSlot<Map<InterTestNeuron, TestNeuron<N>>>()
+    private val testNeurons = LoadedValueSlot<Map<InterTestNeuron, TestNeuron<N>>>()
 
 
     fun category(id: Int) = catsByID[id]!!
@@ -121,7 +121,7 @@ class Test<N : Number>(
             this@Test.images.map { it.category }.toSet().toList().sortedBy { it.id }
         }
     }
-    val catsByID by lazy {
+    private val catsByID by lazy {
         categories.associateBy { it.id }
     }
 

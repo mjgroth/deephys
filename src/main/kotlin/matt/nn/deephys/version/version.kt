@@ -1,3 +1,4 @@
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 package matt.nn.deephys.version
 
 import androidx.compose.runtime.Composable
@@ -14,13 +15,14 @@ import matt.exec.app.myVersion
 import matt.http.json.requireIs
 import matt.http.url.MURL
 import matt.lang.cfnf.getOrThrow
+import matt.lang.context.AutomationContext
+import matt.lang.j.openUrl
 import matt.log.warn.common.warn
 import matt.model.data.release.Version
 import matt.model.data.release.VersionInfo
 import matt.nn.deephys.gui.global.DeephyHyperlink
 import matt.nn.deephys.gui.global.DeephysText
 import matt.time.dur.common.sec
-import java.awt.Desktop
 import java.net.ConnectException
 import java.net.URI
 
@@ -70,6 +72,7 @@ object VersionChecker {
 
     private val newestRelease = mutableStateOf<VersionInfo?>(null)
 
+    context(AutomationContext)
     @Composable
     fun statusNode() {
 
@@ -79,7 +82,7 @@ object VersionChecker {
             else if (new != null && new.version > myVersion) {
                 DeephysText("Version ${new.version} Available: ")
                 DeephyHyperlink("Click here to update") {
-                    Desktop.getDesktop().browse(URI(new.downloadURL))
+                    openUrl(URI(new.downloadURL))
                 }
             } else if (new != null && new.version < myVersion) {
                 DeephysText("developing unreleased version (last pushed was $new)")
@@ -89,8 +92,8 @@ object VersionChecker {
 }
 
 class VersionStatus(
-    val current: Version,
-    val latestRelease: Version
+    private val current: Version,
+    private val latestRelease: Version
 ) {
     val updateAvailable by lazy { current != latestRelease }
 }

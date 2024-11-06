@@ -46,6 +46,7 @@ class ModelVisualizerState {
             }
         }
 
+    @Suppress("VarCouldBeVal")
     private var circles: List<NeuronCircle>? = null
 }
 

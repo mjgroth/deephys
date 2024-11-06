@@ -13,7 +13,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.DelicateCoroutinesApi
 import matt.caching.compcache.invoke
 import matt.color.colormap.Automatic
 import matt.color.common.FloatColor
@@ -40,7 +39,6 @@ import matt.prim.str.addNewLinesUntilNumLinesIs
 import matt.prim.str.elementsToString
 
 @Composable
-@OptIn(DelicateCoroutinesApi::class)
 fun <A : Number> CategoryView(
     selection: CategorySelection,
     testLoader: TypedTestLike<A>,
@@ -48,7 +46,6 @@ fun <A : Number> CategoryView(
     settings: DeephysSettingsController,
     viewerWidth: Dp
 ) {
-    val memSafeSettings = settings
     Column {
         with(viewer.cacheContext) {
             DeephysLabel(
@@ -128,7 +125,7 @@ fun <A : Number> CategoryView(
                         },
                     postDtypeTestLoader = testLoader.post,
                     fade = false /*I think issues are being causes since this child is fading while the parent is too*/,
-                    settings = memSafeSettings,
+                    settings = settings,
                     viewerWidth = viewerWidth
                 )
 
@@ -193,7 +190,7 @@ fun <A : Number> CategoryView(
                             colorMap = colorMap,
                             selected = (selection as? CategoryConfusion)?.second,
                             showAsList = viewer.showAsList1,
-                            settings = memSafeSettings
+                            settings = settings
                         )
                         MultipleImagesView(
                             viewer = viewer,
@@ -201,7 +198,7 @@ fun <A : Number> CategoryView(
                             title = null,
                             tooltip = CategoryFalsePositivesSorted.blurb,
                             fade = false,
-                            settings = memSafeSettings,
+                            settings = settings,
                             post = testLoader.post,
                             viewerWidth = viewerWidth
                         )
@@ -252,7 +249,7 @@ fun <A : Number> CategoryView(
                             colorMap = colorMap,
                             selected = (selection as? CategoryConfusion)?.second,
                             showAsList = viewer.showAsList2,
-                            settings = memSafeSettings
+                            settings = settings
                         )
                         MultipleImagesView(
                             viewer = viewer,
@@ -260,7 +257,7 @@ fun <A : Number> CategoryView(
                             title = null,
                             tooltip = CategoryFalseNegativesSorted.blurb,
                             fade = false,
-                            settings = memSafeSettings,
+                            settings = settings,
                             post = testLoader.post,
                             viewerWidth = viewerWidth
                         )

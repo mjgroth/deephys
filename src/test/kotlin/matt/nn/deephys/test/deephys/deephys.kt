@@ -6,7 +6,7 @@ import matt.caching.compcache.ComputeInput
 import matt.collect.itr.list
 import matt.file.commons.desktop.DEEPHYS_RAM_SAMPLES_FOLDER
 import matt.file.commons.desktop.RAM_NUMBERED_FILES
-import matt.file.commons.reg.DEEPHYS_DATA_FOLDER
+import matt.file.commons.reg.RegisteredFolder
 import matt.file.toJioFile
 import matt.http.tryHttp
 import matt.json.prim.saveAsJsonTo
@@ -50,7 +50,7 @@ val NUM_SLICE_CLICKS get() = with(RuntimePropertyProvider) { if (TestPerformance
 val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
 
 
-val TEST_DATA_FOLDER = DEEPHYS_DATA_FOLDER["test"]
+val TEST_DATA_FOLDER = RegisteredFolder.Main.DEEPHYS_DATA_FOLDER["test"]
 
 class DeephysTestData(
     val name: String,
@@ -118,11 +118,11 @@ class TestDeephys(
 
 
         init {
-            DEEPHYS_RAM_SAMPLES_FOLDER.mkdirs()
+            RegisteredFolder.Main.DEEPHYS_RAM_SAMPLES_FOLDER.mkdirs()
         }
 
         private val myRamSamplesJson by lazy {
-            RAM_NUMBERED_FILES.nextFile().toJioFile()
+            RegisteredFolder.Main.RAM_NUMBERED_FILES.nextFile().toJioFile()
         }
 
         @Synchronized

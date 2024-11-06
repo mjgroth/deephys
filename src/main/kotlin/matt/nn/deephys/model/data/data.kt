@@ -46,7 +46,7 @@ data class InterTestNeuron(
             }
     }
 
-    fun <A : Number> activation(image: DeephyImage<A>) = image.activationFor(this)
+    private fun <A : Number> activation(image: DeephyImage<A>) = image.activationFor(this)
     fun averageActivation(
         category: Category,
         testLoader: TypedTestLike<*>

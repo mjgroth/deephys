@@ -31,7 +31,6 @@ fun <A: Number> ByImageView(
     settings: DeephysSettingsController
 ) {
     Column {
-        val memSafeSettings = settings
         val weakViewer = weak(viewer)
         val weakTest = weak(testLoader)
 
@@ -54,7 +53,7 @@ fun <A: Number> ByImageView(
             weakViewer.deref()?.let { deRefedViewer ->
                 Row {
                     Column {
-                        DeephyImView(img, deRefedViewer, big = true, settings = memSafeSettings)
+                        DeephyImView(img, deRefedViewer, big = true, settings = settings)
                     }
                     Spacer(Modifier.size(10.dp))
                     val theTest = weakTest.deref()!!
@@ -62,7 +61,7 @@ fun <A: Number> ByImageView(
                         img.category,
                         ImageTopPredictions(img),
                         weakViewer,
-                        memSafeSettings
+                        settings
                     )
                     SpacerWithOldFxSize()
                     img.features?.takeIf { it.isNotEmpty() }?.go {

@@ -63,6 +63,7 @@ fun SettingsWindow(settings: DeephysSettingsController) {
     )
 }
 
+@Suppress("UnusedReceiverParameter")
 @Composable
 fun <E : Enum<E>> EnumSetting<E>.createRadioButtons() {
     unsafeErr(

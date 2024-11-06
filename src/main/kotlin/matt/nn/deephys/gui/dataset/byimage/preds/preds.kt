@@ -42,7 +42,6 @@ fun PredictionsView(
     settings: DeephysSettingsController
 ) {
     Column {
-        val memSafeSettings = settings
         Row {
             DeephysText("Ground Truth: ", font = titleFont())
             DeephyActionLabel(groundTruth.label, font = titleBoldFont()) {
@@ -54,9 +53,9 @@ fun PredictionsView(
         with(weakViewer.deref()!!.testData.value!!.testRAMCache) {
             CategoryTable(
                 title = "",
-                title_unfolded = "",
+                titleUnfolded = "",
                 data = topPreds().map { it.first to it.second },
-                settings = memSafeSettings,
+                settings = settings,
                 weakViewer = weakViewer,
                 sigFigSett = weakViewer.deref()!!.predictionSigFigs,
                 tooltip = "Top classification layer output values. Numbers displayed have been run through a softmax."
@@ -69,7 +68,7 @@ fun PredictionsView(
 @Composable
 fun CategoryTable(
     title: String,
-    title_unfolded: String,
+    titleUnfolded: String,
     data: List<Pair<Category, Number>>,
     weakViewer: WeakRefInter<DatasetViewerState>,
     settings: DeephysSettingsController,
@@ -90,7 +89,7 @@ fun CategoryTable(
     Column {
         if (b.not().value) {
             FlowRow {
-                DeephysText(title_unfolded)
+                DeephysText(titleUnfolded)
                 data.forEach { (cat, num) ->
                     val fullString = "${cat.label} ($num)"
                     cat.actionText(

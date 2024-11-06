@@ -1,14 +1,12 @@
 package matt.nn.deephys.gui.navbox
 
 import androidx.compose.runtime.Composable
-import matt.lang.anno.optin.IncubatingMattCode
 import matt.lang.common.unsafeErr
 import matt.lang.matt.GH_ORG_NAME
 import matt.nn.deephys.gui.DeephysApp
 
 
 
-@OptIn(IncubatingMattCode::class)
 @Composable
 fun NavBox(
     app: DeephysApp

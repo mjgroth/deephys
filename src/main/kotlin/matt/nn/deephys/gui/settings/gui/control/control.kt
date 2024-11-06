@@ -1,3 +1,4 @@
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 package matt.nn.deephys.gui.settings.gui.control
 
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import matt.exec.option.IntSetting
 import matt.exec.option.Setting
 import matt.lang.common.unsafeErr
 import matt.lang.common.unsafeReturningErr
+import matt.lang.context.AutomationContext
 import matt.nn.deephys.gui.global.DeephyButton
 import matt.nn.deephys.gui.global.DeephyCheckbox
 import matt.nn.deephys.gui.global.DeephysLabel
@@ -24,6 +26,7 @@ import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.prim.float.verifyWholeToInt
 
+context(AutomationContext)
 @Composable
 fun CreateControlFor(
     sett: Setting<*>,
@@ -90,7 +93,7 @@ fun CreateControlFor(
 
                 is ActionNotASetting -> {
                     DeephyButton(sett.label) {
-                        sett.op()
+                        sett.op(this@AutomationContext)
                     }
                 }
             }

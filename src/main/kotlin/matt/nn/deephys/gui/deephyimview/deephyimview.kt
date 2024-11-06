@@ -9,13 +9,13 @@ import androidx.compose.foundation.onClick
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import kotlinx.io.bytestring.ByteString
 import kotlinx.io.bytestring.asReadOnlyByteBuffer
 import matt.compose.controls.mouse.attachHoverState
+import matt.compose.graphics.color.ComposeColor
 import matt.compose.graphics.color.toMcolor
 import matt.compose.state.rememberMutableStateOf
 import matt.file.commons.reg.TEMP_DIR
@@ -45,8 +45,6 @@ fun DeephyImView(
 
     val weakViewer = viewer.weakRef
     val weakIm = im.weak
-    val localWeakIm = weakIm
-    val localWeakViewer = weakViewer
     if (!didWarnAboutCombiningMethods) {
         warn("combine draw methods for V1 and deephy")
         didWarnAboutCombiningMethods = true
@@ -77,7 +75,7 @@ fun DeephyImView(
                         @Suppress("SENSELESS_COMPARISON")
                         if (pngFile != null) {
 
-                            val mat2 = localWeakIm.deref()!!.matrix
+                            val mat2 = weakIm.deref()!!.matrix
                             val bi = BufferedImage(mat2.size, mat2[0].size, TYPE_INT_ARGB)
                             val pixelData = (bi.raster.dataBuffer as DataBufferInt).data
 
@@ -113,15 +111,15 @@ fun DeephyImView(
     ) {
         DeephysTooltipArea(
             settings,
-            localWeakIm.deref()!!.category.label,
-            localWeakIm.deref()
+            weakIm.deref()!!.category.label,
+            weakIm.deref()
         ) {
             Box(
                 Modifier.then(
                     if (hovered.value) {
                         Modifier.border(
                             width = 1.dp,
-                            color = Yellow
+                            color = ComposeColor.Yellow
                         )
                     } else Modifier
                 )
@@ -139,9 +137,9 @@ fun DeephyImView(
                                 run {
                                     val widthMaybe = im.toSkiaImage().width
                                     if (big) {
-                                        (localWeakViewer.deref()!!.bigImageScale.value / widthMaybe).toFloat()
+                                        (weakViewer.deref()!!.bigImageScale.value / widthMaybe).toFloat()
                                     } else {
-                                        (localWeakViewer.deref()!!.smallImageScale.value / widthMaybe).toFloat()
+                                        (weakViewer.deref()!!.smallImageScale.value / widthMaybe).toFloat()
                                     }
                                 }
                             )

@@ -4,6 +4,7 @@ package matt.nn.deephys.test.deephys.tester
 import kotlinx.coroutines.runBlocking
 import matt.async.thread.namedThread
 import matt.file.commons.desktop.DEEPHYS_TEST_RESULT_JSON
+import matt.file.commons.reg.RegisteredFolder
 import matt.file.ext.j.mkparents
 import matt.json.prim.loadJson
 import matt.lang.anno.optin.ExperimentalMattCode
@@ -104,15 +105,15 @@ class DeephysTestSession(private val profiler: Profiler) {
     }
 
     init {
-        DEEPHYS_TEST_RESULT_JSON.mkparents()
+        RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.mkparents()
     }
 
 
-    val sessionList =
-        if (DEEPHYS_TEST_RESULT_JSON.doesNotExist || DEEPHYS_TEST_RESULT_JSON.text.isBlank()) {
+    private val sessionList =
+        if (RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.doesNotExist || RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.text.isBlank()) {
             mutableListOf<TestSession>()
         } else {
-            DEEPHYS_TEST_RESULT_JSON.loadJson()
+            RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.loadJson()
         }
 
     val mySession = TestSession().also { sessionList.add(it) }

@@ -5,14 +5,12 @@ import kotlinx.serialization.json.Json
 import matt.async.thread.ThreadReport
 import matt.exec.option.SettingsData
 import matt.lang.assertions.require.requireNull
-import matt.lang.file.toJFile
 import matt.log.report.desktop.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
 import matt.nn.deephys.state.DeephyState
 import matt.obs.hold.extra.VersionedTypedObsHolderSerializer
 import matt.pref.obs.ObsPrefNode
 import matt.prim.str.elementsToString
-import java.awt.Desktop
 
 
 class DeephySettingsNode : ObsPrefNode(
@@ -183,6 +181,6 @@ class DebugSettings : SettingsData("Debug") {
             label = "Open Log Folder",
             tooltip = "Open Log Folder"
         ) {
-            Desktop.getDesktop().browseFileDirectory(DEEPHYS_LOG_CONTEXT.logFolder.toJFile())
+            it.showInFileManager(DEEPHYS_LOG_CONTEXT.logFolder)
         }
 }

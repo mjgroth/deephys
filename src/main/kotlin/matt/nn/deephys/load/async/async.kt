@@ -16,7 +16,7 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
     val fileFound: ObsB = BindableProperty(file.toJioFile().exists())
     val streamOk: ObsB = BindableProperty(true)
     val parseError = BindableProperty<Exception?>(null)
-    val finishedLoading: ObsB = BindableProperty(false)
+    private val finishedLoading: ObsB = BindableProperty(false)
     abstract val finishedLoadingAwaitable: ThreadAwaitable<*>
 
     protected fun signalFileNotFound() {

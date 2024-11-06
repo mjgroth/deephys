@@ -55,15 +55,15 @@ class TestLoader(
     override val test get() = awaitFinishedTest()
     fun dtypeOrNull() = postDtypeTestLoader.awaitSuccessfulOrNull()?.dtype
     override val dtype get() = postDtypeTestLoader.awaitRequireSuccessful().dtype
-    fun awaitFinishedTest() = postDtypeTestLoader.await().requireLoaded().awaitFinishedTest()
+    private fun awaitFinishedTest() = postDtypeTestLoader.await().requireLoaded().awaitFinishedTest()
 
-    val testName = DirectLoadedOrFailedValueSlot<String>()
+    private val testName = DirectLoadedOrFailedValueSlot<String>()
 
     override val finishedLoadingAwaitable by lazy { postDtypeTestLoader.chainedTo { it.finishedTest } }
 
     val numImages = DirectLoadedOrFailedValueSlot<ULong>()
-    val loadedCategories = DirectLoadedOrFailedValueSlot<List<Category>>()
-    val didLoadCategories = DirectLoadedOrFailedValueSlot<Boolean>()
+    private val loadedCategories = DirectLoadedOrFailedValueSlot<List<Category>>()
+    private val didLoadCategories = DirectLoadedOrFailedValueSlot<Boolean>()
 
 
     var postDtypeTestLoader = DirectLoadedOrFailedValueSlot<PostDtypeTestLoader<*>>()
@@ -117,7 +117,7 @@ class TestLoader(
     }
 
 
-    val loadWarnings = basicMutableObservableListOf<String>()
+    private val loadWarnings = basicMutableObservableListOf<String>()
 
 
     val start =

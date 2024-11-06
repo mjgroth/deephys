@@ -151,7 +151,7 @@ class DatasetViewerState(
             if (it != this@DatasetViewerState) it else null
         }
     }
-    val isBoundToDSet by lazy { boundToDSet.isNotNull }
+    private val isBoundToDSet by lazy { boundToDSet.isNotNull }
     val isUnboundToDSet by lazy { isBoundToDSet.not() }
 
 
@@ -259,7 +259,7 @@ class DatasetViewerState(
 
 
 
-    val boundTopNeurons: MyBinding<TopNeurons<*>?> =
+    private val boundTopNeurons: MyBinding<TopNeurons<*>?> =
         unsafeReturningErr(
             """
             boundToDSet.deepBinding(
@@ -287,7 +287,7 @@ class DatasetViewerState(
 
 
 
-    val topNeurons: MyBinding<TopNeurons<*>?> = boundTopNeurons coalesceNull unsafeReturningErr { topNeuronsFromMyImage }
+    private val topNeurons: MyBinding<TopNeurons<*>?> = boundTopNeurons coalesceNull unsafeReturningErr { topNeuronsFromMyImage }
 
 
     val highlightedNeurons =
@@ -326,8 +326,8 @@ class DatasetViewerState(
 
     val currentByImageHScroll = mutableStateOf<ScrollState?>(null)
 
-    val history = basicMutableObservableListOf<TestViewerAction>()
-    val historyIndex = VarProp(-1)
+    private val history = basicMutableObservableListOf<TestViewerAction>()
+    private val historyIndex = VarProp(-1)
 
 
     private fun appendHistory(historyAction: TestViewerAction) {

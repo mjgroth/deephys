@@ -9,7 +9,7 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 
 class PreppedTestLoader<N: Number>(
-    val tl: PostDtypeTestLoader<N>,
+    private val tl: PostDtypeTestLoader<N>,
     override val dtype: DType<N>
 ): TypedTestLike<N> {
     override fun numberOfImages(): ULong = tl.numberOfImages()

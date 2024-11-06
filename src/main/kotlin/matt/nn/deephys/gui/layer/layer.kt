@@ -22,8 +22,6 @@ fun LayerView(
     Column {
 
 
-        val memSafeSettings = settings
-
         val interLayer = layer.interTest
 
         val neurons = layer.neurons.map { it.interTest }
@@ -53,7 +51,7 @@ fun LayerView(
                     viewer = viewer,
                     showActivationRatio = true,
                     layoutForList = false,
-                    settings = memSafeSettings,
+                    settings = settings,
                     showTopCats = true,
                     viewerWidth = viewerWidth
                 )

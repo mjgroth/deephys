@@ -1,4 +1,4 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED", "UNUSED_VARIABLE", "UNUSED_PARAMETER")
 package matt.nn.deephys.gui
 
 import androidx.compose.foundation.layout.Column
@@ -13,13 +13,13 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.runBlocking
 import matt.async.thread.daemon
 import matt.async.thread.pool.DaemonPoolExecutor
-import matt.compose.controls.window.MyMainWindow
-import matt.compose.controls.window.MyWindow
-import matt.compose.controls.window.MyWindowState
+import matt.compose.controls.window.main.MyMainWindow
+import matt.compose.controls.window.state.MyWindowState
 import matt.compose.graphics.app.myApplication
 import matt.compose.state.rememberMutableStateOf
 import matt.compose.state.win.HardWindowState
 import matt.exec.app.myVersion
+import matt.file.JioFile
 import matt.file.commons.desktop.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
 import matt.file.commons.logctx.LogContext
 import matt.file.ext.j.mkFold
@@ -34,7 +34,6 @@ import matt.lang.j.sync
 import matt.lang.model.file.MacFileSystem
 import matt.lang.shutdown.TypicalShutdownContext
 import matt.lang.sync.common.SimpleReferenceMonitor
-import matt.log.profile.stopwatch.Stopwatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.gui.DeephysArg.`erase-settings`
 import matt.nn.deephys.gui.DeephysArg.`erase-state`
@@ -49,7 +48,6 @@ import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.gui.unsafemigration.ToggleButtonWrapper
 import matt.nn.deephys.gui.unsafemigration.VisBox
 import matt.nn.deephys.gui.unsafemigration.unsafeComposable
-import matt.nn.deephys.gui.visbox.VisBox
 import matt.nn.deephys.init.initializeWhatICan
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
@@ -57,6 +55,7 @@ import matt.obs.prop.writable.BindableProperty
 import matt.obs.subscribe.Pager
 import matt.rstruct.desktop.modId
 import java.net.URI
+import java.net.URL
 import kotlin.io.path.outputStream
 
 val DEEPHY_USER_DATA_DIR by lazy {
@@ -162,11 +161,11 @@ class DeephysApp {
     }
 
     val testReadyDSetViewsBbox = Pager<DSetViewsState>()
-    val readyForConfiguringWindowFromTest = LoadedValueSlot<Any>()
-    val testReadyScene = LoadedValueSlot<Unit>()
+    private val readyForConfiguringWindowFromTest = LoadedValueSlot<Any>()
+    private val testReadyScene = LoadedValueSlot<Unit>()
 
     var visBox: VisBox? = null
-    val showNavBox = mutableStateOf(false)
+    private val showNavBox = mutableStateOf(false)
     fun showDemos() {
         showNavBox.value = true
         unsafeErr(
@@ -199,39 +198,33 @@ class DeephysApp {
 
         val monitor = SimpleReferenceMonitor()
 
+        fun download(
+            name: String,
+            url: URL
+        ): JioFile =
+            with(MacFileSystem) {
+                val f = matt.file.ext.j.createTempFile(name, suffix = "")
+                url.openStream().use { downloadStream ->
+                    f.outputStream().use { writeStream ->
+                        downloadStream.transferTo(writeStream)
+                    }
+                }
+                done.incrementAndGet()
+                monitor.sync {
+                    progress v done.get().toDouble() / total
+                }
+                f
+            }
+
         val modelFile =
             pool.submit {
-                with(MacFileSystem) {
-                    val f = matt.file.ext.j.createTempFile("model_${demo.name}", suffix = "")
-                    modelURL.openStream().use { downloadStream ->
-                        f.outputStream().use { writeStream ->
-                            downloadStream.transferTo(writeStream)
-                        }
-                    }
-                    done.incrementAndGet()
-                    monitor.sync {
-                        progress v done.get().toDouble() / total
-                    }
-                    f
-                }
+                download("model_${demo.name}", modelURL)
             }
 
         val testFiles =
             testURLs.mapIndexed { i, testURL ->
                 pool.submit {
-                    with(MacFileSystem) {
-                        val f = matt.file.ext.j.createTempFile("test_$i", suffix = "")
-                        testURL.openStream().use { downloadStream ->
-                            f.outputStream().use { writeStream ->
-                                downloadStream.transferTo(writeStream)
-                            }
-                        }
-                        done.incrementAndGet()
-                        monitor.sync {
-                            progress v done.get().toDouble() / total
-                        }
-                        f
-                    }
+                    download("test_$i", testURL)
                 }
             }
 
@@ -286,8 +279,7 @@ class DeephysApp {
         /*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
     }
 
-    fun startDeephyApp(
-        t: Stopwatch? = null,
+    private fun startDeephyApp(
         settingsNode: DeephySettingsNode,
         settingsDidReset: Boolean,
         @Suppress("UNUSED_PARAMETER")
@@ -337,7 +329,7 @@ class DeephysApp {
 
                     if (settingsDidReset) {
                         val openWelcomeWindow = rememberMutableStateOf(true)
-                        MyWindow(
+                        matt.compose.controls.window.MyWindow(
                             visible = openWelcomeWindow.value,
                             alwaysOnTop = true,
                             onCloseRequest = {

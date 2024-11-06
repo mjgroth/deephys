@@ -27,8 +27,7 @@ fun <A: Number> MultipleImagesView(
     settings: DeephysSettingsController,
     viewerWidth: Dp
 ) {
-    val memSafeSettings = settings
-    DeephysTooltipArea(memSafeSettings, "$tooltip (first $MAX_IMS)") {
+    DeephysTooltipArea(settings, "$tooltip (first $MAX_IMS)") {
         Column {
 
             title?.go {
@@ -41,7 +40,7 @@ fun <A: Number> MultipleImagesView(
                 prefWrapLengthProperty = viewerWidth * 0.4f
             ) {
                 images.take(MAX_IMS).forEach {
-                    DeephyImView(it, viewer, settings = memSafeSettings)
+                    DeephyImView(it, viewer, settings = settings)
                 }
                 if (images.size > MAX_IMS) {
                     DeephysText("(+${images.size - MAX_IMS} more)")
@@ -51,7 +50,7 @@ fun <A: Number> MultipleImagesView(
                 viewer = viewer,
                 contents = images.toSet(),
                 fade = fade,
-                settings = memSafeSettings,
+                settings = settings,
                 postDtypeTestLoader = post,
                 viewerWidth = viewerWidth
             )

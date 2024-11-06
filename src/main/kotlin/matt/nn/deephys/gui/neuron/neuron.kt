@@ -143,7 +143,7 @@ fun <A : Number> NeuronView(
 
                 CategoryTable(
                     title = "Average activity for top categories: ",
-                    title_unfolded = "ave: ",
+                    titleUnfolded = "ave: ",
                     data = topCats.map { it.first to (it.second.value / denom) },
                     settings = settings,
                     weakViewer = weakViewer,
