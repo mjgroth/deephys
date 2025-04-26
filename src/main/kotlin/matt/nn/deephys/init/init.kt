@@ -43,6 +43,7 @@ val gearImage =
         Png(systemResourceLoader().resourceStream("gear.png")!!.readAllBytesAsByteString())
     }
 
+@Suppress("ReplaceSafeCallChainWithRun")
 @OptIn(ExperimentalMattCode::class)
 val modelBinding =
     DaemonLoadedValueOp(TheThreadProvider, ".model binding") {

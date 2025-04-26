@@ -10,6 +10,7 @@ typealias ImageFlowPane = Any
 typealias ControlWrapper = Any
 typealias NodeWrapper = Any
 
+@Suppress("UnusedParameter")
 fun unsafeComposable(compose: Compose) {
     unsafeErr("no message")
 }

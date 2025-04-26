@@ -1,3 +1,5 @@
+@file:Suppress("unused", "NoDuplicatedTypeNames")
+
 package matt.nn.deephys.load
 
 import androidx.compose.foundation.layout.Column
@@ -10,10 +12,11 @@ import matt.compose.graphics.Compose
 import matt.compose.graphics.text.MyText
 import matt.file.JioFile
 import matt.lang.model.file.FsFile
+import matt.model.obj.text.doesNotExist
 import matt.nn.deephys.load.async.AsyncLoader
 import matt.obs.prop.ObsVal
+import java.nio.file.Path
 import kotlin.io.path.readBytes
-import kotlin.time.Duration
 
 sealed interface CborSyncLoadResult<T>
 
@@ -24,9 +27,8 @@ class Loaded<T>(val data: T): CborSyncLoadResult<T>
 
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T: Any> JioFile.loadCbor(): CborSyncLoadResult<T> =
-    if (doesNotExist) FileNotFound(this) else try {
-        val bytes = readBytes()
-        Loaded(MyCbor.decodeFromByteArray(bytes))
+    if (doesNotExist()) FileNotFound(this) else try {
+        Loaded(MyCbor.decodeFromByteArray((this as Path).readBytes()))
     } catch (e: SerializationException) {
         ParseError(e.message)
     }
@@ -50,8 +52,6 @@ fun <T> LoadSwapper(
 fun <T: AsyncLoader> AsyncLoadSwapper(
     loader: ObsVal<T?>,
     nullMessage: String = "please select a file",
-    fadeOutDur: Duration? = null,
-    fadeInDur: Duration? = null,
     content: (T) -> Compose
 ) {
     val v = loader.value

@@ -1,3 +1,5 @@
+@file:Suppress("UnusedParameter")
+
 package matt.nn.deephys.gui.neuron
 
 import androidx.compose.foundation.layout.Column
@@ -18,10 +20,9 @@ import matt.compose.state.produce.produceSimpleResettingIoState
 import matt.compose.state.rememberMutableStateOf
 import matt.lang.common.go
 import matt.lang.common.unsafeErr
-import matt.lang.common.unsafeReturningErr
 import matt.lang.function.Consume
 import matt.math.lang.arithmetic.op.div
-import matt.model.code.successorfail.loadedOrNull
+import matt.model.code.successorfail.resultwithval.loadedOrNull
 import matt.model.flowlogic.await.Donable
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
@@ -47,6 +48,7 @@ import kotlin.math.min
 
 private val worker = QueueWorker("NeuronView Worker")
 
+@Suppress("UnusedVariable", "UNUSED_VARIABLE")
 @Composable
 fun <A : Number> NeuronView(
     neuron: InterTestNeuron,
@@ -76,9 +78,10 @@ fun <A : Number> NeuronView(
 
                 val normalizer = this
                 weakViewer.deref()!!.testData.value?.go { numTest ->
+                    @Suppress("ReplaceSafeCallChainWithRun")
                     val denomTest = normalizer?.testData?.value
                     Row {
-                        val doneLoading = numTest.isDoneLoading() && (denomTest?.isDoneLoading() ?: true)
+                        val doneLoading = numTest.isDoneLoading() && (denomTest?.isDoneLoading() != false)
 
                         if (!doneLoading) showing.value -= 1
 
@@ -110,7 +113,6 @@ fun <A : Number> NeuronView(
                                         is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
                                     }
                                 },
-                                dark = unsafeReturningErr("dark?"),
                                 content = {
                                     DeephysText(
                                         activation.formatted
@@ -132,6 +134,7 @@ fun <A : Number> NeuronView(
             val dtype = testLoader.dtype
 
             with(viewer.normalizer.value) {
+                @Suppress("ReplaceSafeCallChainWithRun")
                 val normalizer =
                     this?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest?.awaitRequireSuccessful()
                 val denom =
@@ -164,7 +167,7 @@ fun <A : Number> NeuronView(
             )
         ImageFlowPane(
             viewer,
-            /*for reasons that I don't understand, without this this FlowPane gets really over-sized in the y dimension*/
+            /*for reasons that I don't understand, without this FlowPane gets really over-sized in the y dimension*/
             prefWrapLengthProperty = (viewerWidth.value * 0.95).dp
         ) {
             unsafeErr(
@@ -186,8 +189,9 @@ fun <A : Number> NeuronView(
                 val localNeuron = weakThing.neuron
                 val localImFlowPane = weakThing.imFlowPane
 
+                @Suppress("ReplaceSafeCallChainWithRun")
                 val realOldNumImages =
-                    oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }?.toULong()
+                    oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }
                 val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
 
                 val doneLoading = localTestLoader.isDoneLoading()
@@ -222,46 +226,52 @@ fun <A : Number> NeuronView(
                         }
                     }
                 topImagesJob.whenDone { topImages ->
-                    if (realOldNumImages == null) {
-                        topImages.forEach {
-                            val im = localTestLoader.imageAtIndex(it.index)
+                    when (realOldNumImages) {
+                        null                                      -> {
+                            topImages.forEach {
+                                val im = localTestLoader.imageAtIndex(it.index)
+                                unsafeErr(
+                                    """
+                                    localImFlowPane.add(
+                                        DeephyImView(
+                                            im,
+                                            localViewer,
+                                            loadAsync = loadImagesAsync,
+                                            settings = memSafeSettings
+                                        )
+                                    )       
+                                    """.trimIndent()
+                                )
+                            }
+                        }
+
+                        else if realNumImages > realOldNumImages  -> {
+                            topImages.subList(realOldNumImages.toInt()).toList().forEach {
+                                val im = localTestLoader.imageAtIndex(it.index)
+                                unsafeErr(
+                                    """
+                                    localImFlowPane.add(
+                                        DeephyImView(
+                                            im,
+                                            localViewer,
+                                            loadAsync = loadImagesAsync,
+                                            settings = memSafeSettings
+                                        )
+                                    )             
+                                    """.trimIndent()
+                                )
+                            }
+                        }
+
+                        else if  realNumImages < realOldNumImages -> {
                             unsafeErr(
                                 """
-                                localImFlowPane.add(
-                                    DeephyImView(
-                                        im,
-                                        localViewer,
-                                        loadAsync = loadImagesAsync,
-                                        settings = memSafeSettings
-                                    )
-                                )       
+                                localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
+                                    it.removeFromParent()
+                                }         
                                 """.trimIndent()
                             )
                         }
-                    } else if (realNumImages > realOldNumImages) {
-                        topImages.subList(realOldNumImages.toInt()).toList().forEach {
-                            val im = localTestLoader.imageAtIndex(it.index)
-                            unsafeErr(
-                                """
-                                localImFlowPane.add(
-                                    DeephyImView(
-                                        im,
-                                        localViewer,
-                                        loadAsync = loadImagesAsync,
-                                        settings = memSafeSettings
-                                    )
-                                )             
-                                """.trimIndent()
-                            )
-                        }
-                    } else if (realNumImages < realOldNumImages) {
-                        unsafeErr(
-                            """
-                            localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
-                                it.removeFromParent()
-                            }         
-                            """.trimIndent()
-                        )
                     }
                     if (!doneLoading) {
                         showing.value += 1

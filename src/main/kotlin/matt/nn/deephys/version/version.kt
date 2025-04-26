@@ -1,4 +1,5 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED", "unused")
+
 package matt.nn.deephys.version
 
 import androidx.compose.runtime.Composable
@@ -13,11 +14,11 @@ import matt.compose.graphics.text.MyText
 import matt.exec.app.deephysSite
 import matt.exec.app.myVersion
 import matt.http.json.requireIs
-import matt.http.url.MURL
-import matt.lang.cfnf.getOrThrow
 import matt.lang.context.AutomationContext
 import matt.lang.j.openUrl
+import matt.lang.model.url.MURL
 import matt.log.warn.common.warn
+import matt.model.code.successorfail.getOrThrow
 import matt.model.data.release.Version
 import matt.model.data.release.VersionInfo
 import matt.nn.deephys.gui.global.DeephyHyperlink
@@ -78,14 +79,19 @@ object VersionChecker {
 
         if (!error.value) {
             val new = newestRelease.value
-            if (new == null && checking) MyText("checking for updates...")
-            else if (new != null && new.version > myVersion) {
-                DeephysText("Version ${new.version} Available: ")
-                DeephyHyperlink("Click here to update") {
-                    openUrl(URI(new.downloadURL))
+            when (new) {
+                null if checking                  -> MyText("checking for updates...")
+
+                is Any if new.version > myVersion -> {
+                    DeephysText("Version ${new.version} Available: ")
+                    DeephyHyperlink("Click here to update") {
+                        openUrl(URI(new.downloadURL))
+                    }
                 }
-            } else if (new != null && new.version < myVersion) {
-                DeephysText("developing unreleased version (last pushed was $new)")
+
+                is Any if new.version < myVersion -> {
+                    DeephysText("developing unreleased version (last pushed was $new)")
+                }
             }
         }
     }

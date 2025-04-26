@@ -94,11 +94,11 @@ sealed interface NormalActivation<A: Number, T: NormalActivation<A, T>>: Activat
 
 
   companion object {
-	const val NORMALIZED_ACT_SYMBOL = "Ŷ"
+    const val NORMALIZED_ACT_SYMBOL = "Ŷ"
   }
 
   override val extraInfo: String?
-	get() = null
+    get() = null
 
 }
 
@@ -108,20 +108,20 @@ sealed interface NormalActivation<A: Number, T: NormalActivation<A, T>>: Activat
 
 @JvmInline
 value class NormalActivationFloat32(override val value: Float): NormalActivation<Float, NormalActivationFloat32>,
-																ActivationFloat32<NormalActivationFloat32> {
+                                                                ActivationFloat32<NormalActivationFloat32> {
 
 
   override val formatted get() = " $NORMALIZED_ACT_SYMBOL=${value.sigFigs(3)}"
   override fun plus(m: NormalActivationFloat32): NormalActivationFloat32 {
-	return NormalActivationFloat32(value + m.value)
+    return NormalActivationFloat32(value + m.value)
   }
 
   override fun fromFloat(d: Float): NormalActivationFloat32 {
-	return NormalActivationFloat32(d)
+    return NormalActivationFloat32(d)
   }
 
   override fun div(n: Number): NormalActivationFloat32 {
-	return NormalActivationFloat32(value/n.toFloat())
+    return NormalActivationFloat32(value/n.toFloat())
   }
 
 
@@ -134,20 +134,20 @@ value class NormalActivationFloat32(override val value: Float): NormalActivation
 
 @JvmInline
 value class NormalActivationFloat64(override val value: Double): NormalActivation<Double, NormalActivationFloat64>,
-																 ActivationFloat64<NormalActivationFloat64> {
+                                                                 ActivationFloat64<NormalActivationFloat64> {
 
 
   override val formatted get() = " $NORMALIZED_ACT_SYMBOL=${value.sigFigs(3)}"
   override fun plus(m: NormalActivationFloat64): NormalActivationFloat64 {
-	return NormalActivationFloat64(value + m.value)
+    return NormalActivationFloat64(value + m.value)
   }
 
   override fun fromDouble(d: Double): NormalActivationFloat64 {
-	return NormalActivationFloat64(d)
+    return NormalActivationFloat64(d)
   }
 
   override fun div(n: Number): NormalActivationFloat64 {
-	return NormalActivationFloat64(value/n.toDouble())
+    return NormalActivationFloat64(value/n.toDouble())
   }
 }
 */

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 231 231">
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 231 231">
   <defs>
     <style>
       .cls-1 {
@@ -9,7 +9,7 @@
         stroke-width: 15px;
       }
     </style>
-    <linearGradient id="Deephys_Blue_Gradient" data-name="Deephys Blue Gradient" x1="0" y1="115.5" x2="231" y2="115.5" gradientUnits="userSpaceOnUse">
+    <linearGradient id="Deephys_Blue_Gradient" x1="0" y1="115.5" x2="231" y2="115.5" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#00bbe2"/>
       <stop offset="1" stop-color="#3360ad"/>
     </linearGradient>

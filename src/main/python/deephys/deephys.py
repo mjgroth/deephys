@@ -35,7 +35,7 @@ class DeephysData:
         :param path: Optional file path to save to. Defaults to `<working directory>`/`name`.`<extension for class(test or model)>`
                      Default: ``None``
         """
-        if path == None:
+        if path is None:
             fileName = f"{self.name}.{self.extension}"
         else:
             fileName = path
@@ -310,6 +310,9 @@ class DatasetActivity(DeephysData):
 class Stopwatch:
     def __init__(self, name):
         self.name = name
+        self.start_time = None
+        self.stop_time = None
+        self.duration_secs = None
 
     def start(self):
         self.start_time = time()

@@ -1,3 +1,5 @@
+@file:Suppress("NoDuplicatedTypeNames")
+
 package matt.nn.deephys.model.importformat.neuron
 
 import kotlinx.io.bytestring.ByteString

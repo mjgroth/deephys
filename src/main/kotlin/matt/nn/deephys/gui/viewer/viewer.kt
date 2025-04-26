@@ -1,3 +1,5 @@
+@file:Suppress("unused", "UNUSED_VARIABLE")
+
 package matt.nn.deephys.gui.viewer
 
 import androidx.compose.foundation.ScrollState
@@ -11,13 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import matt.caching.compcache.ComputeCacheContext
 import matt.caching.compcache.findOrCompute
-import matt.caching.compcache.invoke
 import matt.collect.itr.filterNotNull
 import matt.collect.weak.lazy.lazyWeakMap
 import matt.compose.graphics.layout.AlignedRow
+import matt.compose.snap.setToNull
 import matt.file.model.file.types.Cbor
 import matt.file.model.file.types.TypedFile
 import matt.lang.assertions.require.requireNot
+import matt.lang.common.DoNothing
 import matt.lang.common.unsafeErr
 import matt.lang.common.unsafeReturningErr
 import matt.lang.model.file.fName
@@ -39,7 +42,6 @@ import matt.nn.deephys.gui.viewer.action.SelectView
 import matt.nn.deephys.gui.viewer.action.TestViewerAction
 import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.TestLoader
-import matt.nn.deephys.load.test.dtype.topNeurons
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
 import matt.nn.deephys.model.data.CategorySelection
@@ -169,6 +171,7 @@ class DatasetViewerState(
         ).withNonNullUpdatesFrom(boundLayer)
 
     val layerSelectionResolved: ObsVal<Layer?> =
+        @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         layerSelection.binding(
             testData
         ) { layer ->
@@ -214,6 +217,7 @@ class DatasetViewerState(
                 "remove layerSelectionResolved dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data"
             )
 
+            @Suppress("ReplaceSafeCallChainWithRun")
             layerSelectionResolved.value?.neurons?.firstOrNull {
                 unsafeReturningErr(
                     """
@@ -293,7 +297,7 @@ class DatasetViewerState(
     val highlightedNeurons =
         derivedStateOf {
             when (view.value) {
-                ByNeuron   -> listOf(neuronSelection.value).filterNotNull()
+                ByNeuron   -> arrayOf(neuronSelection.value).filterNotNull()
 
                 ByImage    -> with(testData.value!!.testRAMCache) { topNeurons.value?.findOrCompute() ?: listOf() }
 
@@ -305,6 +309,7 @@ class DatasetViewerState(
         }
     val weakRef = weak(this)
 
+    @Suppress("ReplaceSafeCallChainWithRun")
     private val boundCategory: ObsVal<CategorySelection?> =
         boundToDSet
             .deepBindingIgnoringFutureNullOuterChanges(testData) {
@@ -343,7 +348,7 @@ class DatasetViewerState(
         addHistory: Boolean = true
     ) {
         requireNot(isBoundToDSet.value)
-        neuronSelection.value = null
+        neuronSelection.setToNull()
         layerSelection.value = neuron.layer
         neuronSelection.value = neuron
         if (addHistory) appendHistory(SelectNeuron(neuron))
@@ -366,7 +371,7 @@ class DatasetViewerState(
         addHistory: Boolean = true
     ) {
         if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
-        neuronSelection.value = null
+        neuronSelection.setToNull()
         categorySelection.value = category
         if (addHistory) appendHistory(SelectCategory(category))
         view.value = ByCategory
@@ -376,6 +381,7 @@ class DatasetViewerState(
         theView: DatasetNodeView,
         addHistory: Boolean = true
     ) {
+        @Suppress("ReplaceSafeCallChainWithRun")
         when (theView) {
             ByCategory -> {
                 if (categorySelection.value == null) {
@@ -386,7 +392,9 @@ class DatasetViewerState(
                 }
             }
 
-            ByImage    -> {
+            @Suppress("ReplaceSafeCallChainWithRun")
+            ByImage
+            -> {
                 if (imageSelection.value == null) {
                     val ims = testData.value?.test?.images
                     if (ims?.isNotEmpty() == true) {
@@ -395,7 +403,7 @@ class DatasetViewerState(
                 }
             }
 
-            ByNeuron   -> Unit /*we start here, so don't worry about this right now*/
+            ByNeuron   -> DoNothing /*we start here, so don't worry about this right now*/
         }
 
         if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
@@ -421,13 +429,13 @@ class DatasetViewerState(
         }
 }
 
-
+@Suppress("UnusedParameter")
 @Composable
 fun DatasetViewer(
     state: DatasetViewerState
 ) {
     unsafeErr(
-        """
+        $$"""
         CollapsePane(
             expanded = rememberMutableStateOf(true)
         ) {
@@ -554,8 +562,8 @@ fun DatasetViewer(
                                 } else {
                                     string {
                                         lineDelimited {
-                                            +"dtype:       ${'$'}{it.dtypeOrNull()?.label}"
-                                            +"Image Count: $${'$'}{it.numImages.awaitSuccessfulOrMessage()}"
+                                            +"dtype:       ${it.dtypeOrNull()?.label}"
+                                            +"Image Count: ${it.numImages.awaitSuccessfulOrMessage()}"
                                         }
                                     }
                                 }

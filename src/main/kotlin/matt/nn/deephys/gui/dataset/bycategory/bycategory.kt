@@ -46,11 +46,11 @@ fun ByCategoryView(
             MyChoiceBox(
                 selected = viewer.categorySelection.value,
                 choices = testLoader.test.categories,
-                labeler = {
-                    when (it) {
-                        is Category          -> it.label
-                        is CategoryConfusion -> it.allCategories.map { it.label }.toList().elementsToString()
-                        else                 -> "no category selected"
+                labeler = { categorySelection ->
+                    when (categorySelection) {
+                        is Category          -> categorySelection.label
+                        is CategoryConfusion -> categorySelection.allCategories.map { it.label }.toList().elementsToString()
+                        null                 -> "no category selected"
                     }
                 },
                 onChoose = {

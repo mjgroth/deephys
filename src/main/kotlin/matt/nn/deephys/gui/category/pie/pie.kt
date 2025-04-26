@@ -1,3 +1,5 @@
+@file:Suppress("unused", "UnusedParameter")
+
 package matt.nn.deephys.gui.category.pie
 
 import androidx.compose.foundation.background
@@ -23,7 +25,7 @@ import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import matt.compose.controls.scroll.MyVerticalScrollPane
+import matt.compose.controls.desktop.scroll.MyVerticalScrollPane
 import matt.compose.graphics.color.toComposeColor
 import matt.compose.graphics.color.toMcolor
 import matt.compose.state.rememberMutableStateOf
@@ -40,11 +42,10 @@ import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
 import matt.obs.bind.binding
-import matt.obs.bindings.bool.not
 import matt.obs.bindings.bool.or
 import matt.obs.bindings.str.mybuildobs.obsString
 import matt.obs.prop.writable.BindableProperty
-import matt.prim.str.truncateWithElipses
+import matt.prim.str.truncateWithEllipses
 import java.lang.ref.WeakReference
 import kotlin.math.cos
 import kotlin.math.sin
@@ -60,6 +61,7 @@ private object CategoryPieConstants {
     const val ANIMATE = true
     const val BAR_Y_INCR = 25.0
 }
+@Suppress("UnusedVariable", "UNUSED_VARIABLE")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CategoryPie(
@@ -153,8 +155,8 @@ fun CategoryPie(
                                         )
                                         appendStatic(cat.label)
                                     }.binding(showAsList) {
-                                        if (showAsList.value) it.truncateWithElipses(30)
-                                        else it.truncateWithElipses(20)
+                                        if (showAsList.value) it.truncateWithEllipses(30)
+                                        else it.truncateWithEllipses(20)
                                     }.value
 
                                 )
@@ -344,6 +346,7 @@ fun CategorySlice(
 
     val highlighted = rememberMutableStateOf(false)
 
+    @Suppress("UNUSED_ANONYMOUS_PARAMETER")
     val shape =
         GenericShape { size, layoutDir ->
             unsafeErr(

@@ -7,13 +7,13 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.TestLoader
 
+@Suppress("UnusedParameter")
 @Composable
 fun ByNeuronView(
     testLoader: TestLoader,
     viewer: DatasetViewerState,
     settings: DeephysSettingsController
 ) {
-    val memSafeSettings = settings
     val v = viewer.layerSelectionResolved.value
     v?.let {
         unsafeErr(

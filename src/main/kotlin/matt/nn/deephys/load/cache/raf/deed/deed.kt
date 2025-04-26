@@ -1,4 +1,5 @@
 @file:OptIn(UnsafeByteStringApi::class)
+@file:Suppress("unused")
 
 package matt.nn.deephys.load.cache.raf.deed
 
@@ -54,15 +55,14 @@ class DeedImpl(
                 }
             }
             return UnsafeByteStringOperations.wrapUnsafe(buff)
-        } else {
-            val buff = ByteArray(size)
-            synchronized(rafCache) {
-                raf().apply {
-                    readFully(startIndexInclusive, buff)
-                }
-            }
-            return UnsafeByteStringOperations.wrapUnsafe(buff)
         }
+        val buff = ByteArray(size)
+        synchronized(rafCache) {
+            raf().apply {
+                readFully(startIndexInclusive, buff)
+            }
+        }
+        return UnsafeByteStringOperations.wrapUnsafe(buff)
     }
 
     private inner class DeedOutputStream(private var offset: Int) : OutputStream() {

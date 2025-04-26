@@ -8,8 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import matt.compose.graphics.Compose
 import matt.nn.deephys.gui.viewer.DatasetViewerState
-import matt.obs.math.double.op.times
 
+@Suppress("UnusedParameter")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ImageFlowPane(

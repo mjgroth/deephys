@@ -32,7 +32,6 @@ fun <A: Number> ByImageView(
 ) {
     Column {
         val weakViewer = weak(viewer)
-        val weakTest = weak(testLoader)
 
         val images = testLoader.test.images
 
@@ -56,7 +55,6 @@ fun <A: Number> ByImageView(
                         DeephyImView(img, deRefedViewer, big = true, settings = settings)
                     }
                     Spacer(Modifier.size(10.dp))
-                    val theTest = weakTest.deref()!!
                     PredictionsView(
                         img.category,
                         ImageTopPredictions(img),

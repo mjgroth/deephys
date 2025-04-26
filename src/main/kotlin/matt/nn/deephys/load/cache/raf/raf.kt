@@ -1,3 +1,6 @@
+@file:Suppress("SyntheticAccessor", "unused", "UNREACHABLE_CODE")
+@file:OptIn(ExperimentalAtomicApi::class)
+
 package matt.nn.deephys.load.cache.raf
 
 import kotlinx.io.bytestring.ByteString
@@ -6,9 +9,9 @@ import matt.async.thread.daemon
 import matt.async.thread.executors.ThreadPool
 import matt.file.toJioFile
 import matt.lang.anno.SeeURL
-import matt.lang.atomic.AtomicInt
 import matt.lang.common.DoNothing
 import matt.lang.common.NOT_IMPLEMENTED
+import matt.lang.common.TODO_NO_DETAILS
 import matt.lang.file.toJFile
 import matt.lang.j.NUM_LOGICAL_CORES
 import matt.lang.model.file.FsFile
@@ -33,6 +36,8 @@ import java.nio.file.StandardOpenOption.CREATE_NEW
 import java.nio.file.StandardOpenOption.SPARSE
 import java.nio.file.StandardOpenOption.WRITE
 import java.util.concurrent.ExecutorService
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -279,7 +284,7 @@ class SparseWriter(file: FsFile) : SeekableRAFLike() {
     }
 
     override fun readFully(buff: ByteArray) {
-        TODO()
+        TODO_NO_DETAILS()
     }
 
     override fun write(bytes: ByteString) {
@@ -321,13 +326,13 @@ class AsyncSparseWriter(
         )
     }
 
-    private val startedWrites = AtomicInt()
-    private val finishedWrites = AtomicInt()
+    private val startedWrites = AtomicInt(0)
+    private val finishedWrites = AtomicInt(0)
 
     fun markFinishedWriting() {
         val l = SimpleThreadLatch()
         latch = l
-        fun done() = finishedWrites.get() == startedWrites.get()
+        fun done() = finishedWrites.load() == startedWrites.load()
         if (done()) {
             latch!!.open()
         } else {
@@ -372,7 +377,7 @@ class AsyncSparseWriter(
                 result: Int,
                 attachment: Unit?
             ) {
-                finishedWrites.incrementAndGet()
+                finishedWrites.addAndFetch(1)
             }
 
             override fun failed(
@@ -386,30 +391,30 @@ class AsyncSparseWriter(
         pos: Long,
         byte: Int
     ) {
-        startedWrites.incrementAndGet()
+        startedWrites.addAndFetch(1)
         channel.write(ByteBuffer.wrap(byteArrayOf(byte.toByte())), pos, Unit, handler)
     }
 
     override fun write(bytes: ByteString) {
-        TODO()
+        TODO_NO_DETAILS()
     }
 
     override fun readFully(buff: ByteArray) {
-        TODO()
+        TODO_NO_DETAILS()
     }
 
     override fun readFully(
         pos: Long,
         buff: ByteArray
     ) {
-        TODO()
+        TODO_NO_DETAILS()
     }
 
     override fun write(
         pos: Long,
         bytes: ByteString
     ) {
-        startedWrites.incrementAndGet()
+        startedWrites.addAndFetch(1)
         channel.write(bytes, pos, handler)
     }
 
@@ -427,7 +432,7 @@ class AsyncSparseWriter(
         srcOffset: Int,
         srcLen: Int
     ) {
-        startedWrites.incrementAndGet()
+        startedWrites.addAndFetch(1)
         channel.write(ByteBuffer.wrap(bytes, srcOffset, srcLen), pos, Unit, handler)
     }
 

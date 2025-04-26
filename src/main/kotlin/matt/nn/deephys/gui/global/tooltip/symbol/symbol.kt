@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.global.tooltip.symbol
 
 import androidx.compose.material.icons.Icons

@@ -1,9 +1,11 @@
+
+@file:Suppress("unused", "UnusedParameter")
+
 package matt.nn.deephys.gui.settings.gui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
-import matt.exec.option.EnumSetting
 import matt.lang.common.unsafeErr
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 
@@ -63,26 +65,11 @@ fun SettingsWindow(settings: DeephysSettingsController) {
     )
 }
 
-@Suppress("UnusedReceiverParameter")
-@Composable
-fun <E : Enum<E>> EnumSetting<E>.createRadioButtons() {
-    unsafeErr(
-        """
-        val tm = createBoundToggleMechanism()
-        cls.java.enumConstants.forEach {
-            DeephyRadioButton((it as Enum<*>).name, tm, it) {
-                isSelected = prop.value == it
-            }
-        }      
-        """.trimIndent()
-    )
-}
+
 
 @Composable
 fun SettingsPane(settings: DeephysSettingsController) =
     Column {
-
-        val memSafeSettings = settings
 
         Row {
             unsafeErr(

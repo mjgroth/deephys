@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.model.importformat
 
 import com.google.common.collect.MapMaker
@@ -34,6 +36,7 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.forEachIndexed
 import org.jetbrains.kotlinx.multik.ndarray.operations.max
 import java.lang.ref.WeakReference
 import kotlin.collections.set
+
 
 sealed interface DeephyFileObject {
     val name: String
@@ -81,7 +84,7 @@ class Model(
  */
 class Test<N : Number>(
     override val name: String,
-    images: List<DeephyImage<N>>,
+    val images: List<DeephyImage<N>>,
     override val model: Model,
     override val testRAMCache: TestRAMCache,
     cats: List<Category>?,
@@ -92,7 +95,6 @@ class Test<N : Number>(
     override fun isDoneLoading(): Boolean = true
 
 
-    val images = images
 
 
     override fun numberOfImages(): ULong = images.size.toULong()
@@ -157,7 +159,7 @@ class Test<N : Number>(
         }
 
 
-    val activationsByNeuron =
+    val activationsByNeuron: Map<InterTestNeuron, MultiArray<N, D1>> =
         MapMaker()
             .weakKeys().apply {
             }
@@ -207,13 +209,13 @@ class Test<N : Number>(
 
             /*activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!*/
 
-            activationsByNeuron[neuron].max()!!
+            activationsByNeuron[neuron]!!.max()!!
         }
 
     fun startPreloadingMaxActivations() {
         daemon("startPreloadingMaxActivations Thread", priority = CREATING_NEW_CACHE) {
-            model.resolvedLayers.forEach {
-                it.interTest.neurons.forEach {
+            model.resolvedLayers.forEach { resolvedLayer ->
+                resolvedLayer.interTest.neurons.forEach {
                     maxActivations[it]
                 }
             }
@@ -240,12 +242,12 @@ class Test<N : Number>(
                     val actsMat = dtype.d2array(lis)
                     val argMaxResults = mk.math.argMaxD2(actsMat, 1)
                     val imageStartIndex = chunkIndex * chunkSize
-                    argMaxResults.forEachIndexed { imageIndex, predIndex ->
+                    argMaxResults.forEachIndexed { imageIndex, predictionIndex ->
                         val im = ims[imageStartIndex + imageIndex]
-                        m[im] = localCatsByID[predIndex] ?: error(
+                        m[im] = localCatsByID[predictionIndex] ?: error(
                             string {
                                 lineDelimited {
-                                    +"could not find category for predIndex=$predIndex (${localCatsByID.size} categories) of Image[index=${im.index}]"
+                                    +"could not find category for predictionIndex=$predictionIndex (${localCatsByID.size} categories) of Image[index=${im.index}]"
 
                                     +"image categories:"
                                     ims.forEach {
@@ -259,8 +261,8 @@ class Test<N : Number>(
                 }
 
             /*val argMaxResults = mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
-            argMaxResults.forEachIndexed { imageIndex, predIndex ->
-              m[images[imageIndex]] = category(predIndex)
+            argMaxResults.forEachIndexed { imageIndex, predictionIndex ->
+              m[images[imageIndex]] = category(predictionIndex)
             }*/
 
                 m

@@ -17,6 +17,7 @@ import kotlinx.io.bytestring.asReadOnlyByteBuffer
 import matt.compose.controls.mouse.attachHoverState
 import matt.compose.graphics.color.ComposeColor
 import matt.compose.graphics.color.toMcolor
+import matt.compose.graphics.mods.thenIf
 import matt.compose.state.rememberMutableStateOf
 import matt.file.commons.reg.TEMP_DIR
 import matt.image.desktop.save
@@ -33,6 +34,7 @@ import java.awt.image.DataBufferInt
 
 private var didWarnAboutCombiningMethods = false
 
+@Suppress("UnusedParameter")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeephyImView(
@@ -84,9 +86,9 @@ fun DeephyImView(
                             println("pixelData.length = ${pixelData.size}")
 
                             var i = 0
-                            mat2.forEach {
-                                it.forEach {
-                                    val awt = it.toMcolor().toIntColor()
+                            mat2.forEach { colorMutableList ->
+                                colorMutableList.forEach {
+                                    val awt = it.toMcolor().roundToRGBA()
                                     pixelData[i++] =
                                         ByteString(
                                             awt.alpha.toByte(),
@@ -115,13 +117,12 @@ fun DeephyImView(
             weakIm.deref()
         ) {
             Box(
-                Modifier.then(
-                    if (hovered.value) {
-                        Modifier.border(
-                            width = 1.dp,
-                            color = ComposeColor.Yellow
-                        )
-                    } else Modifier
+                Modifier.thenIf(
+                    hovered.value,
+                    Modifier.border(
+                        width = 1.dp,
+                        color = ComposeColor.Yellow
+                    )
                 )
             ) {
                 matt.compose.graphics.image.desktop.MyImage(

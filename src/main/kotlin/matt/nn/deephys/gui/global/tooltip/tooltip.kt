@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.global.tooltip
 
 import androidx.compose.foundation.background
@@ -26,14 +28,13 @@ import matt.nn.deephys.gui.global.color.DeephysPalette
 import matt.nn.deephys.gui.settings.DEFAULT_BIG_IMAGE_SCALE
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.prim.double.verifyWholeToInt
+import matt.prim.pdouble.verifyWholeToInt
 
 
 @Composable
 fun DeephysTooltipArea(
     settings: DeephysSettingsController,
     getCode: Produce<TeXDSL>,
-    dark: Boolean,
     content: Compose
 ) {
     DeephysTooltipArea(
@@ -41,8 +42,7 @@ fun DeephysTooltipArea(
         tooltip = {
             TeXView(
                 scale = DEEPHYS_LATEX_TOOLTIP_SCALE,
-                code = getCode().generate(),
-                dark = dark
+                code = getCode().generate()
             )
         },
         content = content
@@ -51,13 +51,11 @@ fun DeephysTooltipArea(
 
 @Composable
 private fun DeephysTeXView(
-    getCode: Produce<TeXDSL>,
-    dark: Boolean
+    getCode: Produce<TeXDSL>
 ) {
     TeXView(
         scale = DEEPHYS_LATEX_TOOLTIP_SCALE,
-        code = getCode().generate(),
-        dark = dark
+        code = getCode().generate()
     )
 }
 

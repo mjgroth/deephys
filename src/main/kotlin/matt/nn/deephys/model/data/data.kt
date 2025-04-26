@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.model.data
 
 import androidx.compose.runtime.Composable
@@ -19,7 +21,7 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.converters.StringConverter
-import matt.prim.str.truncateWithElipsesOrAddSpacesAsNeeded
+import matt.prim.str.truncateWithEllipsesOrAddSpacesAsNeeded
 
 
 data class InterTestLayer(
@@ -119,13 +121,13 @@ data class Category(
 
 
     @Composable
-    fun actionText(
+    fun ActionText(
         tooltip: String,
         settings: DeephysSettingsController,
         weakViewer: WeakRefInter<DatasetViewerState>,
         allowedLengths: IntRange = 25..25
     ) = DeephysTooltipArea(settings, tooltip) {
-        DeephyActionText(label.truncateWithElipsesOrAddSpacesAsNeeded(allowedLengths)) {
+        DeephyActionText(label.truncateWithEllipsesOrAddSpacesAsNeeded(allowedLengths)) {
             weakViewer.deref()!!.navigateTo(this)
         }
     }
@@ -133,8 +135,7 @@ data class Category(
 
     override val title = label
     override val primaryCategory = this
-    override val allCategories get() = sequence { yield(this@Category) }
-
+    override val allCategories = sequenceOf(this)
 
     fun <A : Number> averageActivationFor(
         neuron: InterTestNeuron,
@@ -166,11 +167,7 @@ data class CategoryConfusion(
 ) : CategorySelection {
     override val title = "Category Confusion\n\t-${first.label}\n\t-${second.label}"
     override val primaryCategory = first
-    override val allCategories get() =
-        sequence {
-            yield(first)
-            yield(second)
-        }
+    override val allCategories get() = sequenceOf(first, second)
     override fun forTest(test: TestOrLoader): CategoryConfusion {
         val firstOther = first.forTest(test)
         val secondOther = second.forTest(test)

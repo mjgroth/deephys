@@ -19,7 +19,7 @@
             "type": "Projects",
             "cfg": "implementation",
             "paths": [
-                ":k:compose:controls",
+                ":k:compose:app",
                 ":k:cbor",
                 ":k:math",
                 ":k:math:numalg:matalg",
@@ -88,5 +88,5 @@
         "checkSubmodulesArePublic": false
     },
     "release": {},
-    "serialization": true
+    "kotlin": {"serialization": true}
 }

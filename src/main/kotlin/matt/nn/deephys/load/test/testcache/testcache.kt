@@ -4,6 +4,7 @@ import matt.caching.compcache.ComputeCacheContext
 import matt.caching.compcache.globalman.RAMComputeCacheManager
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 
+@Suppress("unused")
 class TestRAMCache(settings: DeephysSettingsController) : RAMComputeCacheManager(), ComputeCacheContext {
     override val cacheManager = this
 }

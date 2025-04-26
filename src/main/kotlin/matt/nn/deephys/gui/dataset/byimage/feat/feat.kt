@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import matt.nn.deephys.gui.global.DeephysText
 import matt.nn.deephys.gui.global.SpacerWithOldFxSize
 import matt.nn.deephys.gui.global.subtitleFont
-import matt.prim.str.truncateWithElipsesOrAddSpaces
+import matt.prim.str.truncateWithEllipsesOrAddSpaces
 
 @Composable
 fun FeaturesView(
@@ -16,16 +16,15 @@ fun FeaturesView(
         DeephysText("Features:", font = subtitleFont())
         SpacerWithOldFxSize()
         Row {
+            val entries = features.entries
             Column {
-                features.forEach { (k, v) ->
-                    DeephysText(k.truncateWithElipsesOrAddSpaces(25))
+                entries.forEach {
+                    DeephysText(it.key.truncateWithEllipsesOrAddSpaces(25))
                 }
             }
             SpacerWithOldFxSize()
             Column {
-                features.forEach { (k, v) ->
-                    DeephysText(v)
-                }
+                entries.forEach { DeephysText(it.value) }
             }
         }
     }

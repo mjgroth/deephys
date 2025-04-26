@@ -1,3 +1,5 @@
+@file:Suppress("unused", "NoDuplicatedTypeNames")
+
 package matt.nn.deephys.load.test
 
 
@@ -50,7 +52,7 @@ class TestLoader(
     override fun isDoneLoading(): Boolean =
         postDtypeTestLoader.getOrNullIfLoading()?.run {
             requireLoaded().isDoneLoading()
-        } ?: false
+        } == true
 
     override val test get() = awaitFinishedTest()
     fun dtypeOrNull() = postDtypeTestLoader.awaitSuccessfulOrNull()?.dtype
@@ -73,14 +75,13 @@ class TestLoader(
         val didLoadCats = didLoadCategories.awaitRequireSuccessful()
         if (didLoadCats) {
             return loadedCategories.awaitRequireSuccessful()[id]
-        } else {
-            warn(OLD_CAT_LOAD_WARNING)
-            val finishedIms = postDtypeTestLoader.await().requireLoaded().imageSetLoader.finishedImages
-            return finishedIms.awaitRequireSuccessful().asSequence().map {
-                it.category
-            }.first {
-                it.id == id
-            }
+        }
+        warn(OLD_CAT_LOAD_WARNING)
+        val finishedIms = postDtypeTestLoader.await().requireLoaded().imageSetLoader.finishedImages
+        return finishedIms.awaitRequireSuccessful().asSequence().map {
+            it.category
+        }.first {
+            it.id == id
         }
     }
 
@@ -124,6 +125,8 @@ class TestLoader(
         SingleCall {
             daemon("TestLoader-${file.name}") {
 
+                /*seems to be a false positive*/
+                @Suppress("RedundantLabeledReturnOnLastExpressionInLambda")
                 if (!file.toJioFile().exists()) {
                     signalFileNotFound()
                     return@daemon
@@ -186,7 +189,7 @@ class TestLoader(
                                     }
 
                                     val dtype =
-                                        nextValueManualDontReadKey<TextStringReader, DType<*>> {
+                                        nextValueManualDoNotReadKey<TextStringReader, DType<*>> {
                                             when (val str = read().raw) {
                                                 "float32" -> Float32
                                                 "float64" -> Float64
@@ -248,11 +251,9 @@ class TestLoader(
                 } catch (e: CborParseException) {
                     createThrowReport(e, allowCapturingCurrentThread = true).print()
                     signalParseError(e)
-                    return@daemon
                 } catch (e: LoadException) {
                     createThrowReport(e, allowCapturingCurrentThread = true).print()
                     signalParseError(e)
-                    return@daemon
                 }
             }
         }
@@ -336,4 +337,5 @@ class PostDtypeTestLoader<D: Number>(
 
 
 
+@Suppress("serial")
 class LoadException(message: String) : Exception(message)

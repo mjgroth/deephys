@@ -1,18 +1,20 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.navbox
 
 import androidx.compose.runtime.Composable
 import matt.lang.common.unsafeErr
-import matt.lang.matt.GH_ORG_NAME
 import matt.nn.deephys.gui.DeephysApp
 
 
 
+@Suppress("UnusedParameter")
 @Composable
 fun NavBox(
     app: DeephysApp
 ) {
     unsafeErr(
-        """
+        $$"""
         Column(
             Modifier
                 .widthIn(min = 300.dp)
@@ -68,7 +70,7 @@ fun NavBox(
                             "Homepage" to "https://deephys.org/",
                             "Neural Activity Zoo" to "https://deephys.org/",
                             "Documentation" to "https://deephys.readthedocs.io/en/latest/?badge=latest",
-                            "GitHub" to "https://github.com/${'$'}$GH_ORG_NAME/deephys-aio",
+                            "GitHub" to "https://github.com/$GH_ORG_NAME/deephys-aio",
                             "Report a Bug" to "https://deephys.youtrack.cloud/"
                         ).forEach { (label, url) ->
                             AlignedRow(horizontalArrangement = Arrangement.spacedBy(7.5.dp)) {

@@ -1,9 +1,14 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.settings
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import matt.async.thread.ThreadReport
-import matt.exec.option.SettingsData
+import matt.auto.desktop.awt.AwtBasedDesktopAutomationContext
+import matt.compose.state.lang.immutableStateOf
+import matt.compose.state.option.SettingsData
+import matt.compose.state.statefulmodel.action.SimpleAction
+import matt.json.prim.IgnoreUnknownKeysJson
 import matt.lang.assertions.require.requireNull
 import matt.log.report.desktop.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
@@ -23,10 +28,7 @@ class DeephySettingsNode : ObsPrefNode(
         listOf(
             "normalizeTopNeuronActivations"
         ),
-    json =
-        Json {
-            ignoreUnknownKeys = true
-        }
+    json = IgnoreUnknownKeysJson
 ) {
     companion object {
         private var instance: DeephySettingsNode? = null
@@ -139,9 +141,9 @@ class DebugSettings : SettingsData("Debug") {
     )
 
     val resetSettings =
-        actionNotASetting(
-            label = "Reset all settings to default",
-            tooltip = "Reset all settings to default"
+        SimpleAction(
+            "Reset all settings to default",
+            enabled = immutableStateOf(true)
         ) {
             settings.forEach {
                 it.resetToDefault()
@@ -149,9 +151,9 @@ class DebugSettings : SettingsData("Debug") {
         }
 
     val deleteState =
-        actionNotASetting(
-            label = "Delete State",
-            tooltip = "Delete State"
+        SimpleAction(
+            "Delete State",
+            enabled = immutableStateOf(true)
         ) {
             DeephyState.delete()
             println("model=${DeephyState.model.value}")
@@ -160,27 +162,27 @@ class DebugSettings : SettingsData("Debug") {
 
 
     val printRamInfo =
-        actionNotASetting(
-            label = "Print RAM info to console",
-            tooltip = "Print RAM info to console"
+        SimpleAction(
+            "Print RAM info to console",
+            enabled = immutableStateOf(true)
         ) {
             println(MemReport())
         }
 
 
     val printThreadInfo =
-        actionNotASetting(
-            label = "Print thread info to console",
-            tooltip = "Print thread info to console"
+        SimpleAction(
+            "Print thread info to console",
+            enabled = immutableStateOf(true)
         ) {
             println(ThreadReport())
         }
 
     val openLogFolder =
-        actionNotASetting(
-            label = "Open Log Folder",
-            tooltip = "Open Log Folder"
+        SimpleAction(
+            "Open Log Folder",
+            enabled = immutableStateOf(true)
         ) {
-            it.showInFileManager(DEEPHYS_LOG_CONTEXT.logFolder)
+            AwtBasedDesktopAutomationContext.showInFileManager(DEEPHYS_LOG_CONTEXT.logFolder)
         }
 }

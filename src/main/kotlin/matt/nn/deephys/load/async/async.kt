@@ -1,10 +1,12 @@
+@file:Suppress("NoDuplicatedTypeNames")
+
 package matt.nn.deephys.load.async
 
 import matt.file.model.file.types.Cbor
 import matt.file.model.file.types.TypedFile
 import matt.file.toJioFile
 import matt.lang.anno.Open
-import matt.lang.idea.FailableIdea
+import matt.lang.ideas.FailableIdea
 import matt.lang.sync.common.SimpleReferenceMonitor
 import matt.lang.sync.common.withLock
 import matt.model.flowlogic.await.ThreadAwaitable
@@ -87,7 +89,7 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
             }
         }
 
-        override fun isDone() = latch?.isOpen ?: true
+        override fun isDone() = latch?.isOpen != false
 
         fun awaitRequireSuccessful() = (await() as Loaded).value
         fun awaitSuccessfulOrNull() = (await() as? Loaded)?.value
@@ -96,7 +98,7 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
         fun getOrNullIfLoading() = if (isDone()) value!! else null
 
         fun <R> chainedTo(op: (T) -> DirectLoadedOrFailedValueSlot<R>): LoadedOrFailedValueSlot<LoadedOrFailed<R>> =
-            ChainedLoadedValueSlot<T, R>(
+            ChainedLoadedValueSlot(
                 this,
                 op
             )

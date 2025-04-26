@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import matt.caching.compcache.invoke
+import matt.color.RGBAFloatColor
 import matt.color.colormap.Automatic
-import matt.color.common.FloatColor
 import matt.compose.graphics.color.toComposeColor
 import matt.compose.graphics.text.MyText
 import matt.compose.state.rememberMutableStateOf
@@ -196,7 +196,7 @@ fun <A : Number> CategoryView(
                             viewer = viewer,
                             images = shownFalsePositives,
                             title = null,
-                            tooltip = CategoryFalsePositivesSorted.blurb,
+                            tooltip = CategoryFalsePositivesSorted.BLURB,
                             fade = false,
                             settings = settings,
                             post = testLoader.post,
@@ -206,7 +206,6 @@ fun <A : Number> CategoryView(
 
 
                     Canvas(Modifier.requiredWidth(10.dp)) {
-                        val thePane = this
                         /*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)
 
 
@@ -223,7 +222,7 @@ fun <A : Number> CategoryView(
                                     y = nodeSize.value!!.height - 10f
                                 ),
                             color =
-                                FloatColor(
+                                RGBAFloatColor(
                                     0.5f,
                                     0.5f,
                                     0.5f,
@@ -255,7 +254,7 @@ fun <A : Number> CategoryView(
                             viewer = viewer,
                             images = shownFalseNegatives,
                             title = null,
-                            tooltip = CategoryFalseNegativesSorted.blurb,
+                            tooltip = CategoryFalseNegativesSorted.BLURB,
                             fade = false,
                             settings = settings,
                             post = testLoader.post,

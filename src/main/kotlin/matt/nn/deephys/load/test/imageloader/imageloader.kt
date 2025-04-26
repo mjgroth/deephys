@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalAtomicApi::class)
+
 package matt.nn.deephys.load.test.imageloader
 
 import kotlinx.io.bytestring.ByteString
@@ -12,10 +14,9 @@ import matt.collect.list.awaitlist.BlockListBuilder
 import matt.collect.queue.j.JQueueWrapper
 import matt.collect.queue.pollUntilEnd
 import matt.lang.assertions.require.requireNot
-import matt.lang.atomic.AtomicInt
-import matt.lang.common.List2D
+import matt.lang.collect.List2D
+import matt.lang.collect.l
 import matt.lang.common.disabledCode
-import matt.lang.common.l
 import matt.log.profile.mem.throttle
 import matt.nn.deephys.load.async.AsyncLoader.DirectLoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.Cacher
@@ -35,8 +36,10 @@ import matt.nn.deephys.model.importformat.im.readPixels
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
 import matt.prim.str.elementsToString
 import java.util.concurrent.ArrayBlockingQueue
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
-
+@Suppress("LocalVariableName")
 class ImageSetLoader<A: Number>(
     private val testLoader: TestLoader,
     private val postDtypeTestLoader: PostDtypeTestLoader<A>
@@ -73,7 +76,7 @@ class ImageSetLoader<A: Number>(
         requireNot(didRead)
         didRead = true
 
-        nextValueManualDontReadKey<ArrayReader, Unit> {
+        nextValueManualDoNotReadKey<ArrayReader, Unit> {
             val numberOfIms = count
             val numImsDouble = numberOfIms.toDouble()
             val numImsInt = numberOfIms.toInt()
@@ -121,7 +124,7 @@ class ImageSetLoader<A: Number>(
                     if (numDataBytes == null) {
                         withByteStoring {
                             val r =
-                                nextValueManualDontReadKey<ArrayReader, List2D<IntArray>> {
+                                nextValueManualDoNotReadKey<ArrayReader, List2D<IntArray>> {
                                     readPixels()
                                 }
                             val imDims = l(r.size, r[0].size, r[0][0].size)
@@ -153,7 +156,7 @@ class ImageSetLoader<A: Number>(
                         if (numActivationBytes == null) {
                             withByteStoring {
                                 val r =
-                                    nextValueManualDontReadKey<ArrayReader, FloatActivationData> {
+                                    nextValueManualDoNotReadKey<ArrayReader, FloatActivationData> {
                                         readFloatActivations()
                                     }
                                 val actsShapePerIm = r.map { it.size }
@@ -191,7 +194,7 @@ class ImageSetLoader<A: Number>(
 
 
 
-                if (numRead.incrementAndGet() % 1000 == 0) {
+                if (numRead.addAndFetch(1) % 1000 == 0) {
                     throttle("test loader")
                 }
 
@@ -245,7 +248,7 @@ class ImageSetLoader<A: Number>(
                       }*/
                         daemonPool.executeLowPriority {
                             activations.cache(activationsBytes.bytes)
-                            val n = numCachedActs.incrementAndGet()
+                            val n = numCachedActs.addAndFetch(1)
                             this@ImageSetLoader.testLoader.progress.cacheProgressActs.value = (n.toDouble()) / numImsDouble
                             if (n == numImsInt) datasetHDCache.activationsRAF.closeWriting()
                         }
@@ -259,7 +262,7 @@ class ImageSetLoader<A: Number>(
                         }
                         daemonPool.executeLowPriority {
                             data.cache(imageData)
-                            val n = numCachedPixels.incrementAndGet()
+                            val n = numCachedPixels.addAndFetch(1)
                             this@ImageSetLoader.testLoader.progress.cacheProgressPixels.value = (n.toDouble()) / numImsDouble
                             if (n == numImsInt) datasetHDCache.pixelsRAF.closeWriting()
                         }

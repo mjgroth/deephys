@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.dsetsbox
 
 import androidx.compose.foundation.layout.Column
@@ -26,8 +28,8 @@ import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
 
-val BIND_BUTTON_NAME = "Lead"
-val NORMALIZER_BUTTON_NAME = "Normalizer"
+const val BIND_BUTTON_NAME = "Lead"
+const val NORMALIZER_BUTTON_NAME = "Normalizer"
 
 
 class DSetViewsState {
@@ -66,7 +68,7 @@ class DSetViewsState {
     }
 
 
-
+    @Suppress("UnusedParameter")
     fun createBindToggleButton(
         parent: NodeWrapper,
         viewer: DatasetViewerState
@@ -87,6 +89,7 @@ class DSetViewsState {
             """.trimIndent()
         )
 
+    @Suppress("UnusedParameter")
     fun createInDToggleButton(
         parent: NodeWrapper,
         viewer: DatasetViewerState
@@ -120,6 +123,7 @@ class DSetViewsState {
         )
 
 
+    @Suppress("UnusedParameter")
     fun selectViewerToBind(
         viewer: DatasetViewerState?,
         makeInDToo: Boolean = false
@@ -177,6 +181,7 @@ class DSetViewsState {
         flashControls(buttons)
     }
 
+    @Suppress("UnusedParameter")
     private fun flashControls(controls: Collection<ControlWrapper>) {
         unsafeErr(
             """
@@ -243,6 +248,7 @@ class DSetViewsState {
 }
 
 
+@Suppress("UnusedParameter")
 @Composable
 fun DSetViewsVBox(
     state: DSetViewsState,

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.global
 
 import androidx.compose.foundation.layout.Box
@@ -16,8 +18,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import matt.compose.controls.buttons.MyButton
 import matt.compose.controls.check.MyCheckbox
+import matt.compose.controls.click.ActionText
 import matt.compose.controls.composers.action.common.ActionButton
-import matt.compose.controls.desktop.ActionText
 import matt.compose.controls.icon.MyClickableIcon
 import matt.compose.controls.text.MyClickableText
 import matt.compose.graphics.Compose
@@ -47,6 +49,8 @@ import matt.prim.converters.StringConverter
 val DEEPHYS_FADE_DUR = 500.milliseconds*/
 val DEEPHYS_FADE_DUR = null
 
+
+@Suppress("UnusedVariable", "UNUSED_VARIABLE", "UnusedParameter")
 @Composable
 inline fun <reified E : Any> DeephysSpinner(
     selected: MutableState<E>,
@@ -60,7 +64,7 @@ inline fun <reified E : Any> DeephysSpinner(
     crossinline navAction: DatasetViewerState.(E) -> Unit
 
 ) {
-    @Suppress("VarCouldBeVal")
+    @Suppress("VarCouldBeVal", "CAN_BE_VAL")
     var theValueProp: ObsVal<E>? = null
     unsafeErr(
         """
@@ -291,6 +295,7 @@ fun DeephyButton(
 
 private const val DEEPHY_ICON_BUTTON_SIZE = 25
 
+@Suppress("UnusedParameter")
 @Composable
 fun DeephyIconButton(
     icon: String,
@@ -317,7 +322,7 @@ fun <V : Any> DeephyRadioButton(
     s: String,
     group: NewToggleMechanism<V>,
     value: V
-) = DeephyToggleButton<V>(s, value, group)
+) = DeephyToggleButton(s, value, group)
 
 @Composable
 fun <V : Any> DeephyToggleButton(
@@ -352,7 +357,7 @@ fun deephysSingleCharButtonFont() {
     )
 }
 
-val DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE = 18.0
+const val DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE = 18.0
 
 const val DEEPHYS_LATEX_TOOLTIP_SCALE = 0.70
 
@@ -395,4 +400,5 @@ fun DeephysNullMessageFact(message: String) {
 }
 
 @Composable
-fun SpacerWithOldFxSize() = Spacer(Modifier.size(20.dp))
+fun SpacerWithOldFxSize() = Spacer(Modifier.size(oldFxSpacerSize))
+val oldFxSpacerSize = 20.dp

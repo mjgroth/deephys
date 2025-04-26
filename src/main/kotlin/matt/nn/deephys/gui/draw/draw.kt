@@ -45,7 +45,7 @@ fun DeephyImage<*>.toSkiaImage(): Image {
                     y = y.toFloat(),
                     paint =
                         Paint().apply {
-                            color = pix.toMcolor().toIntColor().toSkiaColor()
+                            color = pix.toMcolor().roundToRGBA().toSkiaColor()
                         }
                 )
             }

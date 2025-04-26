@@ -1,9 +1,10 @@
+@file:Suppress("SyntheticAccessor", "unused", "NoDuplicatedTypeNames")
+
 package matt.nn.deephys.load.cache
 
 import kotlinx.io.bytestring.ByteString
 import matt.file.ext.j.mkFold
 import matt.file.ext.j.readByteString
-import matt.file.ext.j.writeBytes
 import matt.file.toJioFile
 import matt.lang.function.Produce
 import matt.lang.model.file.FsFile

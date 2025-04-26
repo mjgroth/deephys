@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 214 25">
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 214 25">
   <defs>
     <style>
       .cls-1 {
@@ -14,7 +14,7 @@
       <stop offset="0" stop-color="#fff"/>
       <stop offset="1" stop-color="#000"/>
     </linearGradient>
-    <linearGradient id="Deephys_Red_Gradient" data-name="Deephys Red Gradient" x1="0" y1="12.5" x2="214" y2="12.5" gradientUnits="userSpaceOnUse">
+    <linearGradient id="Deephys_Red_Gradient" x1="0" y1="12.5" x2="214" y2="12.5" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#f5c39e"/>
       <stop offset="1" stop-color="#da1d52"/>
     </linearGradient>

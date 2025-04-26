@@ -1,4 +1,5 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED", "unused", "UNUSED_VARIABLE")
+
 package matt.nn.deephys.test.deephys.tester
 
 import kotlinx.coroutines.runBlocking
@@ -16,19 +17,21 @@ import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.TestSession
 import matt.log.profile.real.Profiler
 import matt.model.code.errreport.common.reportAndReThrowErrorsBetter
+import matt.model.obj.text.doesNotExist
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.DeephysArg.reset
 import matt.nn.deephys.gui.settings.DeephySettingsNode
 import matt.nn.deephys.test.deephys.DeephysTestData
-import matt.nn.deephys.test.deephys.NUM_IM_CLICKS
 import matt.service.action.NoActionAbilities
 import matt.test.prop.ManualTests
 import kotlin.test.assertEquals
 import kotlin.time.Duration
 
-context(ProcessReaper)
 @OptIn(ExperimentalMattCode::class)
-class DeephysTestSession(private val profiler: Profiler) {
+class DeephysTestSession(
+    private val profiler: Profiler,
+    processReaper: ProcessReaper
+) {
 
     private val app by lazy {
         DeephysApp()
@@ -47,15 +50,19 @@ class DeephysTestSession(private val profiler: Profiler) {
     init {
         reportAndReThrowErrorsBetter {
             val settingsNode = DeephySettingsNode()
-            app.boot2(settingsNode = settingsNode, listOf(reset)) /*need this so tests are deterministic*/
-            namedThread(name = "App Launcher") {
-                try {
-                    app.boot2(args = listOf(), settingsNode = settingsNode)
-                } catch (e: Throwable) {
-                    println("CANCELLING ALL LATCHES")
-                    app.cancelAllLatches(e)
+            with(processReaper) {
+                app.boot2(settingsNode = settingsNode, listOf(reset)) /*need this so tests are deterministic*/
+                namedThread(name = "App Launcher") {
+                    try {
+                        app.boot2(args = listOf(), settingsNode = settingsNode)
+                    } catch (e: Throwable) {
+                        println("CANCELLING ALL LATCHES")
+                        app.cancelAllLatches(e)
+                    }
                 }
             }
+
+
             val theMainStage = mainStage
             unsafeErr(
                 """
@@ -92,13 +99,13 @@ class DeephysTestSession(private val profiler: Profiler) {
 
     fun testFitsInSmallestScreen() {
         unsafeErr(
-            """
+            $$"""
             val w = mainStage.width
             val h = mainStage.height
             assertTrueLazyMessage(
                 w == MAC_MAYBE_MIN_SCREEN_SIZE.width && h == MAC_MAYBE_MIN_SCREEN_SIZE.height
             ) {
-                "mainStage .width=${'$'}w .height= ${'$'}h}"
+                "mainStage .width=$w .height= $h}"
             }     
             """.trimIndent()
         )
@@ -110,7 +117,7 @@ class DeephysTestSession(private val profiler: Profiler) {
 
 
     private val sessionList =
-        if (RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.doesNotExist || RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.text.isBlank()) {
+        if (RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.doesNotExist() || RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.readText().isBlank()) {
             mutableListOf<TestSession>()
         } else {
             RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.loadJson()
@@ -118,13 +125,14 @@ class DeephysTestSession(private val profiler: Profiler) {
 
     val mySession = TestSession().also { sessionList.add(it) }
 
+    @Suppress("UnusedParameter")
     fun loadDataAndCheckItWasFastEnough(
         key: String,
         testData: DeephysTestData,
         maxTime: Duration
     ) {
         unsafeErr(
-            """
+            $$"""
             TestDeephys.sampleRam()
             val t = tic("runThroughFeatures")
             fun tocAndSampleRam(marker: String): Duration? {
@@ -168,7 +176,7 @@ class DeephysTestSession(private val profiler: Profiler) {
 
                 testViewersAndFiles.forEachIndexed { index, it ->
                     it.first.testData.value!!.awaitFinishedTest()
-                    tocAndSampleRam("test ${'$'}{index + 1} finished loading")
+                    tocAndSampleRam("test ${index + 1} finished loading")
                 }
 
                 val firstViewer = testViewersAndFiles.first().first
@@ -195,7 +203,7 @@ class DeephysTestSession(private val profiler: Profiler) {
                     !TestPerformance.value()
                         || totalTime < maxTime
                 ) {
-                    "took to long to load: took=${'$'}totalTime expected=$maxTime"
+                    "took to long to load: took=$totalTime expected=$maxTime"
                 }
             }
 
@@ -206,7 +214,7 @@ class DeephysTestSession(private val profiler: Profiler) {
 
     fun runThroughByImageView() {
         unsafeErr(
-            """
+            $$"""
                    println("awaiting scene to be ready...")
             val scene = app.testReadyScene.await()
             println("automatically clicking through $NUM_IM_CLICKS images")
@@ -230,10 +238,10 @@ class DeephysTestSession(private val profiler: Profiler) {
                     } ?: run {
                         val imViews = allImViews.toList()
                         error(
-                            "could not find an image different from ${'$'}firstViewerSelection, all=${'$'}{
+                            "could not find an image different from $firstViewerSelection, all=${
                 imViews.map { it.weakIm.deref()?.imageID }
                     .elementsToString()
-            }, imViews=${'$'}{imViews.size}, clicked=${'$'}clicked"
+            }, imViews=${imViews.size}, clicked=$clicked"
                         )
                     }
                 println("clicking an image...")
@@ -324,7 +332,7 @@ class DeephysTestSession(private val profiler: Profiler) {
 
     fun disposeAllTestsAndCheckMemory() {
         unsafeErr(
-            """
+            $$"""
             val scene = app.testReadyScene.await()
             val root = scene.root
             runLaterReturn {
@@ -338,7 +346,7 @@ class DeephysTestSession(private val profiler: Profiler) {
             println("sleeping for 1 sec")
             sleep(1.seconds)
             val postGCWaitSecs = 20
-            println("running gc for ${'$'}postGCWaitSecs sec")
+            println("running gc for $postGCWaitSecs sec")
             val threshold = 500.mebibytes
 
             for (it in 0..postGCWaitSecs) {
@@ -346,21 +354,21 @@ class DeephysTestSession(private val profiler: Profiler) {
                 Runtime.getRuntime().gc()
                 sleep(1.seconds)
                 val u = MemReport().used
-                println("u${'$'}it=${'$'}u")
+                println("u$it=$u")
                 if (u < threshold) {
-                    println("waking up early because I've gone under the memory Threshold of ${'$'}threshold. Yay!")
+                    println("waking up early because I've gone under the memory Threshold of $threshold. Yay!")
                     break
                 }
             }
 
             val u = MemReport().used
-            println("uFinal=${'$'}u")
+            println("uFinal=$u")
             assertTrueLazyMessage(u < threshold) {
                 check(profiler.engine is YourKit) {
                     "Programmatic JProfiler memory snapshots do not seem to work from tests, which I think are a bit weird in how they fork from the gradle jvm. Yourkit on the other hand, works perfectly. It is also more automated, and deserves more of my attention as it does the same essential things as JProfiler and in many ways seems to do it way more conveniently."
                 }
                 profiler.captureMemorySnapshot()
-                "test data did not properly dispose. After removing all tests, expected used memory to be less than ${'$'}threshold, but it is ${'$'}u"
+                "test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is $u"
             }       
             """.trimIndent()
         )

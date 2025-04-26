@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.layer
 
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.ResolvedLayer
 
+@Suppress("UnusedVariable", "UNUSED_VARIABLE")
 @Composable
 fun LayerView(
     layer: ResolvedLayer,

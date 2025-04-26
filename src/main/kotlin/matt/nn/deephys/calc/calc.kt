@@ -1,4 +1,5 @@
 @file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
+
 package matt.nn.deephys.calc
 
 import matt.caching.compcache.ComputeInput
@@ -39,7 +40,7 @@ data class DescendingArgMaxMax<A : Number>(
     override fun compute(): List<ImageIndex> =
         run {
             val theTest = test.test
-            val acts = theTest.activationsByNeuron[neuron]
+            val acts = theTest.activationsByNeuron[neuron]!!
             val indices =
                 test.dtype.wrap(acts).argmaxn2(
                     MAX_NUM_IMAGES_IN_TOP_IMAGES,
@@ -79,7 +80,7 @@ data class TopCategories<N : Number>(
     override fun compute(): List<Pair<Category, RawActivation<*, *>>> {
         val theTest = test.test
         val dtype = theTest.dtype
-        val acts = theTest.activationsByNeuron[neuron]
+        val acts = theTest.activationsByNeuron[neuron]!!
         val activationsByCategory = mutableMapOf<Category, MutableList<N>>()
         dtype.wrap(acts).forEachIndexed { idx, act ->
             val cat = theTest.imageAtIndex(idx).category
@@ -132,8 +133,8 @@ data class TopNeurons<N : Number>(
         if (images.isEmpty() && forcedNeuronIndices == null) return listOf()
 
         val neurons =
-            forcedNeuronIndices?.let {
-                it.map { layer.neurons[it] }
+            forcedNeuronIndices?.let { ints ->
+                ints.map { layer.neurons[it] }
             } ?: layer.neurons
 
         val dType = test.dtype
@@ -208,7 +209,7 @@ data class ActivationRatioCalc<A : Number>(
 
 
         fun latexTechnique(num: ActivationRatioNumerator): TeXDSL {
-            val denom: Dsl<TeXDSL> = { text("max activation of this neuron in ${NORMALIZER_BUTTON_NAME}") }
+            val denom: Dsl<TeXDSL> = { text("max activation of this neuron in $NORMALIZER_BUTTON_NAME") }
             return when (num) {
                 MAX              ->
                     tex {
@@ -300,10 +301,10 @@ data class ImageTopPredictions<N : Number>(
         preds.withIndex().sortedBy {
             it.value.toDouble()
         }
-        return preds.withIndex().sortedBy { it.value.toDouble() }.reversed().take(5).map { thePred ->
-            val exactPred = (dtype.div(dtype.exp(thePred.value), softMaxDenom))
-            val theCategory = image.testLoader.test.category(thePred.index)
-            theCategory to exactPred
+        return preds.withIndex().sortedBy { it.value.toDouble() }.reversed().take(5).map { thePrediction ->
+            val exactPrediction = (dtype.div(dtype.exp(thePrediction.value), softMaxDenom))
+            val theCategory = image.testLoader.test.category(thePrediction.index)
+            theCategory to exactPrediction
         }
     }
 }
@@ -348,7 +349,7 @@ data class CategoryFalsePositivesSorted<N : Number>(
 
 
     companion object {
-        const val blurb =
+        const val BLURB =
             "false positives sorted so that the images with the highest prediction value (after softmax) are first"
     }
 
@@ -379,7 +380,7 @@ data class CategoryFalseNegativesSorted<N : Number>(
 
 
     companion object {
-        const val blurb =
+        const val BLURB =
             "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
     }
 

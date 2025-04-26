@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.visbox
 
 
@@ -6,14 +8,14 @@ import matt.lang.common.unsafeErr
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 
-
+@Suppress("UnusedParameter")
 @Composable
 fun VisBox(
     app: DeephysApp,
     settings: DeephysSettingsController
 ) {
     unsafeErr(
-        """
+        $$"""
         Column {
 
 
@@ -132,7 +134,7 @@ fun VisBox(
 
                         Row {
                             spacing = 10.0
-                            deephysText("Model: ${'$'}{model.name}") {
+                            deephysText("Model: ${model.name}") {
                                 titleFont()
                             }
 
@@ -146,7 +148,7 @@ fun VisBox(
                                         lineDelimited {
                                             +"Layers"
                                             model.layers.forEach {
-                                                +"\t${'$'}{it.layerID.truncateWithElipsesOrAddSpaces(15)}: ${'$'}{it.neurons.size}"
+                                                +"\t${it.layerID.truncateWithEllipsesOrAddSpaces(15)}: ${it.neurons.size}"
                                             }
                                         }
                                     }
@@ -177,7 +179,7 @@ fun VisBox(
                                 visualizerToolTipText v "Show an interactive diagram of the model"
                                 ModelVisualizer(model, settings)
                             } else {
-                                visualizerToolTipText v "model is too large to visualize (>${'$'}maxNeurons in a layer)"
+                                visualizerToolTipText v "model is too large to visualize (>$maxNeurons in a layer)"
                                 null
                             }
                         visualizer v vis

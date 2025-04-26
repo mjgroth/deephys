@@ -1,9 +1,11 @@
+@file:Suppress("unused", "NoDuplicatedTypeNames")
+
 package matt.nn.deephys.load.test.dtype
 
 import kotlinx.io.bytestring.ByteString
 import kotlinx.serialization.Serializable
 import matt.lang.cast.Caster
-import matt.lang.common.List2D
+import matt.lang.collect.List2D
 import matt.math.arithmetic.sumOf
 import matt.math.numalg.matalg.multiarray.DoubleMultiArrayWrapper
 import matt.math.numalg.matalg.multiarray.FloatMultiArrayWrapper
@@ -26,10 +28,10 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytes
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat32
 import matt.nn.deephys.model.importformat.im.ImageActivationCborBytesFloat64
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.prim.double.DOUBLE_BYTE_LEN
-import matt.prim.float.FLOAT_BYTE_LEN
 import matt.prim.j.bs.readAndCopyDoubles
 import matt.prim.j.bs.readAndCopyFloats
+import matt.prim.pdouble.DOUBLE_BYTE_LEN
+import matt.prim.pfloat.FLOAT_BYTE_LEN
 import org.jetbrains.kotlinx.multik.api.toNDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2

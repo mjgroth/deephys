@@ -1,39 +1,41 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED", "UNUSED_VARIABLE", "UNUSED_PARAMETER")
+@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "SpellCheckingInspection", "unused")
+@file:OptIn(ExperimentalAtomicApi::class)
+
 package matt.nn.deephys.gui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.runBlocking
 import matt.async.thread.daemon
 import matt.async.thread.pool.DaemonPoolExecutor
+import matt.compose.app.myApplication
+import matt.compose.controls.window.MyWindow
 import matt.compose.controls.window.main.MyMainWindow
 import matt.compose.controls.window.state.MyWindowState
-import matt.compose.graphics.app.myApplication
+import matt.compose.graphics.text.style.style.LocalTextStyler
 import matt.compose.state.rememberMutableStateOf
 import matt.compose.state.win.HardWindowState
 import matt.exec.app.myVersion
 import matt.file.JioFile
 import matt.file.commons.desktop.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
-import matt.file.commons.logctx.LogContext
+import matt.file.commons.logctx.LogContext1
 import matt.file.ext.j.mkFold
 import matt.file.toJioFile
 import matt.http.internet.TheInternet
 import matt.http.internet.isAvailable
 import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
-import matt.lang.atomic.AtomicInt
 import matt.lang.common.unsafeErr
 import matt.lang.j.sync
 import matt.lang.model.file.MacFileSystem
 import matt.lang.shutdown.TypicalShutdownContext
 import matt.lang.sync.common.SimpleReferenceMonitor
+import matt.model.code.mod.uniqueCamelCaseName
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.nn.deephys.gui.DeephysArg.`erase-settings`
 import matt.nn.deephys.gui.DeephysArg.`erase-state`
@@ -56,13 +58,15 @@ import matt.obs.subscribe.Pager
 import matt.rstruct.desktop.modId
 import java.net.URI
 import java.net.URL
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.io.path.outputStream
 
 val DEEPHY_USER_DATA_DIR by lazy {
     PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.toJioFile().mkFold("Deephys")
 }
 val DEEPHYS_LOG_CONTEXT by lazy {
-    LogContext(DEEPHY_USER_DATA_DIR)
+    LogContext1(DEEPHY_USER_DATA_DIR)
 }
 
 enum class DeephysArg {
@@ -98,56 +102,64 @@ class DeephysApp {
         args: DeephysArgs,
         settingsNode: DeephySettingsNode = DeephySettingsNode()
     ) {
-        if (args.size == 1 && args[0] == `erase-state`) {
-            DeephyState.delete()
-        } else if (args.size == 1 && args[0] == `erase-settings`) {
-            settingsNode.delete()
-        } else if (args.size == 1 && args[0] == reset) {
-            DeephyState.delete()
-            settingsNode.delete()
-        } else {
-            daemon(name = "Stage Title Loader") {
-                try {
-                    stageTitle.putLoadedValue("${modId.appName} $myVersion")
-                } finally {
-                    if (!stageTitle.isDoneOrCancelled()) {
-                        stageTitle.cancel("${Thread.currentThread().name} failed")
+        when (args.size) {
+            1 if args[0] == `erase-state`    -> {
+                DeephyState.delete()
+            }
+
+            1 if args[0] == `erase-settings` -> {
+                settingsNode.delete()
+            }
+
+            1 if args[0] == reset            -> {
+                DeephyState.delete()
+                settingsNode.delete()
+            }
+
+            else                             -> {
+                daemon(name = "Stage Title Loader") {
+                    try {
+                        stageTitle.putLoadedValue("${modId.appName} $myVersion")
+                    } finally {
+                        if (!stageTitle.isDoneOrCancelled()) {
+                            stageTitle.cancel("${Thread.currentThread().name} failed")
+                        }
                     }
                 }
-            }
 
-            daemon("initializeWhatICan Thread") {
-                initializeWhatICan()
-            }
-
-            val lastVersion = DeephyState.lastVersionOpened.value!!
-            val thisVersion = modId.version.toString()
-            var openedNewVersion = false
-            if (lastVersion != thisVersion) {
-                DeephyState.lastVersionOpened v thisVersion
-                openedNewVersion = true
-            }
-
-            val settings = settingsNode.settings
-
-            val didSettingsReset = settings.wasResetBecauseSerializedDataWasWrongClassVersion
-
-            if (didSettingsReset) {
-
-
-                settings.apply {
-                    println("settings=$settings")
-                    println("saving settings with new class version")
-                    fakeSettingToForceLoading.value = -fakeSettingToForceLoading.value
-                    println("saved with new class version")
+                daemon("initializeWhatICan Thread") {
+                    initializeWhatICan()
                 }
-            }
 
-            startDeephyApp(
-                settingsNode = settingsNode,
-                settingsDidReset = didSettingsReset,
-                openedNewVersion = openedNewVersion
-            )
+                val lastVersion = DeephyState.lastVersionOpened.value!!
+                val thisVersion = modId.version.toString()
+                var openedNewVersion = false
+                if (lastVersion != thisVersion) {
+                    DeephyState.lastVersionOpened v thisVersion
+                    openedNewVersion = true
+                }
+
+                val settings = settingsNode.settings
+
+                val didSettingsReset = settings.wasResetBecauseSerializedDataWasWrongClassVersion
+
+                if (didSettingsReset) {
+
+
+                    settings.apply {
+                        println("settings=$settings")
+                        println("saving settings with new class version")
+                        fakeSettingToForceLoading.value = -fakeSettingToForceLoading.value
+                        println("saved with new class version")
+                    }
+                }
+
+                startDeephyApp(
+                    settingsNode = settingsNode,
+                    settingsDidReset = didSettingsReset,
+                    openedNewVersion = openedNewVersion
+                )
+            }
         }
     }
 
@@ -209,9 +221,9 @@ class DeephysApp {
                         downloadStream.transferTo(writeStream)
                     }
                 }
-                done.incrementAndGet()
+                done.addAndFetch(1)
                 monitor.sync {
-                    progress v done.get().toDouble() / total
+                    progress v done.load().toDouble() / total
                 }
                 f
             }
@@ -246,7 +258,7 @@ class DeephysApp {
 
                 unsafeErr(
                     """
-                    DeephysLabel("Loading Files... (${done.get()}/$total)") {
+                    DeephysLabel("Loading Files... (${done.load()}/$total)") {
                         if (done.get() == total) {
                             stage!!.close()
                             showNavBox.value = false
@@ -279,6 +291,7 @@ class DeephysApp {
         /*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
     }
 
+    @Suppress("UnusedParameter")
     private fun startDeephyApp(
         settingsNode: DeephySettingsNode,
         settingsDidReset: Boolean,
@@ -297,15 +310,13 @@ class DeephysApp {
 
         myApplication(
             appName = "Deephys",
-            logFile = null
+            logFile = null,
+            appId = modId.uniqueCamelCaseName
         ) {
 
 
-            CompositionLocalProvider(
-                LocalTextStyle provides
-                    LocalTextStyle.current.copy(
-                        fontFamily = DEEPHYS_FONT_DEFAULT
-                    )
+            LocalTextStyler(
+                fontFamily = DEEPHYS_FONT_DEFAULT
             ) {
 
 
@@ -329,7 +340,7 @@ class DeephysApp {
 
                     if (settingsDidReset) {
                         val openWelcomeWindow = rememberMutableStateOf(true)
-                        matt.compose.controls.window.MyWindow(
+                        MyWindow(
                             visible = openWelcomeWindow.value,
                             alwaysOnTop = true,
                             onCloseRequest = {
@@ -338,7 +349,6 @@ class DeephysApp {
                         ) {
                             Column {
                                 DeephysText("Welcome to Deephys")
-                                @Suppress("KotlinConstantConditions")
                                 if (settingsDidReset) {
                                     DeephysText("Your settings have been reset due to the new update.")
                                 }
@@ -474,7 +484,7 @@ class DeephysApp {
 
 
 
-        /*not currently using this, because after making scroll bars transparet I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G
+        /*not currently using this, because after making scroll bars transparent I found out that nothing was in fact being laid out underneath them, so it was just creating a weird space. Search for search key FRHWOIH83RH3URUG34TGOG34G934G
 
 
           scene!!.stylesheets.add(ClassLoader.getSystemResource("deephys.css").toString())*/

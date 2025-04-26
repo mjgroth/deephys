@@ -1,3 +1,5 @@
+@file:Suppress("GrazieInspection", "unused")
+
 package matt.nn.deephys.test.deephys
 
 import kotlinx.coroutines.launch
@@ -12,20 +14,19 @@ import matt.http.tryHttp
 import matt.json.prim.saveAsJsonTo
 import matt.kstruct.ctx.toProcessReaper
 import matt.lang.anno.SeeURL
-import matt.lang.cfnf.getOrThrow
 import matt.lang.common.unsafeErr
 import matt.lang.sysprop.common.value
 import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.RamSample
 import matt.log.profile.data.ramSample
 import matt.log.profile.real.Profiler
+import matt.model.code.successorfail.getOrThrow
 import matt.model.data.rect.DoubleRectSize
 import matt.nn.deephys.gui.navbox.zoo.NeuronalActivityZoo
 import matt.nn.deephys.test.deephys.tester.DeephysTestSession
 import matt.reflect.scan.jcommon.systemScope
 import matt.reflect.scan.jcommon.usingClassGraph
 import matt.reflect.scan.mattSubClasses
-import matt.shell.commonj.context.withMacShellExecutionContext
 import matt.test.Tests
 import matt.test.assertions.assertTrueLazyMessage
 import matt.test.co.runTestWithTimeoutOnlyIfTestingPerformance
@@ -109,7 +110,7 @@ class TestDeephys(
     profiler: Profiler
 ) : Tests() {
 
-    val session = with(toProcessReaper().withMacShellExecutionContext()) { DeephysTestSession(profiler) }
+    val session =  DeephysTestSession(profiler, toProcessReaper())
 
 
     companion object {

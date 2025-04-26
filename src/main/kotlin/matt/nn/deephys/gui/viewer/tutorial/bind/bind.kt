@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.viewer.tutorial.bind
 
 import androidx.compose.foundation.layout.Column

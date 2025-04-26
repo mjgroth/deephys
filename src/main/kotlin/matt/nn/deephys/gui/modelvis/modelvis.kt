@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.modelvis
 
 import androidx.compose.runtime.Composable
@@ -5,13 +7,9 @@ import matt.lang.assertions.require.requireNotEmpty
 import matt.lang.assertions.require.requireNull
 import matt.lang.common.unsafeErr
 import matt.nn.deephys.gui.dsetsbox.DSetViewsState
-import matt.nn.deephys.gui.modelvis.neuroncirc.NeuronCircle
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.unsafemigration.NeuronCircle
 import matt.nn.deephys.model.importformat.Model
-import matt.obs.math.double.op.div
-import matt.obs.math.double.op.plus
-import matt.obs.math.double.op.times
 
 class ModelVisualizerState {
     var dsetViewsBox: DSetViewsState? = null
@@ -22,6 +20,7 @@ class ModelVisualizerState {
             field = value
             @Suppress("SENSELESS_COMPARISON")
             if (value == null) {
+                @Suppress("UNUSED_ANONYMOUS_PARAMETER")
                 circles!!.forEach { circ ->
                     unsafeErr(
                         """
@@ -31,6 +30,7 @@ class ModelVisualizerState {
                     )
                 }
             }
+            @Suppress("UNUSED_ANONYMOUS_PARAMETER")
             circles!!.forEach { circ ->
                 unsafeErr(
                     """
@@ -50,6 +50,7 @@ class ModelVisualizerState {
     private var circles: List<NeuronCircle>? = null
 }
 
+@Suppress("UnusedParameter")
 @Composable
 fun ModelVisualizer(
     state: ModelVisualizerState,
@@ -58,7 +59,7 @@ fun ModelVisualizer(
 ) {
 
     unsafeErr(
-        """
+        $$"""
             
         val ORIENTATION = VerticalOrHorizontal.Vertical
         val PREF_HEIGHT = 100.0
@@ -165,7 +166,7 @@ fun ModelVisualizer(
                                 radius = radius,
                                 color = COLOR
                             ).apply {
-                                veryLazyDeephysTooltip("neuron ${'$'}neuronIndex", settings = memSafeSettings)
+                                veryLazyDeephysTooltip("neuron $neuronIndex", settings = memSafeSettings)
                                 setOnMouseClicked {
                                     val dvb = this@ModelVisualizer.dsetViewsBox!!
                                     if (dvb.children.isEmpty()) return@setOnMouseClicked
@@ -184,7 +185,7 @@ fun ModelVisualizer(
 
                 addAll(circles!!)
                 val circlesByNeuron = circles!!.associateBy { it.neuron }
-                model.resolvedLayers.dropLast(1).forEachIndexed { index, layer ->
+                model.resolvedLayers.dropLast().forEachIndexed { index, layer ->
                     val nextLayer = model.resolvedLayers[index + 1]
                     val nextLayerNeurons = nextLayer.neurons
                     layer.neurons.forEach { neuron1 ->

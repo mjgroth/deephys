@@ -8,7 +8,7 @@ import matt.lang.j.NUM_LOGICAL_CORES
 import matt.lang.model.file.FsFile
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
-import matt.prim.int.ceilInt
+import matt.prim.pint.ceilInt
 
 class CacheDeleter(
     files: Produce<List<FsFile>>

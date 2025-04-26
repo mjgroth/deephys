@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.gui.dataset
 
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +61,7 @@ fun DatasetNode(
                 }
             }
             unsafeErr("this should have the style of a DeephysTabPane")
-            TabPane<DatasetNodeView>(
+            TabPane(
                 onSelected = {
                     viewer.navigateTo(
                         it

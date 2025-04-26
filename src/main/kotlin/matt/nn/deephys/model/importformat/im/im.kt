@@ -1,5 +1,9 @@
+@file:Suppress("unused")
+
 package matt.nn.deephys.model.importformat.im
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.io.bytestring.ByteString
 import kotlinx.io.bytestring.asReadOnlyByteBuffer
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringApi
@@ -7,12 +11,10 @@ import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
 import matt.cbor.read.major.array.ArrayReader
 import matt.cbor.read.major.bytestr.ByteStringReader
 import matt.cbor.read.streamman.cborReader
-import matt.color.common.rgb
-import matt.compose.graphics.color.ComposeColor
+import matt.color.rgb
 import matt.compose.graphics.color.toComposeColor
 import matt.lang.anno.Open
 import matt.lang.anno.PhaseOut
-import matt.lang.common.NEVER
 import matt.lang.weak.common.lazyWeak
 import matt.lang.weak.weak
 import matt.nn.deephys.load.async.AsyncLoader.DirectLoadedOrFailedValueSlot
@@ -30,10 +32,10 @@ import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.bytestr.bs.plus
 import matt.prim.bytestr.bs.withIndex
 import matt.prim.converters.StringConverter
-import matt.prim.double.DOUBLE_BYTE_LEN
-import matt.prim.float.FLOAT_BYTE_LEN
 import matt.prim.j.bs.readAndCopyDoubles
 import matt.prim.j.bs.readAndCopyFloats
+import matt.prim.pdouble.DOUBLE_BYTE_LEN
+import matt.prim.pfloat.FLOAT_BYTE_LEN
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 
@@ -78,7 +80,7 @@ class DeephyImage<A : Number>(
         val numCols = d[0][0].size
 
         (0 until numRows).map { index1 ->
-            MutableList<ComposeColor>(numCols) { index2 ->
+            MutableList(numCols) { index2 ->
                 rgb(d[0][index1][index2], d[1][index1][index2], d[2][index1][index2]).toComposeColor()
             }
         }
@@ -132,12 +134,10 @@ fun ArrayReader.readPixels(): PixelData3 =
         }
     }
 
-fun readPixels(cborPixelBytes3d: ByteString): PixelData3 {
-    cborPixelBytes3d.cborReader().readManually<ArrayReader, Unit> {
-        return readPixels()
+fun readPixels(cborPixelBytes3d: ByteString): PixelData3 =
+    cborPixelBytes3d.cborReader().readManually<ArrayReader, PixelData3> {
+        readPixels()
     }
-    NEVER /*consider filing issue. See readManually*/
-}
 
 
 fun ArrayReader.readFloatActivations() =
@@ -164,28 +164,26 @@ sealed interface ImageActivationCborBytes<A : Number> {
             }.reduce { acc, bytes -> acc + bytes }
         }
 
-    fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer>
+    fun dtypeByteReadyBufferFlow(): Flow<ByteBuffer>
 }
 
 @JvmInline
 value class ImageActivationCborBytesFloat32(override val bytes: ByteString) : ImageActivationCborBytes<Float> {
 
-    override fun parse2DArray(): FloatActivationData {
-        bytes.cborReader().readManually<ArrayReader, Unit> {
-            return readFloatActivations()
+    override fun parse2DArray(): FloatActivationData =
+        bytes.cborReader().readManually<ArrayReader, FloatActivationData> {
+            readFloatActivations()
         }
-        NEVER /*consider filing issue. See readManually*/
-    }
 
 
-    override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> =
-        sequence {
-            bytes.cborReader().readManually<ArrayReader, Unit> {
-                readEachManually<ByteStringReader, Unit> {
+    override fun dtypeByteReadyBufferFlow(): Flow<ByteBuffer> =
+        flow {
+            bytes.cborReader().readManuallySuspending<ArrayReader, Unit> {
+                readEachManuallySuspending<ByteStringReader, Unit> {
                     val buffer =   read().raw.asReadOnlyByteBuffer()
                     (FLOAT_BYTE_LEN until buffer.capacity() step FLOAT_BYTE_LEN).forEach {
                         buffer.limit(it)
-                        yield(buffer)
+                        emit(buffer)
                     }
                 }
             }
@@ -194,23 +192,21 @@ value class ImageActivationCborBytesFloat32(override val bytes: ByteString) : Im
 
 @JvmInline
 value class ImageActivationCborBytesFloat64(override val bytes: ByteString) : ImageActivationCborBytes<Double> {
-    override fun parse2DArray(): DoubleActivationData {
-        bytes.cborReader().readManually<ArrayReader, Unit> {
-            return readDoubleActivations()
+    override fun parse2DArray(): DoubleActivationData =
+        bytes.cborReader().readManually<ArrayReader, DoubleActivationData> {
+            readDoubleActivations()
         }
-        NEVER /*consider filing issue. See readManually*/
-    }
 
     @OptIn(UnsafeByteStringApi::class)
-    override fun dtypeByteReadyBufferSequence(): Sequence<ByteBuffer> =
-        sequence {
-            bytes.cborReader().readManually<ArrayReader, Unit> {
-                readEachManually<ByteStringReader, Unit> {
-                    UnsafeByteStringOperations.withByteArrayUnsafe(read().raw) {
-                        val buffer = ByteBuffer.wrap(it)
+    override fun dtypeByteReadyBufferFlow(): Flow<ByteBuffer> =
+        flow {
+            bytes.cborReader().readManuallySuspending<ArrayReader, Unit> {
+                readEachManuallySuspending<ByteStringReader, Unit> {
+                    UnsafeByteStringOperations.withByteArrayUnsafe(read().raw) { rawBytes ->
+                        val buffer = ByteBuffer.wrap(rawBytes)
                         (DOUBLE_BYTE_LEN until buffer.capacity() step DOUBLE_BYTE_LEN).forEach {
                             buffer.limit(it)
-                            yield(buffer)
+                            emit(buffer)
                         }
                     }
                 }
