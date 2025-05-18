@@ -4,7 +4,7 @@ package matt.nn.deephys.gui.visbox
 
 
 import androidx.compose.runtime.Composable
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 
@@ -14,7 +14,7 @@ fun VisBox(
     app: DeephysApp,
     settings: DeephysSettingsController
 ) {
-    unsafeErr(
+    unsafeError(
         $$"""
         Column {
 

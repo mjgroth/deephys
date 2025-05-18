@@ -17,7 +17,7 @@ import com.cheonjaeung.compose.grid.VerticalGrid
 import matt.caching.compcache.invoke
 import matt.compose.controls.icon.standard.ToggleIcons
 import matt.compose.controls.toggleicon.ToggleIcon
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.global.DeephyActionLabel
@@ -95,7 +95,7 @@ fun CategoryTable(
                         tooltip = fullString,
                         settings = settings,
                         weakViewer = weakViewer,
-                        allowedLengths = 1..10
+                        allowedLengths = 1u..10u
                     )
                     DeephysText(" (")
                     SigFigText(

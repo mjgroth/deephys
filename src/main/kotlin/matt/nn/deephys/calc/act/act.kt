@@ -2,10 +2,10 @@ package matt.nn.deephys.calc.act
 
 import matt.lang.anno.Open
 import matt.lang.assertions.require.requireOne
+import matt.lang.mathable.DoubleWrapper
+import matt.lang.mathable.NumberWrapper
 import matt.math.numalg.precision.withPrecision
-import matt.model.data.mathable.DoubleWrapper
 import matt.model.data.mathable.FloatWrapper
-import matt.model.data.mathable.NumberWrapper
 
 sealed interface Activation<N : Number, T : Activation<N, T>> : NumberWrapper<T>, Comparable<T> {
     val value: N

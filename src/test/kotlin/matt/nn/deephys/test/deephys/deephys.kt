@@ -14,13 +14,13 @@ import matt.http.tryHttp
 import matt.json.prim.saveAsJsonTo
 import matt.kstruct.ctx.toProcessReaper
 import matt.lang.anno.SeeURL
-import matt.lang.common.unsafeErr
+import matt.lang.cfnf.getOrThrow
+import matt.lang.common.unsafeError
 import matt.lang.sysprop.common.value
 import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.RamSample
 import matt.log.profile.data.ramSample
 import matt.log.profile.real.Profiler
-import matt.model.code.successorfail.getOrThrow
 import matt.model.data.rect.DoubleRectSize
 import matt.nn.deephys.gui.navbox.zoo.NeuronalActivityZoo
 import matt.nn.deephys.test.deephys.tester.DeephysTestSession
@@ -129,7 +129,7 @@ class TestDeephys(
         @Synchronized
         fun sampleRam() {
             ramSamples.add(ramSample())
-            ramSamples.saveAsJsonTo(myRamSamplesJson, false)
+            saveAsJsonTo(ramSamples, myRamSamplesJson, false)
         }
 
 
@@ -155,7 +155,7 @@ class TestDeephys(
         @JvmStatic
         @AfterAll
         fun shutdownJavaFX() {
-            unsafeErr(
+            unsafeError(
                 """
                 Platform.exit()    
                 """.trimIndent()

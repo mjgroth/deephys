@@ -5,7 +5,7 @@ package matt.nn.deephys.gui.modelvis
 import androidx.compose.runtime.Composable
 import matt.lang.assertions.require.requireNotEmpty
 import matt.lang.assertions.require.requireNull
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.nn.deephys.gui.dsetsbox.DSetViewsState
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.unsafemigration.NeuronCircle
@@ -22,7 +22,7 @@ class ModelVisualizerState {
             if (value == null) {
                 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
                 circles!!.forEach { circ ->
-                    unsafeErr(
+                    unsafeError(
                         """
                         circ.isHighlighted.unbind()
                         circ.isHighlighted v false    
@@ -32,7 +32,7 @@ class ModelVisualizerState {
             }
             @Suppress("UNUSED_ANONYMOUS_PARAMETER")
             circles!!.forEach { circ ->
-                unsafeErr(
+                unsafeError(
                     """
                     val n = circ.neuron
                     circ.isHighlighted v (n in value.highlightedNeurons.value)
@@ -58,7 +58,7 @@ fun ModelVisualizer(
     settings: DeephysSettingsController
 ) {
 
-    unsafeErr(
+    unsafeError(
         $$"""
             
         val ORIENTATION = VerticalOrHorizontal.Vertical

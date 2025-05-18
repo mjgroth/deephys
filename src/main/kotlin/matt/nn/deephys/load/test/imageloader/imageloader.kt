@@ -34,7 +34,7 @@ import matt.nn.deephys.model.importformat.im.ImageActivationCborBytes
 import matt.nn.deephys.model.importformat.im.readFloatActivations
 import matt.nn.deephys.model.importformat.im.readPixels
 import matt.nn.deephys.model.importformat.neuron.TestNeuron
-import matt.prim.str.elementsToString
+import matt.prim.str.join.elementsToString
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi

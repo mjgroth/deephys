@@ -14,7 +14,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import matt.compose.controls.mouse.attachHoverState
 import matt.compose.graphics.color.ComposeColor
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.lang.common.D
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron

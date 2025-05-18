@@ -125,7 +125,7 @@ data class Category(
         tooltip: String,
         settings: DeephysSettingsController,
         weakViewer: WeakRefInter<DatasetViewerState>,
-        allowedLengths: IntRange = 25..25
+        allowedLengths: UIntRange = 25u..25u
     ) = DeephysTooltipArea(settings, tooltip) {
         DeephyActionText(label.truncateWithEllipsesOrAddSpacesAsNeeded(allowedLengths)) {
             weakViewer.deref()!!.navigateTo(this)

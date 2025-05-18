@@ -1,7 +1,7 @@
 package matt.nn.deephys.gui.unsafemigration
 
 import matt.compose.graphics.Compose
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 
 typealias ToggleButtonWrapper = Any
 typealias VisBox = Any
@@ -12,5 +12,5 @@ typealias NodeWrapper = Any
 
 @Suppress("UnusedParameter")
 fun unsafeComposable(compose: Compose) {
-    unsafeErr("no message")
+    unsafeError("no message")
 }

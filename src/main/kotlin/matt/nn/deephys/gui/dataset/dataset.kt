@@ -11,7 +11,7 @@ import matt.compose.controls.choicebox.MyChoiceBox
 import matt.compose.controls.tabpane.TabPane
 import matt.compose.graphics.text.MyText
 import matt.lang.common.DoNothing
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
@@ -60,7 +60,7 @@ fun DatasetNode(
                     )
                 }
             }
-            unsafeErr("this should have the style of a DeephysTabPane")
+            unsafeError("this should have the style of a DeephysTabPane")
             TabPane(
                 onSelected = {
                     viewer.navigateTo(

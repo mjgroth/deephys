@@ -15,7 +15,7 @@ import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.prim.str.elementsToString
+import matt.prim.str.join.elementsToString
 
 @Composable
 fun ByCategoryView(
@@ -29,6 +29,7 @@ fun ByCategoryView(
         @Suppress("USELESS_CAST")
         val cats = testLoader.test.categories.map { it as CategorySelection }
 
+        @Suppress("ForbiddenIsCheck")
         Row {
             DeephysSpinner(
                 label = "Category",

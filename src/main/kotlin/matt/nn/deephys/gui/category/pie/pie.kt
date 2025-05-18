@@ -28,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import matt.compose.controls.desktop.scroll.MyVerticalScrollPane
 import matt.compose.graphics.color.toComposeColor
 import matt.compose.graphics.color.toMcolor
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.lang.anno.Duplicated
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.math.numalg.precision.withPrecision
 import matt.model.data.percent.Percent
 import matt.nn.deephys.gui.global.DeephysLabel
@@ -79,7 +79,7 @@ fun CategoryPie(
         modifier = Modifier.requiredWidth(350.0.dp)
     ) {
 
-        unsafeErr(
+        unsafeError(
             """
             DeephyCheckbox("show as list", showAsList)    
             """.trimIndent()
@@ -162,7 +162,7 @@ fun CategoryPie(
                                 )
                             val weakText = WeakReference(t)
 
-                            unsafeErr(
+                            unsafeError(
                                 """
                                         
                                 layoutXProperty.bindWeakly(
@@ -219,7 +219,7 @@ fun CategoryPie(
                             width = barWidth,
                             settings = settings
                         ).apply {
-                            unsafeErr(
+                            unsafeError(
                                 """
                                 highlighted.bind(hoverProperty)
                                 if (cat == selected) {
@@ -249,7 +249,7 @@ fun CategoryPie(
                                 startAngle = nextStart,
                                 settings = settings
                             ).apply {
-                                unsafeErr(
+                                unsafeError(
                                     """
                                     highlighted.bind(hoverProperty)
                                     if (cat == selected) {
@@ -349,7 +349,7 @@ fun CategorySlice(
     @Suppress("UNUSED_ANONYMOUS_PARAMETER")
     val shape =
         GenericShape { size, layoutDir ->
-            unsafeErr(
+            unsafeError(
                 """
                                  draw arc with properties:
                                  

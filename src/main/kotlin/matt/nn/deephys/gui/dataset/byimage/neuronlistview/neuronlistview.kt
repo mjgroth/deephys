@@ -15,7 +15,7 @@ import matt.caching.compcache.invoke
 import matt.compose.controls.desktop.scroll.MyHorizontalScrollPane
 import matt.compose.graphics.text.MyText
 import matt.lang.common.go
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
 import matt.lang.weak.weak
 import matt.math.numalg.format.sigfig.toScientificNotation
@@ -109,7 +109,7 @@ data class NeuronListViewConfig(
 )
 
 private const val NEURON_LIST_VIEW_WIDTH = 150.0
-@Suppress("LocalVariableName")
+@Suppress("LocalVariableName", "ForbiddenIsCheck")
 @Composable
 fun NeuronListView(
     cfg: NeuronListViewConfig,
@@ -194,7 +194,7 @@ fun NeuronListView(
                                                 .toString() + "%" + ")"
                                     }
 
-                                    unsafeErr(
+                                    unsafeError(
                                         """
                                         DeephysText(
                                             text
@@ -253,7 +253,7 @@ fun NeuronListView(
                         )
 
                         SpacerWithOldFxSize() /*space for the hbar*/
-                        unsafeErr(
+                        unsafeError(
                             """
                             prefWidth = NEURON_LIST_VIEW_WIDTH    
                             """.trimIndent()

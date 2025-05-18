@@ -1,7 +1,7 @@
 package matt.nn.deephys.gui.navbox.zoo
 
 import matt.http.s3.rawS3Url
-import matt.lang.model.url.MURL
+import matt.prim.common.exportfromlang.model.url.MURL
 
 
 object NeuronalActivityZoo {

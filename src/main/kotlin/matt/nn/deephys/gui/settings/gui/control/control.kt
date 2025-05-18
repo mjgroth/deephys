@@ -13,13 +13,16 @@ import matt.compose.state.option.BoolSetting
 import matt.compose.state.option.DoubleSetting
 import matt.compose.state.option.IntSetting
 import matt.compose.state.option.Setting
+import matt.lang.anno.optin.UnsafeMattCode
 import matt.lang.common.unsafeReturningErr
-import matt.lang.context.AutomationContext
+import matt.log.warn.common.warn
 import matt.nn.deephys.gui.global.DeephyCheckbox
 import matt.nn.deephys.gui.global.DeephysLabel
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
+import matt.prim.common.exportfromlang.context.AutomationContext
 import matt.prim.pfloat.verifyWholeToInt
+
 
 context(AutomationContext)
 @Composable
@@ -66,6 +69,8 @@ fun CreateControlFor(
                 }
 
                 is BoolSetting   -> {
+                    warn("stupidly opting in to something unsafe here")
+                    @OptIn(UnsafeMattCode::class)
                     DeephyCheckbox(
                         sett.label,
                         unsafeReturningErr {

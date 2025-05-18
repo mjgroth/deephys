@@ -21,9 +21,8 @@ import matt.file.model.file.types.Cbor
 import matt.file.model.file.types.TypedFile
 import matt.lang.assertions.require.requireNot
 import matt.lang.common.DoNothing
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
-import matt.lang.model.file.fName
 import matt.lang.weak.weak
 import matt.log.profile.stopwatch.tic
 import matt.log.warn.common.warn
@@ -62,6 +61,7 @@ import matt.obs.prop.withChangeListener
 import matt.obs.prop.writable.BindableProperty
 import matt.obs.prop.writable.VarProp
 import matt.obs.prop.writable.withNonNullUpdatesFrom
+import matt.prim.common.exportfromlang.model.file.fName
 
 
 class DatasetViewerState(
@@ -72,9 +72,9 @@ class DatasetViewerState(
 ) {
     val showAsList1 = BindableProperty(false)
     val showAsList2 = BindableProperty(false)
-    val model by lazy {  unsafeErr("outerBox.model") }
+    val model by lazy {  unsafeError("outerBox.model") }
     val siblings by lazy {
-        unsafeErr(
+        unsafeError(
             """
             outerBox.datasets.filtered { it != this }        
             """.trimIndent()
@@ -434,7 +434,7 @@ class DatasetViewerState(
 fun DatasetViewer(
     state: DatasetViewerState
 ) {
-    unsafeErr(
+    unsafeError(
         $$"""
         CollapsePane(
             expanded = rememberMutableStateOf(true)

@@ -5,9 +5,9 @@ import matt.async.thread.namedThread
 import matt.file.toJioFile
 import matt.lang.function.Produce
 import matt.lang.j.NUM_LOGICAL_CORES
-import matt.lang.model.file.FsFile
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import matt.prim.common.exportfromlang.model.file.FsFile
 import matt.prim.pint.ceilInt
 
 class CacheDeleter(

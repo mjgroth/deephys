@@ -12,19 +12,19 @@ import matt.lang.anno.SeeURL
 import matt.lang.common.DoNothing
 import matt.lang.common.NOT_IMPLEMENTED
 import matt.lang.common.TODO_NO_DETAILS
-import matt.lang.file.toJFile
 import matt.lang.j.NUM_LOGICAL_CORES
-import matt.lang.model.file.FsFile
 import matt.lang.model.value.letIfInitialized
+import matt.lang.weak.cleaner.MySafeCleaner
 import matt.log.warn.common.warn
 import matt.model.flowlogic.latch.j.SimpleThreadLatch
 import matt.nn.deephys.load.cache.raf.deed.Deed
 import matt.nn.deephys.load.cache.raf.deed.DeedImpl
+import matt.prim.common.exportfromlang.model.file.FsFile
+import matt.prim.exportfromlang.file.toJFile
 import matt.prim.j.bs.write
 import matt.time.dur.sleep
 import java.io.EOFException
 import java.io.RandomAccessFile
-import java.lang.ref.Cleaner
 import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.channels.Channel
@@ -106,7 +106,7 @@ class RAFCacheImpl(
 
     init {
         val safeLocalRef = fact
-        Cleaner.create().register(this) {
+        MySafeCleaner.runWhenPhantom(this) {
             safeLocalRef.letIfInitialized {
                 it.close()
             }

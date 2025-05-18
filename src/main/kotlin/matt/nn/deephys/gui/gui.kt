@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.runBlocking
@@ -18,7 +19,8 @@ import matt.compose.controls.window.MyWindow
 import matt.compose.controls.window.main.MyMainWindow
 import matt.compose.controls.window.state.MyWindowState
 import matt.compose.graphics.text.style.style.LocalTextStyler
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.snap.v
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.compose.state.win.HardWindowState
 import matt.exec.app.myVersion
 import matt.file.JioFile
@@ -30,9 +32,8 @@ import matt.http.internet.TheInternet
 import matt.http.internet.isAvailable
 import matt.lang.anno.SeeURL
 import matt.lang.anno.optin.ExperimentalMattCode
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.j.sync
-import matt.lang.model.file.MacFileSystem
 import matt.lang.shutdown.TypicalShutdownContext
 import matt.lang.sync.common.SimpleReferenceMonitor
 import matt.model.code.mod.uniqueCamelCaseName
@@ -55,6 +56,7 @@ import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
 import matt.obs.prop.writable.BindableProperty
 import matt.obs.subscribe.Pager
+import matt.prim.common.exportfromlang.model.file.MacFileSystem
 import matt.rstruct.desktop.modId
 import java.net.URI
 import java.net.URL
@@ -89,31 +91,38 @@ class DeephysApp {
     context(TypicalShutdownContext)
     fun boot2(
         settingsNode: DeephySettingsNode,
+        deephyState: DeephyState,
         args: DeephysArgs
     ): Unit =
         boot(
             args = args,
-            settingsNode = settingsNode
+            settingsNode = settingsNode,
+            deephyState = deephyState
         )
 
     context(TypicalShutdownContext)
     /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: DeephysArgs,
-        settingsNode: DeephySettingsNode = DeephySettingsNode()
+        settingsNode: DeephySettingsNode,
+        deephyState: DeephyState
     ) {
         when (args.size) {
             1 if args[0] == `erase-state`    -> {
-                DeephyState.delete()
+                unsafeError("deephyState.delete()")
             }
 
             1 if args[0] == `erase-settings` -> {
-                settingsNode.delete()
+                unsafeError("settingsNode.delete()")
             }
 
             1 if args[0] == reset            -> {
-                DeephyState.delete()
-                settingsNode.delete()
+                unsafeError(
+                    """
+                deephyState.delete()
+                settingsNode.delete()    
+                    """.trimIndent()
+                )
             }
 
             else                             -> {
@@ -131,21 +140,20 @@ class DeephysApp {
                     initializeWhatICan()
                 }
 
-                val lastVersion = DeephyState.lastVersionOpened.value!!
+                val lastVersion = deephyState.lastVersionOpened.value!!
                 val thisVersion = modId.version.toString()
                 var openedNewVersion = false
                 if (lastVersion != thisVersion) {
-                    DeephyState.lastVersionOpened v thisVersion
+                    deephyState.lastVersionOpened v thisVersion
                     openedNewVersion = true
                 }
 
                 val settings = settingsNode.settings
 
+
                 val didSettingsReset = settings.wasResetBecauseSerializedDataWasWrongClassVersion
 
                 if (didSettingsReset) {
-
-
                     settings.apply {
                         println("settings=$settings")
                         println("saving settings with new class version")
@@ -180,7 +188,7 @@ class DeephysApp {
     private val showNavBox = mutableStateOf(false)
     fun showDemos() {
         showNavBox.value = true
-        unsafeErr(
+        unsafeError(
             """
             showDemosTab!!.isSelected = true    
             """.trimIndent()
@@ -194,7 +202,7 @@ class DeephysApp {
 
 
         if (runBlocking {  !TheInternet().isAvailable() }) {
-            unsafeErr("No internet connection")
+            unsafeError("No internet connection")
             return
         }
 
@@ -256,7 +264,7 @@ class DeephysApp {
                         }
                     )
 
-                unsafeErr(
+                unsafeError(
                     """
                     DeephysLabel("Loading Files... (${done.load()}/$total)") {
                         if (done.get() == total) {
@@ -272,7 +280,7 @@ class DeephysApp {
                     """.trimIndent()
                 )
             }.apply {
-                unsafeErr(
+                unsafeError(
                     """
                     openInNewWindow(
                         showMode = SHOW_AND_WAIT,
@@ -299,21 +307,24 @@ class DeephysApp {
         openedNewVersion: Boolean
     ) {
 
-        val myWindowState =
-            MyWindowState(
-                state =
-                    HardWindowState(
-                        key = "deephys-main-window",
-                        appInstanceNumber = 0 /*STUPID*/
-                    )
-            )
+
 
         myApplication(
             appName = "Deephys",
             logFile = null,
             appId = modId.uniqueCamelCaseName
-        ) {
+        ) { scope ->
 
+            val myWindowState =
+                remember(scope) {
+                    MyWindowState(
+                        state =
+                            HardWindowState(
+                                key = "deephys-main-window",
+                                appInstanceNumber = 0 /*STUPID*/
+                            ).createReal(scope)
+                    )
+                }
 
             LocalTextStyler(
                 fontFamily = DEEPHYS_FONT_DEFAULT
@@ -368,8 +379,8 @@ class DeephysApp {
                                 min = 750.dp
                             )
                     ) {
-                        unsafeErr(
-                            """
+                        unsafeError(
+                            $$"""
                                             AlignedRow(
                                     horizontalArrangement = Arrangement.Center
                                 ) {
@@ -494,7 +505,7 @@ class DeephysApp {
                 println("put loaded scene")
 
                 VersionChecker.checkForUpdatesInBackground()
-                unsafeErr(
+                unsafeError(
                     """
                     logContext = DEEPHYS_LOG_CONTEXT
                     """.trimIndent()

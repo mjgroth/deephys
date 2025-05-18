@@ -6,7 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import matt.color.rgb
 import matt.compose.graphics.color.toComposeColor
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.obs.prop.writable.BindableProperty
 
 object DeephysPalette {
@@ -32,7 +32,7 @@ object DeephysPalette {
     }
 
     val tooltipBackground by lazy {
-        unsafeErr(
+        unsafeError(
             """
                       DarkModeController.darkModeProp.binding {
                 if (it) {

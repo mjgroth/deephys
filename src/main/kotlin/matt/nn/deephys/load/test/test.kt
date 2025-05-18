@@ -13,7 +13,6 @@ import matt.file.model.file.types.TypedFile
 import matt.file.toJioFile
 import matt.lang.assertions.require.requireEquals
 import matt.lang.assertions.require.requireNot
-import matt.lang.common.err
 import matt.log.warn.common.warn
 import matt.model.code.errreport.createThrowReport
 import matt.model.obj.single.SingleCall
@@ -35,7 +34,7 @@ import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.obs.col.olist.basicMutableObservableListOf
 import matt.obs.prop.writable.BindableProperty
-import matt.prim.str.elementsToString
+import matt.prim.str.join.elementsToString
 import matt.prim.str.mybuild.api.string
 import java.io.IOException
 
@@ -153,7 +152,8 @@ class TestLoader(
 
                         repeat(countInt) { keyIdx: Int ->
                             println("keyIdx=$keyIdx")
-                            val nextKey = nextKeyOrValueOnly<String>()
+                            @Suppress("ForbiddenIsCheck")
+                            val nextKey = nextKeyOrValueOnly<String>(isT = { it is String })
                             println("nextKey=$nextKey")
 
                             val theKey =
@@ -163,17 +163,20 @@ class TestLoader(
 
                             when (theKey) {
                                 theName      -> {
-                                    name = nextKeyOrValueOnly()
+                                    @Suppress("ForbiddenIsCheck")
+                                    name = nextKeyOrValueOnly(isT = { it == null || it is String })
                                     testName.putLoadedValue(name!!)
                                 }
 
                                 Keys.suffix  -> {
                                     loadWarnings += SUFFIX_WARNING
-                                    nextKeyOrValueOnly<String?>()
+                                    @Suppress("ForbiddenIsCheck")
+                                    nextKeyOrValueOnly<String?>(isT = { it == null || it is String })
                                 }
 
                                 Keys.classes -> {
-                                    val cats = nextKeyOrValueOnly<List<String>>()
+                                    @Suppress("ForbiddenIsCheck")
+                                    val cats = nextKeyOrValueOnly<List<String>>(isT = { kv -> kv is List<*> && kv.all { it is String } })
                                     loadedCategories.putLoadedValue(
                                         cats.mapIndexed { idx, it ->
                                             Category(id = idx, label = it)
@@ -193,7 +196,7 @@ class TestLoader(
                                             when (val str = read().raw) {
                                                 "float32" -> Float32
                                                 "float64" -> Float64
-                                                else      -> err("str == $str")
+                                                else      -> error("str == $str")
                                             }
                                         }
                                     check(!postDtypeTestLoader.isDone())

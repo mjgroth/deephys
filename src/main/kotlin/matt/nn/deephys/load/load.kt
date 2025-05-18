@@ -11,10 +11,10 @@ import matt.cbor.my.MyCbor
 import matt.compose.graphics.Compose
 import matt.compose.graphics.text.MyText
 import matt.file.JioFile
-import matt.lang.model.file.FsFile
 import matt.model.obj.text.doesNotExist
 import matt.nn.deephys.load.async.AsyncLoader
 import matt.obs.prop.ObsVal
+import matt.prim.common.exportfromlang.model.file.FsFile
 import java.nio.file.Path
 import kotlin.io.path.readBytes
 

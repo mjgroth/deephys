@@ -5,35 +5,48 @@ package matt.nn.deephys
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.io.bytestring.encodeToByteString
 import matt.compose.controls.buttons.MyButton
 import matt.compose.graphics.text.ErrorText
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.exec.app.deephysSite
 import matt.http.method.HTTPMethod.POST
+import matt.http.tryHttp
 import matt.lang.anno.Recycle
+import matt.lang.cfnf.getOrThrow
 import matt.lang.common.go
-import matt.lang.context.AutomationContext
-import matt.lang.j.browse
-import matt.lang.model.url.MURL
 import matt.lang.shutdown.j.ShutdownExecutorImpl
 import matt.log.report.desktop.BugReport
 import matt.model.code.args.Arguments
 import matt.model.code.errreport.createThrowReport
-import matt.model.code.successorfail.getOrThrow
 import matt.model.query.buildQueryURL
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.DeephysArgs
+import matt.nn.deephys.gui.settings.DeephySettingsNodeNode
+import matt.nn.deephys.state.DeephyStateDb
 import matt.osi.url.urlEncode
+import matt.prim.common.exportfromlang.context.AutomationContext
+import matt.prim.common.exportfromlang.model.url.MURL
+import matt.prim.exportfromlang.j.browse
 import java.net.URI
 
 fun main(args: Array<String>): Unit = Arguments.mainOrExitWithLogicalFailure<DeephysArgs>(args, ::main)
 
 /*NOT INVOKED BY TEST in case I ever want the main test method to return something*/
+@OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: DeephysArgs) {
     with(ShutdownExecutorImpl()) {
-        DeephysApp().boot(args)
+        runBlocking {
+            val settingsNode = DeephySettingsNodeNode(this).dataObject.getCompleted().getOrThrow()
+            DeephysApp().boot(
+                args,
+                settingsNode = settingsNode,
+                deephyState = DeephyStateDb(this).dataObject.getCompleted().getOrThrow()
+            )
+        }
     }
 }
 
@@ -63,7 +76,7 @@ fun SubmitBugReportButton(t: Thread, e: Exception) {
                     try {
                         val u = MURL(deephysSite)/*.productionHost*/ + "issue"
                         submittedUrl.value =
-                            matt.http.tryHttp(u) {
+                            tryHttp(u) {
                                 method = POST
                                 data = BugReport(t = t, e = e).text.encodeToByteString()
                             }.getOrThrow() /*FX IS DEAD*/.requireSuccessful().text()

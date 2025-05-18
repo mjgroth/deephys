@@ -2,46 +2,50 @@
 
 package matt.nn.deephys.gui.settings
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import matt.async.thread.ThreadReport
 import matt.auto.desktop.awt.AwtBasedDesktopAutomationContext
 import matt.compose.state.lang.immutableStateOf
 import matt.compose.state.option.SettingsData
+import matt.compose.state.save.create.oldNameOldKeysMessage
+import matt.compose.state.save.create.stateStructureDatabase
+import matt.compose.state.ser.struct.StateStructSerializer
 import matt.compose.state.statefulmodel.action.SimpleAction
-import matt.json.prim.IgnoreUnknownKeysJson
-import matt.lang.assertions.require.requireNull
+import matt.compose.state.struct.StateStructure
+import matt.file.commons.reg.RegisteredFolder
+import matt.lang.common.unsafeError
 import matt.log.report.desktop.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
-import matt.nn.deephys.state.DeephyState
-import matt.obs.hold.extra.VersionedTypedObsHolderSerializer
-import matt.pref.obs.ObsPrefNode
-import matt.prim.str.elementsToString
 
 
-class DeephySettingsNode : ObsPrefNode(
-    "sinhalab.deephys.settings",
-    oldNames =
-        listOf(
-            "sinhalab.deephy.settings"
-        ),
-    oldKeys =
-        listOf(
-            "normalizeTopNeuronActivations"
-        ),
-    json = IgnoreUnknownKeysJson
-) {
-    companion object {
-        private var instance: DeephySettingsNode? = null
-    }
+fun DeephySettingsNodeNode(scope: CoroutineScope) =
+    stateStructureDatabase<DeephySettingsNode>(
+
+        file = RegisteredFolder.Main.preferenceNodeJson("sinhalab.deephys.settings"),
+        scope = scope,
+        lazyLoad = true,
+        autoBackup = false
+    )
+class DeephySettingsNode : StateStructure() {
 
     init {
-        synchronized(DeephySettingsNode::class) {
-            requireNull(instance)
-            instance = this
-        }
+        unsafeError(
+            oldNameOldKeysMessage(
+                oldNames =
+                    listOf(
+                        "sinhalab.deephy.settings"
+                    ),
+                oldKeys =
+                    listOf(
+                        "normalizeTopNeuronActivations"
+                    )
+            )
+        )
     }
 
-    val settings by obsObj {
+    val settings by registeredSubStateValue {
         DeephysSettingsController()
     }
 }
@@ -50,9 +54,10 @@ const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
 const val MAX_NUM_IMAGES_IN_TOP_IMAGES = 100
 const val DEFAULT_BIG_IMAGE_SCALE = 128.0
 
-private object DeephySettingsSerializer : VersionedTypedObsHolderSerializer<DeephysSettingsController>(
+
+private object DeephySettingsSerializer: KSerializer<DeephysSettingsController> by StateStructSerializer.createVersioned(
     DeephysSettingsController::class,
-    4
+    classVersion = 4
 )
 
 @Serializable(with = DeephySettingsSerializer::class)
@@ -67,7 +72,7 @@ class DeephysSettingsController : SettingsData("Main Settings") {
         max = 10.0
     )
 
-    val appearance by registeredSection(AppearanceSettings())
+    val appearance by registeredSubStateValue { AppearanceSettings() }
 
     val millisecondsBeforeTooltipsVanish by IntSettingProv(
         defaultValue = 1000,
@@ -84,7 +89,7 @@ class DeephysSettingsController : SettingsData("Main Settings") {
     )
 
 
-    val debug by registeredSection(DebugSettings())
+    val debug by registeredSubStateValue { DebugSettings() }
 }
 
 class AppearanceSettings : SettingsData("Appearance") {
@@ -155,9 +160,7 @@ class DebugSettings : SettingsData("Debug") {
             "Delete State",
             enabled = immutableStateOf(true)
         ) {
-            DeephyState.delete()
-            println("model=${DeephyState.model.value}")
-            println("tests=${DeephyState.tests.value?.elementsToString()}")
+            unsafeError("DeephyState.delete()")
         }
 
 

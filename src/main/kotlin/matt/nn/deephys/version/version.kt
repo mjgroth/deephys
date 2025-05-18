@@ -14,15 +14,16 @@ import matt.compose.graphics.text.MyText
 import matt.exec.app.deephysSite
 import matt.exec.app.myVersion
 import matt.http.json.requireIs
-import matt.lang.context.AutomationContext
-import matt.lang.j.openUrl
-import matt.lang.model.url.MURL
+import matt.http.tryHttp
+import matt.lang.cfnf.getOrThrow
 import matt.log.warn.common.warn
-import matt.model.code.successorfail.getOrThrow
 import matt.model.data.release.Version
 import matt.model.data.release.VersionInfo
 import matt.nn.deephys.gui.global.DeephyHyperlink
 import matt.nn.deephys.gui.global.DeephysText
+import matt.prim.common.exportfromlang.context.AutomationContext
+import matt.prim.common.exportfromlang.model.url.MURL
+import matt.prim.exportfromlang.j.openUrl
 import matt.time.dur.common.sec
 import java.net.ConnectException
 import java.net.URI
@@ -47,7 +48,7 @@ object VersionChecker {
                     val latestVersionFromServer =
                         runBlocking {
                             val resp =
-                                matt.http.tryHttp(
+                                tryHttp(
                                     MURL(deephysSite)/*.productionHost*/ + "latest-version"
                                 ).getOrThrow() /*because FX IS DEAD*/
                             if (resp.statusCode() != HttpStatusCode.OK) {

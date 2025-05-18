@@ -6,12 +6,12 @@ package matt.nn.deephys.gui.settings.gui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 
 @Composable
 fun SettingsWindow(settings: DeephysSettingsController) {
-    unsafeErr(
+    unsafeError(
         """
                    MyWindow {
 
@@ -72,7 +72,7 @@ fun SettingsPane(settings: DeephysSettingsController) =
     Column {
 
         Row {
-            unsafeErr(
+            unsafeError(
                 """
                 val tv =
                     treeview<SettingsData> {

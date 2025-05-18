@@ -3,7 +3,7 @@
 package matt.nn.deephys.gui.navbox
 
 import androidx.compose.runtime.Composable
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.nn.deephys.gui.DeephysApp
 
 
@@ -13,7 +13,7 @@ import matt.nn.deephys.gui.DeephysApp
 fun NavBox(
     app: DeephysApp
 ) {
-    unsafeErr(
+    unsafeError(
         $$"""
         Column(
             Modifier

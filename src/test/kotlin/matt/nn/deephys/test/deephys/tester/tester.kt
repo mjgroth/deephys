@@ -9,7 +9,7 @@ import matt.file.commons.reg.RegisteredFolder
 import matt.file.ext.j.mkparents
 import matt.json.prim.loadJson
 import matt.lang.anno.optin.ExperimentalMattCode
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
 import matt.lang.shutdown.preaper.ProcessReaper
 import matt.lang.sysprop.common.value
@@ -21,6 +21,7 @@ import matt.model.obj.text.doesNotExist
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.DeephysArg.reset
 import matt.nn.deephys.gui.settings.DeephySettingsNode
+import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.test.deephys.DeephysTestData
 import matt.service.action.NoActionAbilities
 import matt.test.prop.ManualTests
@@ -39,7 +40,7 @@ class DeephysTestSession(
 
 
     private val mainStage by lazy {
-        unsafeErr(
+        unsafeError(
             """
             app.readyForConfiguringWindowFromTest.await()    
             """.trimIndent()
@@ -50,11 +51,12 @@ class DeephysTestSession(
     init {
         reportAndReThrowErrorsBetter {
             val settingsNode = DeephySettingsNode()
+            val deephyState = DeephyState()
             with(processReaper) {
-                app.boot2(settingsNode = settingsNode, listOf(reset)) /*need this so tests are deterministic*/
+                app.boot2(settingsNode = settingsNode, args = listOf(reset), deephyState = deephyState) /*need this so tests are deterministic*/
                 namedThread(name = "App Launcher") {
                     try {
-                        app.boot2(args = listOf(), settingsNode = settingsNode)
+                        app.boot2(args = listOf(), settingsNode = settingsNode, deephyState = deephyState)
                     } catch (e: Throwable) {
                         println("CANCELLING ALL LATCHES")
                         app.cancelAllLatches(e)
@@ -64,7 +66,7 @@ class DeephysTestSession(
 
 
             val theMainStage = mainStage
-            unsafeErr(
+            unsafeError(
                 """
                 runLaterReturn {
                     theMainStage.width = MAC_MAYBE_MIN_SCREEN_SIZE.width
@@ -98,7 +100,7 @@ class DeephysTestSession(
         )
 
     fun testFitsInSmallestScreen() {
-        unsafeErr(
+        unsafeError(
             $$"""
             val w = mainStage.width
             val h = mainStage.height
@@ -131,7 +133,7 @@ class DeephysTestSession(
         testData: DeephysTestData,
         maxTime: Duration
     ) {
-        unsafeErr(
+        unsafeError(
             $$"""
             TestDeephys.sampleRam()
             val t = tic("runThroughFeatures")
@@ -213,7 +215,7 @@ class DeephysTestSession(
     }
 
     fun runThroughByImageView() {
-        unsafeErr(
+        unsafeError(
             $$"""
                    println("awaiting scene to be ready...")
             val scene = app.testReadyScene.await()
@@ -281,7 +283,7 @@ class DeephysTestSession(
     }
 
     fun runThroughCategoryView() {
-        unsafeErr(
+        unsafeError(
             """
                           val scene = app.testReadyScene.await()
             val root = scene.root
@@ -331,7 +333,7 @@ class DeephysTestSession(
     }
 
     fun disposeAllTestsAndCheckMemory() {
-        unsafeErr(
+        unsafeError(
             $$"""
             val scene = app.testReadyScene.await()
             val root = scene.root

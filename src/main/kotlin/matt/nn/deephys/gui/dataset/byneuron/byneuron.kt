@@ -1,7 +1,7 @@
 package matt.nn.deephys.gui.dataset.byneuron
 
 import androidx.compose.runtime.Composable
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.nn.deephys.gui.global.DeephysNullMessageFact
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewerState
@@ -16,7 +16,7 @@ fun ByNeuronView(
 ) {
     val v = viewer.layerSelectionResolved.value
     v?.let {
-        unsafeErr(
+        unsafeError(
             """
             LayerView(it, testLoader, viewer, memSafeSettings)        
             """.trimIndent()

@@ -27,11 +27,14 @@ import matt.compose.graphics.layout.AlignedRow
 import matt.compose.graphics.text.MyText
 import matt.compose.state.lang.ALWAYS_TRUE
 import matt.compose.state.prop.rememberBoundComposeState
+import matt.compose.state.readonly.LAZY_STATE_PROBLEM_ALT
+import matt.compose.state.readonly.LAZY_STATE_PROBLEM_REASON
 import matt.compose.state.statefulmodel.action.SimpleAction
 import matt.compose.state.toggle.NewToggleMechanism
 import matt.lang.anno.Alert
 import matt.lang.anno.CodeAlertCategory.TechnicalIssue
-import matt.lang.common.unsafeErr
+import matt.lang.anno.optin.UnsafeMattCode
+import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
 import matt.lang.function.Op
 import matt.log.warn.common.warn
@@ -66,7 +69,7 @@ inline fun <reified E : Any> DeephysSpinner(
 ) {
     @Suppress("VarCouldBeVal", "CAN_BE_VAL")
     var theValueProp: ObsVal<E>? = null
-    unsafeErr(
+    unsafeError(
         """
         AlignedRow {
             
@@ -177,6 +180,7 @@ fun DeephysLabeledControl2(
 }
 
 
+@UnsafeMattCode(saferAlternative = LAZY_STATE_PROBLEM_ALT, reason = LAZY_STATE_PROBLEM_REASON)
 @Composable
 fun DeephysText(
     s: ObsS
@@ -258,6 +262,7 @@ fun DeephyHyperlink(
     action()
 }
 
+@UnsafeMattCode(saferAlternative = LAZY_STATE_PROBLEM_ALT, reason = LAZY_STATE_PROBLEM_REASON)
 @Composable
 fun DeephyCheckbox(
     s: String = "",
@@ -350,7 +355,7 @@ fun DeephyActionButton(
 )
 
 fun deephysSingleCharButtonFont() {
-    unsafeErr(
+    unsafeError(
         """
         font.fixed().copy(size = DEEPHYS_SINGLE_CHAR_BUTTON_FONT_SIZE).fx()    
         """.trimIndent()

@@ -18,7 +18,7 @@ import matt.color.RGBAFloatColor
 import matt.color.colormap.Automatic
 import matt.compose.graphics.color.toComposeColor
 import matt.compose.graphics.text.MyText
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.nn.deephys.calc.CategoryAccuracy
 import matt.nn.deephys.calc.CategoryFalseNegativesSorted
 import matt.nn.deephys.calc.CategoryFalsePositivesSorted
@@ -36,7 +36,7 @@ import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.str.addNewLinesUntilNumLinesIs
-import matt.prim.str.elementsToString
+import matt.prim.str.join.elementsToString
 
 @Composable
 fun <A : Number> CategoryView(

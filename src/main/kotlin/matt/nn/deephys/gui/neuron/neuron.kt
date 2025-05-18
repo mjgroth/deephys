@@ -17,9 +17,9 @@ import matt.caching.compcache.invoke
 import matt.codegen.tex.tex
 import matt.collect.itr.subList
 import matt.compose.state.produce.produceSimpleResettingIoState
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.lang.common.go
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.function.Consume
 import matt.math.lang.arithmetic.op.div
 import matt.model.code.successorfail.resultwithval.loadedOrNull
@@ -170,7 +170,7 @@ fun <A : Number> NeuronView(
             /*for reasons that I don't understand, without this FlowPane gets really over-sized in the y dimension*/
             prefWrapLengthProperty = (viewerWidth.value * 0.95).dp
         ) {
-            unsafeErr(
+            unsafeError(
                 """
                 noneText.visibleAndManagedProp.bindWeakly(
                     children.sizeProperty.eq(0) and !showProgIndicator
@@ -230,7 +230,7 @@ fun <A : Number> NeuronView(
                         null                                      -> {
                             topImages.forEach {
                                 val im = localTestLoader.imageAtIndex(it.index)
-                                unsafeErr(
+                                unsafeError(
                                     """
                                     localImFlowPane.add(
                                         DeephyImView(
@@ -248,7 +248,7 @@ fun <A : Number> NeuronView(
                         else if realNumImages > realOldNumImages  -> {
                             topImages.subList(realOldNumImages.toInt()).toList().forEach {
                                 val im = localTestLoader.imageAtIndex(it.index)
-                                unsafeErr(
+                                unsafeError(
                                     """
                                     localImFlowPane.add(
                                         DeephyImView(
@@ -264,7 +264,7 @@ fun <A : Number> NeuronView(
                         }
 
                         else if  realNumImages < realOldNumImages -> {
-                            unsafeErr(
+                            unsafeError(
                                 """
                                 localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
                                     it.removeFromParent()
@@ -291,7 +291,7 @@ fun <A : Number> NeuronView(
 
             update(weakThing.deref()!!, null, numImages.value)
 
-            unsafeErr(
+            unsafeError(
                 """
                 numImages.onChangeWithAlreadyWeakAndOld(weakThing) { tl, o, n ->
                     update(tl, o, n)

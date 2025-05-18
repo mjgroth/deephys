@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import matt.compose.graphics.text.MyText
 import matt.lang.common.go
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
 import matt.lang.weak.weak
 import matt.nn.deephys.calc.ImageTopPredictions
@@ -69,7 +69,7 @@ fun <A: Number> ByImageView(
             } ?: MyText("if you see this, then there must be a problem")
         } else MyText("no image selected")
         Spacer(Modifier.size(10.dp))
-        unsafeErr(
+        unsafeError(
             """
             neuronListViewSwapper(
                 viewer = viewer,

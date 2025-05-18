@@ -18,7 +18,7 @@ import matt.compose.controls.mouse.attachHoverState
 import matt.compose.graphics.color.ComposeColor
 import matt.compose.graphics.color.toMcolor
 import matt.compose.graphics.mods.thenIf
-import matt.compose.state.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOf
 import matt.file.commons.reg.TEMP_DIR
 import matt.image.desktop.save
 import matt.log.warn.common.warn

@@ -7,16 +7,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import matt.caching.compcache.ComputeCacheContextImpl
-import matt.compose.state.readOnly
+import matt.compose.state.readonly.readOnly
 import matt.compose.state.toggle.NewToggleMechanism
 import matt.file.common.toAbsLinuxFile
 import matt.file.construct.mFile
 import matt.file.model.file.types.Cbor
 import matt.file.model.file.types.TypedFile
 import matt.file.types.checkType
-import matt.lang.common.unsafeErr
+import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
-import matt.lang.model.file.MacFileSystem
 import matt.model.data.message.AbsLinuxFile
 import matt.nn.deephys.gui.modelvis.ModelVisualizerState
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -27,12 +26,15 @@ import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
+import matt.prim.common.exportfromlang.model.file.MacFileSystem
 
 const val BIND_BUTTON_NAME = "Lead"
 const val NORMALIZER_BUTTON_NAME = "Normalizer"
 
 
-class DSetViewsState {
+class DSetViewsState(
+    private val deephyState: DeephyState
+) {
 
     private val cacheContext = ComputeCacheContextImpl()
     var modelVisualizer: ModelVisualizerState? = null
@@ -49,7 +51,7 @@ class DSetViewsState {
     val datasets = mutableStateListOf<DatasetViewerState>()
 
     operator fun plusAssign(file: TypedFile<Cbor, *>) {
-        unsafeErr(
+        unsafeError(
             """
             this += DatasetViewer(file, this, settings, cacheContext)        
             """.trimIndent()
@@ -64,7 +66,7 @@ class DSetViewsState {
 
 
     fun save() {
-        DeephyState.tests.value = datasets.mapNotNull { it.file.value?.toAbsLinuxFile() }
+        deephyState.tests.value = datasets.mapNotNull { it.file.value?.toAbsLinuxFile() }
     }
 
 
@@ -128,7 +130,7 @@ class DSetViewsState {
         viewer: DatasetViewerState?,
         makeInDToo: Boolean = false
     ) {
-        unsafeErr(
+        unsafeError(
             """
             bindToggleGroup.selectedValue v viewer
             if (makeInDToo) {
@@ -151,7 +153,7 @@ class DSetViewsState {
 
 
     private fun removeTest(t: DatasetViewerState) {
-        unsafeErr(
+        unsafeError(
             """
             println("removing test: ${t.file.value}")
             if (bound.value == t) bindToggleGroup.selectedValue.value = null
@@ -183,7 +185,7 @@ class DSetViewsState {
 
     @Suppress("UnusedParameter")
     private fun flashControls(controls: Collection<ControlWrapper>) {
-        unsafeErr(
+        unsafeError(
             """
                        val t =
                 timeline {
