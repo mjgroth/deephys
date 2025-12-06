@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.dsetsbox
 
 import androidx.compose.foundation.layout.Column
@@ -31,12 +29,13 @@ import matt.prim.common.exportfromlang.model.file.MacFileSystem
 const val BIND_BUTTON_NAME = "Lead"
 const val NORMALIZER_BUTTON_NAME = "Normalizer"
 
-
 class DSetViewsState(
     private val deephyState: DeephyState
 ) {
 
+    @Suppress("unused")
     private val cacheContext = ComputeCacheContextImpl()
+    @Suppress("unused")
     var modelVisualizer: ModelVisualizerState? = null
     private val bindToggleGroup = NewToggleMechanism<DatasetViewerState>(unsafeReturningErr())
     private val boundM =
@@ -63,17 +62,14 @@ class DSetViewsState(
         }
     }
 
-
-
     fun save() {
         deephyState.tests.value = datasets.mapNotNull { it.file.value?.toAbsLinuxFile() }
     }
 
-
     @Suppress("UnusedParameter")
     fun createBindToggleButton(
-        parent: NodeWrapper,
-        viewer: DatasetViewerState
+        @Suppress("unused") parent: NodeWrapper,
+        @Suppress("unused") viewer: DatasetViewerState
     ): Any =
         unsafeReturningErr(
             """
@@ -93,8 +89,8 @@ class DSetViewsState(
 
     @Suppress("UnusedParameter")
     fun createInDToggleButton(
-        parent: NodeWrapper,
-        viewer: DatasetViewerState
+        @Suppress("unused") parent: NodeWrapper,
+        @Suppress("unused") viewer: DatasetViewerState
     ): Any =
         unsafeReturningErr(
             """
@@ -124,11 +120,10 @@ class DSetViewsState(
             """.trimIndent()
         )
 
-
     @Suppress("UnusedParameter")
     fun selectViewerToBind(
-        viewer: DatasetViewerState?,
-        makeInDToo: Boolean = false
+        @Suppress("unused") viewer: DatasetViewerState?,
+        @Suppress("unused") makeInDToo: Boolean = false
     ) {
         unsafeError(
             """
@@ -140,7 +135,7 @@ class DSetViewsState(
         )
     }
 
-
+    @Suppress("unused")
     fun addTest(): DatasetViewerState =
         unsafeReturningErr(
             """
@@ -150,9 +145,7 @@ class DSetViewsState(
             """.trimIndent()
         )
 
-
-
-    private fun removeTest(t: DatasetViewerState) {
+    fun removeTest(t: DatasetViewerState) {
         unsafeError(
             """
             println("removing test: ${t.file.value}")
@@ -166,6 +159,7 @@ class DSetViewsState(
         )
     }
 
+    @Suppress("unused")
     fun removeAllTests() {
         /*need the toList here since concurrent modification exception is NOT being thrown and actually causing bugs*/
         datasets.toList().forEach {
@@ -184,7 +178,9 @@ class DSetViewsState(
     }
 
     @Suppress("UnusedParameter")
-    private fun flashControls(controls: Collection<ControlWrapper>) {
+    private fun flashControls(
+        @Suppress("unused") controls: Collection<ControlWrapper>
+    ) {
         unsafeError(
             """
                        val t =
@@ -228,6 +224,7 @@ class DSetViewsState(
         )
     }
 
+    @Suppress("unused")
     val highlightedNeurons: MyBinding<*> =
         unsafeReturningErr(
             """
@@ -249,8 +246,7 @@ class DSetViewsState(
         )
 }
 
-
-@Suppress("UnusedParameter")
+@Suppress("UnusedParameter", "unused")
 @Composable
 fun DSetViewsVBox(
     state: DSetViewsState,
@@ -259,7 +255,7 @@ fun DSetViewsVBox(
 ) {
     Column {
         state.datasets.forEach {
-            DatasetViewer(it)
+            DatasetViewer(it, settings)
         }
     }
 }

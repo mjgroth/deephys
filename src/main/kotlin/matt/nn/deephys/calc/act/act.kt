@@ -1,9 +1,9 @@
 package matt.nn.deephys.calc.act
 
 import matt.lang.anno.Open
-import matt.lang.assertions.require.requireOne
 import matt.lang.mathable.DoubleWrapper
 import matt.lang.mathable.NumberWrapper
+import matt.lang.passert.powerRequire
 import matt.math.numalg.precision.withPrecision
 import matt.model.data.mathable.FloatWrapper
 
@@ -12,7 +12,6 @@ sealed interface Activation<N : Number, T : Activation<N, T>> : NumberWrapper<T>
     val formatted: String
     val extraInfo: String?
 }
-
 
 sealed interface ActivationFloat32<T : ActivationFloat32<T>> : Activation<Float, T>, FloatWrapper<T> {
     override val value: Float
@@ -28,7 +27,6 @@ sealed interface ActivationFloat64<T : ActivationFloat64<T>> : Activation<Double
         get() = value
 }
 
-
 sealed interface AlwaysOneActivation<N : Number, T : AlwaysOneActivation<N, T>> : Activation<N, T> {
     @Open override val extraInfo get() = null /*"In this case, the activation is always exactly 1"*/
 }
@@ -37,7 +35,7 @@ object AlwaysOneActivationFloat32 :
     AlwaysOneActivation<Float, AlwaysOneActivationFloat32>,
     ActivationFloat32<AlwaysOneActivationFloat32> {
     override fun fromFloat(d: Float): AlwaysOneActivationFloat32 {
-        requireOne(d)
+        powerRequire(d == 1f)
         return AlwaysOneActivationFloat32
     }
 
@@ -49,7 +47,7 @@ object AlwaysOneActivationFloat64 :
     AlwaysOneActivation<Double, AlwaysOneActivationFloat64>,
     ActivationFloat64<AlwaysOneActivationFloat64> {
     override fun fromDouble(d: Double): AlwaysOneActivationFloat64 {
-        requireOne(d)
+        powerRequire(d == 1.0)
         return AlwaysOneActivationFloat64
     }
 
@@ -57,9 +55,7 @@ object AlwaysOneActivationFloat64 :
     override val formatted: String get() = ""
 }
 
-
 sealed interface RawActivation<A : Number, T : RawActivation<A, T>> : Activation<A, T> {
-
 
     companion object {
         const val RAW_ACT_SYMBOL = "max"
@@ -74,7 +70,6 @@ value class RawActivationFloat32(override val value: Float) :
     RawActivation<Float, RawActivationFloat32>,
     ActivationFloat32<RawActivationFloat32> {
 
-
     override val formatted get() = "${RawActivation.RAW_ACT_SYMBOL}: ${value.withPrecision(3)}"
     override fun fromFloat(d: Float): RawActivationFloat32 = RawActivationFloat32(d)
 }
@@ -83,7 +78,6 @@ value class RawActivationFloat32(override val value: Float) :
 value class RawActivationFloat64(override val value: Double) :
     RawActivation<Double, RawActivationFloat64>,
     ActivationFloat64<RawActivationFloat64> {
-
 
     override val formatted get() = "${RawActivation.RAW_ACT_SYMBOL}: ${value.withPrecision(3)}"
     override fun fromDouble(d: Double): RawActivationFloat64 = RawActivationFloat64(d)
@@ -152,10 +146,7 @@ value class NormalActivationFloat64(override val value: Double): NormalActivatio
 }
 */
 
-
-
 sealed interface ActivationRatio<A : Number, T : ActivationRatio<A, T>> : Activation<A, T> {
-
 
     companion object {
         const val ACT_RATIO_SYMBOL = "%"
@@ -174,7 +165,6 @@ value class ActivationRatioFloat32(override val value: Float) :
     ActivationRatio<Float, ActivationRatioFloat32>,
     ActivationFloat32<ActivationRatioFloat32> {
 
-
     override val formatted get() = "max: ${(value * 100).withPrecision(3)}${ActivationRatio.ACT_RATIO_SYMBOL}"
     override fun plus(m: ActivationRatioFloat32): ActivationRatioFloat32 = ActivationRatioFloat32(value + m.value)
 
@@ -183,12 +173,10 @@ value class ActivationRatioFloat32(override val value: Float) :
     override fun div(n: Number): ActivationRatioFloat32 = ActivationRatioFloat32(value / n.toFloat())
 }
 
-
 @JvmInline
 value class ActivationRatioFloat64(override val value: Double) :
     ActivationRatio<Double, ActivationRatioFloat64>,
     ActivationFloat64<ActivationRatioFloat64> {
-
 
     override val formatted get() = "max: ${(value * 100).withPrecision(3)}${ActivationRatio.ACT_RATIO_SYMBOL}"
     override fun plus(m: ActivationRatioFloat64): ActivationRatioFloat64 = ActivationRatioFloat64(value + m.value)
@@ -197,7 +185,3 @@ value class ActivationRatioFloat64(override val value: Double) :
 
     override fun div(n: Number): ActivationRatioFloat64 = ActivationRatioFloat64(value / n.toDouble())
 }
-
-
-
-

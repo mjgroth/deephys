@@ -1,7 +1,6 @@
-@file:Suppress("unused", "NoDuplicatedTypeNames")
+@file:Suppress("NoDuplicatedTypeNames")
 
 package matt.nn.deephys.load.test
-
 
 import matt.async.thread.daemon
 import matt.cbor.err.CborParseException
@@ -11,8 +10,8 @@ import matt.cbor.read.streamman.cborReader
 import matt.file.model.file.types.Cbor
 import matt.file.model.file.types.TypedFile
 import matt.file.toJioFile
-import matt.lang.assertions.require.requireEquals
 import matt.lang.assertions.require.requireNot
+import matt.lang.passert.powerRequire
 import matt.log.warn.common.warn
 import matt.model.code.errreport.createThrowReport
 import matt.model.obj.single.SingleCall
@@ -47,7 +46,6 @@ class TestLoader(
     settings: DeephysSettingsController
 ) : AsyncLoader(file), TestOrLoader {
 
-
     override fun isDoneLoading(): Boolean =
         postDtypeTestLoader.getOrNullIfLoading()?.run {
             requireLoaded().isDoneLoading()
@@ -58,14 +56,13 @@ class TestLoader(
     override val dtype get() = postDtypeTestLoader.awaitRequireSuccessful().dtype
     private fun awaitFinishedTest() = postDtypeTestLoader.await().requireLoaded().awaitFinishedTest()
 
-    private val testName = DirectLoadedOrFailedValueSlot<String>()
+    val testName = DirectLoadedOrFailedValueSlot<String>()
 
     override val finishedLoadingAwaitable by lazy { postDtypeTestLoader.chainedTo { it.finishedTest } }
 
     val numImages = DirectLoadedOrFailedValueSlot<ULong>()
     private val loadedCategories = DirectLoadedOrFailedValueSlot<List<Category>>()
     private val didLoadCategories = DirectLoadedOrFailedValueSlot<Boolean>()
-
 
     var postDtypeTestLoader = DirectLoadedOrFailedValueSlot<PostDtypeTestLoader<*>>()
 
@@ -83,7 +80,6 @@ class TestLoader(
             it.id == id
         }
     }
-
 
     val infoString by lazy {
         string {
@@ -116,9 +112,7 @@ class TestLoader(
         val key = key ?: name
     }
 
-
-    private val loadWarnings = basicMutableObservableListOf<String>()
-
+    val loadWarnings = basicMutableObservableListOf<String>()
 
     val start =
         SingleCall {
@@ -148,7 +142,6 @@ class TestLoader(
 
                         var imagesWereRead = false
                         var catsWereRead = false
-
 
                         repeat(countInt) { keyIdx: Int ->
                             println("keyIdx=$keyIdx")
@@ -207,7 +200,7 @@ class TestLoader(
 
                                 Keys.images  -> {
 
-                                    requireEquals(keyIdx, countInt - 1)
+                                    powerRequire(keyIdx == countInt - 1)
                                     if (!catsWereRead) {
 
                                         loadWarnings +=
@@ -226,10 +219,7 @@ class TestLoader(
                             }
                         }
 
-
                         val thePost = postDtypeTestLoader.getOrNullIfLoading()!!.requireLoaded()
-
-
 
                         thePost.imageSetLoader.neuronActCacheTools!!.forEach {
                             it.myFinalize()
@@ -244,7 +234,6 @@ class TestLoader(
                             cats = if (didLoadCategories.awaitRequireSuccessful()) loadedCategories.awaitRequireSuccessful() else null
                         )
 
-                        println("load2")
                         signalFinishedLoading()
                     }
                     stream.close()
@@ -261,9 +250,7 @@ class TestLoader(
             }
         }
 
-
     override val testRAMCache by lazy { TestRAMCache(settings) }
-
 
     val progress = TestLoadingProgress()
 }
@@ -299,10 +286,10 @@ class PostDtypeTestLoader<D: Number>(
     internal val finishedTest = testLoader.DirectLoadedOrFailedValueSlot<Test<D>>()
     val imageSetLoader = ImageSetLoader<D>(testLoader, this)
     internal val datasetHDCache = imageSetLoader.datasetHDCache
+    @Suppress("unused")
     fun awaitNonUniformRandomImage() = imageSetLoader.finishedImages.awaitRequireSuccessful().random()
     fun awaitImage(index: Int) = imageSetLoader.finishedImages.awaitRequireSuccessful()[index]
     fun awaitFinishedTest(): Test<D> = finishedTest.awaitRequireSuccessful()
-
 
     fun readImages(reader: MapReader) {
         imageSetLoader.readImages(
@@ -337,8 +324,6 @@ class PostDtypeTestLoader<D: Number>(
         )
     }
 }
-
-
 
 @Suppress("serial")
 class LoadException(message: String) : Exception(message)

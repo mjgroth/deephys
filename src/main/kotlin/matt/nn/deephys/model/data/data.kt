@@ -1,11 +1,10 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.model.data
 
 import androidx.compose.runtime.Composable
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.invoke
-import matt.lang.assertions.require.requireEquals
+import matt.lang.compare.CompareTo
+import matt.lang.passert.powerRequire
 import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.act.Activation
@@ -23,7 +22,6 @@ import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.converters.StringConverter
 import matt.prim.str.truncateWithEllipsesOrAddSpacesAsNeeded
 
-
 data class InterTestLayer(
     val index: Int,
     override val layerID: String,
@@ -40,6 +38,7 @@ data class InterTestNeuron(
 ) {
 
     companion object {
+        @Suppress("unused")
         fun stringConverterThatFallsBackToFirst(neurons: List<InterTestNeuron>) =
             object : StringConverter<InterTestNeuron> {
                 override fun toString(t: InterTestNeuron): String = "${t.index}"
@@ -49,6 +48,7 @@ data class InterTestNeuron(
     }
 
     private fun <A : Number> activation(image: DeephyImage<A>) = image.activationFor(this)
+    @Suppress("unused")
     fun averageActivation(
         category: Category,
         testLoader: TypedTestLike<*>
@@ -73,7 +73,6 @@ data class InterTestNeuron(
         )
     }
 
-
     fun <N : Number> maxActivationIn(
         test: TypedTestLike<N>
     ) = test.dtype.rawActivation(test.test.maxActivations[this])
@@ -92,11 +91,10 @@ data class InterTestNeuron(
         }
 }
 
-
 @JvmInline
 value class ImageIndex(val index: Int)
 
-sealed interface CategorySelection {
+sealed class CategorySelection: Comparable<CategorySelection> {
 
     companion object {
         fun stringConverterThatFallsBackToFirst(cats: List<Category>) =
@@ -107,18 +105,48 @@ sealed interface CategorySelection {
             }
     }
 
+    abstract val title: String
+    abstract val primaryCategory: Category
+    abstract val allCategories: Sequence<Category>
+    abstract fun forTest(test: TestOrLoader): CategorySelection
 
-    val title: String
-    val primaryCategory: Category
-    val allCategories: Sequence<Category>
-    fun forTest(test: TestOrLoader): CategorySelection
+    final override fun compareTo(other: CategorySelection): Int =
+        when (this) {
+            is Category          -> {
+                when (other) {
+                    is Category          -> {
+                        this.id.compareTo(other.id)
+                    }
+
+                    is CategoryConfusion -> {
+                        CompareTo.THIS_IS_LOWER
+                    }
+                }
+            }
+
+            is CategoryConfusion -> {
+                when (other) {
+                    is Category          -> {
+                        CompareTo.THIS_IS_HIGHER
+                    }
+
+                    is CategoryConfusion -> {
+                        val maybe = this.first.compareTo(other.first)
+                        if (maybe == 0) {
+                            this.second.compareTo(other.second)
+                        } else {
+                            maybe
+                        }
+                    }
+                }
+            }
+        }
 }
 
 data class Category(
     val id: Int,
     val label: String
-) : CategorySelection {
-
+) : CategorySelection() {
 
     @Composable
     fun ActionText(
@@ -131,7 +159,6 @@ data class Category(
             weakViewer.deref()!!.navigateTo(this)
         }
     }
-
 
     override val title = label
     override val primaryCategory = this
@@ -146,7 +173,6 @@ data class Category(
                 it.activationFor(neuron).value
             }
 
-
         return testLoader.dtype.rawActivation(
             testLoader.dtype.mean(acts)
             /*acts.average().toFloat()*/
@@ -155,7 +181,7 @@ data class Category(
 
     override fun forTest(test: TestOrLoader): Category =
         test.test.category(id).also {
-            requireEquals(it.label, label) {
+            powerRequire(it.label == label) {
                 "label of category $id of other test doesn't match (${it.label}!=$label)"
             }
         }
@@ -164,7 +190,7 @@ data class Category(
 data class CategoryConfusion(
     val first: Category,
     val second: Category
-) : CategorySelection {
+) : CategorySelection() {
     override val title = "Category Confusion\n\t-${first.label}\n\t-${second.label}"
     override val primaryCategory = first
     override val allCategories get() = sequenceOf(first, second)
@@ -174,4 +200,3 @@ data class CategoryConfusion(
         return CategoryConfusion(first = firstOther, second = secondOther)
     }
 }
-

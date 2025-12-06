@@ -54,7 +54,6 @@ class ImageSetLoader<A: Number>(
     var neuronActCacheTools: List<Cacher>? = null
     val datasetHDCache = DeephysCacheManager.newDatasetCache()
 
-
     private var numDataBytes: Int? = null
     private var numActivationBytes: Int? = null
     private val numRead = AtomicInt(0)
@@ -62,7 +61,6 @@ class ImageSetLoader<A: Number>(
     val activationsShapePerImage = postDtypeTestLoader.createSlot<List<Int>>()
     private val numCachedPixels = AtomicInt(0)
     private val numCachedActs = AtomicInt(0)
-
 
     private var didRead = false
 
@@ -106,7 +104,6 @@ class ImageSetLoader<A: Number>(
             var activationsRAF: EvenlySizedRAFCache? = null
             var pixelsRAF: EvenlySizedRAFCache? = null
 
-
             val ACTS_FOR_NEURONS_BUFF_SIZE = 1000
             val activationByteMultiImBuffer =
                 ArrayBlockingQueue<ImageActivationCborBytes<*>>(
@@ -116,8 +113,6 @@ class ImageSetLoader<A: Number>(
                 val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
                 val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
                 val category = nextValue<String>(requireKeyIs = "category")
-
-
 
                 nextKeyOrValueOnly(requireIs = "data")
                 val imageData: ByteString =
@@ -147,7 +142,6 @@ class ImageSetLoader<A: Number>(
                     features = nextValue(requireKeyIs = "features")
                 }
 
-
                 val bytes =
                     nextValueManual<MapReader, ByteString>(
                         requireKeyIs = "activations"
@@ -173,10 +167,6 @@ class ImageSetLoader<A: Number>(
                                     )
                                 }
 
-
-
-
-
                                 println(testLoader.infoString)
                                 r
                             }.let {
@@ -189,20 +179,12 @@ class ImageSetLoader<A: Number>(
 
                 val activationsBytes = dtype.bytesThing(bytes)
 
-
-
-
-
-
                 if (numRead.addAndFetch(1) % 1000 == 0) {
                     throttle("test loader")
                 }
 
-
-
                 activationByteMultiImBuffer.put(activationsBytes)
                 if (activationByteMultiImBuffer.size == ACTS_FOR_NEURONS_BUFF_SIZE || nextImageIndex == lastImageIndex) {
-
 
                     val toolItr = neuronActCacheTools!!.iterator()
 
@@ -238,7 +220,6 @@ class ImageSetLoader<A: Number>(
                         dtype = dtype
                     ).apply {
 
-
                     /*  daemonPool.execute {
                         disabledCode {
                           activations.strong {
@@ -267,7 +248,6 @@ class ImageSetLoader<A: Number>(
                             if (n == numImsInt) datasetHDCache.pixelsRAF.closeWriting()
                         }
                     }
-
 
                 finishedImagesBuilder += deephyImage
                 if (nextImageIndex % 100 == 0) {

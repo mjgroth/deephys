@@ -1,5 +1,3 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
-
 package matt.nn.deephys
 
 import androidx.compose.foundation.layout.Column
@@ -50,12 +48,10 @@ fun main(args: DeephysArgs) {
     }
 }
 
-
-
-context(AutomationContext)
 @Suppress("unused")
 @Recycle
 @Composable
+context(automationContext: AutomationContext)
 fun SubmitBugReportButton(t: Thread, e: Exception) {
     val submitting = rememberMutableStateOf(false)
     val scope = rememberCoroutineScope()
@@ -89,16 +85,16 @@ fun SubmitBugReportButton(t: Thread, e: Exception) {
             submittedUrl.value?.go { url ->
                 MyButton("view submitted bug") {
                     /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
-                    browse(URI(url))
+                    automationContext.browse(URI(url))
                 }
             }
         }
     }
 }
 
-context(AutomationContext)
 @Suppress("unused")
 @Recycle
+context(automationContext: AutomationContext)
 fun openNewYouTrackIssue(
     summary: String,
     description: String
@@ -112,6 +108,5 @@ fun openNewYouTrackIssue(
         ).let {
             URI(it.path)
         }
-    browse(u)
+    automationContext.browse(u)
 }
-

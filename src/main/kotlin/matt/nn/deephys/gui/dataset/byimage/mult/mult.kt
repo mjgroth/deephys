@@ -31,7 +31,7 @@ fun <A: Number> MultipleImagesView(
         Column {
 
             title?.go {
-                DeephysText("$title (${images.size})").apply {
+                DeephysText(s = "$title (${images.size})").apply {
                     subtitleFont()
                 }
             }
@@ -43,7 +43,7 @@ fun <A: Number> MultipleImagesView(
                     DeephyImView(it, viewer, settings = settings)
                 }
                 if (images.size > MAX_IMS) {
-                    DeephysText("(+${images.size - MAX_IMS} more)")
+                    DeephysText(s = "(+${images.size - MAX_IMS} more)")
                 }
             }
             neuronListViewSwapper(

@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.dataset
 
 import androidx.compose.foundation.layout.Arrangement
@@ -25,9 +23,7 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.TestLoader
 
-enum class DatasetNodeView {
-    ByNeuron, ByImage, ByCategory
-}
+enum class DatasetNodeView { ByNeuron, ByImage, ByCategory }
 
 @Composable
 fun DatasetNode(
@@ -38,11 +34,6 @@ fun DatasetNode(
     Column(
         verticalArrangement = Arrangement.spacedBy(DEEPHYS_SYMBOL_SPACING.dp)
     ) {
-
-
-
-
-
 
         Row(
             horizontalArrangement = Arrangement.spacedBy((DEEPHYS_SYMBOL_SPACING * 2).dp)

@@ -1,5 +1,4 @@
-
-@file:Suppress("unused", "UnusedParameter")
+@file:Suppress("UnusedParameter")
 
 package matt.nn.deephys.gui.settings.gui
 
@@ -9,6 +8,7 @@ import androidx.compose.runtime.Composable
 import matt.lang.common.unsafeError
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 
+@Suppress("unused")
 @Composable
 fun SettingsWindow(settings: DeephysSettingsController) {
     unsafeError(
@@ -54,9 +54,7 @@ fun SettingsWindow(settings: DeephysSettingsController) {
                                     this@SettingsWindow.initOwner(it)
                                 }
                             }
-                            println("waiting...")
                             this@SettingsWindow.showAndWait()
-                            println("done waiting")
                         }
                     }
                 }
@@ -65,8 +63,7 @@ fun SettingsWindow(settings: DeephysSettingsController) {
     )
 }
 
-
-
+@Suppress("unused")
 @Composable
 fun SettingsPane(settings: DeephysSettingsController) =
     Column {

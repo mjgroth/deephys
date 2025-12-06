@@ -3,9 +3,7 @@ package matt.nn.deephys.gui.navbox.zoo
 import matt.http.s3.rawS3Url
 import matt.prim.common.exportfromlang.model.url.MURL
 
-
 object NeuronalActivityZoo {
-
 
     val EXAMPLES =
         listOf(
@@ -55,7 +53,6 @@ object NeuronalActivityZoo {
                     )
             )
         )
-
 
     private fun zooURL(path: String) =
         rawS3Url(

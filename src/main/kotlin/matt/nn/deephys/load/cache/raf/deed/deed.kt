@@ -1,5 +1,4 @@
 @file:OptIn(UnsafeByteStringApi::class)
-@file:Suppress("unused")
 
 package matt.nn.deephys.load.cache.raf.deed
 
@@ -7,6 +6,8 @@ import kotlinx.io.bytestring.ByteString
 import kotlinx.io.bytestring.getByteString
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringApi
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
+import matt.lang.sync.common.SimpleReferenceMonitor
+import matt.lang.sync.common.withLock
 import matt.nn.deephys.load.cache.raf.AsyncSparseWriter
 import matt.nn.deephys.load.cache.raf.DeedKey
 import matt.nn.deephys.load.cache.raf.RAFCacheImpl
@@ -32,7 +33,6 @@ sealed interface Deed {
     fun read(): ByteString
 }
 
-
 @OptIn(UnsafeByteStringApi::class)
 class DeedImpl(
     private val startIndexInclusive: Long,
@@ -49,7 +49,7 @@ class DeedImpl(
         if (rafCache.closedWriting()) {
             val readerRAF = nextReader()
             val buff = ByteArray(size)
-            synchronized(readerRAF) {
+            readerRAF.monitor.withLock {
                 readerRAF.apply {
                     readFully(startIndexInclusive, buff)
                 }
@@ -57,7 +57,7 @@ class DeedImpl(
             return UnsafeByteStringOperations.wrapUnsafe(buff)
         }
         val buff = ByteArray(size)
-        synchronized(rafCache) {
+        rafCache.monitor.withLock {
             raf().apply {
                 readFully(startIndexInclusive, buff)
             }
@@ -66,30 +66,35 @@ class DeedImpl(
     }
 
     private inner class DeedOutputStream(private var offset: Int) : OutputStream() {
-        @Synchronized
+        private val monitor = SimpleReferenceMonitor()
         override fun write(b: Int) {
-            this@DeedImpl.write(b, offset++)
+            monitor.withLock {
+                this@DeedImpl.write(b, offset++)
+            }
         }
 
         @OptIn(UnsafeByteStringApi::class)
-        @Synchronized
         override fun write(
             b: ByteArray,
             off: Int,
             len: Int
         ) {
-            /*The most unsafe ByteString wrap I have ever made*/
-            this@DeedImpl.write(UnsafeByteStringOperations.wrapUnsafe(b), off, len, offset)
-            offset += len
+            monitor.withLock {
+                /*The most unsafe ByteString wrap I have ever made*/
+                this@DeedImpl.write(UnsafeByteStringOperations.wrapUnsafe(b), off, len, offset)
+                offset += len
+            }
         }
     }
 
     override fun outputStream(offset: Int): OutputStream = DeedOutputStream(offset)
 
+    @Suppress("unused")
     fun write(byte: Byte) {
         raf().write(startIndexInclusive, byte.toInt())
     }
 
+    @Suppress("unused")
     fun write(
         byte: Byte,
         destOffset: Int
@@ -97,6 +102,7 @@ class DeedImpl(
         raf().write(startIndexInclusive + destOffset, byte.toInt())
     }
 
+    @Suppress("unused")
     fun write(byte: Int) {
         raf().write(startIndexInclusive, byte)
     }
@@ -134,7 +140,7 @@ class DeedImpl(
         val r = raf()
         when (r) {
             is SeekableRAFLike   -> {
-                synchronized(rafCache) {
+                rafCache.monitor.withLock {
                     r.seek(startIndexInclusive)
                     r.channel.write(bytes)
                 }
@@ -153,7 +159,7 @@ class DeedImpl(
         val r = raf()
         when (r) {
             is SeekableRAFLike   -> {
-                synchronized(rafCache) {
+                rafCache.monitor.withLock {
                     r.seek(startIndexInclusive + destOffset)
                     r.channel.write(bytes)
                 }

@@ -31,7 +31,6 @@ import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
 
-
 private var didWarnAboutCombiningMethods = false
 
 @Suppress("UnusedParameter")
@@ -102,7 +101,6 @@ fun DeephyImView(
                                 }
                             }
 
-
                             require(pngFile.path.endsWith(".png"))
                             bi.save(pngFile)
                         }
@@ -127,7 +125,6 @@ fun DeephyImView(
             ) {
                 matt.compose.graphics.image.desktop.MyImage(
                     im.toSkiaImage(),
-                    loadingIndicatorSize = 10.dp /*idk*/,
                     modifier =
                         Modifier
                             .onClick {

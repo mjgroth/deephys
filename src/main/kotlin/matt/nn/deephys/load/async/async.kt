@@ -35,7 +35,6 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
         (streamOk as BindableProperty).value = false
     }
 
-
     protected fun signalParseError(e: Exception) {
         failableValueSlots.forEach {
             it.admitFailureIfNotDone(e.toString())
@@ -46,7 +45,6 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
     protected fun signalFinishedLoading() {
         (finishedLoading as BindableProperty).value = true
     }
-
 
     sealed interface LoadedOrFailed<T> : FailableIdea {
         @Open
@@ -59,7 +57,6 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
         override fun toString(): String = "Failed: $message"
     }
 
-
     private val failableValueSlots = mutableListOf<DirectLoadedOrFailedValueSlot<*>>()
 
     interface LoadedOrFailedValueSlot<T>: ThreadAwaitable<T> {
@@ -67,19 +64,17 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
     }
     inner class DirectLoadedOrFailedValueSlot<T> : Async<LoadedOrFailed<T>>(), LoadedOrFailedValueSlot<LoadedOrFailed<T>> {
 
-
         init {
             failableValueSlots += this
         }
 
-
-        @Synchronized
         fun putLoadedValue(t: T) {
-            require(latch!!.isClosed)
-            value = Loaded(t)
-            openAndDisposeLatch()
+            monitor.withLock {
+                require(latch!!.isClosed)
+                value = Loaded(t)
+                openAndDisposeLatch()
+            }
         }
-
 
         fun admitFailureIfNotDone(message: String) {
             if (!isDone()) {

@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.viewer.tutorial.bind
 
 import androidx.compose.foundation.layout.Column
@@ -24,7 +22,7 @@ fun BindTutorial(viewer: DatasetViewerState) {
             (viewer.isUnboundToDSet.value || viewer.normalizer.value == null)
         ) {
             SpacerWithOldFxSize()
-            DeephysText("In order to visualize this dataset in comparison to other datasets:")
+            DeephysText(s = "In order to visualize this dataset in comparison to other datasets:")
             Row {
                 SpacerWithOldFxSize()
                 Column {

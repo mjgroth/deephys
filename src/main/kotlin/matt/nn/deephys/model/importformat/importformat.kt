@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.model.importformat
 
 import com.google.common.collect.MapMaker
@@ -37,7 +35,6 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.max
 import java.lang.ref.WeakReference
 import kotlin.collections.set
 
-
 sealed interface DeephyFileObject {
     val name: String
 }
@@ -49,7 +46,7 @@ class Model(
     override val name: String,
     private val suffix: String? = SUFFIX_NOT_PRESENT,
     val layers: List<Layer>,
-    val classification_layer: String = "classification"
+    @Suppress("ConstructorParameterNaming") val classification_layer: String = "classification"
 ) : DeephyFileObject {
     val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
     val neurons: List<ResolvedNeuron> by lazy { resolvedLayers.flatMap { it.neurons } }
@@ -94,15 +91,11 @@ class Test<N : Number>(
 
     override fun isDoneLoading(): Boolean = true
 
-
-
-
     override fun numberOfImages(): ULong = images.size.toULong()
 
     override fun imageAtIndex(i: Int): DeephyImage<N> = images[i]
 
     override val test = this
-
 
     fun putTestNeurons(map: Map<InterTestNeuron, TestNeuron<N>>) {
 
@@ -110,7 +103,6 @@ class Test<N : Number>(
     }
 
     private val testNeurons = LoadedValueSlot<Map<InterTestNeuron, TestNeuron<N>>>()
-
 
     fun category(id: Int) = catsByID[id]!!
     /*images.find { it.category.id == id }!!.category*/
@@ -127,7 +119,6 @@ class Test<N : Number>(
         categories.associateBy { it.id }
     }
 
-
     private val imagesByCategoryID by lazy {
         val r = categories.associateWith { setOf<DeephyImage<N>>() }.toMutableMap()
         val toPut = this@Test.images.groupBy { it.category }.mapValues { it.value.toSet() }
@@ -138,26 +129,23 @@ class Test<N : Number>(
     fun imagesWithGroundTruth(category: Category): Set<DeephyImage<N>> = imagesByCategoryID[category.id] ?: setOf()
     fun imagesWithoutGroundTruth(category: Category) = images - (imagesByCategoryID[category.id] ?: setOf())
 
-
     init {
         listOf(listOf(1.0)).toNDArray()
     }
 
+    @Suppress("unused")
     private val activationsMatByLayerIndex =
         lazyWeakMap<Int, D2Array<N>> { lay ->
-
 
             val list =
                 this@Test.images.map {
                     it.weakActivations[lay]/*.asList()*/
                 } /*.toNDArray()*/
 
-
             dtype.d2array(list)
 
             /* 1 */
         }
-
 
     val activationsByNeuron: Map<InterTestNeuron, MultiArray<N, D1>> =
         MapMaker()
@@ -166,7 +154,6 @@ class Test<N : Number>(
             .weakValues()
             .makeMap<InterTestNeuron, MultiArray<N, D1>>()
             .withStoringDefault {
-
 
                 val theTestNeuron = testNeurons.await()[it]
 
@@ -203,7 +190,6 @@ class Test<N : Number>(
 
       }*/
 
-
     val maxActivations =
         lazyMap<InterTestNeuron, N> { neuron ->
 
@@ -222,7 +208,6 @@ class Test<N : Number>(
             println("finished preloading all maxActivations of $name!")
         }
     }
-
 
     val preds =
         run {
@@ -269,5 +254,3 @@ class Test<N : Number>(
             }
         }
 }
-
-

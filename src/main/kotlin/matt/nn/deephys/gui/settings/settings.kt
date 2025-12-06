@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.settings
 
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +16,6 @@ import matt.file.commons.reg.RegisteredFolder
 import matt.lang.common.unsafeError
 import matt.log.report.desktop.MemReport
 import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
-
 
 fun DeephySettingsNodeNode(scope: CoroutineScope) =
     stateStructureDatabase<DeephySettingsNode>(
@@ -54,7 +51,6 @@ const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
 const val MAX_NUM_IMAGES_IN_TOP_IMAGES = 100
 const val DEFAULT_BIG_IMAGE_SCALE = 128.0
 
-
 private object DeephySettingsSerializer: KSerializer<DeephysSettingsController> by StateStructSerializer.createVersioned(
     DeephysSettingsController::class,
     classVersion = 4
@@ -62,7 +58,6 @@ private object DeephySettingsSerializer: KSerializer<DeephysSettingsController> 
 
 @Serializable(with = DeephySettingsSerializer::class)
 class DeephysSettingsController : SettingsData("Main Settings") {
-
 
     val fakeSettingToForceLoading by DoubleSettingProv(
         defaultValue = 1.0,
@@ -87,7 +82,6 @@ class DeephysSettingsController : SettingsData("Main Settings") {
         label = "Show Tutorials",
         tooltip = "Show Interactive Tutorials Throughout the app"
     )
-
 
     val debug by registeredSubStateValue { DebugSettings() }
 }
@@ -130,7 +124,6 @@ class AppearanceSettings : SettingsData("Appearance") {
     )
 }
 
-
 class DebugSettings : SettingsData("Debug") {
 
     val showCacheBars by BoolSettingProv(
@@ -139,12 +132,14 @@ class DebugSettings : SettingsData("Debug") {
         tooltip = "Extra progress bars indicating the progress of data caching."
     )
 
+    @Suppress("unused")
     val verboseLogging by BoolSettingProv(
         defaultValue = false,
         label = "Verbose Logging",
         tooltip = "Extra logging to standard out. May impact performance."
     )
 
+    @Suppress("unused")
     val resetSettings =
         SimpleAction(
             "Reset all settings to default",
@@ -155,6 +150,7 @@ class DebugSettings : SettingsData("Debug") {
             }
         }
 
+    @Suppress("unused")
     val deleteState =
         SimpleAction(
             "Delete State",
@@ -163,7 +159,7 @@ class DebugSettings : SettingsData("Debug") {
             unsafeError("DeephyState.delete()")
         }
 
-
+    @Suppress("unused")
     val printRamInfo =
         SimpleAction(
             "Print RAM info to console",
@@ -172,7 +168,7 @@ class DebugSettings : SettingsData("Debug") {
             println(MemReport())
         }
 
-
+    @Suppress("unused")
     val printThreadInfo =
         SimpleAction(
             "Print thread info to console",
@@ -181,6 +177,7 @@ class DebugSettings : SettingsData("Debug") {
             println(ThreadReport())
         }
 
+    @Suppress("unused")
     val openLogFolder =
         SimpleAction(
             "Open Log Folder",

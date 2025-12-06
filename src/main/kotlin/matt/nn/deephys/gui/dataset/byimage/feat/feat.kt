@@ -13,18 +13,18 @@ fun FeaturesView(
     features: Map<String, String>
 ) {
     Column {
-        DeephysText("Features:", font = subtitleFont())
+        DeephysText(s = "Features:", style = subtitleFont())
         SpacerWithOldFxSize()
         Row {
             val entries = features.entries
             Column {
                 entries.forEach {
-                    DeephysText(it.key.truncateWithEllipsesOrAddSpaces(25))
+                    DeephysText(s = it.key.truncateWithEllipsesOrAddSpaces(25))
                 }
             }
             SpacerWithOldFxSize()
             Column {
-                entries.forEach { DeephysText(it.value) }
+                entries.forEach { DeephysText(s = it.value) }
             }
         }
     }

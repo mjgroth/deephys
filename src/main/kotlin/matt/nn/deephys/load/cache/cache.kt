@@ -1,4 +1,4 @@
-@file:Suppress("SyntheticAccessor", "unused", "NoDuplicatedTypeNames")
+@file:Suppress("NoDuplicatedTypeNames")
 
 package matt.nn.deephys.load.cache
 
@@ -7,6 +7,8 @@ import matt.file.ext.j.mkFold
 import matt.file.ext.j.readByteString
 import matt.file.toJioFile
 import matt.lang.function.Produce
+import matt.lang.sync.common.SimpleReferenceMonitor
+import matt.lang.sync.common.withLock
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.DelegatedSlot
 import matt.nn.deephys.gui.DEEPHY_USER_DATA_DIR
@@ -16,7 +18,6 @@ import matt.nn.deephys.load.cache.raf.RAFCacheImpl
 import matt.prim.common.exportfromlang.model.file.FsFile
 import matt.prim.j.bs.write
 import matt.sys.idgen.IDGenerator
-
 
 object DeephysCacheManager {
 
@@ -38,12 +39,10 @@ object DeephysCacheManager {
         }
 
     private val idGenerator = IDGenerator(taken = oldDatasetIDs)
-
-    @Synchronized
-    private fun getNextDatasetID() = idGenerator.next()
+    private val monitor = SimpleReferenceMonitor()
+    private fun getNextDatasetID() = monitor.withLock { idGenerator.next() }
 
     fun newDatasetCache() = DatasetCache(DATA_SETS_CACHE_DIR.mkFold(getNextDatasetID()).toJioFile())
-
 
     class DatasetCache(
         folder: FsFile
@@ -58,14 +57,13 @@ interface Cacheable {
     val cacheID: Int
 }
 
-
+@Suppress("unused")
 abstract class FileCaches(
     private val rootCacheFolder: FsFile
 ) : Caches(), Cacheable {
     private val cacheFold by lazy {
         rootCacheFolder.toJioFile().mkFold("$cacheID")
     }
-
 
     abstract inner class CachedFileProp<R : Any> protected constructor() : CachedProp<R>() {
 
@@ -123,6 +121,7 @@ abstract class Caches {
     abstract inner class CachedProp<R : Any> protected constructor() : ThreadAwaitable<R> {
         private val slot = DelegatedSlot<R>()
         final override fun await() = slot.await()
+        @Suppress("unused")
         fun strong(r: R) {
             slot.putGetter { r }
         }
@@ -139,5 +138,3 @@ abstract class Caches {
         protected abstract fun decode(bytes: ByteString): R
     }
 }
-
-

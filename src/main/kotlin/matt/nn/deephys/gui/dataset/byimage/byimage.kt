@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import matt.compose.controls.textfields.parsing.parser.SimpleBiTextParser
 import matt.compose.graphics.text.MyText
+import matt.lang.cfnf.Fail
 import matt.lang.common.go
 import matt.lang.common.unsafeError
 import matt.lang.common.unsafeReturningErr
+import matt.lang.generic.GenericFailable
 import matt.lang.weak.weak
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.dataset.byimage.feat.FeaturesView
@@ -23,7 +26,6 @@ import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.testloadertwo.PreppedTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
 
-
 @Composable
 fun <A: Number> ByImageView(
     testLoader: PreppedTestLoader<A>,
@@ -35,11 +37,20 @@ fun <A: Number> ByImageView(
 
         val images = testLoader.test.images
 
+        val converter  = DeephyImage.stringConverterThatFallsBackToFirst(images = images)
         DeephysSpinner(
             label = "Image",
             choices = images,
             defaultChoice = { images[0] },
-            converter = DeephyImage.stringConverterThatFallsBackToFirst(images = images),
+            converter =
+                object: SimpleBiTextParser<DeephyImage<A>> {
+                    override fun rawInputOf(value: DeephyImage<A>): String = converter.toString(value)
+
+                    override fun tryParse(input: String): GenericFailable<DeephyImage<A>, Fail> {
+                        val parsed = converter.fromString(input)
+                        return GenericFailable.success(parsed)
+                    }
+                },
             viewer = viewer,
             getCurrent = unsafeReturningErr { viewer.imageSelection },
             acceptIf = { true },

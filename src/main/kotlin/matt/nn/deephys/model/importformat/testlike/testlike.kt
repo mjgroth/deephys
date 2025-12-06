@@ -15,8 +15,6 @@ interface TestOrLoader {
     fun isDoneLoading(): Boolean
 }
 
-
-
 interface TypedTestLike<A: Number>: TestOrLoader {
     fun numberOfImages(): ULong
     fun imageAtIndex(i: Int): DeephyImage<A>

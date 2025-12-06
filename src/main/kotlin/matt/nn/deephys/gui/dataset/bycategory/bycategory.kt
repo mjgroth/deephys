@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import matt.compose.controls.choicebox.MyChoiceBox
+import matt.compose.controls.textfields.parsing.parser.SimpleBiTextParser
 import matt.compose.graphics.text.MyText
+import matt.lang.cfnf.Fail
 import matt.lang.common.unsafeReturningErr
+import matt.lang.generic.GenericFailable
 import matt.nn.deephys.gui.category.CategoryView
 import matt.nn.deephys.gui.global.DeephysSpinner
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -31,18 +34,23 @@ fun ByCategoryView(
 
         @Suppress("ForbiddenIsCheck")
         Row {
+            val converter = CategorySelection.stringConverterThatFallsBackToFirst(cats = cats.map { it as Category })
             DeephysSpinner(
                 label = "Category",
                 choices = cats,
                 defaultChoice = { viewer.categorySelection.value?.primaryCategory ?: cats[0] },
-                converter = CategorySelection.stringConverterThatFallsBackToFirst(cats = cats.map { it as Category }),
+                converter =
+                    object: SimpleBiTextParser<CategorySelection> {
+                        override fun rawInputOf(value: CategorySelection): String = converter.toString(value)
+
+                        override fun tryParse(input: String): GenericFailable<CategorySelection, Fail> = GenericFailable.success(converter.fromString(input))
+                    },
                 viewer = viewer,
                 getCurrent = unsafeReturningErr { viewer.categorySelection },
                 acceptIf = { it is Category },
                 navAction = { navigateTo(it) },
                 selected = unsafeReturningErr("?")
             )
-
 
             MyChoiceBox(
                 selected = viewer.categorySelection.value,

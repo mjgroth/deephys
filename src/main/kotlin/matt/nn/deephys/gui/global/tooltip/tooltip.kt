@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.global.tooltip
 
 import androidx.compose.foundation.background
@@ -30,7 +28,6 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.prim.pdouble.verifyWholeToInt
 
-
 @Composable
 fun DeephysTooltipArea(
     settings: DeephysSettingsController,
@@ -49,6 +46,7 @@ fun DeephysTooltipArea(
     )
 }
 
+@Suppress("unused")
 @Composable
 private fun DeephysTeXView(
     getCode: Produce<TeXDSL>
@@ -58,9 +56,6 @@ private fun DeephysTeXView(
         code = getCode().generate()
     )
 }
-
-
-
 
 @Composable
 fun DeephysTooltipArea(
@@ -84,8 +79,7 @@ fun DeephysTooltipArea(
                                 h = (sIm.height * DEFAULT_BIG_IMAGE_SCALE).verifyWholeToInt(),
                                 w = (sIm.width * DEFAULT_BIG_IMAGE_SCALE).verifyWholeToInt()
                             ).transform(sIm)
-                        },
-                        loadingIndicatorSize = 10.dp /*idk*/
+                        }
                     )
                 }
             }
@@ -105,7 +99,7 @@ private fun DeephysTooltipArea(
 ) {
     implementedFor(settings.millisecondsBeforeTooltipsVanish.value == 0)
     AreaWithTooltipInSupportedPlatforms(
-        tooltip =  {
+        tooltip = {
             DeephysTooltipContent(tooltip)
         },
         content = {
@@ -134,5 +128,3 @@ fun DeephysTooltipContent(
 }
 
 const val SUFFIX_WARNING = "The `suffix` key is no longer supported (this can just be appended to the `name`). Please update to a newer version of the pip deephys package"
-
-

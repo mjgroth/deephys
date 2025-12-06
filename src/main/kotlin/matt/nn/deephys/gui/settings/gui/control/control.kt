@@ -1,5 +1,3 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED", "unused")
-
 package matt.nn.deephys.gui.settings.gui.control
 
 import androidx.compose.foundation.layout.Column
@@ -23,9 +21,9 @@ import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.prim.common.exportfromlang.context.AutomationContext
 import matt.prim.pfloat.verifyWholeToInt
 
-
-context(AutomationContext)
+@Suppress("unused")
 @Composable
+context(_: AutomationContext)
 fun CreateControlFor(
     sett: Setting<*>,
     settings: DeephysSettingsController
@@ -72,10 +70,11 @@ fun CreateControlFor(
                     warn("stupidly opting in to something unsafe here")
                     @OptIn(UnsafeMattCode::class)
                     DeephyCheckbox(
-                        sett.label,
-                        unsafeReturningErr {
-                            sett.prop
-                        }
+                        s =    sett.label,
+                        prop =
+                            unsafeReturningErr {
+                                sett.prop
+                            }
 
                     )
                 }

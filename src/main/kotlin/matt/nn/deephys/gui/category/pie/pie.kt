@@ -1,4 +1,4 @@
-@file:Suppress("unused", "UnusedParameter")
+@file:Suppress("UnusedParameter")
 
 package matt.nn.deephys.gui.category.pie
 
@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredHeight
@@ -14,7 +13,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -55,14 +54,16 @@ private val DEFAULT_CATEGORY = null
 private object CategoryPieConstants {
     const val WIDTH = 300.0
     const val HEIGHT = 300.0
+    @Suppress("unused")
     const val CENTER_X = WIDTH / 2.0
+    @Suppress("unused")
     const val CENTER_Y = HEIGHT / 2.0
     const val MAX_SLICES = 25
+    @Suppress("unused")
     const val ANIMATE = true
     const val BAR_Y_INCR = 25.0
 }
 @Suppress("UnusedVariable", "UNUSED_VARIABLE")
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CategoryPie(
     title: String,
@@ -70,7 +71,7 @@ fun CategoryPie(
     nums: Map<Category, Int>,
     viewer: DatasetViewerState,
     colorMap: Map<Category, Color>,
-    selected: Category? = DEFAULT_CATEGORY,
+    @Suppress("unused") selected: Category? = DEFAULT_CATEGORY,
     showAsList: BindableProperty<Boolean>,
     settings: DeephysSettingsController
 ) {
@@ -85,21 +86,17 @@ fun CategoryPie(
             """.trimIndent()
         )
 
-
-
         DeephysTooltipArea(
             settings,
             "only shows at most ${CategoryPieConstants.MAX_SLICES} slices (unless shown as list)"
         ) {
             DeephysText(
-                title,
-                font = subtitleFont()
+                s = title,
+                style = subtitleFont()
             )
         }
 
         val total = nums.values.sum().toDouble()
-
-
 
         MyVerticalScrollPane(
             showScrollBar = showAsList.value,
@@ -124,28 +121,30 @@ fun CategoryPie(
 
                     val arcLength = ratio * 360.0
                     val rads = -Math.toRadians(nextStart + arcLength / 2.0)
+                    @Suppress("unused")
                     val thetaX = cos(rads)
+                    @Suppress("unused")
                     val thetaY = sin(rads)
 
                     val maxBarWidth = CategoryPieConstants.WIDTH - 50.0
 
+                    @Suppress("unused")
+                    val textXAddition = mutableDoubleStateOf(0.0)
+                    @Suppress("unused")
+                    val textYAddition = mutableDoubleStateOf(0.0)
 
-                    val textXAddition = mutableStateOf(0.0)
-                    val textYAddition = mutableStateOf(0.0)
-
-                    val textXAdditionList = mutableStateOf(0.0)
-                    val textYAdditionList = mutableStateOf(0.0)
-
+                    @Suppress("unused")
+                    val textXAdditionList = mutableDoubleStateOf(0.0)
+                    @Suppress("unused")
+                    val textYAdditionList = mutableDoubleStateOf(0.0)
 
                     val barY = CategoryPieConstants.BAR_Y_INCR * catIndex
                     val barWidth = ratio * maxBarWidth
-
 
                     if (showAsList.or(catIndex < CategoryPieConstants.MAX_SLICES).value) {
                         FlowRow {
                             val t =
                                 DeephysLabel(
-
 
                                     obsString {
                                         append(
@@ -160,6 +159,7 @@ fun CategoryPie(
                                     }.value
 
                                 )
+                            @Suppress("unused")
                             val weakText = WeakReference(t)
 
                             unsafeError(
@@ -208,7 +208,6 @@ fun CategoryPie(
                         }
                     }
 
-
                     if (showAsList.value) {
                         CategoryBar(
                             cat = cat,
@@ -236,7 +235,6 @@ fun CategoryPie(
                             )
                         }
                     }
-
 
                     if (catIndex < CategoryPieConstants.MAX_SLICES) {
 
@@ -279,15 +277,12 @@ fun CategoryPie(
                         }
                     }
 
-
                     nextStart += arcLength
                 }
             }
         }
     }
 }
-
-
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -331,7 +326,6 @@ fun CategoryBar(
     }
 }
 
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Duplicated(23423439563)
@@ -339,8 +333,8 @@ fun CategorySlice(
     cat: Category,
     viewer: DatasetViewerState,
     color: Color,
-    arcLength: Double,
-    startAngle: Double,
+    @Suppress("unused") arcLength: Double,
+    @Suppress("unused") startAngle: Double,
     settings: DeephysSettingsController
 ) {
 
@@ -388,4 +382,3 @@ fun CategorySlice(
         )
     }
 }
-

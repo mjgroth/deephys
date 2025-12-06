@@ -1,5 +1,3 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED", "unused")
-
 package matt.nn.deephys.version
 
 import androidx.compose.runtime.Composable
@@ -64,7 +62,7 @@ object VersionChecker {
                     } else {
                         newestRelease.value = latestVersionFromServer
                     }
-                } catch (e: ConnectException) {
+                } catch (_: ConnectException) {
                     println("no internet to check version")
                 } finally {
                     checking = false
@@ -74,8 +72,8 @@ object VersionChecker {
 
     private val newestRelease = mutableStateOf<VersionInfo?>(null)
 
-    context(AutomationContext)
     @Composable
+    context(automationContext: AutomationContext)
     fun statusNode() {
 
         if (!error.value) {
@@ -84,20 +82,21 @@ object VersionChecker {
                 null if checking                  -> MyText("checking for updates...")
 
                 is Any if new.version > myVersion -> {
-                    DeephysText("Version ${new.version} Available: ")
+                    DeephysText(s = "Version ${new.version} Available: ")
                     DeephyHyperlink("Click here to update") {
-                        openUrl(URI(new.downloadURL))
+                        automationContext.openUrl(URI(new.downloadURL))
                     }
                 }
 
                 is Any if new.version < myVersion -> {
-                    DeephysText("developing unreleased version (last pushed was $new)")
+                    DeephysText(s = "developing unreleased version (last pushed was $new)")
                 }
             }
         }
     }
 }
 
+@Suppress("unused")
 class VersionStatus(
     private val current: Version,
     private val latestRelease: Version

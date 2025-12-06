@@ -72,19 +72,16 @@ fun <A : Number> NeuronView(
             CircularProgressIndicator()
         }
 
-
         if (showActivationRatio) {
             with(viewer.normalizer.value) {
 
                 val normalizer = this
                 weakViewer.deref()!!.testData.value?.go { numTest ->
-                    @Suppress("ReplaceSafeCallChainWithRun")
-                    val denomTest = normalizer?.testData?.value
+                    val denomTest = normalizer?.run { testData.value }
                     Row {
                         val doneLoading = numTest.isDoneLoading() && (denomTest?.isDoneLoading() != false)
 
                         if (!doneLoading) showing.value -= 1
-
 
                         val producedActivation =
                             produceSimpleResettingIoState {
@@ -115,7 +112,7 @@ fun <A : Number> NeuronView(
                                 },
                                 content = {
                                     DeephysText(
-                                        activation.formatted
+                                        s =    activation.formatted
                                     )
                                 }
                             )
@@ -130,13 +127,11 @@ fun <A : Number> NeuronView(
         if (showTopCats) {
             val topCats = with(testLoader.testRAMCache) { TopCategories(neuron, testLoader)() }
 
-
             val dtype = testLoader.dtype
 
             with(viewer.normalizer.value) {
-                @Suppress("ReplaceSafeCallChainWithRun")
                 val normalizer =
-                    this?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest?.awaitRequireSuccessful()
+                    this?.run { testData.value?.run { postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitRequireSuccessful() } }
                 val denom =
                     normalizer?.let {
                         neuron.maxActivationIn(normalizer).value / 100
@@ -156,10 +151,8 @@ fun <A : Number> NeuronView(
                 )
             }
 
-
             Spacer(Modifier.size(1.0.dp))
         }
-
 
         val noneText =
             DeephysInfoSymbol(
@@ -189,7 +182,6 @@ fun <A : Number> NeuronView(
                 val localNeuron = weakThing.neuron
                 val localImFlowPane = weakThing.imFlowPane
 
-                @Suppress("ReplaceSafeCallChainWithRun")
                 val realOldNumImages =
                     oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }
                 val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
@@ -279,7 +271,6 @@ fun <A : Number> NeuronView(
                 }
             }
 
-
             val weakThing =
                 WeakNeuronViewRefs<A>().apply {
                     this.testLoader = testLoader
@@ -287,7 +278,6 @@ fun <A : Number> NeuronView(
                     this.neuron = neuron
                     this.imFlowPane = imFlowPane
                 }
-
 
             update(weakThing.deref()!!, null, numImages.value)
 
@@ -317,6 +307,3 @@ private class WeakNeuronViewRefs<A : Number> : WeakThing<WeakNeuronViewRefs<A>>(
     var neuron by weak<InterTestNeuron>()
     var imFlowPane by weak<ImageFlowPane>()
 }
-
-
-

@@ -1,6 +1,5 @@
 package matt.nn.deephys.gui.neuron.imgflowpane
 
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -10,7 +9,6 @@ import matt.compose.graphics.Compose
 import matt.nn.deephys.gui.viewer.DatasetViewerState
 
 @Suppress("UnusedParameter")
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ImageFlowPane(
     viewer: DatasetViewerState,

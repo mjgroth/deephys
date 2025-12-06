@@ -1,4 +1,4 @@
-@file:Suppress("GrazieInspection", "unused")
+@file:Suppress("GrazieInspection")
 
 package matt.nn.deephys.test.deephys
 
@@ -13,9 +13,11 @@ import matt.file.toJioFile
 import matt.http.tryHttp
 import matt.json.prim.saveAsJsonTo
 import matt.kstruct.ctx.toProcessReaper
-import matt.lang.anno.SeeURL
+import matt.lang.anno.SeeUrl
 import matt.lang.cfnf.getOrThrow
 import matt.lang.common.unsafeError
+import matt.lang.sync.common.SimpleReferenceMonitor
+import matt.lang.sync.common.withLock
 import matt.lang.sysprop.common.value
 import matt.lang.sysprop.expects.RuntimePropertyProvider
 import matt.log.profile.data.RamSample
@@ -50,7 +52,6 @@ val NUM_IM_CLICKS get() = with(RuntimePropertyProvider) { if (TestPerformance.va
 val NUM_SLICE_CLICKS get() = with(RuntimePropertyProvider) { if (TestPerformance.value()) 10 else 2 }
 val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
 
-
 val TEST_DATA_FOLDER = RegisteredFolder.Main.DEEPHYS_DATA_FOLDER["test"]
 
 class DeephysTestData(
@@ -61,9 +62,9 @@ class DeephysTestData(
 ) {
     private val root = TEST_DATA_FOLDER[name]
     val model = root[model]
+    @Suppress("unused")
     val tests = tests.map { root[it] }
 }
-
 
 val tests =
     list {
@@ -96,8 +97,8 @@ val tests =
         }
     }
 
-
-@SeeURL("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
+@Suppress("unused")
+@SeeUrl("https://www.theverge.com/2013/7/15/4523668/11-inch-macbook-air-review")
 val MAC_MAYBE_MIN_SCREEN_SIZE =
     DoubleRectSize(
         width = 1366.0,
@@ -112,11 +113,9 @@ class TestDeephys(
 
     val session =  DeephysTestSession(profiler, toProcessReaper())
 
-
     companion object {
 
         private val ramSamples = mutableListOf<RamSample>()
-
 
         init {
             RegisteredFolder.Main.DEEPHYS_RAM_SAMPLES_FOLDER.mkdirs()
@@ -126,12 +125,14 @@ class TestDeephys(
             RegisteredFolder.Main.RAM_NUMBERED_FILES.nextFile().toJioFile()
         }
 
-        @Synchronized
-        fun sampleRam() {
-            ramSamples.add(ramSample())
-            saveAsJsonTo(ramSamples, myRamSamplesJson, false)
-        }
+        private val monitor = SimpleReferenceMonitor()
 
+        fun sampleRam() {
+            monitor.withLock {
+                ramSamples.add(ramSample())
+                saveAsJsonTo(ramSamples, myRamSamplesJson, false)
+            }
+        }
 
         private var getRamSamples = true
 
@@ -163,7 +164,6 @@ class TestDeephys(
         }
     }
 
-
     @Test
     fun computeInputsAreData() =
         with(systemScope(includePlatformClassloader = false).usingClassGraph()) {
@@ -174,10 +174,8 @@ class TestDeephys(
             }
         }
 
-
     @Test
     fun correctTitle() = session.testHasCorrectTitle()
-
 
     @Test
     fun fitsInSmallestScreen() = session.testFitsInSmallestScreen()
@@ -214,4 +212,3 @@ class TestDeephys(
         }
     }
 }
-

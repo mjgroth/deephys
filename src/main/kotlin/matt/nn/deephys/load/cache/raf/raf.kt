@@ -1,4 +1,4 @@
-@file:Suppress("SyntheticAccessor", "unused", "UNREACHABLE_CODE")
+@file:Suppress("UNREACHABLE_CODE")
 @file:OptIn(ExperimentalAtomicApi::class)
 
 package matt.nn.deephys.load.cache.raf
@@ -8,12 +8,14 @@ import kotlinx.io.bytestring.asReadOnlyByteBuffer
 import matt.async.thread.daemon
 import matt.async.thread.executors.ThreadPool
 import matt.file.toJioFile
-import matt.lang.anno.SeeURL
+import matt.lang.anno.SeeUrl
 import matt.lang.common.DoNothing
 import matt.lang.common.NOT_IMPLEMENTED
 import matt.lang.common.TODO_NO_DETAILS
 import matt.lang.j.NUM_LOGICAL_CORES
 import matt.lang.model.value.letIfInitialized
+import matt.lang.sync.common.SimpleReferenceMonitor
+import matt.lang.sync.common.withLock
 import matt.lang.weak.cleaner.MySafeCleaner
 import matt.log.warn.common.warn
 import matt.model.flowlogic.latch.j.SimpleThreadLatch
@@ -40,11 +42,11 @@ import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.time.Duration.Companion.milliseconds
 
-
 class EvenlySizedRAFCache(
     private val rafCache: RAFCacheImpl,
     private val deedSize: Int
 ) : RAFCache {
+    @Suppress("unused")
     constructor(
         f: FsFile,
         deedSize: Int
@@ -52,7 +54,6 @@ class EvenlySizedRAFCache(
 
     fun rent() = rafCache.rent(deedSize)
 }
-
 
 class RAFCacheImpl(
     private val f: FsFile
@@ -68,26 +69,25 @@ class RAFCacheImpl(
     private val raf: RAFLike
         get() = fact.value
 
-
     private var didCloseWriting = false
-
-    @Synchronized
+    val monitor = SimpleReferenceMonitor()
     fun closeWriting() {
-        if (didCloseWriting) return
-        if (fact.isInitialized()) {
-            (raf as? AsyncSparseWriter)?.markFinishedWriting()
-            (raf as? AsyncSparseWriter)?.awaitAsyncOps()
-            raf.close()
-        }
-        fact =
-            lazy {
-                RealRAF(RandomAccessFile(f.toJFile(), "r"))
+        monitor.withLock {
+            if (didCloseWriting) return
+            if (fact.isInitialized()) {
+                (raf as? AsyncSparseWriter)?.markFinishedWriting()
+                (raf as? AsyncSparseWriter)?.awaitAsyncOps()
+                raf.close()
             }
-        didCloseWriting = true
+            fact =
+                lazy {
+                    RealRAF(RandomAccessFile(f.toJFile(), "r"))
+                }
+            didCloseWriting = true
+        }
     }
 
     fun closedWriting() = didCloseWriting
-
 
     private var lastDeed: Deed? = null
     private fun nextDeed(size: Int): Deed =
@@ -95,14 +95,13 @@ class RAFCacheImpl(
             DeedImpl((it as DeedImpl).stopIndexExclusive, size, this, { raf }, { getNextReaderRAF() }, OnlyDeedKey)
         } ?: DeedImpl(0, size, this, { raf }, { getNextReaderRAF() }, OnlyDeedKey)
 
-    private val agent = object {}
+    private val agentMonitor = SimpleReferenceMonitor()
     fun rent(size: Int) =
-        synchronized(agent) {
+        agentMonitor.withLock {
             nextDeed(size).also {
                 lastDeed = it
             }
         }
-
 
     init {
         val safeLocalRef = fact
@@ -120,15 +119,16 @@ class RAFCacheImpl(
     }
     private var nextReaderRAFI = 0
 
-    @Synchronized
     private fun getNextReaderRAF(): RAFLike {
-        val readRAF = readerRAFs[nextReaderRAFI].value
-        if (nextReaderRAFI == readerRAFs.lastIndex) {
-            nextReaderRAFI = 0
-        } else {
-            nextReaderRAFI++
+        monitor.withLock {
+            val readRAF = readerRAFs[nextReaderRAFI].value
+            if (nextReaderRAFI == readerRAFs.lastIndex) {
+                nextReaderRAFI = 0
+            } else {
+                nextReaderRAFI++
+            }
+            return readRAF
         }
-        return readRAF
     }
 }
 
@@ -137,8 +137,8 @@ interface RAFCache
 sealed interface DeedKey
 private object OnlyDeedKey : DeedKey
 
-
 sealed interface RAFLike {
+    val monitor: SimpleReferenceMonitor
     val channel: Channel
     fun write(byte: Int)
     fun write(
@@ -177,43 +177,47 @@ sealed interface RAFLike {
 sealed class SeekableRAFLike : RAFLike {
     abstract override val channel: WritableByteChannel
     abstract fun seek(pos: Long)
-
-    @Synchronized
+    final override val monitor = SimpleReferenceMonitor()
     final override fun write(
         pos: Long,
         byte: Int
     ) {
-        seek(pos)
-        write(byte)
+        monitor.withLock {
+            seek(pos)
+            write(byte)
+        }
     }
 
-    @Synchronized
     final override fun readFully(
         pos: Long,
         buff: ByteArray
     ) {
-        seek(pos)
-        readFully(buff)
+        monitor.withLock {
+            seek(pos)
+            readFully(buff)
+        }
     }
 
-    @Synchronized
     final override fun write(
         pos: Long,
         bytes: ByteString
     ) {
-        seek(pos)
-        write(bytes)
+        monitor.withLock {
+            seek(pos)
+            write(bytes)
+        }
     }
 
-    @Synchronized
     final override fun write(
         pos: Long,
         bytes: ByteArray,
         srcOffset: Int,
         srcLen: Int
     ) {
-        seek(pos)
-        write(bytes, srcOffset, srcLen)
+        monitor.withLock {
+            seek(pos)
+            write(bytes, srcOffset, srcLen)
+        }
     }
 }
 
@@ -229,7 +233,6 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
         raf.write(byte)
     }
 
-
     override fun readFully(buff: ByteArray) {
         try {
             raf.readFully(buff)
@@ -238,11 +241,9 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
         }
     }
 
-
     override fun write(bytes: ByteString) {
         raf.write(bytes)
     }
-
 
     override fun close() {
         raf.close()
@@ -257,8 +258,8 @@ class RealRAF(private val raf: RandomAccessFile) : SeekableRAFLike() {
     }
 }
 
-
-@SeeURL("https://stackoverflow.com/questions/50191063/java-using-randomaccessfile-after-seek-is-very-slow-what-is-the-reason")
+@Suppress("unused")
+@SeeUrl("https://stackoverflow.com/questions/50191063/java-using-randomaccessfile-after-seek-is-very-slow-what-is-the-reason")
 class SparseWriter(file: FsFile) : SeekableRAFLike() {
 
     companion object {
@@ -299,16 +300,17 @@ class SparseWriter(file: FsFile) : SeekableRAFLike() {
         channel.write(ByteBuffer.wrap(bytes, srcOffset, srcLen))
     }
 
-
     override fun close() {
         channel.close()
     }
 }
 
-@SeeURL("https://stackoverflow.com/questions/50191063/java-using-randomaccessfile-after-seek-is-very-slow-what-is-the-reason")
+@SeeUrl("https://stackoverflow.com/questions/50191063/java-using-randomaccessfile-after-seek-is-very-slow-what-is-the-reason")
 class AsyncSparseWriter(
     @Suppress("UNUSED_PARAMETER") file: FsFile
 ) : RAFLike {
+
+    override val monitor = SimpleReferenceMonitor()
 
     companion object {
         private val options =
@@ -365,7 +367,6 @@ class AsyncSparseWriter(
     override val channel: AsynchronousFileChannel by lazy {
         AsynchronousFileChannel.open(file.toJioFile(), options, pool)
     }
-
 
     override fun write(byte: Int) {
         NOT_IMPLEMENTED

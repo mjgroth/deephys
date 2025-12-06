@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.modelvis.neuroncirc
 
 import androidx.compose.foundation.background
@@ -20,7 +18,7 @@ import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
 import matt.obs.prop.ObsVal
 
-@Suppress("UnusedParameter")
+@Suppress("UnusedParameter", "unused")
 @Composable
 fun NeuronCircle(
     layer: ResolvedLayer,

@@ -55,8 +55,7 @@ fun <A : Number> neuronListViewSwapper(
                 weakViewer.deref()?.let { deRefedViewer ->
                     deRefedViewer.layerSelection.value?.let { lay ->
                         val prepped1 = postDtypeTestLoader.preppedTest
-                        @Suppress("ReplaceSafeCallChainWithRun")
-                        val prepped2 = deRefedViewer.normalizer.value/*.takeIf { it != deRefedViewer }*/?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest
+                        val prepped2 = deRefedViewer.normalizer.value/*.takeIf { it != deRefedViewer }*/?.run { testData.value?.run { this.postDtypeTestLoader.awaitRequireSuccessful().preppedTest } }
 
                         TopNeurons(
                             testAndImages = prepped1.awaitRequireSuccessful().withImages(contents),
@@ -119,7 +118,7 @@ fun NeuronListView(
 ) {
 
     val hValueProp = rememberScrollState()
-    MyHorizontalScrollPane(hValueProp) {
+    MyHorizontalScrollPane(horizontalScrollState = hValueProp) {
         Row {
 
             @Suppress("UNUSED_VARIABLE")
@@ -131,8 +130,7 @@ fun NeuronListView(
 
                     viewer.currentByImageHScroll.value = hValueProp
                     val btd = viewer.boundToDSet.value
-                    @Suppress("ReplaceSafeCallChainWithRun")
-                    val btdScroll = btd?.currentByImageHScroll?.value
+                    val btdScroll = btd?.run { currentByImageHScroll.value }
                     val btdScrollValue = btdScroll?.value
                     LaunchedEffect(btdScrollValue) {
                         btdScrollValue?.let {
@@ -140,8 +138,6 @@ fun NeuronListView(
                         }
                     }
                 }
-
-
 
                 val topNeurons =
                     with(viewer.testData.value!!.testRAMCache) {
@@ -166,7 +162,6 @@ fun NeuronListView(
                             with(
                                 viewer.normalizer
                             ) {
-
 
                                 val act = neuronWithAct.activation
                                 val case_activ = cfg.tops.testAndImages.images.size

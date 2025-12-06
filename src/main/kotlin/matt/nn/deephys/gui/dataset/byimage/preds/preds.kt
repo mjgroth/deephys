@@ -2,7 +2,6 @@ package matt.nn.deephys.gui.dataset.byimage.preds
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,13 +42,13 @@ fun PredictionsView(
 ) {
     Column {
         Row {
-            DeephysText("Ground Truth: ", font = titleFont())
-            DeephyActionLabel(groundTruth.label, font = titleBoldFont()) {
+            DeephysText(s = "Ground Truth: ", style = titleFont())
+            DeephyActionLabel(groundTruth.label, style = titleBoldFont()) {
                 weakViewer.deref()!!.navigateTo(groundTruth)
             }
         }
         SpacerWithOldFxSize()
-        DeephysText("Predictions: ", font = titleFont())
+        DeephysText(s = "Predictions: ", style = titleFont())
         with(weakViewer.deref()!!.testData.value!!.testRAMCache) {
             CategoryTable(
                 title = "",
@@ -64,7 +63,6 @@ fun PredictionsView(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CategoryTable(
     title: String,
@@ -88,7 +86,7 @@ fun CategoryTable(
     Column {
         if (!b.value) {
             FlowRow {
-                DeephysText(titleUnfolded)
+                DeephysText(s = titleUnfolded)
                 data.forEach { (cat, num) ->
                     val fullString = "${cat.label} ($num)"
                     cat.ActionText(
@@ -97,7 +95,7 @@ fun CategoryTable(
                         weakViewer = weakViewer,
                         allowedLengths = 1u..10u
                     )
-                    DeephysText(" (")
+                    DeephysText(s = " (")
                     SigFigText(
                         num = num,
                         sigFigSett = sigFigSett,
@@ -105,12 +103,12 @@ fun CategoryTable(
                         settings =  settings,
                         tooltip = fullString
                     )
-                    DeephysText(")   ")
+                    DeephysText(s = ")   ")
                 }
             }
         } else {
             DeephysTooltipArea(settings = settings, tooltip) {
-                DeephysText(title, font = subtitleFont())
+                DeephysText(s = title, style = subtitleFont())
             }
             Spacer(Modifier.size(3.dp))
             VerticalGrid(columns = SimpleGridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(oldFxSpacerSize)) {

@@ -1,5 +1,3 @@
-@file:Suppress("CONTEXT_RECEIVERS_DEPRECATED")
-
 package matt.nn.deephys.calc
 
 import matt.caching.compcache.ComputeInput
@@ -9,8 +7,8 @@ import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.invoke
 import matt.codegen.tex.TeXDSL
 import matt.codegen.tex.tex
-import matt.lang.assertions.require.requireEquals
 import matt.lang.function.Dsl
+import matt.lang.passert.powerRequire
 import matt.math.numalg.precision.withPrecision
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.IMAGE_COLLECTION
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
@@ -36,7 +34,7 @@ data class DescendingArgMaxMax<A : Number>(
     private val test: TypedTestLike<A>
 ) : TestComputeInput<List<ImageIndex>>() {
 
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     override fun compute(): List<ImageIndex> =
         run {
             val theTest = test.test
@@ -60,8 +58,7 @@ data class TopImages<A : Number>(
     private val num: Int
 ) : TestComputeInput<List<ImageIndex>>() {
 
-
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     override fun compute(): List<ImageIndex> =
         DescendingArgMaxMax(
             neuron = neuron,
@@ -69,14 +66,12 @@ data class TopImages<A : Number>(
         )().take(num)
 }
 
-
 data class TopCategories<N : Number>(
     val neuron: InterTestNeuron,
     private val test: TypedTestLike<N>
 ) : TestComputeInput<List<Pair<Category, RawActivation<*, *>>>>() {
 
-
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     override fun compute(): List<Pair<Category, RawActivation<*, *>>> {
         val theTest = test.test
         val dtype = theTest.dtype
@@ -102,7 +97,6 @@ data class TopCategories<N : Number>(
     }
 }
 
-
 private const val NUM_TOP_NEURONS = 25
 
 /*
@@ -126,7 +120,7 @@ data class TopNeurons<N : Number>(
 
     /*small possibility of memory leaks when images is empty, but this is still way better than before*/
 
-    context (TestRAMCache)
+    context (_: TestRAMCache)
     override fun compute(): List<NeuronWithActivation<N>> {
         val images = testAndImages.images
         val test = testAndImages.test
@@ -139,9 +133,8 @@ data class TopNeurons<N : Number>(
 
         val dType = test.dtype
         if (denomTest != null) {
-            requireEquals(dType, denomTest.dtype)
+            powerRequire(dType == denomTest.dtype)
         }
-
 
         val neuronsWithActs =
             neurons.map { neuron ->
@@ -159,8 +152,6 @@ data class TopNeurons<N : Number>(
                 NeuronWithActivation(neuron, act)
             }
 
-
-
         return if (forcedNeuronIndices == null) {
             val r =
                 neuronsWithActs.filterNot {
@@ -175,7 +166,6 @@ data class TopNeurons<N : Number>(
         }
     }
 }
-
 
 data class ActivationRatioCalc<A : Number>(
     val numTest: TypedTestLike<A>,
@@ -199,14 +189,12 @@ data class ActivationRatioCalc<A : Number>(
 
     small possibility for memory leaks if the user gets keeps swapping out denomTest without swapping out numTest, but this is still a WAY better mechanism than before*/
 
-
     companion object {
         sealed interface ActivationRatioNumerator
         class SingleImage(val id: Int) : ActivationRatioNumerator
         enum class MiscActivationRatioNumerator : ActivationRatioNumerator {
             IMAGE_COLLECTION, MAX
         }
-
 
         fun latexTechnique(num: ActivationRatioNumerator): TeXDSL {
             val denom: Dsl<TeXDSL> = { text("max activation of this neuron in $NORMALIZER_BUTTON_NAME") }
@@ -238,7 +226,7 @@ data class ActivationRatioCalc<A : Number>(
         }
     }
 
-    context(FakeCacheManager)
+    context(_: FakeCacheManager)
     override fun compute(): Activation<A, *> {
         println("make this a lazy val so I don't need to make params above vals")
         val dType = numTest.dtype
@@ -266,14 +254,13 @@ data class ImageSoftMaxDenom<N : Number>(
     private val testLoader: TestOrLoader
 ) : TestComputeInput<N>() {
 
-
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     override fun compute(): N {
         val clsLay = testLoader.model.classificationLayer
         val preds = image.activationsFor(clsLay.interTest)
 
         val dtype = image.dtype
-        requireEquals(dtype, testLoader.dtype)
+        powerRequire(dtype == testLoader.dtype)
 
         val li = preds.map { dtype.exp(it) }
 
@@ -287,8 +274,7 @@ data class ImageTopPredictions<N : Number>(
     private val image: DeephyImage<N>
 ) : TestComputeInput<List<Pair<Category, N>>>() {
 
-
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     override fun compute(): List<Pair<Category, N>> {
         val dtype = image.testLoader.dtype
         val clsLay = image.testLoader.model.classificationLayer
@@ -314,8 +300,7 @@ data class CategoryAccuracy(
     private val testLoader: TypedTestLike<*>
 ) : TestComputeInput<Double?>() {
 
-
-    context(TestRAMCache)
+    context(_ :TestRAMCache)
     override fun compute(): Double? {
 
         val images = testLoader.test.imagesWithGroundTruth(category)
@@ -331,7 +316,7 @@ data class CategoryAccuracy(
         return r
     }
 
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     fun formatted() =
         compute().let {
             if (it == null) "Cannot calculate accuracy because no images have groundtruth \"$category\"" else "${
@@ -347,13 +332,12 @@ data class CategoryFalsePositivesSorted<N : Number>(
     private val testLoader: TypedTestLike<N>
 ) : TestComputeInput<List<DeephyImage<N>>>() {
 
-
     companion object {
         const val BLURB =
             "false positives sorted so that the images with the highest prediction value (after softmax) are first"
     }
 
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     override fun compute(): List<DeephyImage<N>> {
         val r =
             testLoader.test.imagesWithoutGroundTruth(category).map {
@@ -368,7 +352,6 @@ data class CategoryFalsePositivesSorted<N : Number>(
                 it.first
             }
 
-
         return r
     }
 }
@@ -378,13 +361,12 @@ data class CategoryFalseNegativesSorted<N : Number>(
     private val testLoader: TypedTestLike<N>
 ) : TestComputeInput<List<DeephyImage<N>>>() {
 
-
     companion object {
         const val BLURB =
             "false negatives sorted so that the images with the highest prediction value (after softmax) are first"
     }
 
-    context(TestRAMCache)
+    context(_: TestRAMCache)
     override fun compute() =
         run {
             testLoader.test.imagesWithGroundTruth(category).map {
@@ -400,5 +382,3 @@ data class CategoryFalseNegativesSorted<N : Number>(
             }
         }
 }
-
-

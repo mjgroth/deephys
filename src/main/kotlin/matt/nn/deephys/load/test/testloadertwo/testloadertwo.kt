@@ -16,7 +16,6 @@ class PreppedTestLoader<N: Number>(
 
     override fun imageAtIndex(i: Int): DeephyImage<N> = tl.awaitImage(i)
 
-
     override val test: Test<N> get() = tl.awaitFinishedTest()
 
     override fun isDoneLoading(): Boolean = tl.isDoneLoading()
@@ -26,4 +25,3 @@ class PreppedTestLoader<N: Number>(
     override val post: PostDtypeTestLoader<N>
         get() = tl
 }
-

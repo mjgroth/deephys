@@ -81,7 +81,7 @@
         "urls": {
             "Homepage": "https://deephys.org",
             "Documentation": "https://deephys.readthedocs.io/en/latest/",
-            "Bug Tracker": "https://deephys.youtrack.cloud/"
+            "Bug-Tracker": "https://deephys.youtrack.cloud/"
         }
     },
     "aio": {

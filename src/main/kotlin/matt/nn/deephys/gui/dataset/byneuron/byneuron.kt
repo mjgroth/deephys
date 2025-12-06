@@ -23,5 +23,3 @@ fun ByNeuronView(
         )
     } ?: DeephysNullMessageFact("Select a layer to see the top images")
 }
-
-

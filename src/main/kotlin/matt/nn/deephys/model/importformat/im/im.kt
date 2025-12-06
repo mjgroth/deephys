@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.model.importformat.im
 
 import kotlinx.coroutines.flow.Flow
@@ -51,13 +49,15 @@ class DeephyImage<A : Number>(
     activationsRAF: EvenlySizedRAFCache,
     pixelsRAF: EvenlySizedRAFCache,
     dtype: DType<A> /*just for generic*/
-) : RAFCaches() {
+) : RAFCaches(), Comparable<DeephyImage<A>> {
+
+    override fun compareTo(other: DeephyImage<A>): Int = imageID.compareTo(other.imageID)
 
     companion object {
-        fun stringConverterThatFallsBackToFirst(images: List<DeephyImage<*>>) =
-            object : StringConverter<DeephyImage<*>> {
-                override fun toString(t: DeephyImage<*>): String = "${t.index}"
-                override fun fromString(s: String): DeephyImage<*> =
+        fun <A: Number> stringConverterThatFallsBackToFirst(images: List<DeephyImage<A>>) =
+            object : StringConverter<DeephyImage<A>> {
+                override fun toString(t: DeephyImage<A>): String = "${t.index}"
+                override fun fromString(s: String): DeephyImage<A> =
                     s.toIntOrNull()?.let { i -> images.firstOrNull { it.index == i } } ?: images.first()
             }
     }
@@ -66,10 +66,10 @@ class DeephyImage<A : Number>(
 
     val weak by lazy { weak(this) }
 
-
     val category = Category(id = categoryID, label = category)
 
     /*totally guessing. This might actually be the height.*/
+    @Suppress("unused")
     val widthMaybe by lazy {
         matrix[0].size.toDouble()
     }
@@ -85,7 +85,6 @@ class DeephyImage<A : Number>(
             }
         }
     }
-
 
     val activations =
         object : CachedRAFProp<List<List<A>>>(activationsRAF) {
@@ -107,7 +106,6 @@ class DeephyImage<A : Number>(
             override fun decode(bytes: ByteString): PixelData3 = readPixels(bytes)
         }
 
-
     @PhaseOut
     private val weakTest = WeakReference(test)
 
@@ -118,7 +116,6 @@ class DeephyImage<A : Number>(
     val dtype get() = weakTest.get()!!.awaitRequireSuccessful().dtype
 }
 
-
 typealias PixelData2 = List<IntArray>
 typealias PixelData3 = List<PixelData2>
 
@@ -127,9 +124,7 @@ fun ArrayReader.readPixels(): PixelData3 =
         readEachManually<ByteStringReader, IntArray> {
             val r = IntArray(count.toInt())
             byteArrayOf().withIndex()
-            for ((i, b) in read().raw.withIndex()) {
-                r[i] = b.toInt() and 0xff
-            }
+            for ((i, b) in read().raw.withIndex()) r[i] = b.toInt() and 0xff
             r
         }
     }
@@ -138,7 +133,6 @@ fun readPixels(cborPixelBytes3d: ByteString): PixelData3 =
     cborPixelBytes3d.cborReader().readManually<ArrayReader, PixelData3> {
         readPixels()
     }
-
 
 fun ArrayReader.readFloatActivations() =
     readEachManually<ByteStringReader, List<Float>> {
@@ -151,7 +145,6 @@ fun ArrayReader.readDoubleActivations() =
         val r = read().raw.readAndCopyDoubles(count = count.toInt() / DOUBLE_BYTE_LEN)
         r.asList()
     }
-
 
 sealed interface ImageActivationCborBytes<A : Number> {
     val bytes: ByteString
@@ -174,7 +167,6 @@ value class ImageActivationCborBytesFloat32(override val bytes: ByteString) : Im
         bytes.cborReader().readManually<ArrayReader, FloatActivationData> {
             readFloatActivations()
         }
-
 
     override fun dtypeByteReadyBufferFlow(): Flow<ByteBuffer> =
         flow {

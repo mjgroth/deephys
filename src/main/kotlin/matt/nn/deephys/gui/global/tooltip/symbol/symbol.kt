@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.global.tooltip.symbol
 
 import androidx.compose.material.icons.Icons
@@ -8,34 +6,34 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
-import matt.compose.graphics.icon.MyIcon2
+import androidx.compose.ui.text.font.FontFamily
+import matt.compose.graphics.defaults.TextDefaults
+import matt.compose.graphics.icon.MyIcon
 import matt.compose.graphics.text.MyText
 import matt.compose.graphics.tooltip.AreaWithTooltipInSupportedPlatforms
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipContent
 import matt.obs.bindings.str.ObsS
-
 
 const val DEEPHYS_SYMBOL_SPACING = 5.0
 
 @Composable
 fun DeephysInfoSymbol(text: ObsS) = DeephysInfoSymbol(text.value)
 
-
 @Composable
-fun DeephysInfoSymbol(info: String) {
+fun DeephysInfoSymbol(info: String, font: FontFamily? = TextDefaults.FontFamily) {
     AreaWithTooltipInSupportedPlatforms(
         tooltip = {
             DeephysTooltipContent {
-                MyText(info)
+                MyText(info, font = font)
             }
         },
         content = {
-            MyIcon2(Icons.Default.Info)
+            MyIcon(Icons.Default.Info)
         }
     )
 }
 
-
+@Suppress("unused")
 @Composable
 fun DeephysTutorialSymbol(text: ObsS) = DeephysTutorialSymbol(text.value)
 
@@ -48,10 +46,11 @@ fun DeephysTutorialSymbol(info: String) {
             }
         },
         content = {
-            MyIcon2(Icons.Default.QuestionMark)
+            MyIcon(Icons.Default.QuestionMark)
         }
     )
 }
+@Suppress("unused")
 @Composable
 fun DeephysWarningSymbol(text: ObsS) = DeephysWarningSymbol(text.value)
 
@@ -64,12 +63,12 @@ fun DeephysWarningSymbol(info: String) {
             }
         },
         content = {
-            MyIcon2(Icons.Default.Warning)
+            MyIcon(Icons.Default.Warning)
         }
     )
 }
 
-
+@Suppress("unused")
 @Composable
 fun DeephysSevereWarningSymbol(text: ObsS) = DeephysSevereWarningSymbol(text.value)
 
@@ -82,7 +81,7 @@ fun DeephysSevereWarningSymbol(info: String) {
             }
         },
         content = {
-            MyIcon2(Icons.Default.Emergency)
+            MyIcon(Icons.Default.Emergency)
         }
     )
 }

@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -50,10 +52,9 @@ fun <A : Number> CategoryView(
         with(viewer.cacheContext) {
             DeephysLabel(
                 selection.title.addNewLinesUntilNumLinesIs(3) /*so switching to confusion title with 3 lines isn't as jarring*/,
-                font = titleBoldFont()
+                style = titleBoldFont()
             )
             Column {
-
 
                 when (selection) {
                     is Category          -> {
@@ -72,7 +73,6 @@ fun <A : Number> CategoryView(
 
                         DeephysLabel("Category ID: ${selection.id}")
                     }
-
 
                     is CategoryConfusion -> {
                         with(testLoader.testRAMCache) {
@@ -101,19 +101,21 @@ fun <A : Number> CategoryView(
                     }
                 }
 
-
-                MyText(
-                    buildString {
-                        append("Neurons with highest average activation for ")
-                        append(
-                            when (selection) {
-                                is Category          -> selection.label
-                                is CategoryConfusion -> "${selection.first.label} and ${selection.second.label}"
-                            }
-                        )
-                    },
-                    font = subtitleFont()
-                )
+                CompositionLocalProvider(
+                    LocalTextStyle provides LocalTextStyle.current +  subtitleFont()
+                ) {
+                    MyText(
+                        buildString {
+                            append("Neurons with highest average activation for ")
+                            append(
+                                when (selection) {
+                                    is Category          -> selection.label
+                                    is CategoryConfusion -> "${selection.first.label} and ${selection.second.label}"
+                                }
+                            )
+                        }
+                    )
+                }
 
                 neuronListViewSwapper(
                     viewer = viewer,
@@ -129,7 +131,6 @@ fun <A : Number> CategoryView(
                     viewerWidth = viewerWidth
                 )
 
-
                 val allFalsePositives =
                     with(testLoader.testRAMCache) {
                         CategoryFalsePositivesSorted(
@@ -138,13 +139,11 @@ fun <A : Number> CategoryView(
                         )()
                     }
 
-
                 val shownFalsePositives =
                     when (selection) {
                         is Category          -> allFalsePositives
                         is CategoryConfusion -> allFalsePositives.filter { it.category == selection.second }
                     }
-
 
                 val allFalseNegatives =
                     with(testLoader.testRAMCache) {
@@ -203,7 +202,6 @@ fun <A : Number> CategoryView(
                             viewerWidth = viewerWidth
                         )
                     }
-
 
                     Canvas(Modifier.requiredWidth(10.dp)) {
                         /*backgroundFill = FXColor(0.5, 0.5, 0.5, 0.2)

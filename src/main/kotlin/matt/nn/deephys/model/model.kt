@@ -6,14 +6,12 @@ import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.model.importformat.layer.Layer
 
-
 interface LayerLike {
     val layerID: String
     override fun toString(): String
     @Open
     fun isClassification(model: Model) = layerID == model.classification_layer
 }
-
 
 class ResolvedLayer(
     layer: Layer,
@@ -30,13 +28,11 @@ class ResolvedLayer(
     val interTest by lazy { InterTestLayer(index, layerID = layer.layerID, neuronCount = neurons.size) }
 }
 
-
 interface ResolvedNeuronLike {
     val index: Int
     val layer: ResolvedLayer
     val interTest: InterTestNeuron
 }
-
 
 class ResolvedNeuron(
     override val index: Int,

@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package matt.nn.deephys.gui.layer
 
 import androidx.compose.foundation.layout.Column
@@ -13,7 +11,7 @@ import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.load.test.TestLoader
 import matt.nn.deephys.model.ResolvedLayer
 
-@Suppress("UnusedVariable", "UNUSED_VARIABLE")
+@Suppress("UnusedVariable", "UNUSED_VARIABLE", "unused")
 @Composable
 fun LayerView(
     layer: ResolvedLayer,
@@ -23,7 +21,6 @@ fun LayerView(
     viewerWidth: Dp
 ) {
     Column {
-
 
         val interLayer = layer.interTest
 
@@ -44,7 +41,6 @@ fun LayerView(
                 )      
                 """.trimIndent()
             )
-
 
         testLoader.postDtypeTestLoader.awaitRequireSuccessful().preppedTest.awaitSuccessfulOrNull()
             ?.go { typedTestLoader ->

@@ -1,4 +1,4 @@
-@file:Suppress("unused", "NoDuplicatedTypeNames")
+@file:Suppress("NoDuplicatedTypeNames")
 
 package matt.nn.deephys.load.test.dtype
 
@@ -39,10 +39,10 @@ import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 import kotlin.math.exp as kotlinExp
 
-
 @Serializable
 sealed interface DType<N : Number>: Caster<N> {
     companion object {
+        @Suppress("unused")
         fun leastPrecise(
             type: DType<*>,
             vararg types: DType<*>
@@ -83,7 +83,7 @@ sealed interface DType<N : Number>: Caster<N> {
     val zero: N
 }
 
-
+@Suppress("unused")
 fun <N : Number> topNeurons(
     testAndImages: TestAndSomeImages<N>,
     layer: InterTestLayer,
@@ -170,8 +170,5 @@ object Float64 : DtypeBase<Double>() {
     override val zero = 0.0
 }
 
-
 typealias FloatActivationData = List<List<Float>>
 typealias DoubleActivationData = List<List<Double>>
-
-
