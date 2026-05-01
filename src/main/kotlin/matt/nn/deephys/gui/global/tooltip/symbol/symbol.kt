@@ -7,10 +7,10 @@ import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
+import matt.compose.controls.tooltip.AreaWithTooltipInSupportedPlatforms
 import matt.compose.graphics.defaults.TextDefaults
 import matt.compose.graphics.icon.MyIcon
 import matt.compose.graphics.text.MyText
-import matt.compose.graphics.tooltip.AreaWithTooltipInSupportedPlatforms
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipContent
 import matt.obs.bindings.str.ObsS
 

@@ -4,8 +4,6 @@ import androidx.compose.runtime.Composable
 import matt.caching.compcache.globalman.FakeCacheManager
 import matt.caching.compcache.invoke
 import matt.lang.compare.CompareTo
-import matt.lang.passert.powerRequire
-import matt.lang.weak.common.WeakRefInter
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.act.Activation
 import matt.nn.deephys.calc.act.RawActivation
@@ -21,6 +19,7 @@ import matt.nn.deephys.model.importformat.testlike.TestOrLoader
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.converters.StringConverter
 import matt.prim.str.truncateWithEllipsesOrAddSpacesAsNeeded
+import matt.prim.weak.common.WeakRefInter
 
 data class InterTestLayer(
     val index: Int,
@@ -63,10 +62,6 @@ data class InterTestNeuron(
         val list = images.map { activation(it).value }
 
         val m = dType.mean(list)
-        /*
-            RawActivation(images.map
-            { activation(it).value }.average().toFloat()
-            )*/
 
         dType.rawActivation(
             m
@@ -175,13 +170,12 @@ data class Category(
 
         return testLoader.dtype.rawActivation(
             testLoader.dtype.mean(acts)
-            /*acts.average().toFloat()*/
         )
     }
 
     override fun forTest(test: TestOrLoader): Category =
         test.test.category(id).also {
-            powerRequire(it.label == label) {
+            require(it.label == label) {
                 "label of category $id of other test doesn't match (${it.label}!=$label)"
             }
         }

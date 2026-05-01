@@ -2,29 +2,44 @@
 
 package matt.nn.deephys.gui.dataset.byimage.neuronlistview
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import matt.caching.compcache.invoke
 import matt.compose.controls.desktop.scroll.MyHorizontalScrollPane
+import matt.compose.controls.interaction.rememberMutableInteractionSource
+import matt.compose.graphics.defaults.TextDefaults
 import matt.compose.graphics.text.MyText
-import matt.lang.common.go
-import matt.lang.common.unsafeError
-import matt.lang.common.unsafeReturningErr
-import matt.lang.weak.weak
+import matt.lang.controlflow.go
+import matt.lang.err.unsafeReturningErr
 import matt.math.numalg.format.sigfig.toScientificNotation
+import matt.model.k.log.Logger
+import matt.nn.deephys.calc.ActivationRatioCalc
+import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator
+import matt.nn.deephys.calc.ActivationRatioCalc.Companion.SingleImage
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.calc.act.ActivationRatio
+import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.RawActivation
 import matt.nn.deephys.gui.fix.withImages
 import matt.nn.deephys.gui.global.DeephyActionText
+import matt.nn.deephys.gui.global.DeephysText
 import matt.nn.deephys.gui.global.SpacerWithOldFxSize
+import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.global.tooltip.symbol.DeephysInfoSymbol
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -33,8 +48,10 @@ import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.model.importformat.im.DeephyImage
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
 import matt.prim.pint.ceilInt
+import matt.prim.weak.weak
 
 @Composable
+context(_: Logger)
 fun <A : Number> neuronListViewSwapper(
     viewer: DatasetViewerState,
     contents: Set<DeephyImage<A>>,
@@ -73,6 +90,7 @@ fun <A : Number> neuronListViewSwapper(
 
 @Suppress("UnusedParameter")
 @Composable
+context(_: Logger)
 fun NeuronListViewSwapper(
     viewer: DatasetViewerState,
     @Suppress("REDUNDANT_PROJECTION") top: State<out TopNeurons<*>?>,
@@ -107,9 +125,10 @@ data class NeuronListViewConfig(
     val testLoader: TypedTestLike<*>
 )
 
-private const val NEURON_LIST_VIEW_WIDTH = 150.0
-@Suppress("LocalVariableName", "ForbiddenIsCheck")
+const val NEURON_LIST_VIEW_WIDTH = 150.0
+@Suppress("LocalVariableName", "ForbiddenIsCheck", "D")
 @Composable
+context(_: Logger)
 fun NeuronListView(
     cfg: NeuronListViewConfig,
     bindScrolling: Boolean = false,
@@ -152,7 +171,7 @@ fun NeuronListView(
 
                 topNeurons.forEachIndexed { idx, neuronWithAct ->
                     val neuronIndex = neuronWithAct.neuron.index
-                    Column {
+                    Column(Modifier.width(NEURON_LIST_VIEW_WIDTH.dp)) {
                         Row {
                             DeephyActionText("neuron $neuronIndex ") {
                                 val deReffedViewer = weakViewer.deref()!!
@@ -189,45 +208,66 @@ fun NeuronListView(
                                                 .toString() + "%" + ")"
                                     }
 
-                                    unsafeError(
-                                        """
-                                        DeephysText(
-                                            text
-                                        ) {
+                                    val interactionSource = rememberMutableInteractionSource()
 
-                                            highlightOnHover()
+                                    val theText =
+                                        remember {
+                                            movableContentOf {
+                                                DeephysText(
+                                                    text,
+                                                    Modifier
+                                                        .hoverable(interactionSource),
+                                                    color =
+                                                        animateColorAsState(
+                                                            if (
+                                                                interactionSource.collectIsHoveredAsState().value
+                                                            ) MaterialTheme.colorScheme.primary else TextDefaults.Color
+                                                        ).value
 
-                                            when (act) {
-                                                is AlwaysOneActivation<*, *> ->
-                                                    veryLazyDeephysTooltip(memSafeSettings) {
-                                                        "activation is always 1 in this case, so it is not shown"
-                                                    }
-
-                                                is RawActivation<*, *>       -> {
-                                                    val numImages = (cfg.tops).testAndImages.images.size
-                                                    veryLazyDeephysTooltip(memSafeSettings) {
-                                                        if (numImages == 0) "maximum raw activation value for this neuron"
-                                                        else if (numImages > 1) "average activation value for the selected images"
-                                                        else "raw activation value for the selected image"
-                                                    }
-                                                }
-
-                                                is ActivationRatio<*, *>     -> {
-                                                    val numImages = (cfg.tops).testAndImages.images.size
-                                                    val num =
-                                                        when (numImages) {
-                                                            0    -> MiscActivationRatioNumerator.MAX
-                                                            1    -> SingleImage(cfg.tops.testAndImages.images.first().imageID)
-                                                            else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
-                                                        }
-                                                    veryLazyDeephysTexTooltip(memSafeSettings) {
-                                                        ActivationRatioCalc.latexTechnique(num)
-                                                    }
-                                                }
+                                                )
                                             }
-                                        }       
-                                        """.trimIndent()
-                                    )
+                                        }
+
+                                    when (act) {
+                                        is AlwaysOneActivation<*, *> ->
+                                            DeephysTooltipArea(
+                                                settings,
+                                                "activation is always 1 in this case, so it is not shown"
+
+                                            ) {
+                                                theText()
+                                            }
+
+                                        is RawActivation<*, *>       -> {
+                                            val numImages = (cfg.tops).testAndImages.images.size
+
+                                            DeephysTooltipArea(
+                                                settings,
+                                                s =
+                                                    if (numImages == 0) "maximum raw activation value for this neuron"
+                                                    else if (numImages > 1) "average activation value for the selected images"
+                                                    else "raw activation value for the selected image"
+                                            ) {
+                                                theText()
+                                            }
+                                        }
+
+                                        is ActivationRatio<*, *>     -> {
+                                            val numImages = (cfg.tops).testAndImages.images.size
+                                            val num =
+                                                when (numImages) {
+                                                    0    -> MiscActivationRatioNumerator.MAX
+                                                    1    -> SingleImage(cfg.tops.testAndImages.images.first().imageID)
+                                                    else -> MiscActivationRatioNumerator.IMAGE_COLLECTION
+                                                }
+                                            DeephysTooltipArea(
+                                                settings,
+                                                { ActivationRatioCalc.latexTechnique(num) }
+                                            ) {
+                                                theText()
+                                            }
+                                        }
+                                    }
 
                                     act.extraInfo?.go { DeephysInfoSymbol(it) }
                                 }
@@ -248,11 +288,6 @@ fun NeuronListView(
                         )
 
                         SpacerWithOldFxSize() /*space for the hbar*/
-                        unsafeError(
-                            """
-                            prefWidth = NEURON_LIST_VIEW_WIDTH    
-                            """.trimIndent()
-                        )
                     }
                 }
             }

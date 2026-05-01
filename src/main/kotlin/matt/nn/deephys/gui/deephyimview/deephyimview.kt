@@ -4,24 +4,24 @@ import androidx.compose.foundation.ContextMenuArea
 import androidx.compose.foundation.ContextMenuItem
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.onClick
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import kotlinx.io.bytestring.ByteString
 import kotlinx.io.bytestring.asReadOnlyByteBuffer
-import matt.compose.controls.mouse.attachHoverState
+import matt.compose.controls.interaction.rememberHoveredState
+import matt.compose.controls.mouse.j.handPointerIcon
 import matt.compose.graphics.color.ComposeColor
 import matt.compose.graphics.color.toMcolor
 import matt.compose.graphics.mods.thenIf
-import matt.compose.state.shortcuts.rememberMutableStateOf
-import matt.file.commons.reg.TEMP_DIR
+import matt.file.commons.reg.RegisteredFolder
 import matt.image.desktop.save
-import matt.log.warn.common.warn
+import matt.model.k.log.Logger
+import matt.model.k.log.warnPrefixed
 import matt.nn.deephys.gui.draw.toSkiaImage
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -36,6 +36,7 @@ private var didWarnAboutCombiningMethods = false
 @Suppress("UnusedParameter")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+context(_: Logger)
 fun DeephyImView(
     im: DeephyImage<*>,
     viewer: DatasetViewerState,
@@ -47,10 +48,10 @@ fun DeephyImView(
     val weakViewer = viewer.weakRef
     val weakIm = im.weak
     if (!didWarnAboutCombiningMethods) {
-        warn("combine draw methods for V1 and deephy")
+        warnPrefixed("combine draw methods for V1 and deephy")
         didWarnAboutCombiningMethods = true
     }
-    val hovered = rememberMutableStateOf(false)
+    val (interactionSource, isHovered) = rememberHoveredState()
     ContextMenuArea(
         items = {
             buildList {
@@ -58,7 +59,7 @@ fun DeephyImView(
                     ContextMenuItem(
                         "download image"
                     ) {
-                        warn(
+                        warnPrefixed(
                             """
                                   saveFile(stage = weakThis.get()!!.stage) {
                                 title = "choose where to save png"
@@ -71,7 +72,7 @@ fun DeephyImView(
                             }
                             """.trimIndent()
                         )
-                        val pngFile = TEMP_DIR["TEMP_PNG"]
+                        val pngFile = RegisteredFolder.Main.tempPath("TEMP_PNG")
 
                         @Suppress("SENSELESS_COMPARISON")
                         if (pngFile != null) {
@@ -116,7 +117,7 @@ fun DeephyImView(
         ) {
             Box(
                 Modifier.thenIf(
-                    hovered.value,
+                    isHovered,
                     Modifier.border(
                         width = 1.dp,
                         color = ComposeColor.Yellow
@@ -130,7 +131,7 @@ fun DeephyImView(
                             .onClick {
                                 weakViewer.deref()!!.navigateTo(weakIm.deref()!!)
                             }
-                            .pointerHoverIcon(PointerIcon.Hand)
+                            .handPointerIcon()
                             .scale(
                                 run {
                                     val widthMaybe = im.toSkiaImage().width
@@ -141,7 +142,7 @@ fun DeephyImView(
                                     }
                                 }
                             )
-                            .attachHoverState(hovered)
+                            .hoverable(interactionSource)
                 )
             }
         }

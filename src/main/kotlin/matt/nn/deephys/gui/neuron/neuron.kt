@@ -15,15 +15,15 @@ import androidx.compose.ui.unit.dp
 import matt.async.thread.queue.QueueWorker
 import matt.caching.compcache.invoke
 import matt.codegen.tex.tex
-import matt.collect.itr.subList
 import matt.compose.state.produce.produceSimpleResettingIoState
 import matt.compose.state.shortcuts.rememberMutableStateOf
-import matt.lang.common.go
-import matt.lang.common.unsafeError
+import matt.lang.controlflow.go
+import matt.lang.err.unsafeError
 import matt.lang.function.Consume
 import matt.math.lang.arithmetic.op.div
-import matt.model.code.successorfail.resultwithval.loadedOrNull
+import matt.model.code.successorfail.resultwithval.ext.onLoaded
 import matt.model.flowlogic.await.Donable
+import matt.model.k.log.Logger
 import matt.nn.deephys.calc.ActivationRatioCalc
 import matt.nn.deephys.calc.ActivationRatioCalc.Companion.MiscActivationRatioNumerator.MAX
 import matt.nn.deephys.calc.TopCategories
@@ -31,25 +31,26 @@ import matt.nn.deephys.calc.TopImages
 import matt.nn.deephys.calc.act.ActivationRatio
 import matt.nn.deephys.calc.act.AlwaysOneActivation
 import matt.nn.deephys.calc.act.RawActivation
+import matt.nn.deephys.gui.dataset.byimage.neuronlistview.NEURON_LIST_VIEW_WIDTH
 import matt.nn.deephys.gui.dataset.byimage.preds.CategoryTable
+import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.DeephysText
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.global.tooltip.symbol.DeephysInfoSymbol
 import matt.nn.deephys.gui.neuron.imgflowpane.ImageFlowPane
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.settings.MAX_NUM_IMAGES_IN_TOP_IMAGES
-import matt.nn.deephys.gui.unsafemigration.ImageFlowPane
 import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.data.ImageIndex
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
-import matt.reflect.weak.WeakThing
 import kotlin.math.min
 
 private val worker = QueueWorker("NeuronView Worker")
 
 @Suppress("UnusedVariable", "UNUSED_VARIABLE")
 @Composable
+context(_: Logger)
 fun <A : Number> NeuronView(
     neuron: InterTestNeuron,
     numImages: State<Int> = rememberMutableStateOf(MAX_NUM_IMAGES_IN_TOP_IMAGES),
@@ -97,28 +98,29 @@ fun <A : Number> NeuronView(
                                 )
                             }
 
-                        producedActivation.value.loadedOrNull()?.go { activation ->
-                            if (!doneLoading) {
-                                showing.value += 1
-                            }
-                            DeephysTooltipArea(
-                                settings = settings,
-                                getCode = {
-                                    when (activation) {
-                                        is ActivationRatio     -> ActivationRatioCalc.latexTechnique(MAX)
-                                        is RawActivation       -> tex { text("max raw activation of this neuron") }
-                                        is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
-                                    }
-                                },
-                                content = {
-                                    DeephysText(
-                                        s =    activation.formatted
-                                    )
+                        producedActivation.value
+                            .onLoaded { activation ->
+                                if (!doneLoading) {
+                                    showing.value += 1
                                 }
-                            )
+                                DeephysTooltipArea(
+                                    settings = settings,
+                                    getCode = {
+                                        when (activation) {
+                                            is ActivationRatio     -> ActivationRatioCalc.latexTechnique(MAX)
+                                            is RawActivation       -> tex { text("max raw activation of this neuron") }
+                                            is AlwaysOneActivation -> ActivationRatioCalc.latexTechnique(MAX)
+                                        }
+                                    },
+                                    content = {
+                                        DeephysText(
+                                            s = activation.formatted
+                                        )
+                                    }
+                                )
 
-                            activation.extraInfo?.go { DeephysInfoSymbol(it) }
-                        }
+                                activation.extraInfo?.go { DeephysInfoSymbol(it) }
+                            }
                     }
                 }
             }
@@ -161,8 +163,12 @@ fun <A : Number> NeuronView(
         ImageFlowPane(
             viewer,
             /*for reasons that I don't understand, without this FlowPane gets really over-sized in the y dimension*/
-            prefWrapLengthProperty = (viewerWidth.value * 0.95).dp
+            prefWrapLengthProperty =
+                if (layoutForList) NEURON_LIST_VIEW_WIDTH.dp
+                else (viewerWidth.value * 0.95).dp,
+            gap = 3.dp
         ) {
+
             unsafeError(
                 """
                 noneText.visibleAndManagedProp.bindWeakly(
@@ -172,138 +178,66 @@ fun <A : Number> NeuronView(
             )
 
             val imFlowPane = this
-            fun update(
-                weakThing: WeakNeuronViewRefs<A>,
-                oldNumImages: Int?,
-                newNumImages: Int
-            ) {
-                val localTestLoader = weakThing.testLoader
-                val localViewer = weakThing.viewer
-                val localNeuron = weakThing.neuron
-                val localImFlowPane = weakThing.imFlowPane
 
-                val realOldNumImages =
-                    oldNumImages?.let { min(it.toULong(), localTestLoader.numberOfImages()) }
-                val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
+            val newNumImages = numImages.value
 
-                val doneLoading = localTestLoader.isDoneLoading()
+            val localTestLoader = testLoader
+            val localViewer = viewer
+            val localNeuron = neuron
+            val localImFlowPane = imFlowPane
 
-                val topImagesJob =
-                    with(viewer.cacheContext) {
-                        if (localTestLoader.isDoneLoading()) {
-                            val ti =
-                                with(localTestLoader.testRAMCache) {
-                                    TopImages(
-                                        localNeuron,
-                                        localTestLoader,
-                                        realNumImages.toInt()
-                                    )()
-                                }
-                            object : Donable<List<ImageIndex>> {
-                                override fun whenDone(c: Consume<List<ImageIndex>>) {
-                                    c(ti)
-                                }
+            val realNumImages = min(newNumImages.toULong(), localTestLoader.numberOfImages())
+
+            val doneLoading = localTestLoader.isDoneLoading()
+
+            val topImagesJob =
+                with(viewer.cacheContext) {
+                    if (localTestLoader.isDoneLoading()) {
+                        val ti =
+                            with(localTestLoader.testRAMCache) {
+                                TopImages(
+                                    localNeuron,
+                                    localTestLoader,
+                                    realNumImages.toInt()
+                                )()
                             }
-                        } else {
-                            showing.value -= 1
-                            worker.schedule {
-                                with(localTestLoader.testRAMCache) {
-                                    TopImages(
-                                        localNeuron,
-                                        localTestLoader,
-                                        realNumImages.toInt()
-                                    )()
-                                }
+                        object : Donable<List<ImageIndex>> {
+                            override fun whenDone(c: Consume<List<ImageIndex>>) {
+                                c(ti)
+                            }
+                        }
+                    } else {
+                        showing.value -= 1
+                        worker.schedule {
+                            with(localTestLoader.testRAMCache) {
+                                TopImages(
+                                    localNeuron,
+                                    localTestLoader,
+                                    realNumImages.toInt()
+                                )()
                             }
                         }
                     }
-                topImagesJob.whenDone { topImages ->
-                    when (realOldNumImages) {
-                        null                                      -> {
-                            topImages.forEach {
-                                val im = localTestLoader.imageAtIndex(it.index)
-                                unsafeError(
-                                    """
-                                    localImFlowPane.add(
-                                        DeephyImView(
-                                            im,
-                                            localViewer,
-                                            loadAsync = loadImagesAsync,
-                                            settings = memSafeSettings
-                                        )
-                                    )       
-                                    """.trimIndent()
-                                )
-                            }
-                        }
-
-                        else if realNumImages > realOldNumImages  -> {
-                            topImages.subList(realOldNumImages.toInt()).toList().forEach {
-                                val im = localTestLoader.imageAtIndex(it.index)
-                                unsafeError(
-                                    """
-                                    localImFlowPane.add(
-                                        DeephyImView(
-                                            im,
-                                            localViewer,
-                                            loadAsync = loadImagesAsync,
-                                            settings = memSafeSettings
-                                        )
-                                    )             
-                                    """.trimIndent()
-                                )
-                            }
-                        }
-
-                        else if  realNumImages < realOldNumImages -> {
-                            unsafeError(
-                                """
-                                localImFlowPane.children.subList(realNumImages.toInt()).toList().forEach {
-                                    it.removeFromParent()
-                                }         
-                                """.trimIndent()
-                            )
-                        }
+                }
+            val content = rememberMutableStateOf<@Composable () -> Unit> { {} }
+            topImagesJob.whenDone { topImages ->
+                content.value = {
+                    topImages.forEach {
+                        val im = localTestLoader.imageAtIndex(it.index)
+                        DeephyImView(
+                            im,
+                            localViewer,
+                            loadAsync = loadImagesAsync,
+                            settings = settings
+                        )
                     }
-                    if (!doneLoading) {
-                        showing.value += 1
-                    }
+                }
+
+                if (!doneLoading) {
+                    showing.value += 1
                 }
             }
-
-            val weakThing =
-                WeakNeuronViewRefs<A>().apply {
-                    this.testLoader = testLoader
-                    this.viewer = viewer
-                    this.neuron = neuron
-                    this.imFlowPane = imFlowPane
-                }
-
-            update(weakThing.deref()!!, null, numImages.value)
-
-            unsafeError(
-                """
-                numImages.onChangeWithAlreadyWeakAndOld(weakThing) { tl, o, n ->
-                    update(tl, o, n)
-                }
-                if (layoutForList) {
-                    prefWrapLength = NeuronListView.NEURON_LIST_VIEW_WIDTH
-                }
-                val gap = 3.0
-                hgap = gap
-                vgap = gap           
-                """.trimIndent()
-            )
+            content.value()
         }
     }
-}
-
-private class WeakNeuronViewRefs<A : Number> : WeakThing<WeakNeuronViewRefs<A>>() {
-
-    override fun constructNew(): WeakNeuronViewRefs<A> = WeakNeuronViewRefs()
-
-    var testLoader by weak<TypedTestLike<A>>()
-    var viewer by weak<DatasetViewerState>()
-    var neuron by weak<InterTestNeuron>()
-    var imFlowPane by weak<ImageFlowPane>()
 }

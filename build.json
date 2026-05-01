@@ -23,7 +23,7 @@
                 ":k:cbor",
                 ":k:math",
                 ":k:math:numalg:matalg",
-                ":k:codegen",
+                ":k:codegen:py",
                 ":k:reflect",
                 ":k:auto",
                 ":k:obs:math",
@@ -31,7 +31,10 @@
                 ":k:async:thread",
                 ":k:compose:components:tex",
                 ":k:exec",
-                ":k:sys"
+                ":k:sys",
+                ":k:file",
+                ":k:codegen:tex",
+                ":k:log"
             ]
         },
         {

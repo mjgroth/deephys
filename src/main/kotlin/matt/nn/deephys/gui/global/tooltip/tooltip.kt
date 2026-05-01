@@ -10,11 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import matt.codegen.tex.TeXDSL
 import matt.compose.components.tex.TeXView
-import matt.compose.graphics.Compose
+import matt.compose.controls.tooltip.AreaWithTooltipInSupportedPlatforms
+import matt.compose.graphics.ComposeContent
 import matt.compose.graphics.border.defaultBorder
 import matt.compose.graphics.image.desktop.MyImage
 import matt.compose.graphics.text.MyText
-import matt.compose.graphics.tooltip.AreaWithTooltipInSupportedPlatforms
 import matt.compose.state.prop.rememberBoundComposeState
 import matt.image.heavy.mutate.skiamutate.SkiaResize
 import matt.lang.assertions.require.implementedFor
@@ -32,7 +32,7 @@ import matt.prim.pdouble.verifyWholeToInt
 fun DeephysTooltipArea(
     settings: DeephysSettingsController,
     getCode: Produce<TeXDSL>,
-    content: Compose
+    content: ComposeContent
 ) {
     DeephysTooltipArea(
         settings = settings,
@@ -63,12 +63,14 @@ fun DeephysTooltipArea(
     s: String,
     im: DeephyImage<*>? = null,
     enableTooltip: Boolean = true,
-    content: Compose
+    modifier: Modifier = Modifier,
+    content: ComposeContent
 ) {
     DeephysTooltipArea(
+        modifier = modifier,
         settings = settings,
         enableTooltip = enableTooltip,
-        tooltip =  {
+        tooltip = {
             Column {
                 MyText(s, font = DEEPHYS_FONT_DEFAULT, modifier = Modifier.padding(10.dp))
                 if (im != null) {
@@ -87,15 +89,17 @@ fun DeephysTooltipArea(
         content = {
             content()
         }
+
     )
 }
 
 @Composable
 private fun DeephysTooltipArea(
-    tooltip: Compose,
+    tooltip: ComposeContent,
     settings: DeephysSettingsController,
     enableTooltip: Boolean = true,
-    content: Compose
+    modifier: Modifier = Modifier,
+    content: ComposeContent
 ) {
     implementedFor(settings.millisecondsBeforeTooltipsVanish.value == 0)
     AreaWithTooltipInSupportedPlatforms(
@@ -105,13 +109,14 @@ private fun DeephysTooltipArea(
         content = {
             content()
         },
-        enableTooltip = enableTooltip
+        enableTooltip = enableTooltip,
+        modifier = modifier
     )
 }
 
 @Composable
 fun DeephysTooltipContent(
-    content: Compose
+    content: ComposeContent
 ) {
     /*there was something with a white background here too in FX, but couldn't figure out what. An inner or outer box, maybe? Something for seeing the image or text correctly? I don't know. Could have been a mistake.*/
     Box(

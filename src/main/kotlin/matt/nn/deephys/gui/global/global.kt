@@ -18,8 +18,10 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import matt.color.colors.Colors
+import matt.compose.controls.buttons.AsyncButton
 import matt.compose.controls.buttons.MyButton
 import matt.compose.controls.check.MyCheckbox
 import matt.compose.controls.click.ActionText
@@ -29,13 +31,15 @@ import matt.compose.controls.spinner.MyNumberSpinner
 import matt.compose.controls.text.MyClickableText
 import matt.compose.controls.textfields.parsing.parser.SimpleBiTextParser
 import matt.compose.controls.textfields.parsing.parser.filtered
-import matt.compose.graphics.Compose
+import matt.compose.graphics.ComposeContent
+import matt.compose.graphics.color.ComposeColor
 import matt.compose.graphics.color.toComposeColor
+import matt.compose.graphics.defaults.TextDefaults
 import matt.compose.graphics.layout.AlignedRow
+import matt.compose.graphics.padding.WidthSpacer
 import matt.compose.graphics.text.MyText
-import matt.compose.graphics.text.style.style.localEm
+import matt.compose.graphics.text.size.resolveFontSize
 import matt.compose.state.lang.ALWAYS_TRUE
-import matt.compose.state.prop.rememberBoundComposeState
 import matt.compose.state.readonly.LAZY_STATE_PROBLEM_ALT
 import matt.compose.state.readonly.LAZY_STATE_PROBLEM_REASON
 import matt.compose.state.shortcuts.rememberMutableStateOf
@@ -44,20 +48,19 @@ import matt.compose.state.toggle.NewToggleMechanism
 import matt.lang.anno.Alert
 import matt.lang.anno.CodeAlertCategory.TechnicalIssue
 import matt.lang.anno.optin.UnsafeMattCode
-import matt.lang.cfnf.FailureInfo
-import matt.lang.common.unsafeError
+import matt.lang.err.unsafeError
 import matt.lang.function.Op
-import matt.lang.generic.GenericFailable
-import matt.lang.generic.isFailure
-import matt.lang.generic.onFailure
-import matt.log.warn.common.warn
 import matt.math.numalg.precision.withPrecision
+import matt.model.k.log.Logger
+import matt.model.k.log.warnPrefixed
 import matt.nn.deephys.gui.global.color.DeephysPalette
 import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewerState
-import matt.obs.bindings.str.ObsS
-import matt.obs.prop.writable.Var
+import matt.prim.exportfromlang.cfnf.FailureInfo
+import matt.prim.exportfromlang.generic.Failable
+import matt.prim.exportfromlang.generic.isFailure
+import matt.prim.exportfromlang.generic.onFailure
 
 /*null because gets in the way of existing animations for pie slices
 val DEEPHYS_FADE_DUR = 500.milliseconds*/
@@ -78,7 +81,7 @@ inline fun <reified E : Comparable<E>> DeephysSpinner(
 ) {
     AlignedRow {
         val sortedChoices = choices.sorted()
-        val valueOrError = rememberMutableStateOf<GenericFailable<E, FailureInfo>> { GenericFailable.success(selected.value) }
+        val valueOrError = rememberMutableStateOf<Failable<E, FailureInfo>> { Failable.success(selected.value) }
         if (viewer.isUnboundToDSet.value) {
             DeephysLabeledControl(label) {
                 MyNumberSpinner(
@@ -126,10 +129,10 @@ inline fun <reified E : Comparable<E>> DeephysSpinner(
                             }
                         viewer.navAction(real)
                         selected.value = real
-                        valueOrError.value = GenericFailable.success(real)
+                        valueOrError.value = Failable.success(real)
                     },
                     onFailedUpdate = {
-                        valueOrError.value = GenericFailable.failure(it)
+                        valueOrError.value = Failable.failure(it)
                     }
                 )
             }
@@ -144,71 +147,59 @@ inline fun <reified E : Comparable<E>> DeephysSpinner(
 @Composable
 fun DeephysLabeledControl(
     label: String,
-    control: Compose
+    spacerWidth: Dp = 0.dp,
+    controlWidth: Dp = 100.dp,
+    control: ComposeContent
 ) = AlignedRow {
-    AlignedRow(
-        Modifier.width(60.dp)
-    ) {
+    AlignedRow(Modifier.width(60.dp)) {
         DeephysText(s = "$label:")
     }
+    WidthSpacer(spacerWidth)
     Box(
-        Modifier.width(100.dp),
+        Modifier.width(controlWidth),
         propagateMinConstraints = true
     ) {
         control()
     }
 }
 
-@Composable
-fun DeephysLabeledControl2(
-    label: String,
-    control: Compose
-) = AlignedRow {
-    AlignedRow(Modifier.width(60.dp)) {
-        DeephysText(s = "$label:")
-    }
-    Spacer(Modifier.width(5.dp))
-    Box(Modifier.width(500.dp), propagateMinConstraints = true) {
-        control()
-    }
-}
-
 @UnsafeMattCode(saferAlternative = LAZY_STATE_PROBLEM_ALT, reason = LAZY_STATE_PROBLEM_REASON)
 @Composable
 fun DeephysText(
-    s: ObsS,
+    s: State<String>,
     font: FontFamily = DEEPHYS_FONT_DEFAULT
 ) {
-    DeephysText(s = s.rememberBoundComposeState().value, font = font)
+    DeephysText(s = s.value, font = font)
 }
 
 @UnsafeMattCode(saferAlternative = LAZY_STATE_PROBLEM_ALT, reason = LAZY_STATE_PROBLEM_REASON)
 @Composable
 fun DeephysText(
-    s: ObsS,
+    s: State<String>,
     style: TextStyle
 ) {
     CompositionLocalProvider(
         LocalTextStyle provides LocalTextStyle.current + TextStyle(fontFamily = DEEPHYS_FONT_DEFAULT) + style
     ) {
-        MyText(s.rememberBoundComposeState().value)
+        MyText(s.value)
     }
 }
 
 @Composable
 fun DeephysText(
+    s: String,
     modifier: Modifier = Modifier,
-    s: String = "",
-    font: FontFamily = DEEPHYS_FONT_DEFAULT
+    font: FontFamily = DEEPHYS_FONT_DEFAULT,
+    color: ComposeColor = TextDefaults.Color
 ) {
-    MyText(s, font = font, modifier = modifier)
+    MyText(s, font = font, modifier = modifier, color = color)
 }
 
 @Composable
 fun DeephysText(
-    modifier: Modifier = Modifier,
-    s: String = "",
-    style: TextStyle
+    s: String,
+    style: TextStyle,
+    modifier: Modifier = Modifier
 ) {
     CompositionLocalProvider(
         LocalTextStyle provides LocalTextStyle.current + TextStyle(fontFamily = DEEPHYS_FONT_DEFAULT) + style
@@ -302,16 +293,28 @@ fun DeephyHyperlink(
     action()
 }
 
-@UnsafeMattCode(saferAlternative = LAZY_STATE_PROBLEM_ALT, reason = LAZY_STATE_PROBLEM_REASON)
 @Composable
 fun DeephyCheckbox(
     modifier: Modifier = Modifier,
     s: String = "",
-    prop: Var<Boolean>? = null
+    prop: MutableState<Boolean>
 ) = MyCheckbox(
     label = s,
     modifier = modifier,
-    checked = prop!!.rememberBoundComposeState() as MutableState
+    checked = prop
+)
+
+@Composable
+fun DeephyCheckbox(
+    modifier: Modifier = Modifier,
+    s: String = "",
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) = MyCheckbox(
+    label = s,
+    modifier = modifier,
+    checked = checked,
+    onCheckedChange = onCheckedChange
 )
 
 @Composable
@@ -321,6 +324,20 @@ fun DeephyButton(
     s: String = "",
     action: () -> Unit
 ) = MyButton(
+    s,
+    font = DEEPHYS_FONT_DEFAULT,
+    modifier = modifier,
+    enabled = enabled
+) {
+    action()
+}
+@Composable
+fun AsyncDeephyButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    s: String = "",
+    action: suspend () -> Unit
+) = AsyncButton(
     s,
     font = DEEPHYS_FONT_DEFAULT,
     modifier = modifier,
@@ -345,15 +362,16 @@ private const val DEEPHY_ICON_BUTTON_SIZE = 25
 
 @Suppress("UnusedParameter", "unused")
 @Composable
+context(_: Logger)
 fun DeephyIconButton(
     icon: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     action: () -> Unit
 ) {
-    warn("icon here comes from resource files, and might need to have \".svg \" appended to it")
-    warn("graphic = svgIcon(icon, DEEPHY_ICON_BUTTON_SIZE)")
-    warn(
+    warnPrefixed("icon here comes from resource files, and might need to have \".svg \" appended to it")
+    warnPrefixed("graphic = svgIcon(icon, DEEPHY_ICON_BUTTON_SIZE)")
+    warnPrefixed(
         """
                   hoverColor = FloatColor(0.5f, 0.5f, 0.5f, 0.2f).toComposeColor(),
         clickColor = FloatColor(1.0f, 1.0f, 0.0f, 0.5f).toComposeColor()
@@ -424,12 +442,12 @@ val DEEPHYS_FONT_DEFAULT: FontFamily by lazy {
 val DEEPHY_FONT_SUBTITLE get() =
     TextStyle(
         fontFamily = DEEPHYS_FONT_DEFAULT,
-        fontSize = 1.2.localEm()
+        fontSize = resolveFontSize(1.2)
     )
 @get:Composable
 val DEEPHY_FONT_TITLE get() =
     DEEPHY_FONT_SUBTITLE.copy(
-        fontSize = 1.5.localEm()
+        fontSize = resolveFontSize(1.5)
     )
 @get:Composable
 val DEEPHY_FONT_TITLE_BOLD get() =

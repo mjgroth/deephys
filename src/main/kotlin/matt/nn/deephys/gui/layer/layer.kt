@@ -3,8 +3,9 @@ package matt.nn.deephys.gui.layer
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
-import matt.lang.common.go
-import matt.lang.common.unsafeReturningErr
+import matt.lang.controlflow.go
+import matt.lang.err.unsafeReturningErr
+import matt.model.k.log.Logger
 import matt.nn.deephys.gui.neuron.NeuronView
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewerState
@@ -13,6 +14,7 @@ import matt.nn.deephys.model.ResolvedLayer
 
 @Suppress("UnusedVariable", "UNUSED_VARIABLE", "unused")
 @Composable
+context(_: Logger)
 fun LayerView(
     layer: ResolvedLayer,
     testLoader: TestLoader,

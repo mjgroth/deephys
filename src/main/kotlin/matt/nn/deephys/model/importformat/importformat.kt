@@ -1,17 +1,17 @@
 package matt.nn.deephys.model.importformat
 
-import com.google.common.collect.MapMaker
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import matt.async.pri.MyThreadPriority.CREATING_NEW_CACHE
 import matt.async.thread.TheThreadProvider
 import matt.async.thread.daemon
-import matt.collect.map.dmap.inter.withStoringDefault
-import matt.collect.map.lazyMap
-import matt.collect.weak.lazy.lazyWeakMap
+import matt.collect.map.dmap.LazyKeyed
+import matt.collect.map.dmap.lazyKeyed
+import matt.collect.weak.lazy.weakSynchronizedLazyKeyed
 import matt.log.profile.mem.throttle
-import matt.log.warn.common.warn
 import matt.model.flowlogic.latch.asyncloaded.DaemonLoadedValueOp
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import matt.model.k.log.warnPrefixedCompat
 import matt.nn.deephys.load.test.OLD_CAT_LOAD_WARNING
 import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.dtype.DType
@@ -33,7 +33,6 @@ import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.forEachIndexed
 import org.jetbrains.kotlinx.multik.ndarray.operations.max
 import java.lang.ref.WeakReference
-import kotlin.collections.set
 
 sealed interface DeephyFileObject {
     val name: String
@@ -48,7 +47,9 @@ class Model(
     val layers: List<Layer>,
     @Suppress("ConstructorParameterNaming") val classification_layer: String = "classification"
 ) : DeephyFileObject {
-    val resolvedLayers by lazy { layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) } }
+    val resolvedLayers by lazy {
+        layers.mapIndexed { index, layer -> ResolvedLayer(layer, this@Model, index) }
+    }
     val neurons: List<ResolvedNeuron> by lazy { resolvedLayers.flatMap { it.neurons } }
     val classificationLayer by lazy {
         resolvedLayers.first { it.isClassification(this) }
@@ -111,7 +112,7 @@ class Test<N : Number>(
         if (cats != null) {
             cats.sortedBy { it.id }
         } else {
-            warn(OLD_CAT_LOAD_WARNING)
+            warnPrefixedCompat(OLD_CAT_LOAD_WARNING)
             this@Test.images.map { it.category }.toSet().toList().sortedBy { it.id }
         }
     }
@@ -135,83 +136,58 @@ class Test<N : Number>(
 
     @Suppress("unused")
     private val activationsMatByLayerIndex =
-        lazyWeakMap<Int, D2Array<N>> { lay ->
-
+        lazyKeyed<Int, D2Array<N>>(
+            LazyThreadSafetyMode.SYNCHRONIZED /*idk, safest guess*/
+        ) { lay ->
             val list =
                 this@Test.images.map {
-                    it.weakActivations[lay]/*.asList()*/
-                } /*.toNDArray()*/
-
+                    it.weakActivations[lay]
+                }
             dtype.d2array(list)
-
-            /* 1 */
         }
 
-    val activationsByNeuron: Map<InterTestNeuron, MultiArray<N, D1>> =
-        MapMaker()
+    val activationsByNeuron: LazyKeyed<InterTestNeuron, MultiArray<N, D1>> =
+        weakSynchronizedLazyKeyed<InterTestNeuron, MultiArray<N, D1>> {
+            val theTestNeuron = testNeurons.await()[it]
+            val something =
+                try {
+                    theTestNeuron!!.activations.await()
+                } catch (e: Exception) {
+                    throw Exception("Exception while getting activations of $theTestNeuron", e)
+                }
+
+            dtype.d1array(something)
+        }
+     /*   MapMaker()
             .weakKeys().apply {
             }
             .weakValues()
             .makeMap<InterTestNeuron, MultiArray<N, D1>>()
             .withStoringDefault {
 
-                val theTestNeuron = testNeurons.await()[it]
-
-                val something =
-                    try {
-                        theTestNeuron!!.activations.await()
-                    } catch (e: Exception) {
-                        throw Exception("Exception while getting activations of $theTestNeuron", e)
-                    }
-
-                dtype.d1array(something)
-                /*testNeurons!![it]!!.activations.await().asList().toNDArray()
-
-
-
-                val myMat = activationsMatByLayerIndex[it.layer.index]
-      myMat[0 ..< myMat.shape[0], it.index]*/
-            }
-
-    /*	lazyWeakMap<InterTestNeuron, MultiArray<Float, D1>> {
-
-
-        //	error("todo: fix this memory leak")
-
-
-        testNeurons!![it]!!.activations.await().asList().toNDArray()
-
-
-        //	WeakReference(actData)
-
-
-
-
-
-      }*/
+            }*/
 
     val maxActivations =
-        lazyMap<InterTestNeuron, N> { neuron ->
-
-            /*activationsMatByLayerIndex[neuron.layer.index].slice<Float, D2, D1>(neuron.index..neuron.index, axis = 1).max()!!*/
-
-            activationsByNeuron[neuron]!!.max()!!
+        lazyKeyed<InterTestNeuron, N>(LazyThreadSafetyMode.SYNCHRONIZED /*unsure, safest guess*/) { neuron ->
+            activationsByNeuron[neuron].max()!!
         }
 
     fun startPreloadingMaxActivations() {
-        daemon("startPreloadingMaxActivations Thread", priority = CREATING_NEW_CACHE) {
-            model.resolvedLayers.forEach { resolvedLayer ->
-                resolvedLayer.interTest.neurons.forEach {
-                    maxActivations[it]
+        val _ =
+            daemon("startPreloadingMaxActivations Thread", priority = CREATING_NEW_CACHE) {
+                model.resolvedLayers.forEach { resolvedLayer ->
+                    resolvedLayer.interTest.neurons.forEach {
+                        val _ = maxActivations[it]
+                    }
                 }
+                println("finished preloading all maxActivations of $name!")
             }
-            println("finished preloading all maxActivations of $name!")
-        }
     }
 
     val preds =
         run {
-            val clsLayerIndex = model.classificationLayer.index /*attempt to remove ref to Test from thread below*/
+            /*attempt to remove ref to Test from thread below*/
+            val clsLayerIndex = model.classificationLayer.index
             val ims = this@Test.images
             val nam = name
             val weakTest = WeakReference(test)
@@ -222,7 +198,7 @@ class Test<N : Number>(
                 ims.chunked(chunkSize).forEachIndexed { chunkIndex, imageChunk ->
                     val lis =
                         imageChunk.map {
-                            it.weakActivations[clsLayerIndex]/*.asList()*/
+                            it.weakActivations[clsLayerIndex]
                         }
                     val actsMat = dtype.d2array(lis)
                     val argMaxResults = mk.math.argMaxD2(actsMat, 1)
@@ -242,14 +218,10 @@ class Test<N : Number>(
                             }
                         )
                     }
-                    throttle("preds of $nam")
+                    runBlocking {
+                        throttle("preds of $nam")
+                    }
                 }
-
-            /*val argMaxResults = mk.math.argMaxD2(activationsMatByLayerIndex[model!!.classificationLayer.index], 1)
-            argMaxResults.forEachIndexed { imageIndex, predictionIndex ->
-              m[images[imageIndex]] = category(predictionIndex)
-            }*/
-
                 m
             }
         }

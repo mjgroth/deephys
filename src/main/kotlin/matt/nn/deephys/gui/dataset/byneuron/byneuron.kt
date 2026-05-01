@@ -1,7 +1,7 @@
 package matt.nn.deephys.gui.dataset.byneuron
 
 import androidx.compose.runtime.Composable
-import matt.lang.common.unsafeError
+import matt.lang.err.unsafeError
 import matt.nn.deephys.gui.global.DeephysNullMessageFact
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewerState

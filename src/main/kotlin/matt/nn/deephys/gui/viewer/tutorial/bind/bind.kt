@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import matt.compose.controls.check.MyCheckbox
-import matt.lang.common.NEVER
+import matt.lang.err.NEVER
 import matt.nn.deephys.gui.dsetsbox.BIND_BUTTON_NAME
 import matt.nn.deephys.gui.dsetsbox.NORMALIZER_BUTTON_NAME
 import matt.nn.deephys.gui.global.DeephyActionText

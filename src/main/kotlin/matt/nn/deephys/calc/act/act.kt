@@ -1,11 +1,10 @@
 package matt.nn.deephys.calc.act
 
 import matt.lang.anno.Open
-import matt.lang.mathable.DoubleWrapper
-import matt.lang.mathable.NumberWrapper
-import matt.lang.passert.powerRequire
 import matt.math.numalg.precision.withPrecision
 import matt.model.data.mathable.FloatWrapper
+import matt.prim.mathable.DoubleWrapper
+import matt.prim.mathable.NumberWrapper
 
 sealed interface Activation<N : Number, T : Activation<N, T>> : NumberWrapper<T>, Comparable<T> {
     val value: N
@@ -35,7 +34,7 @@ object AlwaysOneActivationFloat32 :
     AlwaysOneActivation<Float, AlwaysOneActivationFloat32>,
     ActivationFloat32<AlwaysOneActivationFloat32> {
     override fun fromFloat(d: Float): AlwaysOneActivationFloat32 {
-        powerRequire(d == 1f)
+        require(d == 1f)
         return AlwaysOneActivationFloat32
     }
 
@@ -47,7 +46,7 @@ object AlwaysOneActivationFloat64 :
     AlwaysOneActivation<Double, AlwaysOneActivationFloat64>,
     ActivationFloat64<AlwaysOneActivationFloat64> {
     override fun fromDouble(d: Double): AlwaysOneActivationFloat64 {
-        powerRequire(d == 1.0)
+        require(d == 1.0)
         return AlwaysOneActivationFloat64
     }
 
@@ -82,69 +81,6 @@ value class RawActivationFloat64(override val value: Double) :
     override val formatted get() = "${RawActivation.RAW_ACT_SYMBOL}: ${value.withPrecision(3)}"
     override fun fromDouble(d: Double): RawActivationFloat64 = RawActivationFloat64(d)
 }
-
-/*
-sealed interface NormalActivation<A: Number, T: NormalActivation<A, T>>: Activation<A, T> {
-
-
-  companion object {
-    const val NORMALIZED_ACT_SYMBOL = "Ŷ"
-  }
-
-  override val extraInfo: String?
-    get() = null
-
-}
-
-
-
-
-
-@JvmInline
-value class NormalActivationFloat32(override val value: Float): NormalActivation<Float, NormalActivationFloat32>,
-                                                                ActivationFloat32<NormalActivationFloat32> {
-
-
-  override val formatted get() = " $NORMALIZED_ACT_SYMBOL=${value.sigFigs(3)}"
-  override fun plus(m: NormalActivationFloat32): NormalActivationFloat32 {
-    return NormalActivationFloat32(value + m.value)
-  }
-
-  override fun fromFloat(d: Float): NormalActivationFloat32 {
-    return NormalActivationFloat32(d)
-  }
-
-  override fun div(n: Number): NormalActivationFloat32 {
-    return NormalActivationFloat32(value/n.toFloat())
-  }
-
-
-}
-
-
-
-
-
-
-@JvmInline
-value class NormalActivationFloat64(override val value: Double): NormalActivation<Double, NormalActivationFloat64>,
-                                                                 ActivationFloat64<NormalActivationFloat64> {
-
-
-  override val formatted get() = " $NORMALIZED_ACT_SYMBOL=${value.sigFigs(3)}"
-  override fun plus(m: NormalActivationFloat64): NormalActivationFloat64 {
-    return NormalActivationFloat64(value + m.value)
-  }
-
-  override fun fromDouble(d: Double): NormalActivationFloat64 {
-    return NormalActivationFloat64(d)
-  }
-
-  override fun div(n: Number): NormalActivationFloat64 {
-    return NormalActivationFloat64(value/n.toDouble())
-  }
-}
-*/
 
 sealed interface ActivationRatio<A : Number, T : ActivationRatio<A, T>> : Activation<A, T> {
 

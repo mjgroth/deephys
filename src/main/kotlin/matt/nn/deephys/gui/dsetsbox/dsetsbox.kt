@@ -1,42 +1,42 @@
 package matt.nn.deephys.gui.dsetsbox
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import matt.caching.compcache.ComputeCacheContextImpl
+import matt.compose.controls.accordion.Accordion
 import matt.compose.state.readonly.readOnly
 import matt.compose.state.toggle.NewToggleMechanism
+import matt.file.JioFile
 import matt.file.common.toAbsLinuxFile
-import matt.file.construct.mFile
-import matt.file.model.file.types.Cbor
-import matt.file.model.file.types.TypedFile
-import matt.file.types.checkType
-import matt.lang.common.unsafeError
-import matt.lang.common.unsafeReturningErr
-import matt.model.data.message.AbsLinuxFile
+import matt.file.construct.toJioFile
+import matt.lang.err.unsafeError
+import matt.lang.err.unsafeReturningErr
+import matt.model.k.log.Logger
 import matt.nn.deephys.gui.modelvis.ModelVisualizerState
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.unsafemigration.ControlWrapper
 import matt.nn.deephys.gui.unsafemigration.NodeWrapper
-import matt.nn.deephys.gui.viewer.DatasetViewer
+import matt.nn.deephys.gui.viewer.DatasetViewer1
+import matt.nn.deephys.gui.viewer.DatasetViewer2
 import matt.nn.deephys.gui.viewer.DatasetViewerState
+import matt.nn.deephys.model.ResolvedNeuron
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.obs.bind.MyBinding
-import matt.prim.common.exportfromlang.model.file.MacFileSystem
+import matt.osi.serfile.AbsLinuxFile
 
 const val BIND_BUTTON_NAME = "Lead"
 const val NORMALIZER_BUTTON_NAME = "Normalizer"
 
 class DSetViewsState(
-    private val deephyState: DeephyState
+    val deephyState: DeephyState,
+    val modelVisualizer: ModelVisualizerState
 ) {
 
     @Suppress("unused")
     private val cacheContext = ComputeCacheContextImpl()
-    @Suppress("unused")
-    var modelVisualizer: ModelVisualizerState? = null
+
     private val bindToggleGroup = NewToggleMechanism<DatasetViewerState>(unsafeReturningErr())
     private val boundM =
         derivedStateOf {
@@ -49,7 +49,7 @@ class DSetViewsState(
 
     val datasets = mutableStateListOf<DatasetViewerState>()
 
-    operator fun plusAssign(file: TypedFile<Cbor, *>) {
+    operator fun plusAssign(cborFile: JioFile) {
         unsafeError(
             """
             this += DatasetViewer(file, this, settings, cacheContext)        
@@ -58,7 +58,7 @@ class DSetViewsState(
     }
     operator fun plusAssign(list: List<AbsLinuxFile>) {
         list.forEach {
-            this += (mFile(it.path, MacFileSystem)).checkType(Cbor)
+            this += it.toJioFile()
         }
     }
 
@@ -225,7 +225,7 @@ class DSetViewsState(
     }
 
     @Suppress("unused")
-    val highlightedNeurons: MyBinding<*> =
+    val highlightedNeurons: MyBinding<List<ResolvedNeuron>> =
         unsafeReturningErr(
             """
             MyBinding(children) {
@@ -248,14 +248,22 @@ class DSetViewsState(
 
 @Suppress("UnusedParameter", "unused")
 @Composable
+context(_: Logger)
 fun DSetViewsVBox(
     state: DSetViewsState,
     model: Model,
     settings: DeephysSettingsController
 ) {
-    Column {
-        state.datasets.forEach {
-            DatasetViewer(it, settings)
+
+    /*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
+
+    Accordion(
+        state.datasets,
+        defaultExpanded = { true },
+        titleContent = {
+            DatasetViewer1(it, settings)
         }
+    ) {
+        DatasetViewer2(it, settings)
     }
 }

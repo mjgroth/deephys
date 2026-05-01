@@ -5,30 +5,29 @@ package matt.nn.deephys.load
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromByteArray
 import matt.cbor.my.MyCbor
-import matt.compose.graphics.Compose
+import matt.compose.graphics.ComposeContent
+import matt.compose.graphics.anim.tween
 import matt.compose.graphics.text.MyText
 import matt.file.JioFile
-import matt.lang.generic.GenericFailable
-import matt.lang.generic.on
-import matt.lang.safeconvert.verifyToInt
+import matt.model.k.file.file.FsFile
 import matt.model.obj.text.doesNotExist
 import matt.nn.deephys.load.async.AsyncLoader
-import matt.obs.prop.ObsVal
-import matt.prim.common.exportfromlang.model.file.FsFile
+import matt.prim.exportfromlang.generic.Failable
+import matt.prim.exportfromlang.generic.on
 import java.nio.file.Path
 import kotlin.io.path.readBytes
 import kotlin.time.Duration
 
-typealias CborSyncLoadResult<T> = GenericFailable<Loaded<T>, CborSyncLoadFailure>
+typealias CborSyncLoadResult<T> = Failable<Loaded<T>, CborSyncLoadFailure>
 
 sealed interface CborSyncLoadFailure
 class FileNotFound(val f: FsFile): CborSyncLoadFailure
@@ -37,16 +36,16 @@ class Loaded<T>(val data: T)
 
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T: Any> JioFile.loadCbor(): CborSyncLoadResult<T> =
-    if (doesNotExist()) GenericFailable.failure(FileNotFound(this)) else try {
-        GenericFailable.success(Loaded(MyCbor.decodeFromByteArray((this as Path).readBytes())))
+    if (doesNotExist()) Failable.failure(FileNotFound(this)) else try {
+        Failable.success(Loaded(MyCbor.decodeFromByteArray((this as Path).readBytes())))
     } catch (e: SerializationException) {
-        GenericFailable.failure(ParseError(e.message))
+        Failable.failure(ParseError(e.message))
     }
 
 @Suppress("unused")
 @Composable
 fun <T> LoadSwapper(
-    prop: ObsVal<CborSyncLoadResult<T>?>,
+    prop: State<CborSyncLoadResult<T>?>,
     nullMessage: String = "please select a file",
     op: @Composable T.() -> Unit
 ) {
@@ -80,11 +79,11 @@ fun <T> LoadSwapper(
 
 @Composable
 fun <T: AsyncLoader> AsyncLoadSwapper(
-    loader: ObsVal<T?>,
+    loader: State<T?>,
     nullMessage: String = "please select a file",
     fadeOutDur: Duration? = null,
     fadeInDur: Duration? = null,
-    content: (T) -> Compose
+    content: (T) -> ComposeContent
 ) {
     val v = loader.value
 
@@ -116,8 +115,8 @@ fun <T: AsyncLoader> AsyncLoadSwapper(
 
         AnimatedVisibility(
             visible = theContent != null,
-            enter = fadeInDur?.let { fadeIn(animationSpec = tween(durationMillis = it.inWholeMilliseconds.verifyToInt())) } ?: EnterTransition.None,
-            exit = fadeOutDur?.let {  fadeOut(animationSpec = tween(durationMillis = it.inWholeMilliseconds.verifyToInt())) } ?: ExitTransition.None
+            enter = fadeInDur?.let { fadeIn(animationSpec = tween(duration = it)) } ?: EnterTransition.None,
+            exit = fadeOutDur?.let { fadeOut(animationSpec = tween(duration = it)) } ?: ExitTransition.None
         ) {
             theContent?.invoke()
         }

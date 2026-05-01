@@ -3,7 +3,9 @@ package matt.nn.deephys.gui.dataset.byimage.mult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
-import matt.lang.common.go
+import androidx.compose.ui.unit.dp
+import matt.lang.controlflow.go
+import matt.model.k.log.Logger
 import matt.nn.deephys.gui.dataset.byimage.neuronlistview.neuronListViewSwapper
 import matt.nn.deephys.gui.deephyimview.DeephyImView
 import matt.nn.deephys.gui.global.DeephysText
@@ -17,6 +19,7 @@ import matt.nn.deephys.model.importformat.im.DeephyImage
 
 private const val MAX_IMS = 25
 @Composable
+context(_: Logger)
 fun <A: Number> MultipleImagesView(
     viewer: DatasetViewerState,
     images: List<DeephyImage<A>>,
@@ -31,13 +34,15 @@ fun <A: Number> MultipleImagesView(
         Column {
 
             title?.go {
-                DeephysText(s = "$title (${images.size})").apply {
-                    subtitleFont()
-                }
+                DeephysText(
+                    s = "$title (${images.size})",
+                    style = subtitleFont()
+                )
             }
             ImageFlowPane(
                 viewer,
-                prefWrapLengthProperty = viewerWidth * 0.4f
+                prefWrapLengthProperty = viewerWidth * 0.4f,
+                gap = 0.dp /*only because I THINK this path didn't include a g\"gap\" in FX*/
             ) {
                 images.take(MAX_IMS).forEach {
                     DeephyImView(it, viewer, settings = settings)

@@ -4,8 +4,8 @@ package matt.nn.deephys.model.importformat.neuron
 
 import kotlinx.io.bytestring.ByteString
 import kotlinx.serialization.Serializable
+import matt.file.raf.cache.EvenlySizedRAFCache
 import matt.nn.deephys.load.cache.RAFCaches
-import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.dtype.DType
 
 @Serializable

@@ -2,6 +2,7 @@
 
 package matt.nn.deephys.load.test.imageloader
 
+import kotlinx.coroutines.runBlocking
 import kotlinx.io.bytestring.ByteString
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringApi
 import kotlinx.io.bytestring.unsafe.UnsafeByteStringOperations
@@ -13,15 +14,16 @@ import matt.collect.list.awaitlist.BlockList
 import matt.collect.list.awaitlist.BlockListBuilder
 import matt.collect.queue.j.JQueueWrapper
 import matt.collect.queue.pollUntilEnd
+import matt.file.raf.cache.EvenlySizedRAFCache
 import matt.lang.assertions.require.requireNot
+import matt.lang.codecomment.disabledCode
 import matt.lang.collect.List2D
 import matt.lang.collect.l
-import matt.lang.common.disabledCode
 import matt.log.profile.mem.throttle
+import matt.model.k.log.Logger
 import matt.nn.deephys.load.async.AsyncLoader.DirectLoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.Cacher
 import matt.nn.deephys.load.cache.DeephysCacheManager
-import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.LoadException
 import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.TestLoader
@@ -65,6 +67,7 @@ class ImageSetLoader<A: Number>(
     private var didRead = false
 
     @OptIn(UnsafeByteStringApi::class)
+    context(_ : Logger)
     fun readImages(
         reader: MapReader,
         dtype: DType<A>,
@@ -109,116 +112,119 @@ class ImageSetLoader<A: Number>(
                 ArrayBlockingQueue<ImageActivationCborBytes<*>>(
                     ACTS_FOR_NEURONS_BUFF_SIZE
                 )
-            readEachManually<MapReader, Unit> {
-                val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
-                val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
-                val category = nextValue<String>(requireKeyIs = "category")
+            val _ =
+                readEachManually<MapReader, Unit> {
+                    val imageID = nextValue<ULong>(requireKeyIs = "imageID").toInt()
+                    val categoryID = nextValue<ULong>(requireKeyIs = "categoryID").toInt()
+                    val category = nextValue<String>(requireKeyIs = "category")
 
-                nextKeyOrValueOnly(requireIs = "data")
-                val imageData: ByteString =
-                    if (numDataBytes == null) {
-                        withByteStoring {
-                            val r =
-                                nextValueManualDoNotReadKey<ArrayReader, List2D<IntArray>> {
-                                    readPixels()
-                                }
-                            val imDims = l(r.size, r[0].size, r[0][0].size)
-                            pixelsShapePerImage.putLoadedValue(imDims)
-                            if (r.size != 3) {
-                                throw LoadException(
-                                    "Images should have 3 color channels. The first dimension should be a length of 3, but the encountered dimensions were ${imDims.elementsToString()} "
-                                )
-                            }
-                            r
-                        }.let {
-                            numDataBytes = it.second.size
-                            pixelsRAF = EvenlySizedRAFCache(datasetHDCache.pixelsRAF, numDataBytes!!)
-                            it.second
-                        }
-                    } else readNBytes(numDataBytes!!)
-
-                var features: Map<String, String>? = null
-                if (count.toInt() == 6) {
-                    features = nextValue(requireKeyIs = "features")
-                }
-
-                val bytes =
-                    nextValueManual<MapReader, ByteString>(
-                        requireKeyIs = "activations"
-                    ) {
-                        nextKeyOrValueOnly(requireIs = "activations")
-                        if (numActivationBytes == null) {
+                    val _ = nextKeyOrValueOnly(requireIs = "data")
+                    val imageData: ByteString =
+                        if (numDataBytes == null) {
                             withByteStoring {
                                 val r =
-                                    nextValueManualDoNotReadKey<ArrayReader, FloatActivationData> {
-                                        readFloatActivations()
+                                    nextValueManualDoNotReadKey<ArrayReader, List2D<IntArray>> {
+                                        readPixels()
                                     }
-                                val actsShapePerIm = r.map { it.size }
-                                activationsShapePerImage.putLoadedValue(actsShapePerIm)
-
-                                val modelShape = testLoader.model.layers.map { it.neurons.size }
-
-                                if (
-                                    actsShapePerIm.size != testLoader.model.layers.size
-                                    || modelShape.zip(actsShapePerIm).any { it.first != it.second }
-                                ) {
+                                val imDims = l(r.size, r[0].size, r[0][0].size)
+                                pixelsShapePerImage.putLoadedValue(imDims)
+                                if (r.size != 3) {
                                     throw LoadException(
-                                        "Activations shape from .test file (${actsShapePerIm.elementsToString()}) does not match shape from .model file (${modelShape.elementsToString()})"
+                                        "Images should have 3 color channels. The first dimension should be a length of 3, but the encountered dimensions were ${imDims.elementsToString()} "
                                     )
                                 }
-
-                                println(testLoader.infoString)
                                 r
                             }.let {
-                                numActivationBytes = it.second.size
-                                activationsRAF = EvenlySizedRAFCache(datasetHDCache.activationsRAF, numActivationBytes!!)
+                                numDataBytes = it.second.size
+                                pixelsRAF = EvenlySizedRAFCache(datasetHDCache.pixelsRAF, numDataBytes!!)
                                 it.second
                             }
-                        } else readNBytes(numActivationBytes!!)
+                        } else readNBytes(numDataBytes!!)
+
+                    var features: Map<String, String>? = null
+                    if (count.toInt() == 6) {
+                        features = nextValue(requireKeyIs = "features")
                     }
 
-                val activationsBytes = dtype.bytesThing(bytes)
+                    val bytes =
+                        nextValueManual<MapReader, ByteString>(
+                            requireKeyIs = "activations"
+                        ) {
+                            val _ = nextKeyOrValueOnly(requireIs = "activations")
+                            if (numActivationBytes == null) {
+                                withByteStoring {
+                                    val r =
+                                        nextValueManualDoNotReadKey<ArrayReader, FloatActivationData> {
+                                            readFloatActivations()
+                                        }
+                                    val actsShapePerIm = r.map { it.size }
+                                    activationsShapePerImage.putLoadedValue(actsShapePerIm)
 
-                if (numRead.addAndFetch(1) % 1000 == 0) {
-                    throttle("test loader")
-                }
+                                    val modelShape = testLoader.model.layers.map { it.neurons.size }
 
-                activationByteMultiImBuffer.put(activationsBytes)
-                if (activationByteMultiImBuffer.size == ACTS_FOR_NEURONS_BUFF_SIZE || nextImageIndex == lastImageIndex) {
+                                    if (
+                                        actsShapePerIm.size != testLoader.model.layers.size
+                                        || modelShape.zip(actsShapePerIm).any { it.first != it.second }
+                                    ) {
+                                        throw LoadException(
+                                            "Activations shape from .test file (${actsShapePerIm.elementsToString()}) does not match shape from .model file (${modelShape.elementsToString()})"
+                                        )
+                                    }
 
-                    val toolItr = neuronActCacheTools!!.iterator()
-
-                    val imageActBytes =
-                        JQueueWrapper(activationByteMultiImBuffer).pollUntilEnd().map {
-                            it.rawBytes()
+                                    println(testLoader.infoString)
+                                    r
+                                }.let {
+                                    numActivationBytes = it.second.size
+                                    activationsRAF = EvenlySizedRAFCache(datasetHDCache.activationsRAF, numActivationBytes!!)
+                                    it.second
+                                }
+                            } else readNBytes(numActivationBytes!!)
                         }
 
-                    val siz = imageActBytes.size
-                    val buff = ByteArray(dtype.byteLen * siz)
+                    val activationsBytes = dtype.bytesThing(bytes)
 
-                    (0..<imageActBytes[0].size step dtype.byteLen).forEach { n ->
-                        val tool = toolItr.next()
-                        imageActBytes.forEachIndexed { idx, it ->
-                            System.arraycopy(it, n, buff, idx * dtype.byteLen, dtype.byteLen)
+                    if (numRead.addAndFetch(1) % 1000 == 0) {
+                        runBlocking {
+                            throttle("test loader")
                         }
-                        tool.write(UnsafeByteStringOperations.wrapUnsafe(buff))
                     }
-                }
 
-                val deephyImage =
-                    DeephyImage(
-                        imageID = imageID,
-                        categoryID = categoryID,
-                        category = category,
-                        index = nextImageIndex++,
-                        testLoader = postDtypeTestLoader,
-                        model = testLoader.model,
-                        test = finishedTest,
-                        features = features,
-                        activationsRAF = activationsRAF!!,
-                        pixelsRAF = pixelsRAF!!,
-                        dtype = dtype
-                    ).apply {
+                    activationByteMultiImBuffer.put(activationsBytes)
+                    if (activationByteMultiImBuffer.size == ACTS_FOR_NEURONS_BUFF_SIZE || nextImageIndex == lastImageIndex) {
+
+                        val toolItr = neuronActCacheTools!!.iterator()
+
+                        val imageActBytes =
+                            JQueueWrapper(activationByteMultiImBuffer).pollUntilEnd().map {
+                                it.rawBytes()
+                            }
+
+                        val siz = imageActBytes.size
+                        val buff = ByteArray(dtype.byteLen * siz)
+
+                        (0..<imageActBytes[0].size step dtype.byteLen).forEach { n ->
+                            val tool = toolItr.next()
+                            imageActBytes.forEachIndexed { idx, it ->
+                                System.arraycopy(it, n, buff, idx * dtype.byteLen, dtype.byteLen)
+                            }
+                            tool.write(UnsafeByteStringOperations.wrapUnsafe(buff))
+                        }
+                    }
+
+                    val deephyImage =
+                        DeephyImage(
+                            imageID = imageID,
+                            categoryID = categoryID,
+                            category = category,
+                            index = nextImageIndex++,
+                            testLoader = postDtypeTestLoader,
+                            model = testLoader.model,
+                            test = finishedTest,
+                            features = features,
+                            activationsRAF = activationsRAF!!,
+                            pixelsRAF = pixelsRAF!!,
+                            dtype = dtype
+                        ).apply {
 
                     /*  daemonPool.execute {
                         disabledCode {
@@ -227,34 +233,34 @@ class ImageSetLoader<A: Number>(
                           }
                         }
                       }*/
-                        daemonPool.executeLowPriority {
-                            activations.cache(activationsBytes.bytes)
-                            val n = numCachedActs.addAndFetch(1)
-                            this@ImageSetLoader.testLoader.progress.cacheProgressActs.value = (n.toDouble()) / numImsDouble
-                            if (n == numImsInt) datasetHDCache.activationsRAF.closeWriting()
-                        }
+                            daemonPool.executeLowPriority {
+                                activations.cache(activationsBytes.bytes)
+                                val n = numCachedActs.addAndFetch(1)
+                                this@ImageSetLoader.testLoader.progress.cacheProgressActs.value = (n.toDouble()) / numImsDouble
+                                if (n == numImsInt) datasetHDCache.activationsRAF.closeWriting()
+                            }
 
-                        disabledCode {
-                            daemonPool.execute {
-                                data.strong {
-                                    readPixels(imageData)
+                            disabledCode {
+                                daemonPool.execute {
+                                    data.strong {
+                                        readPixels(imageData)
+                                    }
                                 }
                             }
+                            daemonPool.executeLowPriority {
+                                data.cache(imageData)
+                                val n = numCachedPixels.addAndFetch(1)
+                                this@ImageSetLoader.testLoader.progress.cacheProgressPixels.value = (n.toDouble()) / numImsDouble
+                                if (n == numImsInt) datasetHDCache.pixelsRAF.closeWriting()
+                            }
                         }
-                        daemonPool.executeLowPriority {
-                            data.cache(imageData)
-                            val n = numCachedPixels.addAndFetch(1)
-                            this@ImageSetLoader.testLoader.progress.cacheProgressPixels.value = (n.toDouble()) / numImsDouble
-                            if (n == numImsInt) datasetHDCache.pixelsRAF.closeWriting()
-                        }
+
+                    finishedImagesBuilder += deephyImage
+                    if (nextImageIndex % 100 == 0) {
+
+                        testLoader.progress.progress.value = nextImageIndex / numberOfIms.toDouble()
                     }
-
-                finishedImagesBuilder += deephyImage
-                if (nextImageIndex % 100 == 0) {
-
-                    testLoader.progress.progress.value = nextImageIndex / numberOfIms.toDouble()
                 }
-            }
         }
     }
 }

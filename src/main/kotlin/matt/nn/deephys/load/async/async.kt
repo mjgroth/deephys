@@ -2,20 +2,22 @@
 
 package matt.nn.deephys.load.async
 
-import matt.file.model.file.types.Cbor
-import matt.file.model.file.types.TypedFile
-import matt.file.toJioFile
+import matt.file.JioFile
+import matt.file.construct.toJioFile
 import matt.lang.anno.Open
-import matt.lang.ideas.FailableIdea
+import matt.lang.anno.optin.ShadowsExtensionBug
 import matt.lang.sync.common.SimpleReferenceMonitor
 import matt.lang.sync.common.withLock
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.Async
 import matt.obs.bindings.bool.ObsB
 import matt.obs.prop.writable.BindableProperty
+import matt.prim.exportfromlang.ideas.SupertypeIdea
+import matt.prim.exportfromlang.ideas.SupertypeIdeaType
 
-abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
-    val fileFound: ObsB = BindableProperty(file.toJioFile().exists())
+abstract class AsyncLoader(private val cborFile: JioFile) {
+    @OptIn(ShadowsExtensionBug::class)
+    val fileFound: ObsB = BindableProperty(cborFile.toJioFile().exists())
     val streamOk: ObsB = BindableProperty(true)
     val parseError = BindableProperty<Exception?>(null)
     private val finishedLoading: ObsB = BindableProperty(false)
@@ -23,7 +25,7 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
 
     protected fun signalFileNotFound() {
         failableValueSlots.forEach {
-            it.admitFailureIfNotDone("File not found: $file")
+            it.admitFailureIfNotDone("File not found: $cborFile")
         }
         (fileFound as BindableProperty).value = false
     }
@@ -46,7 +48,8 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
         (finishedLoading as BindableProperty).value = true
     }
 
-    sealed interface LoadedOrFailed<T> : FailableIdea {
+    @SupertypeIdea(SupertypeIdeaType.Failable)
+    sealed interface LoadedOrFailed<T> {
         @Open
         fun requireLoaded() = (this as Loaded<T>).value
     }
@@ -102,7 +105,7 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
     private inner class ChainedLoadedValueSlot<T, R>(
         private val first: DirectLoadedOrFailedValueSlot<T>,
         private val map: (T) -> DirectLoadedOrFailedValueSlot<R>
-    ):  LoadedOrFailedValueSlot<LoadedOrFailed<R>> {
+    ): LoadedOrFailedValueSlot<LoadedOrFailed<R>> {
 
         private var derived: DirectLoadedOrFailedValueSlot<R>? = null
 
@@ -121,7 +124,7 @@ abstract class AsyncLoader(private val file: TypedFile<Cbor, *>) {
         }
 
         override fun await(): LoadedOrFailed<R> {
-            first.await()
+            val _ = first.await()
             val deriv =
                 monitor.withLock {
                     val der = derived

@@ -5,23 +5,36 @@ package matt.nn.deephys.gui.settings.gui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
-import matt.lang.common.unsafeError
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.rememberWindowState
+import matt.compose.controls.tree.MyTree
+import matt.compose.state.option.SettingsData
+import matt.lang.err.unsafeError
+import matt.lang.err.unsafeReturningErr
+import matt.lang.todo.TODO_NO_DETAILS
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 
 @Suppress("unused")
 @Composable
-fun SettingsWindow(settings: DeephysSettingsController) {
+fun SettingsWindow(
+    settings: DeephysSettingsController
+) {
+
     unsafeError(
-        """
-                   MyWindow {
+        "this window was MODAL or whatever (it completely blocked the GUI thread in the underlying app while it was open..."
+    )
 
-            init {
-                synchronized(SettingsWindow::class) {
-                    requireNull(instance)
-                    instance = this
-                }
-            }
+    Window(
+        onCloseRequest = {
+            TODO_NO_DETAILS()
+        },
+        state = rememberWindowState(width = 1000.dp)
 
+    ) {
+
+        unsafeError(
+            """
             fun setupFor(settings: DeephysSettingsController) {
                 WindowConfig(
                     showMode = DO_NOT_SHOW,
@@ -31,36 +44,14 @@ fun SettingsWindow(settings: DeephysSettingsController) {
                     decorated = true,
                     title = "Deephys Options"
                 ).applyTo(this, SettingsPane(settings))
-                width = 1000.0
             }
 
             init {
                 setupFor(settings)
             }
-
-            fun button(receiver: NodeWrapper) =
-                receiver.deephyButton {
-
-                    graphic =
-                        ImageViewWrapper(gearImage.await()).apply {
-                            isPreserveRatio = true
-                            fitWidth = 25.0
-                        }
-                    setOnAction {
-                        this@SettingsWindow.initStyle(StageStyle.DECORATED)
-                        if (!this@SettingsWindow.isShowing) {
-                            if (this@SettingsWindow.owner == null) {
-                                receiver.stage?.go {
-                                    this@SettingsWindow.initOwner(it)
-                                }
-                            }
-                            this@SettingsWindow.showAndWait()
-                        }
-                    }
-                }
-        }
-        """.trimIndent()
-    )
+            """.trimIndent()
+        )
+    }
 }
 
 @Suppress("unused")
@@ -69,20 +60,26 @@ fun SettingsPane(settings: DeephysSettingsController) =
     Column {
 
         Row {
-            unsafeError(
-                """
-                val tv =
-                    treeview<SettingsData> {
-                        root = TreeItemWrapper(memSafeSettings)
-                        populate {
-                            it.value.sections.map { it as SettingsData }
-                        }
-                        root!!.expandAll()
+
+            MyTree<SettingsData>(
+                root = settings,
+                populate = {
+                    unsafeReturningErr("it.value.sections.map { it as SettingsData }")
+                }
+            ) {
+                unsafeError(
+                    """
+                           root!!.expandAll()
                         select(root!!.node)
-                    }
-                Column {
-                    fun update(selection: TreeItem<SettingsData>?) {
-                        clear()
+                    """.trimIndent()
+                )
+            }
+
+            Column {
+                fun update(selection: SettingsData?) {
+                    unsafeError(
+                        """
+                             clear()
                         selection?.value?.settings?.forEach { sett ->
                             +createControlFor(sett, memSafeSettings)
                         } ?: run {
@@ -94,13 +91,18 @@ fun SettingsPane(settings: DeephysSettingsController) =
                                 }
                             }
                         }
-                    }
+                        """.trimIndent()
+                    )
+                }
+
+                unsafeError(
+                    """
                     tv.selectedItemProperty.onChange {
                         update(it)
                     }
-                    update(tv.selectedItem)
-                }         
-                """.trimIndent()
-            )
+                    """.trimIndent()
+                )
+                update(unsafeReturningErr("tv.selectedItem"))
+            }
         }
     }

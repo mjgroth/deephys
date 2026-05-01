@@ -9,13 +9,11 @@ import matt.collect.itr.list
 import matt.file.commons.desktop.DEEPHYS_RAM_SAMPLES_FOLDER
 import matt.file.commons.desktop.RAM_NUMBERED_FILES
 import matt.file.commons.reg.RegisteredFolder
-import matt.file.toJioFile
+import matt.file.construct.toJioFile
 import matt.http.tryHttp
 import matt.json.prim.saveAsJsonTo
-import matt.kstruct.ctx.toProcessReaper
 import matt.lang.anno.SeeUrl
-import matt.lang.cfnf.getOrThrow
-import matt.lang.common.unsafeError
+import matt.lang.err.unsafeError
 import matt.lang.sync.common.SimpleReferenceMonitor
 import matt.lang.sync.common.withLock
 import matt.lang.sysprop.common.value
@@ -26,13 +24,14 @@ import matt.log.profile.real.Profiler
 import matt.model.data.rect.DoubleRectSize
 import matt.nn.deephys.gui.navbox.zoo.NeuronalActivityZoo
 import matt.nn.deephys.test.deephys.tester.DeephysTestSession
+import matt.prim.exportfromlang.cfnf.getorthrow.getOrThrow
 import matt.reflect.scan.jcommon.systemScope
 import matt.reflect.scan.jcommon.usingClassGraph
 import matt.reflect.scan.mattSubClasses
 import matt.test.Tests
 import matt.test.assertions.assertTrueLazyMessage
 import matt.test.co.runTestWithTimeoutOnlyIfTestingPerformance
-import matt.test.prop.j.TestPerformance
+import matt.test.prop.j.CommonJTestProperties
 import matt.time.dur.sleep
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -48,8 +47,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val NUM_IM_CLICKS get() = with(RuntimePropertyProvider) { if (TestPerformance.value()) 10 else 2 }
-val NUM_SLICE_CLICKS get() = with(RuntimePropertyProvider) { if (TestPerformance.value()) 10 else 2 }
+val NUM_IM_CLICKS get() = with(RuntimePropertyProvider) { if (CommonJTestProperties.TestPerformance.value()) 10 else 2 }
+val NUM_SLICE_CLICKS get() = with(RuntimePropertyProvider) { if (CommonJTestProperties.TestPerformance.value()) 10 else 2 }
 val WAIT_FOR_GUI_INTERVAL = 100.milliseconds
 
 val TEST_DATA_FOLDER = RegisteredFolder.Main.DEEPHYS_DATA_FOLDER["test"]
@@ -80,7 +79,7 @@ val tests =
                 expectedLoadTime = 5.seconds
             )
         )
-        if (with(RuntimePropertyProvider) { TestPerformance.value() }) {
+        if (with(RuntimePropertyProvider) { CommonJTestProperties.TestPerformance.value() }) {
             add(
                 DeephysTestData(
                     name = "INX3",
@@ -111,14 +110,14 @@ class TestDeephys(
     profiler: Profiler
 ) : Tests() {
 
-    val session =  DeephysTestSession(profiler, toProcessReaper())
+    val session = DeephysTestSession(profiler, this)
 
     companion object {
 
         private val ramSamples = mutableListOf<RamSample>()
 
         init {
-            RegisteredFolder.Main.DEEPHYS_RAM_SAMPLES_FOLDER.mkdirs()
+            val _ = RegisteredFolder.Main.DEEPHYS_RAM_SAMPLES_FOLDER.mkdirs()
         }
 
         private val myRamSamplesJson by lazy {
@@ -139,12 +138,13 @@ class TestDeephys(
         @JvmStatic
         @BeforeAll
         fun startSamplingRam() {
-            daemon("startSamplingRam Thread") {
-                while (getRamSamples) {
-                    sampleRam()
-                    sleep(500.milliseconds)
+            val _ =
+                daemon("startSamplingRam Thread") {
+                    while (getRamSamples) {
+                        sampleRam()
+                        sleep(500.milliseconds)
+                    }
                 }
-            }
         }
 
         @JvmStatic
@@ -166,7 +166,7 @@ class TestDeephys(
 
     @Test
     fun computeInputsAreData() =
-        with(systemScope(includePlatformClassloader = false).usingClassGraph()) {
+        with(systemScope(enableSystemJarsAndModules = false).usingClassGraph()) {
             ComputeInput::class.mattSubClasses().forEach {
                 assertTrueLazyMessage(it.isData || it.isAbstract) {
                     "$it is a ComputeInput but not data... how is it supposed to cache stuff correctly?"

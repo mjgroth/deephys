@@ -6,44 +6,44 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.requiredWidthIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import matt.caching.compcache.ComputeCacheContext
+import kotlinx.coroutines.CoroutineScope
 import matt.caching.compcache.findOrCompute
+import matt.caching.compcache.globalman.ComputeCacheContext
+import matt.caching.compcache.invoke
 import matt.collect.itr.filterNotNull
-import matt.collect.weak.lazy.lazyWeakMap
-import matt.compose.controls.collapse.CollapsePane
 import matt.compose.controls.dialog.filechoose.RealComposeFileChooser
 import matt.compose.graphics.layout.AlignedRow
-import matt.compose.snap.setToNull
+import matt.compose.graphics.padding.WidthSpacer
+import matt.compose.snap.state.mutate.setToNull
 import matt.compose.snap.withSafeMutableSnapshot
-import matt.compose.state.shortcuts.rememberMutableStateOf
-import matt.file.construct.mFile
+import matt.compose.state.readonly.readOnly
+import matt.compose.state.shortcuts.rememberMutableStateOfFalse
+import matt.file.JioFile
+import matt.file.construct.toJioFile
 import matt.file.ext.FileExtension
 import matt.file.ext.singleExtensionOrNullIfNoDots
-import matt.file.model.file.types.Cbor
-import matt.file.model.file.types.TypedFile
-import matt.file.types.checkType
 import matt.lang.anno.optin.UnsafeMattCode
 import matt.lang.assertions.require.requireNot
-import matt.lang.common.DoNothing
-import matt.lang.common.disabledCode
-import matt.lang.common.unsafeError
-import matt.lang.common.unsafeReturningErr
-import matt.lang.weak.weak
+import matt.lang.codecomment.disabledCode
+import matt.lang.err.unsafeReturningErr
+import matt.lang.nop.DoNothing
 import matt.log.profile.stopwatch.stopwatch
 import matt.log.profile.stopwatch.tic
-import matt.log.warn.common.warn
+import matt.model.k.log.Logger
+import matt.model.k.log.warnPrefixed
 import matt.nn.deephys.calc.TopNeurons
 import matt.nn.deephys.gui.dataset.DatasetNode
 import matt.nn.deephys.gui.dataset.DatasetNodeView
@@ -51,6 +51,7 @@ import matt.nn.deephys.gui.dataset.DatasetNodeView.ByCategory
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByImage
 import matt.nn.deephys.gui.dataset.DatasetNodeView.ByNeuron
 import matt.nn.deephys.gui.dsetsbox.DSetViewsState
+import matt.nn.deephys.gui.fix.withNoImages
 import matt.nn.deephys.gui.global.DEEPHYS_FADE_DUR
 import matt.nn.deephys.gui.global.DeephyIconButton
 import matt.nn.deephys.gui.global.DeephysText
@@ -70,58 +71,49 @@ import matt.nn.deephys.gui.viewer.tutorial.bind.BindTutorial
 import matt.nn.deephys.load.AsyncLoadSwapper
 import matt.nn.deephys.load.test.PostDtypeTestLoader
 import matt.nn.deephys.load.test.TestLoader
+import matt.nn.deephys.load.test.dtype.topNeurons
 import matt.nn.deephys.model.ResolvedLayer
 import matt.nn.deephys.model.ResolvedNeuron
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.data.InterTestLayer
 import matt.nn.deephys.model.data.InterTestNeuron
 import matt.nn.deephys.model.importformat.im.DeephyImage
-import matt.nn.deephys.model.importformat.layer.Layer
-import matt.nn.deephys.model.importformat.neuron.Neuron
-import matt.obs.bind.MyBinding
-import matt.obs.bind.binding
-import matt.obs.bind.coalesceNull
-import matt.obs.bind.deepBinding
-import matt.obs.bind.deepBindingIgnoringFutureNullOuterChanges
-import matt.obs.bind.weakBinding
-import matt.obs.bindings.bool.not
 import matt.obs.bindings.comp.gt
-import matt.obs.bindings.comp.lt
-import matt.obs.col.olist.basicMutableObservableListOf
-import matt.obs.col.olist.lastIndexProperty
 import matt.obs.prop.ObsVal
-import matt.obs.prop.withChangeListener
-import matt.obs.prop.writable.BindableProperty
 import matt.obs.prop.writable.VarProp
-import matt.obs.prop.writable.withNonNullUpdatesFrom
-import matt.prim.common.exportfromlang.model.file.MacFileSystem
-import matt.prim.common.exportfromlang.model.file.fName
 import matt.prim.str.mybuild.api.string
+import matt.prim.weak.weak
 
 class DatasetViewerState(
-    initialFile: TypedFile<Cbor, *>? = null,
+    initialCborFile: JioFile? = null,
     val outerBox: DSetViewsState,
     settings: DeephysSettingsController,
-    val cacheContext: ComputeCacheContext
+    val cacheContext: ComputeCacheContext,
+    scope: CoroutineScope,
+    logger: Logger
 ) {
-    val showAsList1 = BindableProperty(false)
-    val showAsList2 = BindableProperty(false)
-    val model by lazy {  unsafeError("outerBox.model") }
+    val showAsList1 = mutableStateOf(false)
+    val showAsList2 = mutableStateOf(false)
+    val model =
+        derivedStateOf {
+            outerBox.modelVisualizer.model.value
+        }
     @Suppress("unused")
-    val siblings by lazy {
-        unsafeError(
-            """
-            outerBox.datasets.filtered { it != this }        
-            """.trimIndent()
-        )
-    }
+    val siblings =
+        derivedStateOf {
+            outerBox.datasets.filter { it != this }
+        }
     @Suppress("unused")
     private val currentFile get() = file.value?.fName
 
-    val file: VarProp<TypedFile<Cbor, *>?> =
-        VarProp(initialFile).withChangeListener {
+    val _file = mutableStateOf(initialCborFile)
+    val file = _file.readOnly()
+    fun setCborFile(file: JioFile) {
+        withSafeMutableSnapshot {
+            _file.value = file
             outerBox.save()
         }
+    }
 
     val smallImageScale =
         derivedStateOf {
@@ -164,12 +156,13 @@ class DatasetViewerState(
         }
 
     val testData =
-        file.binding { f ->
+        derivedStateOf {
+            val f = file.value
             val t = tic(prefix = "dataBinding2", enabled = false)
             t.toc("start")
             f?.run {
 
-                val loader = TestLoader(f, unsafeReturningErr("model"), settings)
+                val loader = TestLoader(f, unsafeReturningErr("model"), settings, logger)
                 t.toc("got loader")
                 loader.start()
                 t.toc("started loader")
@@ -178,52 +171,56 @@ class DatasetViewerState(
         }
 
     val outerBoundDSet =
-        BindableProperty(outerBox.bound.value).apply {
-            bind(unsafeReturningErr { outerBox.bound })
+        derivedStateOf {
+            outerBox.bound.value
         }
 
-    val boundToDSet by lazy {
-        outerBoundDSet.binding {
+    val boundToDSet =
+        derivedStateOf {
+            val it = outerBoundDSet.value
             if (it != this@DatasetViewerState) it else null
         }
-    }
-    private val isBoundToDSet by lazy { boundToDSet.isNotNull }
-    val isUnboundToDSet by lazy { isBoundToDSet.not() }
+    private val isBoundToDSet = derivedStateOf { boundToDSet.value != null }
+    val isUnboundToDSet = derivedStateOf { !isBoundToDSet.value }
 
-    private val boundView by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.view } }
-    val view: VarProp<DatasetNodeView> =
-        VarProp(
+    private val boundView: State<DatasetNodeView?> =
+        derivedStateOf {
+            boundToDSet.value?.view?.value
+        }
+    val manuallySelectedView =
+        mutableStateOf(
             boundView.value ?: ByNeuron
-        ).withNonNullUpdatesFrom(boundView)
+        )
 
-    private val boundLayer by lazy { boundToDSet.deepBindingIgnoringFutureNullOuterChanges { it?.layerSelection } }
+    val view =
+        derivedStateOf {
+            boundView.value ?: manuallySelectedView.value
+        }
 
-    val layerSelection: VarProp<InterTestLayer?> =
-        VarProp(
-            boundLayer.value
-        ).withNonNullUpdatesFrom(boundLayer)
+    private val boundLayer: State<InterTestLayer?> =
+        derivedStateOf {
+            boundToDSet.value?.layerSelection?.value
+        }
 
-    val layerSelectionResolved: ObsVal<Layer?> =
-        @Suppress("UNUSED_ANONYMOUS_PARAMETER")
-        layerSelection.binding(
-            testData
-        ) { layer ->
-            println(
-                "remove testData dependency. more cleanly separate model from test. Selected layer should have nothing to do with the test data"
-            )
-            unsafeReturningErr(
-                """
-                model.resolvedLayers.firstOrNull { it.layerID == layer?.layerID }    
-                """.trimIndent()
-            )
+    val manualLayerSelected: MutableState<InterTestLayer?> = mutableStateOf(boundLayer.value)
+
+    val layerSelection: State<InterTestLayer?> =
+        derivedStateOf {
+            boundLayer.value ?: manualLayerSelected.value
         }
 
     @Suppress("unused")
-    private val boundNeuron: ObsVal<Neuron?> =
-        boundToDSet.deepBindingIgnoringFutureNullOuterChanges {
-            unsafeReturningErr {
-                it?.neuronSelection
-            }
+    val layerSelectionResolved: State<ResolvedLayer?> =
+        @Suppress("UNUSED_ANONYMOUS_PARAMETER")
+        derivedStateOf {
+            val layer = layerSelection.value
+            model.value?.resolvedLayers?.firstOrNull { it.layerID == layer?.layerID }
+        }
+
+    @Suppress("unused")
+    private val boundNeuron =
+        derivedStateOf {
+            boundToDSet.value?.neuronSelection?.value
         }
 
     @Suppress("unused")
@@ -292,33 +289,34 @@ class DatasetViewerState(
             """.trimIndent()
         )
 
-    private val boundTopNeurons: MyBinding<TopNeurons<*>?> =
-        unsafeReturningErr(
-            """
-            boundToDSet.deepBinding(
-                normalizer
-            ) {
-                it?.topNeurons?.binding(
-                    normalizer
-                ) {
-                    it?.let {
-                        val prepped1 = testData.value!!.postDtypeTestLoader.awaitRequireSuccessful().preppedTest
-                        val prepped2 = normalizer.value?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest
-                        val prepped1Got = prepped1.awaitRequireSuccessful()
-                        val testWithNoImages = prepped1Got.withNoImages()
-                        topNeurons(
-                            testAndImages = testWithNoImages,
-                            layer = it.layer,
-                            denomTest = prepped2?.awaitRequireSuccessful(),
-                            forcedNeuronIndices = with(cacheContext) { with(testData.value!!.testRAMCache) { it() }.map { it.neuron.index } }
-                        )
-                    }
-                } ?: BindableProperty(null)
-            }       
-            """.trimIndent()
-        )
+    private val boundTopNeurons: State<TopNeurons<*>?> =
+        derivedStateOf {
+            val tn = boundToDSet.value?.topNeurons?.value
+            if (tn != null) {
+                val prepped1 = testData.value!!.postDtypeTestLoader.awaitRequireSuccessful().preppedTest
+                val prepped2 = normalizer.value?.testData?.value?.postDtypeTestLoader?.awaitRequireSuccessful()?.preppedTest
+                val prepped1Got = prepped1.awaitRequireSuccessful()
+                val testWithNoImages = prepped1Got.withNoImages()
+                topNeurons(
+                    testAndImages = testWithNoImages,
+                    layer = tn.layer,
+                    denomTest = prepped2?.awaitRequireSuccessful(),
+                    forcedNeuronIndices =
+                        /*with(cacheContext) {*/
+                        with(testData.value!!.testRAMCache) {
+                            tn()
+                        }.map { it.neuron.index }
+                    /*}*/
+                )
+            } else {
+                null
+            }
+        }
 
-    private val topNeurons: MyBinding<TopNeurons<*>?> = boundTopNeurons coalesceNull unsafeReturningErr { topNeuronsFromMyImage }
+    private val topNeurons: State<TopNeurons<*>?> =
+        derivedStateOf {
+            boundTopNeurons.value ?: topNeuronsFromMyImage.value
+        }
 
     @Suppress("unused")
     val highlightedNeurons =
@@ -330,32 +328,36 @@ class DatasetViewerState(
 
                 ByCategory ->
                     listOf<InterTestNeuron>().apply {
-                        warn("did not make highlighted neurons from category view work yet")
+                        with(logger) {
+                            warnPrefixed("did not make highlighted neurons from category view work yet")
+                        }
                     }
             }
         }
     val weakRef = weak(this)
 
-    private val boundCategory: ObsVal<CategorySelection?> =
-        boundToDSet
-            .deepBindingIgnoringFutureNullOuterChanges(testData) {
-                it?.run { catSelectionForViewer[weakRef.deref()!!] } ?: BindableProperty(null)
-            }
+    private val manuallySelectedCategory = mutableStateOf<CategorySelection?>(null)
+    fun selectCategory(category: CategorySelection) {
+        manuallySelectedCategory.value = category
+    }
 
-    val categorySelection = VarProp<CategorySelection?>(null).withNonNullUpdatesFrom(boundCategory)
-
-    private val catSelectionForViewer =
-        lazyWeakMap<DatasetViewerState, ObsVal<CategorySelection?>> { viewer ->
-            categorySelection.weakBinding(viewer) { v, cat ->
-                v.testData.value?.let { tst ->
-                    cat?.forTest(tst)
+    val boundCategory =
+        derivedStateOf {
+            val b = boundToDSet.value
+            if (b == null) {
+                testData.value?.let { tst ->
+                    manuallySelectedCategory.value?.forTest(tst)
+                }
+            } else {
+                b.testData.value?.let { tst ->
+                    b.manuallySelectedCategory.value?.forTest(tst)
                 }
             }
         }
 
     val currentByImageHScroll = mutableStateOf<ScrollState?>(null)
 
-    val history = basicMutableObservableListOf<TestViewerAction>()
+    val history = mutableStateListOf<TestViewerAction>()
     val historyIndex = VarProp(-1)
 
     private fun appendHistory(historyAction: TestViewerAction) {
@@ -370,10 +372,10 @@ class DatasetViewerState(
     ) {
         requireNot(isBoundToDSet.value)
         neuronSelection.setToNull()
-        layerSelection.value = neuron.layer
+        manualLayerSelected.value = neuron.layer
         neuronSelection.value = neuron
         if (addHistory) appendHistory(SelectNeuron(neuron))
-        view.value = ByNeuron
+        manuallySelectedView.value = ByNeuron
     }
 
     fun navigateTo(
@@ -383,7 +385,7 @@ class DatasetViewerState(
         if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
         imageSelection.value = im
         if (addHistory) appendHistory(SelectImage(im))
-        view.value = ByImage
+        manuallySelectedView.value = ByImage
     }
 
     fun navigateTo(
@@ -392,9 +394,9 @@ class DatasetViewerState(
     ) {
         if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
         neuronSelection.setToNull()
-        categorySelection.value = category
+        selectCategory(category)
         if (addHistory) appendHistory(SelectCategory(category))
-        view.value = ByCategory
+        manuallySelectedView.value = ByCategory
     }
 
     fun navigateTo(
@@ -403,10 +405,10 @@ class DatasetViewerState(
     ) {
         when (theView) {
             ByCategory -> {
-                if (categorySelection.value == null) {
+                if (boundCategory.value == null) {
                     val cats = testData.value?.run { test.categories }
                     if (cats?.isNotEmpty() == true) {
-                        categorySelection.value = cats.first()
+                        selectCategory(cats.first())
                     }
                 }
             }
@@ -425,7 +427,7 @@ class DatasetViewerState(
 
         if (isBoundToDSet.value) outerBox.selectViewerToBind(null)
         if (addHistory) appendHistory(SelectView(theView))
-        view.value = theView
+        manuallySelectedView.value = theView
     }
 
     var bindButton: ControlWrapper? = null
@@ -440,174 +442,170 @@ class DatasetViewerState(
         }
 
     val canUseHistory =
-        this@DatasetViewerState.history.binding(historyIndex, boundToDSet) {
-            isUnboundToDSet.value && it.isNotEmpty()
+        derivedStateOf {
+            isUnboundToDSet.value && history.isNotEmpty()
         }
 }
 
 @OptIn(UnsafeMattCode::class)
 @Suppress("UnusedParameter")
 @Composable
-fun DatasetViewer(
+context(_: Logger)
+fun DatasetViewer1(
     state: DatasetViewerState,
     settings: DeephysSettingsController
 ) {
-    /*titleProperty.bind(file.binding { it?.nameWithoutExtension })*/
-    CollapsePane(
-        title = {
-            AlignedRow(horizontalArrangement = Arrangement.Center) {
-                SectionSpacer()
-                @Suppress("unused")
-                val removeTestButton =
-                    DeephysTooltipArea(settings, "remove this test viewer") {
-                        DeephyIconButton("icon/minus") {
-                            state.outerBox.removeTest(state)
-                        }
-                    }
 
-                val showFileChooser = rememberMutableStateOf(false)
-                DeephysTooltipArea(settings, "choose test file") {
-
-                    /*"Choose Test"*/
-                    @Suppress("unused")
-                    val chooseTestButton =
-                        DeephyIconButton("open-file") {
-                            showFileChooser.value = true
-                        }
+    AlignedRow(horizontalArrangement = Arrangement.Center) {
+        SectionSpacer()
+        @Suppress("unused")
+        val removeTestButton =
+            DeephysTooltipArea(settings, "remove this test viewer") {
+                DeephyIconButton("icon/minus") {
+                    state.outerBox.removeTest(state)
                 }
+            }
 
-                if (showFileChooser.value) {
-                    RealComposeFileChooser(
-                        new = false,
-                        title = "choose test data",
-                        isValid = {
-                            it.singleExtensionOrNullIfNoDots == FileExtension.TEST
-                        },
-                        onDismiss = {},
-                        onChoose = { f ->
-                            stopwatch("set fileProp") {
-                                state.file.value = (mFile(f.path, MacFileSystem)).checkType(Cbor)
-                            }
-                        }
-                    )
+        val showFileChooser = rememberMutableStateOfFalse()
+        DeephysTooltipArea(settings, "choose test file") {
+
+            /*"Choose Test"*/
+            @Suppress("unused")
+            val chooseTestButton =
+                DeephyIconButton("open-file") {
+                    showFileChooser.value = true
                 }
-                SectionSpacer()
+        }
 
-                DeephyIconButton(
-                    "icon/arrow",
-                    Modifier.rotate(180f),
-                    enabled = state.canUseHistory.value and state.historyIndex.gt(0).value
-                ) {
-                    withSafeMutableSnapshot {
-                        state.historyIndex.value -= 1
-                        state.redoHistory()
+        if (showFileChooser.value) {
+            RealComposeFileChooser(
+                new = false,
+                title = "choose test data",
+                isValid = {
+                    it.singleExtensionOrNullIfNoDots == FileExtension.TEST
+                },
+                onDismiss = {},
+                onChoose = { f ->
+                    stopwatch("set fileProp") {
+                        state.setCborFile(f.toJioFile())
                     }
                 }
+            )
+        }
+        SectionSpacer()
 
-                DeephyIconButton(
-                    "icon/arrow",
-                    enabled =
-                        state.canUseHistory.value and
-                            state.historyIndex.lt(
-                                state.history.lastIndexProperty
-                            ).value
-                ) {
-                    withSafeMutableSnapshot {
-                        state.historyIndex.value += 1
-                        state.redoHistory()
-                    }
+        DeephyIconButton(
+            "icon/arrow",
+            Modifier.rotate(180f),
+            enabled = state.canUseHistory.value and state.historyIndex.gt(0).value
+        ) {
+            withSafeMutableSnapshot {
+                state.historyIndex.value -= 1
+                state.redoHistory()
+            }
+        }
+
+        DeephyIconButton(
+            "icon/arrow",
+            enabled = state.canUseHistory.value && (state.historyIndex.value < state.history.lastIndex)
+        ) {
+            withSafeMutableSnapshot {
+                state.historyIndex.value += 1
+                state.redoHistory()
+            }
+        }
+
+        SectionSpacer()
+
+        state.bindButton = state.outerBox.createBindToggleButton(this, state)
+        state.oodButton = state.outerBox.createInDToggleButton(this, state)
+
+        SectionSpacer()
+
+        /*.binding { it?.nameWithoutExtension ?: "please select a test" }*/
+
+        val testData = state.testData
+        DeephysText(
+            remember(testData) {
+                derivedStateOf {
+                    testData.value?.run {
+                        testName.awaitSuccessfulOrMessage().toString()
+                    } ?: "please select a test"
                 }
+            },
+            style = titleFont()
+        )
+        WidthSpacer(10.dp)
 
-                SectionSpacer()
+        Row(horizontalArrangement = Arrangement.spacedBy(DEEPHYS_SYMBOL_SPACING.dp)) {
+            DeephysInfoSymbol(
 
-                state.bindButton = state.outerBox.createBindToggleButton(this, state)
-                state.oodButton = state.outerBox.createInDToggleButton(this, state)
-
-                SectionSpacer()
-
-                /*.binding { it?.nameWithoutExtension ?: "please select a test" }*/
-
-                DeephysText(
-                    state.testData.binding {
-                        it?.run { testName.awaitSuccessfulOrMessage().toString() } ?: "please select a test"
-                    },
-                    style = titleFont()
-                )
-                Spacer(Modifier.width(10.dp))
-
-                Row(horizontalArrangement = Arrangement.spacedBy(DEEPHYS_SYMBOL_SPACING.dp)) {
-                    DeephysInfoSymbol(
-
-                        state.testData.binding {
-                            if (it == null) {
-                                "After loading a test, see more info about it here."
-                            } else {
-                                string {
-                                    lineDelimited {
-                                        +"dtype:       ${it.dtypeOrNull()?.label}"
-                                        +"Image Count: ${it.numImages.awaitSuccessfulOrMessage()}"
-                                    }
+                state.testData.value.let { testData ->
+                    remember(testData) {
+                        if (testData == null) {
+                            "After loading a test, see more info about it here."
+                        } else {
+                            string {
+                                lineDelimited {
+                                    +"dtype:       ${testData.dtypeOrNull()?.label}"
+                                    +"Image Count: ${testData.numImages.awaitSuccessfulOrMessage()}"
                                 }
                             }
                         }
-
-                    )
-
-                    val loadWarnings = state.testData.value!!.loadWarnings
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(DEEPHYS_SYMBOL_SPACING.dp)) {
-                        loadWarnings.forEach {
-                            DeephysWarningSymbol(it)
-                        }
                     }
                 }
 
-                SectionSpacer()
+            )
 
-                val prog1 =
-                    state.testData.deepBinding {
-                        it?.run { progress.progress } ?: BindableProperty(0.0)
-                    }.value.toFloat()
-                if (prog1 < 1.0) {
-                    LinearProgressIndicator({
-                        prog1
-                    })
-                }
+            val loadWarnings = state.testData.value!!.loadWarnings
 
-                if (state.showCacheBars.value) {
-                    val prog2 =
-                        state.testData.deepBinding {
-                            it?.run { progress.cacheProgressPixels } ?: BindableProperty(0.0)
-                        }.value.toFloat()
-                    LinearProgressIndicator({
-                        prog2
-                    }, color = Color.Green)
-                    val prog3 =
-                        state.testData.deepBinding {
-                            it?.run { progress.cacheProgressActs } ?: BindableProperty(0.0)
-                        }.value.toFloat()
-                    LinearProgressIndicator({
-                        prog3
-                    }, color = Color.Yellow)
+            Row(horizontalArrangement = Arrangement.spacedBy(DEEPHYS_SYMBOL_SPACING.dp)) {
+                loadWarnings.forEach {
+                    DeephysWarningSymbol(it)
                 }
             }
-        },
-        expanded = rememberMutableStateOf(true)
-    ) {
-        Column {
-            AsyncLoadSwapper(
-                state.testData.binding { it },
-                nullMessage = "select a test to view it",
-                fadeOutDur = DEEPHYS_FADE_DUR,
-                fadeInDur = DEEPHYS_FADE_DUR
-            ) {
-                {
-                    DatasetNode(it, state, settings)
-                }
+        }
+
+        SectionSpacer()
+
+        val prog1 = state.testData.value?.progress?.progress?.value?.toFloat() ?: 0f
+        if (prog1 < 1.0) {
+            LinearProgressIndicator({
+                prog1
+            })
+        }
+
+        if (state.showCacheBars.value) {
+            val prog2 = state.testData.value?.progress?.cacheProgressPixels?.value?.toFloat() ?: 0f
+            LinearProgressIndicator({
+                prog2
+            }, color = Color.Green)
+            val prog3 = state.testData.value?.progress?.cacheProgressActs?.value?.toFloat() ?: 0f
+            LinearProgressIndicator({
+                prog3
+            }, color = Color.Yellow)
+        }
+    }
+}
+@Composable
+context(_: Logger)
+fun DatasetViewer2(
+    state: DatasetViewerState,
+    settings: DeephysSettingsController
+) {
+    Column {
+        AsyncLoadSwapper(
+            state.testData,
+            nullMessage = "select a test to view it",
+            fadeOutDur = DEEPHYS_FADE_DUR,
+            fadeInDur = DEEPHYS_FADE_DUR
+        ) {
+            {
+                DatasetNode(it, state, settings)
             }
-            disabledCode {
-                BindTutorial(state)
-            }
+        }
+        disabledCode {
+            BindTutorial(state)
         }
     }
 }

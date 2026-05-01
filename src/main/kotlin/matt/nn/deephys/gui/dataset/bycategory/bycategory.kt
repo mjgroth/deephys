@@ -7,9 +7,8 @@ import androidx.compose.ui.unit.Dp
 import matt.compose.controls.choicebox.MyChoiceBox
 import matt.compose.controls.textfields.parsing.parser.SimpleBiTextParser
 import matt.compose.graphics.text.MyText
-import matt.lang.cfnf.Fail
-import matt.lang.common.unsafeReturningErr
-import matt.lang.generic.GenericFailable
+import matt.lang.err.unsafeReturningErr
+import matt.model.k.log.Logger
 import matt.nn.deephys.gui.category.CategoryView
 import matt.nn.deephys.gui.global.DeephysSpinner
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -18,9 +17,12 @@ import matt.nn.deephys.model.data.Category
 import matt.nn.deephys.model.data.CategoryConfusion
 import matt.nn.deephys.model.data.CategorySelection
 import matt.nn.deephys.model.importformat.testlike.TypedTestLike
+import matt.prim.exportfromlang.cfnf.Fail
+import matt.prim.exportfromlang.generic.Failable
 import matt.prim.str.join.elementsToString
 
 @Composable
+context(_: Logger)
 fun ByCategoryView(
     testLoader: TypedTestLike<*>,
     viewer: DatasetViewerState,
@@ -38,22 +40,22 @@ fun ByCategoryView(
             DeephysSpinner(
                 label = "Category",
                 choices = cats,
-                defaultChoice = { viewer.categorySelection.value?.primaryCategory ?: cats[0] },
+                defaultChoice = { viewer.boundCategory.value?.primaryCategory ?: cats[0] },
                 converter =
                     object: SimpleBiTextParser<CategorySelection> {
                         override fun rawInputOf(value: CategorySelection): String = converter.toString(value)
 
-                        override fun tryParse(input: String): GenericFailable<CategorySelection, Fail> = GenericFailable.success(converter.fromString(input))
+                        override fun tryParse(input: String): Failable<CategorySelection, Fail> = Failable.success(converter.fromString(input))
                     },
                 viewer = viewer,
-                getCurrent = unsafeReturningErr { viewer.categorySelection },
+                getCurrent = unsafeReturningErr { viewer.boundCategory },
                 acceptIf = { it is Category },
                 navAction = { navigateTo(it) },
                 selected = unsafeReturningErr("?")
             )
 
             MyChoiceBox(
-                selected = viewer.categorySelection.value,
+                selected = viewer.boundCategory.value,
                 choices = testLoader.test.categories,
                 labeler = { categorySelection ->
                     when (categorySelection) {
@@ -68,7 +70,7 @@ fun ByCategoryView(
             )
         }
 
-        viewer.categorySelection.value?.let {
+        viewer.boundCategory.value?.let {
             CategoryView(it, testLoader = testLoader, viewer = viewer, settings = settings, viewerWidth = viewerWidth)
         } ?: MyText("select a category")
     }

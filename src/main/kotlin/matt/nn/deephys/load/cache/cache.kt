@@ -3,21 +3,22 @@
 package matt.nn.deephys.load.cache
 
 import kotlinx.io.bytestring.ByteString
+import matt.file.construct.toJioFile
 import matt.file.ext.j.mkFold
 import matt.file.ext.j.readByteString
-import matt.file.toJioFile
+import matt.file.raf.cache.EvenlySizedRAFCache
+import matt.file.raf.cache.RAFCacheImpl
 import matt.lang.function.Produce
 import matt.lang.sync.common.SimpleReferenceMonitor
 import matt.lang.sync.common.withLock
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.asyncloaded.DelegatedSlot
+import matt.model.idgen.IDGenerator
+import matt.model.k.file.file.FsFile
 import matt.nn.deephys.gui.DEEPHY_USER_DATA_DIR
 import matt.nn.deephys.load.cache.cachedeleter.CacheDeleter
-import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
-import matt.nn.deephys.load.cache.raf.RAFCacheImpl
-import matt.prim.common.exportfromlang.model.file.FsFile
 import matt.prim.j.bs.write
-import matt.sys.idgen.IDGenerator
+import kotlin.getValue
 
 object DeephysCacheManager {
 

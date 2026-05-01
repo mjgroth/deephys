@@ -7,13 +7,13 @@ import matt.cbor.err.CborParseException
 import matt.cbor.read.major.map.MapReader
 import matt.cbor.read.major.txtstr.TextStringReader
 import matt.cbor.read.streamman.cborReader
-import matt.file.model.file.types.Cbor
-import matt.file.model.file.types.TypedFile
-import matt.file.toJioFile
+import matt.file.JioFile
+import matt.file.construct.toJioFile
+import matt.lang.anno.optin.ShadowsExtensionBug
 import matt.lang.assertions.require.requireNot
-import matt.lang.passert.powerRequire
-import matt.log.warn.common.warn
 import matt.model.code.errreport.createThrowReport
+import matt.model.k.log.Logger
+import matt.model.k.log.warnPrefixedCompat
 import matt.model.obj.single.SingleCall
 import matt.nn.deephys.gui.global.tooltip.SUFFIX_WARNING
 import matt.nn.deephys.gui.settings.DeephysSettingsController
@@ -41,10 +41,11 @@ const val OLD_CAT_LOAD_WARNING =
     "Getting category the old way. This will fail if the image list didn't contain the category."
 
 class TestLoader(
-    file: TypedFile<Cbor, *>,
+    cborFile: JioFile,
     override val model: Model,
-    settings: DeephysSettingsController
-) : AsyncLoader(file), TestOrLoader {
+    settings: DeephysSettingsController,
+    logger: Logger
+) : AsyncLoader(cborFile), TestOrLoader {
 
     override fun isDoneLoading(): Boolean =
         postDtypeTestLoader.getOrNullIfLoading()?.run {
@@ -54,7 +55,7 @@ class TestLoader(
     override val test get() = awaitFinishedTest()
     fun dtypeOrNull() = postDtypeTestLoader.awaitSuccessfulOrNull()?.dtype
     override val dtype get() = postDtypeTestLoader.awaitRequireSuccessful().dtype
-    private fun awaitFinishedTest() = postDtypeTestLoader.await().requireLoaded().awaitFinishedTest()
+    fun awaitFinishedTest() = postDtypeTestLoader.await().requireLoaded().awaitFinishedTest()
 
     val testName = DirectLoadedOrFailedValueSlot<String>()
 
@@ -72,7 +73,7 @@ class TestLoader(
         if (didLoadCats) {
             return loadedCategories.awaitRequireSuccessful()[id]
         }
-        warn(OLD_CAT_LOAD_WARNING)
+        warnPrefixedCompat(OLD_CAT_LOAD_WARNING)
         val finishedIms = postDtypeTestLoader.await().requireLoaded().imageSetLoader.finishedImages
         return finishedIms.awaitRequireSuccessful().asSequence().map {
             it.category
@@ -86,7 +87,7 @@ class TestLoader(
             val isl = postDtypeTestLoader.await().requireLoaded().imageSetLoader
             lineDelimited {
                 +"Test:"
-                +"\tname=${file.name}"
+                +"\tname=${cborFile.name}"
                 +"\tnumImages=${numImages.awaitSuccessfulOrMessage()}"
                 +"\tpixelsShapePerImage=${
                     isl.pixelsShapePerImage.awaitSuccessfulOrNull()?.elementsToString()
@@ -114,140 +115,144 @@ class TestLoader(
 
     val loadWarnings = basicMutableObservableListOf<String>()
 
+    @OptIn(ShadowsExtensionBug::class)
     val start =
         SingleCall {
-            daemon("TestLoader-${file.name}") {
+            val _ =
+                daemon("TestLoader-${cborFile.name}") {
 
-                /*seems to be a false positive*/
-                @Suppress("RedundantLabeledReturnOnLastExpressionInLambda")
-                if (!file.toJioFile().exists()) {
-                    signalFileNotFound()
-                    return@daemon
-                }
-                try {
-
-                    val stream = file.toJioFile().inputStream()
-                    val reader = stream.cborReader()
-                    reader.readManually<MapReader, Unit> {
-
-                        val keys = Keys.entries
-
-                        val list = listOf(true)
-                        println(list.count { it }..1)
-
-                        expectCount(keys.count { it.required }..keys.size)
-                        val countInt = count.toInt()
-
-                        var name: String? = null
-
-                        var imagesWereRead = false
-                        var catsWereRead = false
-
-                        repeat(countInt) { keyIdx: Int ->
-                            println("keyIdx=$keyIdx")
-                            @Suppress("ForbiddenIsCheck")
-                            val nextKey = nextKeyOrValueOnly<String>(isT = { it is String })
-                            println("nextKey=$nextKey")
-
-                            val theKey =
-                                keys.firstOrNull {
-                                    it.key == nextKey
-                                } ?: throw LoadException("Unknown Key: $nextKey")
-
-                            when (theKey) {
-                                theName      -> {
-                                    @Suppress("ForbiddenIsCheck")
-                                    name = nextKeyOrValueOnly(isT = { it == null || it is String })
-                                    testName.putLoadedValue(name!!)
-                                }
-
-                                Keys.suffix  -> {
-                                    loadWarnings += SUFFIX_WARNING
-                                    @Suppress("ForbiddenIsCheck")
-                                    nextKeyOrValueOnly<String?>(isT = { it == null || it is String })
-                                }
-
-                                Keys.classes -> {
-                                    @Suppress("ForbiddenIsCheck")
-                                    val cats = nextKeyOrValueOnly<List<String>>(isT = { kv -> kv is List<*> && kv.all { it is String } })
-                                    loadedCategories.putLoadedValue(
-                                        cats.mapIndexed { idx, it ->
-                                            Category(id = idx, label = it)
-                                        }
-                                    )
-                                    catsWereRead = true
-                                    didLoadCategories.putLoadedValue(true)
-                                }
-
-                                Keys.dtype   -> {
-                                    requireNot(imagesWereRead) {
-                                        "Images must be read after the dtype"
-                                    }
-
-                                    val dtype =
-                                        nextValueManualDoNotReadKey<TextStringReader, DType<*>> {
-                                            when (val str = read().raw) {
-                                                "float32" -> Float32
-                                                "float64" -> Float64
-                                                else      -> error("str == $str")
-                                            }
-                                        }
-                                    check(!postDtypeTestLoader.isDone())
-                                    postDtypeTestLoader.putLoadedValue(
-                                        PostDtypeTestLoader(dtype, this@TestLoader)
-                                    )
-                                }
-
-                                Keys.images  -> {
-
-                                    powerRequire(keyIdx == countInt - 1)
-                                    if (!catsWereRead) {
-
-                                        loadWarnings +=
-                                            "You are using an old version of the python library which does not correctly save the list of classes. Please re-generate your data with the latest version from pip."
-
-                                        didLoadCategories.putLoadedValue(false)
-                                    }
-                                    if (!postDtypeTestLoader.isDone()) {
-                                        postDtypeTestLoader.putLoadedValue(PostDtypeTestLoader(Float32, this@TestLoader))
-                                    }
-                                    val post = postDtypeTestLoader.getOrNullIfLoading()!!.requireLoaded()
-                                    post.putPrepped()
-                                    post.readImages(this)
-                                    imagesWereRead = true
-                                }
-                            }
-                        }
-
-                        val thePost = postDtypeTestLoader.getOrNullIfLoading()!!.requireLoaded()
-
-                        thePost.imageSetLoader.neuronActCacheTools!!.forEach {
-                            it.myFinalize()
-                        }
-                        thePost.datasetHDCache.neuronsRAF.closeWriting()
-
-                        progress.progress.value = 1.0
-
-                        thePost.putTest(
-                            name = name,
-                            ramCache = testRAMCache,
-                            cats = if (didLoadCategories.awaitRequireSuccessful()) loadedCategories.awaitRequireSuccessful() else null
-                        )
-
-                        signalFinishedLoading()
+                    /*seems to be a false positive*/
+                    @Suppress("RedundantLabeledReturnOnLastExpressionInLambda")
+                    if (!cborFile.toJioFile().exists()) {
+                        signalFileNotFound()
+                        return@daemon
                     }
-                    stream.close()
-                } catch (e: IOException) {
-                    createThrowReport(e, allowCapturingCurrentThread = true).print()
-                    signalStreamNotOk()
-                } catch (e: CborParseException) {
-                    createThrowReport(e, allowCapturingCurrentThread = true).print()
-                    signalParseError(e)
-                } catch (e: LoadException) {
-                    createThrowReport(e, allowCapturingCurrentThread = true).print()
-                    signalParseError(e)
+                    try {
+
+                        val stream = cborFile.toJioFile().inputStream()
+                        val reader = stream.cborReader()
+                        reader.readManually<MapReader, Unit> {
+
+                            val keys = Keys.entries
+
+                            val list = listOf(true)
+                            println(list.count { it }..1)
+
+                            expectCount(keys.count { it.required }..keys.size)
+                            val countInt = count.toInt()
+
+                            var name: String? = null
+
+                            var imagesWereRead = false
+                            var catsWereRead = false
+                            with(logger) {
+                                repeat(countInt) { keyIdx: Int ->
+                                    println("keyIdx=$keyIdx")
+                                    @Suppress("ForbiddenIsCheck")
+                                    val nextKey = nextKeyOrValueOnly<String>(isT = { it is String })
+                                    println("nextKey=$nextKey")
+
+                                    val theKey =
+                                        keys.firstOrNull {
+                                            it.key == nextKey
+                                        } ?: throw LoadException("Unknown Key: $nextKey")
+
+                                    when (theKey) {
+                                        theName      -> {
+                                            @Suppress("ForbiddenIsCheck")
+                                            name = nextKeyOrValueOnly(isT = { it == null || it is String })
+                                            testName.putLoadedValue(name!!)
+                                        }
+
+                                        Keys.suffix  -> {
+                                            loadWarnings += SUFFIX_WARNING
+                                            @Suppress("ForbiddenIsCheck")
+                                            val _ = nextKeyOrValueOnly<String?>(isT = { it == null || it is String })
+                                        }
+
+                                        Keys.classes -> {
+                                            @Suppress("ForbiddenIsCheck")
+                                            val cats = nextKeyOrValueOnly<List<String>>(isT = { kv -> kv is List<*> && kv.all { it is String } })
+                                            loadedCategories.putLoadedValue(
+                                                cats.mapIndexed { idx, it ->
+                                                    Category(id = idx, label = it)
+                                                }
+                                            )
+                                            catsWereRead = true
+                                            didLoadCategories.putLoadedValue(true)
+                                        }
+
+                                        Keys.dtype   -> {
+                                            requireNot(imagesWereRead) {
+                                                "Images must be read after the dtype"
+                                            }
+
+                                            val dtype =
+                                                nextValueManualDoNotReadKey<TextStringReader, DType<*>> {
+                                                    when (val str = read().raw) {
+                                                        "float32" -> Float32
+                                                        "float64" -> Float64
+                                                        else      -> error("str == $str")
+                                                    }
+                                                }
+                                            check(!postDtypeTestLoader.isDone())
+                                            postDtypeTestLoader.putLoadedValue(
+                                                PostDtypeTestLoader(dtype, this@TestLoader)
+                                            )
+                                        }
+
+                                        Keys.images  -> {
+
+                                            require(keyIdx == countInt - 1)
+                                            if (!catsWereRead) {
+
+                                                loadWarnings +=
+                                                    "You are using an old version of the python library which does not correctly save the list of classes. Please re-generate your data with the latest version from pip."
+
+                                                didLoadCategories.putLoadedValue(false)
+                                            }
+                                            if (!postDtypeTestLoader.isDone()) {
+                                                postDtypeTestLoader.putLoadedValue(PostDtypeTestLoader(Float32, this@TestLoader))
+                                            }
+                                            val post = postDtypeTestLoader.getOrNullIfLoading()!!.requireLoaded()
+                                            post.putPrepped()
+
+                                            post.readImages(this@readManually)
+                                            imagesWereRead = true
+                                        }
+                                    }
+                                }
+
+                                val thePost = postDtypeTestLoader.getOrNullIfLoading()!!.requireLoaded()
+
+                                thePost.imageSetLoader.neuronActCacheTools!!.forEach {
+                                    it.myFinalize()
+                                }
+
+                                thePost.datasetHDCache.neuronsRAF.closeWriting()
+                                progress.progress.value = 1.0
+
+                                thePost.putTest(
+                                    name = name,
+                                    ramCache = testRAMCache,
+                                    cats = if (didLoadCategories.awaitRequireSuccessful()) loadedCategories.awaitRequireSuccessful() else null
+                                )
+                            }
+
+                            signalFinishedLoading()
+                        }
+                        stream.close()
+                    } catch (e: IOException) {
+                        createThrowReport(e, allowCapturingCurrentThread = true).print()
+                        signalStreamNotOk()
+                    } catch (e: CborParseException) {
+                        createThrowReport(e, allowCapturingCurrentThread = true).print()
+                        signalParseError(e)
+                    } catch (e: LoadException) {
+                        createThrowReport(e, allowCapturingCurrentThread = true).print()
+                        signalParseError(e)
+                    }
                 }
-            }
         }
 
     override val testRAMCache by lazy { TestRAMCache(settings) }
@@ -291,12 +296,14 @@ class PostDtypeTestLoader<D: Number>(
     fun awaitImage(index: Int) = imageSetLoader.finishedImages.awaitRequireSuccessful()[index]
     fun awaitFinishedTest(): Test<D> = finishedTest.awaitRequireSuccessful()
 
+    context(_: Logger)
     fun readImages(reader: MapReader) {
-        imageSetLoader.readImages(
-            reader = reader,
-            dtype = dtype,
-            finishedTest = finishedTest
-        )
+        val _ =
+            imageSetLoader.readImages(
+                reader = reader,
+                dtype = dtype,
+                finishedTest = finishedTest
+            )
     }
     fun putTest(
         name: String?,

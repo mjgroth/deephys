@@ -13,9 +13,10 @@ import matt.compose.state.ser.struct.StateStructSerializer
 import matt.compose.state.statefulmodel.action.SimpleAction
 import matt.compose.state.struct.StateStructure
 import matt.file.commons.reg.RegisteredFolder
-import matt.lang.common.unsafeError
+import matt.file.construct.toJioFile
+import matt.lang.err.unsafeError
 import matt.log.report.desktop.MemReport
-import matt.nn.deephys.gui.DEEPHYS_LOG_CONTEXT
+import matt.nn.deephys.gui.DEEPHYS_LOG_FOLDER
 
 fun DeephySettingsNodeNode(scope: CoroutineScope) =
     stateStructureDatabase<DeephySettingsNode>(
@@ -51,7 +52,7 @@ const val MAX_NUM_IMAGES_IN_TOP_NEURONS = 18
 const val MAX_NUM_IMAGES_IN_TOP_IMAGES = 100
 const val DEFAULT_BIG_IMAGE_SCALE = 128.0
 
-private object DeephySettingsSerializer: KSerializer<DeephysSettingsController> by StateStructSerializer.createVersioned(
+internal object DeephySettingsSerializer: KSerializer<DeephysSettingsController> by StateStructSerializer.createVersioned(
     DeephysSettingsController::class,
     classVersion = 4
 )
@@ -183,6 +184,7 @@ class DebugSettings : SettingsData("Debug") {
             "Open Log Folder",
             enabled = immutableStateOf(true)
         ) {
-            AwtBasedDesktopAutomationContext.showInFileManager(DEEPHYS_LOG_CONTEXT.logFolder)
+            val _ = DEEPHYS_LOG_FOLDER.toJioFile().mkdirs()
+            AwtBasedDesktopAutomationContext.showInFileManager(DEEPHYS_LOG_FOLDER)
         }
 }

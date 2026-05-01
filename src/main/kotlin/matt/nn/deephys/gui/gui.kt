@@ -4,32 +4,37 @@
 package matt.nn.deephys.gui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import matt.async.thread.daemon
-import matt.async.thread.pool.DaemonPoolExecutor
+import matt.auto.desktop.SuspendingShellBasedDesktopAutomationContext
 import matt.auto.desktop.awt.AwtBasedDesktopAutomationContext
 import matt.compose.app.myApplication
+import matt.compose.controls.desktop.scroll.verticallyScrollable
 import matt.compose.controls.window.MyWindow
 import matt.compose.controls.window.main.MyMainWindow
 import matt.compose.controls.window.state.MyWindowState
 import matt.compose.graphics.image.j.MyImage
-import matt.compose.graphics.layout.AlignedRow
-import matt.compose.graphics.text.MyText
+import matt.compose.graphics.label.LabeledOnTheLeft
 import matt.compose.graphics.text.style.style.LocalTextStyler
 import matt.compose.snap.withSafeMutableSnapshot
 import matt.compose.state.shortcuts.rememberMutableStateOf
@@ -37,21 +42,23 @@ import matt.compose.state.win.HardWindowState
 import matt.exec.app.myVersion
 import matt.file.JioFile
 import matt.file.commons.desktop.PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER
-import matt.file.commons.logctx.LogContext1
+import matt.file.construct.toJioFile
 import matt.file.ext.j.mkFold
-import matt.file.thismachine.thisMachine
-import matt.file.toJioFile
 import matt.http.internet.TheInternet
 import matt.http.internet.isAvailable
+import matt.http.tryHttp
 import matt.image.icon.ICON_SIZES
 import matt.lang.anno.SeeUrl
 import matt.lang.anno.optin.ExperimentalMattCode
-import matt.lang.common.unsafeError
-import matt.lang.shutdown.TypicalShutdownContext
-import matt.lang.sync.common.SimpleReferenceMonitor
-import matt.lang.sync.common.withLock
-import matt.model.code.mod.uniqueCamelCaseName
+import matt.lang.err.unsafeError
+import matt.lang.err.unsafeReturningErr
+import matt.lang.shutdown.ShutdownScheduler
+import matt.model.code.successorfail.requireSuccess
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import matt.model.k.file.file.MacFileSystem
+import matt.model.k.kstruct.mod.uniqueCamelCaseName
+import matt.model.k.log.Logger
+import matt.model.k.osi.url.MURL
 import matt.nn.deephys.gui.DeephysArg.`erase-settings`
 import matt.nn.deephys.gui.DeephysArg.`erase-state`
 import matt.nn.deephys.gui.DeephysArg.reset
@@ -59,35 +66,30 @@ import matt.nn.deephys.gui.dsetsbox.DSetViewsState
 import matt.nn.deephys.gui.global.DEEPHYS_FONT_DEFAULT
 import matt.nn.deephys.gui.global.DeephyActionButton
 import matt.nn.deephys.gui.global.DeephyButton
-import matt.nn.deephys.gui.global.DeephysLabel
 import matt.nn.deephys.gui.global.DeephysText
+import matt.nn.deephys.gui.modelvis.ModelVisualizerState
+import matt.nn.deephys.gui.navbox.NavBox
 import matt.nn.deephys.gui.navbox.NavBoxTab
 import matt.nn.deephys.gui.navbox.zoo.ZooExample
 import matt.nn.deephys.gui.settings.DeephySettingsNode
-import matt.nn.deephys.gui.unsafemigration.VisBox
-import matt.nn.deephys.gui.unsafemigration.unsafeComposable
+import matt.nn.deephys.gui.settings.gui.SettingsWindow
+import matt.nn.deephys.gui.visbox.VisBox
 import matt.nn.deephys.init.gearImage
 import matt.nn.deephys.load.loadCbor
 import matt.nn.deephys.model.importformat.Model
 import matt.nn.deephys.state.DeephyState
 import matt.nn.deephys.version.VersionChecker
-import matt.obs.prop.writable.BindableProperty
-import matt.obs.prop.writable.v
-import matt.obs.subscribe.Pager
-import matt.prim.common.exportfromlang.model.file.MacFileSystem
 import matt.rstruct.desktop.modId
 import matt.rstruct.loader.desktop.systemResourceLoader
+import matt.sys.thisMachine
 import java.net.URI
-import java.net.URL
-import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
-import kotlin.io.path.outputStream
 
 val DEEPHY_USER_DATA_DIR by lazy {
     PLATFORM_INDEPENDENT_APP_SUPPORT_FOLDER.toJioFile().mkFold("Deephys")
 }
-val DEEPHYS_LOG_CONTEXT by lazy {
-    LogContext1(DEEPHY_USER_DATA_DIR)
+val DEEPHYS_LOG_FOLDER by lazy {
+    DEEPHY_USER_DATA_DIR["log"]
 }
 
 enum class DeephysArg {
@@ -100,7 +102,7 @@ class DeephysApp {
 
     val selectedNavTab = mutableStateOf(NavBoxTab.NeuronalActivityZoo)
 
-    context(_: TypicalShutdownContext)
+    context(_: ShutdownScheduler, _: Logger)
     fun boot2(
         settingsNode: DeephySettingsNode,
         deephyState: DeephyState,
@@ -112,7 +114,7 @@ class DeephysApp {
             deephyState = deephyState
         )
 
-    context(_: TypicalShutdownContext)
+    context(_: ShutdownScheduler, _: Logger)
     /*invoked directly from test, in case I ever want to return something*/
     fun boot(
         args: DeephysArgs,
@@ -138,19 +140,21 @@ class DeephysApp {
             }
 
             else                             -> {
-                daemon(name = "Stage Title Loader") {
-                    try {
-                        stageTitle.putLoadedValue("${modId.appName} $myVersion")
-                    } finally {
-                        if (!stageTitle.isDoneOrCancelled()) {
-                            stageTitle.cancel("${Thread.currentThread().name} failed")
+                val _ =
+                    daemon(name = "Stage Title Loader") {
+                        try {
+                            stageTitle.putLoadedValue("${modId.appName} $myVersion")
+                        } finally {
+                            if (!stageTitle.isDoneOrCancelled()) {
+                                stageTitle.cancel("${Thread.currentThread().name} failed")
+                            }
                         }
                     }
-                }
 
-                daemon("initializeWhatICan Thread") {
-                    gearImage.startLoading()
-                }
+                val _ =
+                    daemon("initializeWhatICan Thread") {
+                        gearImage.startLoading()
+                    }
 
                 val lastVersion = deephyState.lastVersionOpened.value
                 val thisVersion = modId.version.toString()
@@ -192,113 +196,70 @@ class DeephysApp {
         stageTitle.cancel(cause)
     }
 
-    val testReadyDSetViewsBbox = Pager<DSetViewsState>()
+    val testReadyDSetViewsBbox = MutableSharedFlow<DSetViewsState>()
     private val readyForConfiguringWindowFromTest = LoadedValueSlot<Any>()
     val testReadyScene = LoadedValueSlot<Unit>()
 
-    var visBox: VisBox? = null
-    private val showNavBox = mutableStateOf(false)
+    val showNavBox = mutableStateOf(false)
     fun showDemos() {
         withSafeMutableSnapshot {
             showNavBox.value = true
             selectedNavTab.value = NavBoxTab.NeuronalActivityZoo
         }
     }
-    fun openZooDemo(demo: ZooExample) {
 
-        if (runBlocking {  !TheInternet().isAvailable() }) {
-            unsafeError("No internet connection")
-            return
-        }
-
-        val pool = DaemonPoolExecutor()
-
-        val modelURL = URI(demo.modelURL.path).toURL()
-        val testURLs = demo.testURLs.map { URI(it.path).toURL() }
-
-        val total = testURLs.size + 1
-        val done = AtomicInt(0)
-        val progress = BindableProperty(0.0)
-
-        val monitor = SimpleReferenceMonitor()
-
-        fun download(
+    class ZooDownloaderState(
+        val demo: ZooExample,
+        val scope: CoroutineScope
+    ) {
+        val total = demo.testURLs.size + 1
+        val done = mutableStateOf(0)
+        val progress = derivedStateOf { done.value / total }
+        private suspend fun download(
             name: String,
-            url: URL
+            url: MURL
         ): JioFile =
             with(MacFileSystem) {
                 val f = matt.file.ext.j.createTempFile(name, suffix = "")
-                url.openStream().use { downloadStream ->
-                    f.outputStream().use { writeStream ->
-                        downloadStream.transferTo(writeStream)
-                    }
-                }
-                done.addAndFetch(1)
-                monitor.withLock {
-                    progress v done.load().toDouble() / total
+                f.writeBytes(tryHttp(url).requireSuccess().bytes())
+                withSafeMutableSnapshot {
+                    done.value += 1
                 }
                 f
             }
 
         val modelFile =
-            pool.submit {
-                download("model_${demo.name}", modelURL)
+            scope.async {
+                download("model_${demo.name}", demo.modelURL)
             }
-
         val testFiles =
-            testURLs.mapIndexed { i, testURL ->
-                pool.submit {
+            demo.testURLs.mapIndexed { i, testURL ->
+                scope.async {
                     download("test_$i", testURL)
                 }
             }
+    }
+    suspend fun openZooDemo(
+        state: ZooDownloaderState
+    ) {
+        val demo = state.demo
 
-        unsafeComposable {
-            Column {
-
-                DeephysLabel("Downloading ${demo.name}...")
-
-                val prog =
-                    LinearProgressIndicator(
-                        progress = {
-                            progress.value.toFloat()
-                        }
-                    )
-
-                unsafeError(
-                    """
-                    DeephysLabel("Loading Files... (${done.load()}/$total)") {
-                        if (done.get() == total) {
-                            stage!!.close()
-                            showNavBox.value = false
-                            val theVisBox = visBox ?: err("no visBox!")
-                            theVisBox.load(
-                                modelFile = modelFile.get(),
-                                testFiles = testFiles.map { it.get() }
-                            )
-                        }
-                    }           
-                    """.trimIndent()
-                )
-            }.apply {
-                unsafeError(
-                    """
-                    openInNewWindow(
-                        showMode = SHOW_AND_WAIT,
-                        wMode = NOTHING,
-                        alwaysOnTop = true
-                    ) {
-                    }            
-                    """.trimIndent()
-                )
-            }
+        if (!TheInternet().isAvailable()) {
+            unsafeError("No internet connection")
+            return
         }
-
-        modelURL.openStream()
+        state.modelFile.await()
+        state.testFiles.forEach {
+            it.await()
+        }
 
         /*root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()*/
     }
 
+    var dSetViewsState: DSetViewsState? = null
+
     @Suppress("UnusedParameter")
+    context(_: Logger)
     private fun startDeephyApp(
         settingsNode: DeephySettingsNode,
         settingsDidReset: Boolean,
@@ -312,13 +273,22 @@ class DeephysApp {
                 deephyState.model.value
             }
 
+        val auto = SuspendingShellBasedDesktopAutomationContext
+
+        dSetViewsState =
+            DSetViewsState(
+                deephyState = deephyState,
+                modelVisualizer = ModelVisualizerState()
+            )
+
         myApplication(
             appName = "Deephys",
-            logFile = null,
-            appId = modId.uniqueCamelCaseName
+            logFile = DEEPHYS_LOG_FOLDER["log"],
+            appId = modId.uniqueCamelCaseName,
+            suspendingAutomationContext = auto
         ) { scope ->
-
             LaunchedEffect(scope) {
+                VersionChecker.start(scope)
                 scope.launch(Dispatchers.IO) {
                     flow.collect { f ->
                         deephyState.loadedModel.value = null
@@ -379,28 +349,26 @@ class DeephysApp {
                                 min = 750.dp
                             )
                     ) {
-                        AlignedRow(
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            MyText("This was the \"stage icon\": ")
-                            MyImage(systemResourceLoader().resourceURL("logo_${ICON_SIZES.random()}.png").toString().let(::URI))
+                        LabeledOnTheLeft("This was the \"stage icon\": ") {
+                            MyImage(
+                                systemResourceLoader().resourceURL("logo_${ICON_SIZES.random()}.png").toString().let(::URI)
+                            )
                         }
-                        unsafeError(
-                            """
-                                    
-                                readyForConfiguringWindowFromTest.putLoadedValue(Unit)
-                                val settButton = SettingsWindow(settingsNode.settings).button(this)
+                        val showSettingsWindow = rememberMutableStateOf(false)
+                        readyForConfiguringWindowFromTest.putLoadedValue(Unit)
 
+                        val settButton = SettingsWindow(settingsNode.settings)
 
+                        unsafeError("visBox =")
 
-
-                                visBox =
-                                    VisBox(
-                                        app = this@DeephysApp,
-                                        settings = settingsNode.settings
-                                    )
-
-                            """.trimIndent()
+                        VisBox(
+                            app = this@DeephysApp,
+                            settings = settingsNode.settings,
+                            loadedModel = deephyState.loadedModel,
+                            state = deephyState,
+                            dsetViews = dSetViewsState!!,
+                            modelVisualizerState = dSetViewsState!!.modelVisualizer,
+                            showSettingsWindow = { showSettingsWindow.value = true }
                         )
 
                         unsafeError(
@@ -425,10 +393,18 @@ class DeephysApp {
                                     """
                                 hgrow = ALWAYS
                                 alignment = Pos.CENTER_RIGHT
+                                    """.trimIndent()
+                                )
                                 /*spacing = DEEPHYS_SYMBOL_SPACING*/
-                                DeephyButton("Report Bug") {
-                                    setOnAction {
-                                        isDisable = true
+                                DeephyButton(
+                                    Modifier.height(
+                                        unsafeReturningErr<Dp>("settButton.heightProperty")
+                                    ),
+                                    s = "Report Bug"
+                                ) {
+                                    unsafeError(
+                                        """
+                                         isDisable = true
                                         daemon(name = "report bug") {
                                             /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
                                             openNewYouTrackIssue(
@@ -437,13 +413,17 @@ class DeephysApp {
                                             )
                                             isDisable = false
                                         }
-                                    }
-                                }.apply {
-                                    prefHeightProperty.bind(settButton.heightProperty)
+                                        """.trimIndent()
+                                    )
                                 }
-                                DeephyButton("Send Feedback") {
-
-                                    setOnAction {
+                                DeephyButton(
+                                    Modifier.height(
+                                        unsafeReturningErr<Dp>("settButton.heightProperty")
+                                    ),
+                                    s = "Send Feedback"
+                                ) {
+                                    unsafeError(
+                                        """
                                         isDisable = true
                                         daemon(name = "send feedback") {
                                             /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
@@ -454,34 +434,38 @@ class DeephysApp {
                                             )
                                             isDisable = false
                                         }
-                                    }
-                                }.apply {
-                                    prefHeightProperty.bind(settButton.heightProperty)
+                                        """.trimIndent()
+                                    )
                                 }
-                                +settButton          
-                                    """.trimIndent()
-                                )
+                                unsafeError("+settButton")
                             }
                         }
 
                         Row {
                             unsafeError(
                                 """
-                                        vgrow = ALWAYS
-
+                            vgrow = ALWAYS
                             fillHeightProperty.value = true
-
-                            if (showNavBox.value) NavBox(this@DeephysApp)
-
-                            scrollpane<VBoxWrapperImpl<NW>> {
-                                hgrow = ALWAYS
+                                """.trimIndent()
+                            )
+                            with(auto) {
+                                if (showNavBox.value) NavBox(
+                                    app = this@DeephysApp,
+                                    deephyState = deephyState,
+                                    dSetViewsState = dSetViewsState!!
+                                )
+                            }
+                            Box(Modifier.verticallyScrollable()) {
+                                unsafeError(
+                                    """
+                                       hgrow = ALWAYS
                                 hbarPolicy = NEVER
                                 isFitToWidth = true
 
                                 content = visBox!!
-                            } 
-                                """.trimIndent()
-                            )
+                                    """.trimIndent()
+                                )
+                            }
                         }
 
                         /*
@@ -507,13 +491,6 @@ class DeephysApp {
                 testReadyScene.putLoadedValue(Unit)
 
                 println("put loaded scene")
-
-                VersionChecker.checkForUpdatesInBackground()
-                unsafeError(
-                    """
-                    logContext = DEEPHYS_LOG_CONTEXT
-                    """.trimIndent()
-                )
             }
         }
     }

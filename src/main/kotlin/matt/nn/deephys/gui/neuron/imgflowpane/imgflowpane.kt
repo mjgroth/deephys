@@ -1,11 +1,12 @@
 package matt.nn.deephys.gui.neuron.imgflowpane
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import matt.compose.graphics.Compose
+import matt.compose.graphics.ComposeContent
 import matt.nn.deephys.gui.viewer.DatasetViewerState
 
 @Suppress("UnusedParameter")
@@ -13,10 +14,14 @@ import matt.nn.deephys.gui.viewer.DatasetViewerState
 fun ImageFlowPane(
     viewer: DatasetViewerState,
     prefWrapLengthProperty: Dp,
-    content: Compose
+    gap: Dp,
+    content: ComposeContent
+
 ) {
     FlowRow(
-        modifier = Modifier.width(prefWrapLengthProperty)
+        modifier = Modifier.width(prefWrapLengthProperty),
+        verticalArrangement = Arrangement.spacedBy(gap),
+        horizontalArrangement = Arrangement.spacedBy(gap)
     ) {
         content()
     }

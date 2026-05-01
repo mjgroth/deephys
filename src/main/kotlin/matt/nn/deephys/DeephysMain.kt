@@ -10,25 +10,27 @@ import kotlinx.io.bytestring.encodeToByteString
 import matt.compose.controls.buttons.MyButton
 import matt.compose.graphics.text.ErrorText
 import matt.compose.state.shortcuts.rememberMutableStateOf
+import matt.compose.state.shortcuts.rememberMutableStateOfFalse
 import matt.exec.app.deephysSite
 import matt.http.method.HTTPMethod.POST
 import matt.http.tryHttp
 import matt.lang.anno.Recycle
-import matt.lang.cfnf.getOrThrow
-import matt.lang.common.go
-import matt.lang.shutdown.j.ShutdownExecutorImpl
+import matt.lang.controlflow.go
+import matt.log.j.DefaultLogger
 import matt.log.report.desktop.BugReport
 import matt.model.code.args.Arguments
 import matt.model.code.errreport.createThrowReport
+import matt.model.context.SuspendingAutomationService
+import matt.model.j.browse
+import matt.model.k.osi.url.MURL
 import matt.model.query.buildQueryURL
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.DeephysArgs
 import matt.nn.deephys.gui.settings.DeephySettingsNodeNode
 import matt.nn.deephys.state.DeephyStateDb
 import matt.osi.url.urlEncode
-import matt.prim.common.exportfromlang.context.AutomationContext
-import matt.prim.common.exportfromlang.model.url.MURL
-import matt.prim.exportfromlang.j.browse
+import matt.prim.exportfromlang.cfnf.getorthrow.getOrThrow
+import matt.sys.shutdown.ShutdownExecutorImpl
 import java.net.URI
 
 fun main(args: Array<String>): Unit = Arguments.mainOrExitWithLogicalFailure<DeephysArgs>(args, ::main)
@@ -36,7 +38,7 @@ fun main(args: Array<String>): Unit = Arguments.mainOrExitWithLogicalFailure<Dee
 /*NOT INVOKED BY TEST in case I ever want the main test method to return something*/
 @OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: DeephysArgs) {
-    with(ShutdownExecutorImpl()) {
+    context(ShutdownExecutorImpl(), DefaultLogger) {
         runBlocking {
             val settingsNode = DeephySettingsNodeNode(this).dataObject.getCompleted().getOrThrow()
             DeephysApp().boot(
@@ -51,12 +53,12 @@ fun main(args: DeephysArgs) {
 @Suppress("unused")
 @Recycle
 @Composable
-context(automationContext: AutomationContext)
+context(automationContext: SuspendingAutomationService)
 fun SubmitBugReportButton(t: Thread, e: Exception) {
-    val submitting = rememberMutableStateOf(false)
+    val submitting = rememberMutableStateOfFalse()
     val scope = rememberCoroutineScope()
     val submittedUrl = rememberMutableStateOf<String?>(null)
-    val gotErrorWhileSubmitting = rememberMutableStateOf(false)
+    val gotErrorWhileSubmitting = rememberMutableStateOfFalse()
     if (gotErrorWhileSubmitting.value) {
         ErrorText("failed to submit. Please copy and paste the error and send to matt")
     } else {
@@ -85,7 +87,9 @@ fun SubmitBugReportButton(t: Thread, e: Exception) {
             submittedUrl.value?.go { url ->
                 MyButton("view submitted bug") {
                     /*ON LINUX THIS MUST OCCUR IN ANOTHER THREAD*/
-                    automationContext.browse(URI(url))
+                    scope.launch {
+                        automationContext.browse(URI(url))
+                    }
                 }
             }
         }
@@ -94,8 +98,8 @@ fun SubmitBugReportButton(t: Thread, e: Exception) {
 
 @Suppress("unused")
 @Recycle
-context(automationContext: AutomationContext)
-fun openNewYouTrackIssue(
+context(automationContext: SuspendingAutomationService)
+suspend fun openNewYouTrackIssue(
     summary: String,
     description: String
 ) {

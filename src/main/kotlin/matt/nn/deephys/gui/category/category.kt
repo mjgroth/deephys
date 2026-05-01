@@ -11,7 +11,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -19,8 +18,10 @@ import matt.caching.compcache.invoke
 import matt.color.RGBAFloatColor
 import matt.color.colormap.Automatic
 import matt.compose.graphics.color.toComposeColor
+import matt.compose.graphics.layout.observeSize
 import matt.compose.graphics.text.MyText
 import matt.compose.state.shortcuts.rememberMutableStateOf
+import matt.model.k.log.Logger
 import matt.nn.deephys.calc.CategoryAccuracy
 import matt.nn.deephys.calc.CategoryFalseNegativesSorted
 import matt.nn.deephys.calc.CategoryFalsePositivesSorted
@@ -41,6 +42,7 @@ import matt.prim.str.addNewLinesUntilNumLinesIs
 import matt.prim.str.join.elementsToString
 
 @Composable
+context(_: Logger)
 fun <A : Number> CategoryView(
     selection: CategorySelection,
     testLoader: TypedTestLike<A>,
@@ -102,7 +104,7 @@ fun <A : Number> CategoryView(
                 }
 
                 CompositionLocalProvider(
-                    LocalTextStyle provides LocalTextStyle.current +  subtitleFont()
+                    LocalTextStyle provides LocalTextStyle.current + subtitleFont()
                 ) {
                     MyText(
                         buildString {
@@ -162,13 +164,8 @@ fun <A : Number> CategoryView(
 
                 val nodeSize = rememberMutableStateOf<IntSize?>(null)
                 Row(
-                    horizontalArrangement =
-                        Arrangement
-                            .spacedBy(10.dp),
-                    modifier =
-                        Modifier.onSizeChanged {
-                            nodeSize.value = it
-                        }
+                    Modifier.observeSize(nodeSize),
+                    Arrangement.spacedBy(10.dp)
                 ) {
                     val cats = (testLoader.test.categories - selection.primaryCategory)
                     val cMap = Automatic().colorMap(cats.size)
@@ -259,21 +256,6 @@ fun <A : Number> CategoryView(
                             viewerWidth = viewerWidth
                         )
                     }
-                    /*	v {
-                      alignment = Pos.TOP_LEFT
-
-
-
-
-
-                  deephysText("") {
-          textAlignment = CENTER
-          visibleAndManagedProp.bindWeakly(viewer.showTutorials)
-        }
-
-
-
-    }*/
                 }
             }
         }

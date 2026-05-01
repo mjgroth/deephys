@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
@@ -16,8 +15,8 @@ import com.cheonjaeung.compose.grid.VerticalGrid
 import matt.caching.compcache.invoke
 import matt.compose.controls.icon.standard.ToggleIcons
 import matt.compose.controls.toggleicon.ToggleIcon
-import matt.compose.state.shortcuts.rememberMutableStateOf
-import matt.lang.weak.common.WeakRefInter
+import matt.compose.graphics.padding.WidthSpacer
+import matt.compose.state.shortcuts.rememberMutableStateOfFalse
 import matt.nn.deephys.calc.ImageTopPredictions
 import matt.nn.deephys.gui.global.DeephyActionLabel
 import matt.nn.deephys.gui.global.DeephysText
@@ -32,6 +31,7 @@ import matt.nn.deephys.gui.global.tooltip.DeephysTooltipArea
 import matt.nn.deephys.gui.settings.DeephysSettingsController
 import matt.nn.deephys.gui.viewer.DatasetViewerState
 import matt.nn.deephys.model.data.Category
+import matt.prim.weak.common.WeakRefInter
 
 @Composable
 fun PredictionsView(
@@ -74,7 +74,7 @@ fun CategoryTable(
     sigFigSett: State<Int>,
     numSuffix: String = ""
 ) = Row {
-    val b = rememberMutableStateOf(false)
+    val b = rememberMutableStateOfFalse()
     ToggleIcon(
         tooltip = "idk",
         ToggleIcons.Expand,
@@ -82,7 +82,7 @@ fun CategoryTable(
         tint = DeephysPalette.deephysBlue2,
         modifier = Modifier.size((6.5 / 2).dp)
     )
-    Spacer(Modifier.width(5.dp))
+    WidthSpacer(5.dp)
     Column {
         if (!b.value) {
             FlowRow {
@@ -100,7 +100,7 @@ fun CategoryTable(
                         num = num,
                         sigFigSett = sigFigSett,
                         numSuffix = numSuffix,
-                        settings =  settings,
+                        settings = settings,
                         tooltip = fullString
                     )
                     DeephysText(s = ")   ")

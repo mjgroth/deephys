@@ -2,19 +2,27 @@
 
 package matt.nn.deephys.test.deephys.tester
 
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import matt.async.thread.namedThread
+import matt.file.common.toAbsLinuxFile
 import matt.file.commons.desktop.DEEPHYS_TEST_RESULT_JSON
 import matt.file.commons.reg.RegisteredFolder
+import matt.file.construct.mFile
+import matt.file.construct.toJioFile
 import matt.file.ext.j.mkparents
+import matt.file.model.file.types.Cbor
+import matt.file.types.forceType
 import matt.json.prim.loadJson
 import matt.json.prim.saveJson
 import matt.lang.anno.optin.ExperimentalMattCode
-import matt.lang.common.unsafeError
-import matt.lang.common.unsafeReturningErr
-import matt.lang.shutdown.preaper.ProcessReaper
+import matt.lang.anno.optin.ShadowsExtensionBug
+import matt.lang.err.unsafeError
+import matt.lang.err.unsafeReturningErr
+import matt.lang.shutdown.ShutdownScheduler
 import matt.lang.sysprop.common.value
 import matt.lang.sysprop.expects.RuntimePropertyProvider
+import matt.log.j.DefaultLogger
 import matt.log.profile.data.TestResults
 import matt.log.profile.data.TestSession
 import matt.log.profile.real.Profiler
@@ -23,6 +31,7 @@ import matt.log.profile.yk.YourKit
 import matt.log.report.desktop.MemReport
 import matt.model.code.errreport.common.reportAndReThrowErrorsBetter
 import matt.model.data.bytesize.mebibytes
+import matt.model.k.file.file.MacFileSystem
 import matt.model.obj.text.doesNotExist
 import matt.nn.deephys.gui.DeephysApp
 import matt.nn.deephys.gui.DeephysArg.reset
@@ -35,9 +44,10 @@ import matt.nn.deephys.test.deephys.NUM_SLICE_CLICKS
 import matt.nn.deephys.test.deephys.TestDeephys
 import matt.nn.deephys.test.deephys.WAIT_FOR_GUI_INTERVAL
 import matt.service.action.NoActionAbilities
+import matt.sys.j.runtime.RUNTIME
 import matt.test.assertions.assertTrueLazyMessage
-import matt.test.prop.ManualTests
-import matt.test.prop.j.TestPerformance
+import matt.test.prop.TestProperties
+import matt.test.prop.j.CommonJTestProperties
 import matt.time.dur.sleep
 import kotlin.test.assertEquals
 import kotlin.time.Duration
@@ -46,7 +56,7 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalMattCode::class)
 class DeephysTestSession(
     private val profiler: Profiler,
-    processReaper: ProcessReaper
+    processReaper: ShutdownScheduler
 ) {
 
     private val app by lazy {
@@ -61,20 +71,27 @@ class DeephysTestSession(
         )
     }
 
+    private val settingsNode = DeephySettingsNode()
+    private val deephyState = DeephyState()
+
     init {
         reportAndReThrowErrorsBetter {
-            val settingsNode = DeephySettingsNode()
-            val deephyState = DeephyState()
-            with(processReaper) {
+
+            context(processReaper, DefaultLogger) {
                 app.boot2(settingsNode = settingsNode, args = listOf(reset), deephyState = deephyState) /*need this so tests are deterministic*/
-                namedThread(name = "App Launcher") {
-                    try {
-                        app.boot2(args = listOf(), settingsNode = settingsNode, deephyState = deephyState)
-                    } catch (e: Throwable) {
-                        println("CANCELLING ALL LATCHES")
-                        app.cancelAllLatches(e)
+                val _ =
+                    namedThread(name = "App Launcher") {
+                        try {
+                            app.boot2(
+                                args = listOf(),
+                                settingsNode = settingsNode,
+                                deephyState = deephyState
+                            )
+                        } catch (e: Throwable) {
+                            println("CANCELLING ALL LATCHES")
+                            app.cancelAllLatches(e)
+                        }
                     }
-                }
             }
 
             @Suppress("unused")
@@ -103,7 +120,7 @@ class DeephysTestSession(
     ) =
         runBlocking {
             with(RuntimePropertyProvider) {
-                if (force || ManualTests.value()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
+                if (force || TestProperties.ManualTests.value()) matt.test.assertions.testConfirmation(prompt, confirmService) else Unit
             }
         }
 
@@ -128,9 +145,10 @@ class DeephysTestSession(
     }
 
     init {
-        RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.mkparents()
+        val _ = RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.mkparents()
     }
 
+    @OptIn(ShadowsExtensionBug::class)
     private val sessionList =
         if (RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.doesNotExist() || RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.readText().isBlank()) {
             mutableListOf<TestSession>()
@@ -149,6 +167,7 @@ class DeephysTestSession(
         TestDeephys.sampleRam()
         val t = tic("runThroughFeatures")
 
+        @IgnorableReturnValue
         fun tocAndSampleRam(marker: String): Duration? {
             val r = t.toc(marker)
             TestDeephys.sampleRam()
@@ -160,98 +179,80 @@ class DeephysTestSession(
         unsafeError(
             """
             val root = scene.root
-            val sub = app.testReadyDSetViewsBbox.subscribe()
             """.trimIndent()
         )
-        profiler.record {
-            unsafeError(
-                """
-                      Platform.runLater {
-                root.findRecursivelyFirstOrNull<DSetViewsVBox>()?.removeAllTests()
-                DeephyState.model.value = testData.model.toAbsLinuxFile()
-            }
-sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe(RunLaterReturnLatchManager)
-                """.trimIndent()
-            )
+        runBlocking {
 
-            tocAndSampleRam("GUI ready")
+            val _ =
+                profiler.record {
+                    app.dSetViewsState!!.removeAllTests()
+                    app.dSetViewsState!!.deephyState.model.value = testData.model.toAbsLinuxFile()
+                    app.testReadyDSetViewsBbox.first()
 
-            unsafeError(
-                """
-            val dSetViewsBox = root.findRecursivelyFirstOrNull<DSetViewsVBox>()!!        
-                """.trimIndent()
-            )
+                    tocAndSampleRam("GUI ready")
 
-            tocAndSampleRam("found dSetViewsBox")
+                    val dSetViewsBox = app.dSetViewsState!!
 
-            unsafeError(
-                """
-                       val testViewersAndFiles =
-                runLaterReturn {
-                    testData.tests.map {
-                        dSetViewsBox.addTest() to it
+                    tocAndSampleRam("found dSetViewsBox")
+
+                    val testViewersAndFiles =
+                        testData.tests.map {
+                            dSetViewsBox.addTest() to it
+                        }
+
+                    tocAndSampleRam("added tests")
+
+                    testViewersAndFiles.forEach {
+                        it.first.setCborFile(
+                            (mFile(it.second.abspath, MacFileSystem)).forceType(Cbor).toJioFile()
+                        )
                     }
-                }
-                """.trimIndent()
-            )
 
-            tocAndSampleRam("added tests")
+                    tocAndSampleRam("set test files")
 
-            unsafeError(
-                """
-                         runLaterReturn {
-                testViewersAndFiles.forEach {
-                    it.first.file.value = (mFile(it.second.abspath, MacFileSystem)).forceType(Cbor)
-                }
-            }
-                """.trimIndent()
-            )
+                    testViewersAndFiles.forEachIndexed { index, it ->
+                        val _ = it.first.testData.value!!.awaitFinishedTest()
+                        tocAndSampleRam("test ${index + 1} finished loading")
+                    }
+                    val firstViewer = testViewersAndFiles.first().first
+                    firstViewer.manualLayerSelected.value =
+                        dSetViewsBox
+                            .modelVisualizer
+                            .model
+                            .value!!
+                            .resolvedLayers
+                            .first()
+                            .interTest
 
-            tocAndSampleRam("set test files")
+                    tocAndSampleRam("selected layer")
 
-            unsafeError(
-                $$"""
-                      testViewersAndFiles.forEachIndexed { index, it ->
-                it.first.testData.value!!.awaitFinishedTest()
-                tocAndSampleRam("test ${index + 1} finished loading")
-            }
-
-            val firstViewer = testViewersAndFiles.first().first
-
-            runLaterReturn {
-                firstViewer.layerSelection.value = dSetViewsBox.model.resolvedLayers.first().interTest
-            }
-            
-                """.trimIndent()
-            )
-            tocAndSampleRam("selected layer")
-
-            unsafeError(
-                """
+                    unsafeError(
+                        """
             runLaterReturn {
                 dSetViewsBox.selectViewerToBind(firstViewer, makeInDToo = true)
             }        
-                """.trimIndent()
+                        """.trimIndent()
+                    )
+                }
+            val totalTime = tocAndSampleRam("set binding")!!
+            mySession.tests.add(
+                TestResults(
+                    name = key,
+                    loadMillis = totalTime.inWholeMilliseconds
+                )
             )
-        }
-        val totalTime = tocAndSampleRam("set binding")!!
-        mySession.tests.add(
-            TestResults(
-                name = key,
-                loadMillis = totalTime.inWholeMilliseconds
-            )
-        )
-        @Suppress("RedundantValueArgument")
-        RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.saveJson(sessionList, pretty = true)
-        with(RuntimePropertyProvider) {
-            assertTrueLazyMessage(
-                !TestPerformance.value()
-                    || totalTime < maxTime
-            ) {
-                "took to long to load: took=$totalTime expected=$maxTime"
+            @Suppress("RedundantValueArgument")
+            RegisteredFolder.Main.DEEPHYS_TEST_RESULT_JSON.saveJson(sessionList, pretty = true)
+            with(RuntimePropertyProvider) {
+                assertTrueLazyMessage(
+                    !CommonJTestProperties.TestPerformance.value()
+                        || totalTime < maxTime
+                ) {
+                    "took to long to load: took=$totalTime expected=$maxTime"
+                }
             }
+            TestDeephys.sampleRam()
         }
-        TestDeephys.sampleRam()
     }
 
     fun runThroughByImageView() {
@@ -428,7 +429,7 @@ sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe(RunLaterReturnLatchMan
         for (it in 0..postGCWaitSecs) {
             /*ahh... finally found a solution. A loop with multiple collections instead of just one collection followed by endless pointless waiting. I best I know what happened: I was doing the gc too early and some things were still strongly reachable for whatever reason deep in some internal libs*/
             @Suppress("ExplicitGarbageCollectionCall")
-            Runtime.getRuntime().gc()
+            RUNTIME.gc()
             sleep(1.seconds)
             val u = MemReport().used
             println("u$it=$u")
@@ -443,7 +444,7 @@ sub.waitForThereToBeAtLeastOneNotificationThenUnsubscribe(RunLaterReturnLatchMan
             check(profiler.engine == YourKit) {
                 "Programmatic JProfiler memory snapshots do not seem to work from tests, which I think are a bit weird in how they fork from the gradle jvm. Yourkit on the other hand, works perfectly. It is also more automated, and deserves more of my attention as it does the same essential things as JProfiler and in many ways seems to do it way more conveniently."
             }
-            profiler.captureMemorySnapshot()
+            val _ = profiler.captureMemorySnapshot()
             "test data did not properly dispose. After removing all tests, expected used memory to be less than $threshold, but it is $u"
         }
     }

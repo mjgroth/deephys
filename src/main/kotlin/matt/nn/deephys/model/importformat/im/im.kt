@@ -11,13 +11,11 @@ import matt.cbor.read.major.bytestr.ByteStringReader
 import matt.cbor.read.streamman.cborReader
 import matt.color.rgb
 import matt.compose.graphics.color.toComposeColor
+import matt.file.raf.cache.EvenlySizedRAFCache
 import matt.lang.anno.Open
 import matt.lang.anno.PhaseOut
-import matt.lang.weak.common.lazyWeak
-import matt.lang.weak.weak
 import matt.nn.deephys.load.async.AsyncLoader.DirectLoadedOrFailedValueSlot
 import matt.nn.deephys.load.cache.RAFCaches
-import matt.nn.deephys.load.cache.raf.EvenlySizedRAFCache
 import matt.nn.deephys.load.test.dtype.DType
 import matt.nn.deephys.load.test.dtype.DoubleActivationData
 import matt.nn.deephys.load.test.dtype.FloatActivationData
@@ -34,6 +32,8 @@ import matt.prim.j.bs.readAndCopyDoubles
 import matt.prim.j.bs.readAndCopyFloats
 import matt.prim.pdouble.DOUBLE_BYTE_LEN
 import matt.prim.pfloat.FLOAT_BYTE_LEN
+import matt.prim.weak.common.lazyWeak
+import matt.prim.weak.weak
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 
@@ -123,7 +123,6 @@ fun ArrayReader.readPixels(): PixelData3 =
     readEachManually<ArrayReader, PixelData2> {
         readEachManually<ByteStringReader, IntArray> {
             val r = IntArray(count.toInt())
-            byteArrayOf().withIndex()
             for ((i, b) in read().raw.withIndex()) r[i] = b.toInt() and 0xff
             r
         }
@@ -171,13 +170,14 @@ value class ImageActivationCborBytesFloat32(override val bytes: ByteString) : Im
     override fun dtypeByteReadyBufferFlow(): Flow<ByteBuffer> =
         flow {
             bytes.cborReader().readManuallySuspending<ArrayReader, Unit> {
-                readEachManuallySuspending<ByteStringReader, Unit> {
-                    val buffer =   read().raw.asReadOnlyByteBuffer()
-                    (FLOAT_BYTE_LEN until buffer.capacity() step FLOAT_BYTE_LEN).forEach {
-                        buffer.limit(it)
-                        emit(buffer)
+                val _ =
+                    readEachManuallySuspending<ByteStringReader, Unit> {
+                        val buffer = read().raw.asReadOnlyByteBuffer()
+                        (FLOAT_BYTE_LEN until buffer.capacity() step FLOAT_BYTE_LEN).forEach {
+                            buffer.limit(it)
+                            emit(buffer)
+                        }
                     }
-                }
             }
         }
 }
@@ -193,15 +193,16 @@ value class ImageActivationCborBytesFloat64(override val bytes: ByteString) : Im
     override fun dtypeByteReadyBufferFlow(): Flow<ByteBuffer> =
         flow {
             bytes.cborReader().readManuallySuspending<ArrayReader, Unit> {
-                readEachManuallySuspending<ByteStringReader, Unit> {
-                    UnsafeByteStringOperations.withByteArrayUnsafe(read().raw) { rawBytes ->
-                        val buffer = ByteBuffer.wrap(rawBytes)
-                        (DOUBLE_BYTE_LEN until buffer.capacity() step DOUBLE_BYTE_LEN).forEach {
-                            buffer.limit(it)
-                            emit(buffer)
+                val _ =
+                    readEachManuallySuspending<ByteStringReader, Unit> {
+                        UnsafeByteStringOperations.withByteArrayUnsafe(read().raw) { rawBytes ->
+                            val buffer = ByteBuffer.wrap(rawBytes)
+                            (DOUBLE_BYTE_LEN until buffer.capacity() step DOUBLE_BYTE_LEN).forEach {
+                                buffer.limit(it)
+                                emit(buffer)
+                            }
                         }
                     }
-                }
             }
         }
 }
