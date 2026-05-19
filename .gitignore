@@ -35,4 +35,5 @@ local.properties
 coverage-error.log
 .intellijPlatform
 .claude
+.matt
 CLAUDE.md
