@@ -34,6 +34,6 @@ local.properties
 *.comp_mem
 coverage-error.log
 .intellijPlatform
-.claude
-.matt
+.claude/
+.matt/
 CLAUDE.md
